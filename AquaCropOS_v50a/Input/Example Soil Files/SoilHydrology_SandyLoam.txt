@@ -1,0 +1,3 @@
+%% ---------- Soil hydraulic properties for AquaCropOS ---------- %%
+%% LayerNo  LayerThickness(m)  thS(m3/m3)    thFC(m3/m3)  thWP(m3/m3)   Ksat(mm/day) %%
+1	4.0	0.45	0.18	0.08	1208

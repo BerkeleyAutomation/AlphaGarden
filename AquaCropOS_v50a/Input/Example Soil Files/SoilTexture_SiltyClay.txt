@@ -1,0 +1,3 @@
+%% ---------- Soil layer texture for AquaCropOS ---------- %%
+%% LayerNo   Thickness(m)   Sand(%)    Clay(%)  OrgMat(%)   DensityFactor %%
+1   4.0 7  47  2.50    1

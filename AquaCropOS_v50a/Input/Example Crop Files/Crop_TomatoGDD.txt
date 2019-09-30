@@ -1,0 +1,145 @@
+%% ---------- Crop parameters for AquaCropOS ---------- %%
+%% Crop Type ('1': Leafy vegetable, '2': Root/tuber, '3': Fruit/grain) %%
+CropType : 3
+%% Calendar Type ('1': Calendar days, '2': Growing degree days)
+CalendarType : 2
+%% Convert calendar to GDD mode if inputs are given in calendar days ('0': No; '1': Yes) %%
+SwitchGDD : 1
+%% Planting Date (dd/mm) %%
+PlantingDate : 01/05
+%% Latest Harvest Date (dd/mm) %%
+HarvestDate : 30/10
+%% Growing degree/Calendar days from sowing to emergence/transplant recovery %%
+Emergence : 43
+%% Growing degree/Calendar days from sowing to maximum rooting %%
+MaxRooting : 891
+%% Growing degre1553e/Calendar days from sowing to senescence %%
+Senescence : 1533
+%% Growing degree/Calendar days from sowing to maturity %%
+Maturity : 1933
+%% Growing degree/Calendar days from sowing to start of yield formation %%
+HIstart : 525
+%% Duration of flowering in growing degree/calendar days (-999 for non-fruit/grain crops) %%
+Flowering : 750
+%% Duration of yield formation in growing degree/calendar days %%
+YldForm : 1050
+%% Growing degree day calculation method %%
+GDDmethod : 2
+%% Base temperature (degC) below which growth does not progress %%
+Tbase : 7
+%% Upper temperature (degC) above which crop development no longer increases %%
+Tupp : 28
+%% Pollination affected by heat stress (0: No; 1: Yes) %%
+PolHeatStress : 1
+%% Maximum air temperature (degC) above which pollination begins to fail %%
+Tmax_up : 40
+%% Maximum air temperature (degC) at which pollination completely fails %%
+Tmax_lo : 45
+%% Pollination affected by cold stress (0: No; 1: Yes) %%
+PolColdStress : 1
+%% Minimum air temperature (degC) below which pollination begins to fail %%
+Tmin_up : 10
+%% Minimum air temperature (degC) at which pollination completely fails %%
+Tmin_lo : 5
+%% Biomass production affected by temperature stress (0: No; 1: Yes) %%
+BioTempStress : 0
+%% Minimum growing degree days (degC/day) required for full biomass production %%
+GDD_up : -999
+%% Growing degree days (degC/day) at which no biomass production occurs %%
+GDD_lo : -999
+%% Shape factor describing the reduction in biomass production for insufficient growing degree days %%
+fshape_b : 13.8135
+%% Initial percentage of minimum effective rooting depth %%
+PctZmin : 70
+%% Minimum effective rooting depth (m) %%
+Zmin : 0.30
+%% Maximum rooting depth (m) %%
+Zmax : 1.0
+%% Shape factor describing root expansion %%
+fshape_r : 1.5
+%% Shape factor describing the effects of water stress on root expansion %%
+fshape_ex : -6
+%% Maximum root water extraction at top of the root zone (m3/m3/day) %%
+SxTopQ : 0.024
+%% Maximum root water extraction at the bottom of the root zone (m3/m3/day) %%
+SxBotQ : 0.006
+%% Exponent parameter for adjustment of Kcx once senescence is triggered %%
+a_Tr : 1
+%% Soil surface area (cm2) covered by an individual seedling at 90% emergence %%
+SeedSize : 20
+%% Number of plants per hectare %%
+PlantPop : 33333
+%% Minimum canopy size below which yield formation cannot occur %%
+CCmin : 0.0067
+%% Maximum canopy cover (fraction of soil cover) %%
+CCx : 0.75
+%% Canopy decline coefficient (fraction per day/GDD) %%
+CDC : 0.004
+%% Canopy growth coefficient (fraction per day/GDD) %%
+CGC : 0.007504
+%% Crop coefficient when canopy growth is complete but prior to senescence %%
+Kcb : 1.10
+%% Decline of crop coefficient due to ageing (%/day) %%
+fage : 0.15
+%% Water productivity normalized for ET0 and C02 (g/m2) %%
+WP : 18
+%% Adjustment of water productivity in yield formation stage (% of WP) %%
+WPy : 100
+%% Crop co2 sink strength coefficient %%
+fsink : 0.5
+%% WP co2 adjustment parameter given by Steduto et al. 2007 %%
+bsted : 0.000138
+%% WP co2 adjustment parameter given by FACE experiments %%
+bface : 0.001165
+%% Reference harvest index %%
+HI0 : 0.63
+%% Initial harvest index %%
+HIini : 0.01
+%% Possible increase of harvest index due to water stress before flowering (%) %%
+dHI_pre : 0
+%% Coefficient describing positive impact on harvest index of restricted vegetative growth during yield formation %%
+a_HI : -9
+%% Coefficient describing negative impact on harvest index of stomatal closure during yield formation %%
+b_HI : 3
+%% Maximum allowable increase of harvest index above reference %%
+dHI0 : 15
+%% Crop Determinancy ('0': Indeterminant, '1': Determinant) %%
+Determinant : 1
+%% Excess of potential fruits %%
+exc : 100
+%% Percentage of total flowering at which peak flowering occurs %%
+MaxFlowPct : 33.33
+%% Upper soil water depletion threshold for water stress effects on affect canopy expansion %%
+p_up1 : 0.15
+%% Upper soil water depletion threshold for water stress effects on canopy stomatal control %%
+p_up2 : 0.50
+%% Upper soil water depletion threshold for water stress effects on canopy senescence %%
+p_up3 : 0.70
+%% Upper soil water depletion threshold for water stress effects on canopy pollination %%
+p_up4 : 0.92
+%% Lower soil water depletion threshold for water stress effects on canopy expansion %%
+p_lo1 : 0.55
+%% Lower soil water depletion threshold for water stress effects on canopy stomatal control %%
+p_lo2 : 1
+%% Lower soil water depletion threshold for water stress effects on canopy senescence %%
+p_lo3 : 1
+%% Lower soil water depletion threshold for water stress effects on canopy pollination %%
+p_lo4 : 1
+%% Shape factor describing water stress effects on canopy expansion %%
+fshape_w1 : 3
+%% Shape factor describing water stress effects on stomatal control %%
+fshape_w2 : 3
+%% Shape factor describing water stress effects on canopy senescence %%
+fshape_w3 : 3
+%% Shape factor describing water stress effects on pollination %%
+fshape_w4 : 1
+%% Adjustment to water stress thresholds depending on daily ET0 (0: 'No', 1: 'Yes') %%
+ETadj : 1
+%% Vol (%) below saturation at which stress begins to occur due to deficient aeration %%
+Aer : 5
+%% Number of days lag before aeration stress affects crop growth %%
+LagAer : 3
+%% Reduction (%) to p_lo3 when early canopy senescence is triggered %%
+beta : 12
+%% Proportion of total water storage needed for crop to germinate %%
+GermThr : 0.2
