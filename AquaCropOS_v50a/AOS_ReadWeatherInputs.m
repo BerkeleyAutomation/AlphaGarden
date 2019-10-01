@@ -1,8 +1,6 @@
-function [WeatherDB] = AOS_ReadWeatherInputs(FileLocation)
+function [WeatherDB,AOS_ClockStruct] = AOS_ReadWeatherInputs(FileLocation,...
+    AOS_ClockStruct)
 % Function to read and process input weather time-series
-
-%% Declare global variables %%
-global AOS_ClockStruct
 
 %% Read input file location %%
 Location = FileLocation.Input;

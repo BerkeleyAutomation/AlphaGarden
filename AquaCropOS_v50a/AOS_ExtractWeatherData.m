@@ -1,9 +1,6 @@
-function [Weather] = AOS_ExtractWeatherData()
+function [Weather] = AOS_ExtractWeatherData(AOS_InitialiseStruct,...
+    AOS_ClockStruct)
 % Function to extract weather data for current time step
-
-%% Define global variables %%
-global AOS_ClockStruct
-global AOS_InitialiseStruct
 
 %% Extract weather dataset %%
 WeatherDB = AOS_InitialiseStruct.Weather;

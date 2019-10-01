@@ -1,9 +1,5 @@
-function [] = AOS_Initialize()
+function [AOS_ClockStruct,AOS_InitialiseStruct] = AOS_Initialize()
 % Function to initialise AquaCrop-OS
-
-%% Define global variables %% 
-global AOS_ClockStruct
-global AOS_InitialiseStruct
 
 %% Get file locations %%
 FileLocation = AOS_ReadFileLocations();
@@ -12,33 +8,29 @@ FileLocation = AOS_ReadFileLocations();
 AOS_ClockStruct = AOS_ReadClockParameters(FileLocation);
 
 %% Read climate data %%
-WeatherStruct = AOS_ReadWeatherInputs(FileLocation);
+[WeatherStruct, AOS_ClockStruct] = AOS_ReadWeatherInputs(FileLocation,AOS_ClockStruct);
 
 %% Read model parameter files %%
-[ParamStruct,CropChoices,FileLocation] = AOS_ReadModelParameters(FileLocation);
-
-%% Read irrigation management file %%
-[IrrMngtStruct,FileLocation] = AOS_ReadIrrigationManagement(ParamStruct,...
-    FileLocation);
+[ParamStruct,CropChoices,FileLocation,AOS_ClockStruct] = AOS_ReadModelParameters(FileLocation,...
+    AOS_ClockStruct);
 
 %% Read field management file %%
 FieldMngtStruct = AOS_ReadFieldManagement(FileLocation);
 
 %% Read groundwater table file %%
-GwStruct = AOS_ReadGroundwaterTable(FileLocation);
+GwStruct = AOS_ReadGroundwaterTable(FileLocation,AOS_ClockStruct);
 
 %% Compute additional variables %%
 ParamStruct = AOS_ComputeVariables(ParamStruct,WeatherStruct,...
-    AOS_ClockStruct,GwStruct,CropChoices,FileLocation);
+    AOS_ClockStruct,GwStruct,CropChoices,FileLocation,AOS_ClockStruct);
 
 %% Define initial conditions %%
 InitCondStruct = AOS_ReadModelInitialConditions(ParamStruct,GwStruct,...
-    FieldMngtStruct,CropChoices,FileLocation);
+    FieldMngtStruct,CropChoices,FileLocation,AOS_ClockStruct);
 
 %% Pack output structure %%
 AOS_InitialiseStruct = struct();
 AOS_InitialiseStruct.Parameter = ParamStruct;
-AOS_InitialiseStruct.IrrigationManagement = IrrMngtStruct;
 AOS_InitialiseStruct.FieldManagement = FieldMngtStruct;
 AOS_InitialiseStruct.Groundwater = GwStruct;
 AOS_InitialiseStruct.InitialCondition = InitCondStruct;

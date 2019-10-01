@@ -1,5 +1,5 @@
-function [TrAct,TrPot_NS,TrPot0,NewCond,IrrNet] = AOS_Transpiration(Soil,...
-    Crop,IrrMngt,InitCond,Et0,CO2,GrowingSeason)
+function [TrAct,TrPot_NS,TrPot0,NewCond] = AOS_Transpiration(Soil,...
+    Crop,InitCond,Et0,CO2,GrowingSeason)
 % Function to calculate crop transpiration on current day
 
 %% Store initial conditions %%
@@ -97,11 +97,6 @@ if GrowingSeason == true
     [Ksa,NewCond] = AOS_AerationStress(Crop,NewCond,thRZ);
     % Maximum stress effect
     Ks = min(Ksw.StoLin,Ksa.Aer);
-    % Update potential transpiration in root zone
-    if IrrMngt.IrrMethod ~= 4
-        % No adjustment to TrPot for water stress when in net irrigation mode
-        TrPot = TrPot*Ks;
-    end
     
     %% Determine compartments covered by root zone %%
     % Compartments covered by the root zone
@@ -120,24 +115,17 @@ if GrowingSeason == true
     
     %% Determine maximum sink term for each compartment %%
     SxComp = zeros(1,Soil.nComp);
-    if IrrMngt.IrrMethod == 4
-        % Net irrigation mode
-        for ii = 1:comp_sto
-            SxComp(ii) = (Crop.SxTop+Crop.SxBot)/2;
+    % Maximum sink term declines linearly with depth
+    SxCompBot = Crop.SxTop;
+    for ii = 1:comp_sto
+        SxCompTop = SxCompBot;
+        if Soil.Comp.dzsum(ii) <= rootdepth
+            SxCompBot = Crop.SxBot*NewCond.rCor+((Crop.SxTop-Crop.SxBot*...
+                NewCond.rCor)*((rootdepth-Soil.Comp.dzsum(ii))/rootdepth));
+        else
+            SxCompBot = Crop.SxBot*NewCond.rCor;
         end
-    else
-        % Maximum sink term declines linearly with depth
-        SxCompBot = Crop.SxTop;
-        for ii = 1:comp_sto
-            SxCompTop = SxCompBot;
-            if Soil.Comp.dzsum(ii) <= rootdepth
-                SxCompBot = Crop.SxBot*NewCond.rCor+((Crop.SxTop-Crop.SxBot*...
-                    NewCond.rCor)*((rootdepth-Soil.Comp.dzsum(ii))/rootdepth));
-            else
-                SxCompBot = Crop.SxBot*NewCond.rCor;
-            end
-            SxComp(ii) = (SxCompTop+SxCompBot)/2;
-        end
+        SxComp(ii) = (SxCompTop+SxCompBot)/2;
     end
     
     %% Extract water %%
@@ -218,19 +206,12 @@ if GrowingSeason == true
         
         % Extract water
         ThToExtract = (ToExtract/1000)/Soil.Comp.dz(comp);
-        if IrrMngt.IrrMethod == 4
-            % Don't reduce compartment sink for stomatal water stress if in
-            % net irrigation mode. Stress only occurs due to deficient
-            % aeration conditions
-            Sink = AerComp*SxComp(comp)*RootFact(comp);
+        % Reduce compartment sink for greatest of stomatal and aeration
+        % stress
+        if KsComp == AerComp
+            Sink = KsComp*SxComp(comp)*RootFact(comp);
         else
-            % Reduce compartment sink for greatest of stomatal and aeration
-            % stress
-            if KsComp == AerComp
-                Sink = KsComp*SxComp(comp)*RootFact(comp);
-            else
-                Sink = min(KsComp,AerComp)*SxComp(comp)*RootFact(comp);
-            end
+            Sink = min(KsComp,AerComp)*SxComp(comp)*RootFact(comp);
         end
         
         % Limit extraction to demand
@@ -252,49 +233,6 @@ if GrowingSeason == true
         ToExtract = ToExtract-(Sink*1000*Soil.Comp.dz(comp));
         % Update actual transpiration
         TrAct = TrAct+(Sink*1000*Soil.Comp.dz(comp));
-    end
-    
-    %% Add net irrigation water requirement (if this mode is specified) %%
-    if (IrrMngt.IrrMethod == 4) && (TrPot > 0)
-        % Initialise net irrigation counter
-        IrrNet = 0;
-        % Get root zone water content
-        [~,~,~,thRZ] = AOS_RootZoneWater(Soil,Crop,NewCond);
-        % Determine critical water content for net irrigation
-        thCrit = thRZ.Wp+((IrrMngt.NetIrrSMT/100)*(thRZ.Fc-thRZ.Wp));
-        % Check if root zone water content is below net irrigation trigger
-        if thRZ.Act < thCrit
-            % Initialise layer counter
-            prelayer = 0;
-            for ii = 1:comp_sto
-                % Get soil layer
-                layeri = Soil.Comp.Layer(ii);
-                if layeri > prelayer
-                    % If in new layer, update critical water content for
-                    % net irrigation
-                    thCrit = Soil.Layer.th_wp(layeri)+((IrrMngt.NetIrrSMT/100)*...
-                        (Soil.Layer.th_fc(layeri)-Soil.Layer.th_wp(layeri)));
-                    % Update layer counter
-                    prelayer = layeri;
-                end
-                % Determine necessary change in water content in
-                % compartments to reach critical water content
-                dWC = RootFact(ii)*(thCrit-NewCond.th(ii))*1000*Soil.Comp.dz(ii);
-                % Update water content
-                NewCond.th(ii) = NewCond.th(ii)+(dWC/(1000*Soil.Comp.dz(ii)));
-                % Update net irrigation counter
-                IrrNet = IrrNet+dWC;
-            end
-        end
-        % Update net irrigation counter for the growing season
-        NewCond.IrrNetCum = NewCond.IrrNetCum+IrrNet;
-    elseif (IrrMngt.IrrMethod == 4) && (TrPot <= 0)
-        % No net irrigation as potential transpiration is zero
-        IrrNet = 0;
-    else
-        % No net irrigation as not in net irrigation mode
-        IrrNet = 0;
-        NewCond.IrrNetCum = 0;
     end
     
     %% Add any surface transpiration to root zone total %%
@@ -326,9 +264,6 @@ else
     TrAct = 0;
     TrPot0 = 0;
     TrPot_NS = 0;
-    % No irrigation if not in growing season
-    IrrNet = 0;
-    NewCond.IrrNetCum = 0;
 end
 
 %% Store potential transpiration for irrigation calculations on next day %%

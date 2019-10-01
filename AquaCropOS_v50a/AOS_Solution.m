@@ -1,15 +1,10 @@
-function [NewCond,Outputs] = AOS_Solution(WeatherStruct)
+function [NewCond,Outputs,State] = AOS_Solution(AOS_ClockStruct,...
+    AOS_InitialiseStruct,WeatherStruct,Irr)
 % Function to perform AquaCrop-OS solution for a single time step
-
-%% Define global variables %%
-global AOS_ClockStruct
-global AOS_InitialiseStruct
 
 %% Unpack structures %%
 if AOS_ClockStruct.SeasonCounter > 0 
     Crop = AOS_InitialiseStruct.Parameter.Crop.(...
-        AOS_InitialiseStruct.CropChoices{AOS_ClockStruct.SeasonCounter});
-    IrrMngt = AOS_InitialiseStruct.IrrigationManagement.(...
         AOS_InitialiseStruct.CropChoices{AOS_ClockStruct.SeasonCounter});
 end
 FieldMngt = AOS_InitialiseStruct.FieldManagement;
@@ -60,9 +55,6 @@ end
 % 1. Check for groundwater table
 NewCond = AOS_CheckGroundwaterTable(Soil,Groundwater,NewCond);
 
-% 2. Pre-irrigation %
-[NewCond,PreIrr] = AOS_PreIrrigation(Soil,Crop,IrrMngt,NewCond);
-
 % 3. Drainage
 [NewCond,DeepPerc,FluxOut] = AOS_Drainage(Soil,NewCond);
 
@@ -70,12 +62,11 @@ NewCond = AOS_CheckGroundwaterTable(Soil,Groundwater,NewCond);
 [Runoff,Infl,NewCond] = AOS_RainfallPartition(P,Soil,FieldMngt,NewCond);
 
 % 5. Irrigation
-[NewCond,Irr] = AOS_Irrigation(NewCond,IrrMngt,Crop,Soil,...
-    AOS_ClockStruct,GrowingSeason,P,Runoff);
+[NewCond,Irr] = AOS_Irrigation(NewCond,GrowingSeason,Irr);
 
 % 6. Infiltration
 [NewCond,DeepPerc,Runoff,Infl,FluxOut] = AOS_Infiltration(Soil,NewCond,Infl,...
-    Irr,IrrMngt,FieldMngt,FluxOut,DeepPerc,Runoff);
+    Irr,FieldMngt,FluxOut,DeepPerc,Runoff);
 
 % 7. Capillary rise
 [NewCond,CR] = AOS_CapillaryRise(Soil,Groundwater,NewCond,FluxOut);
@@ -93,12 +84,12 @@ NewCond = AOS_RootDevelopment(Crop,Soil,Groundwater,NewCond,GDD,GrowingSeason);
 NewCond = AOS_CanopyCover(Crop,Soil,NewCond,GDD,Et0,GrowingSeason);
 
 % 12. Soil evaporation
-[NewCond,Es,EsPot] = AOS_SoilEvaporation(Soil,Crop,IrrMngt,FieldMngt,NewCond,...
-    Et0,Infl,P,Irr,GrowingSeason);
+[NewCond,Es,EsPot] = AOS_SoilEvaporation(Soil,Crop,FieldMngt,NewCond,...
+    Et0,Infl,P,Irr,GrowingSeason,AOS_ClockStruct);
 
 % 13. Crop transpiration
-[Tr,TrPot_NS,TrPot,NewCond,IrrNet] = AOS_Transpiration(Soil,Crop,...
-    IrrMngt,NewCond,Et0,CO2,GrowingSeason);
+[Tr,TrPot_NS,TrPot,NewCond] = AOS_Transpiration(Soil,Crop,...
+    NewCond,Et0,CO2,GrowingSeason);
 
 % 14. Groundwater inflow
 [NewCond,GwIn] = AOS_GroundwaterInflow(Soil,NewCond);
@@ -131,24 +122,18 @@ end
 % 19. Root zone water
 [Wr,~,~,~] = AOS_RootZoneWater(Soil,Crop,NewCond);
 
-% 20. Update net irrigation to add any pre irrigation
-IrrNet = IrrNet+PreIrr;
-NewCond.IrrNetCum = NewCond.IrrNetCum+PreIrr;
-    
+% 20. Output current state
+State = struct();
+State.Ksw = AOS_OutputWaterStress(Crop,Soil,NewCond,Et0);
+State.CC = NewCond.CC;
+
 %% Update model outputs %%
 Outputs = AOS_InitialiseStruct.Outputs;
 row_day = AOS_ClockStruct.TimeStepCounter;
 row_gs = AOS_ClockStruct.SeasonCounter;
 % Irrigation
-if IrrMngt.IrrMethod == 4
-    % Net irrigation
-    IrrDay = IrrNet;
-    IrrTot = NewCond.IrrNetCum;
-else
-    % Irrigation
-    IrrDay = Irr;
-    IrrTot = NewCond.IrrCum;
-end
+IrrDay = Irr;
+IrrTot = NewCond.IrrCum;
 % Water contents
 Outputs.WaterContents(row_day,4:end) = [AOS_ClockStruct.TimeStepCounter,...
     GrowingSeason,NewCond.th];

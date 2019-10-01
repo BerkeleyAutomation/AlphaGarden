@@ -1,9 +1,6 @@
 function [InitCondStruct] = AOS_ReadModelInitialConditions(ParamStruct,...
-    GwStruct,FieldMngtStruct,CropChoices,FileLocation)
+    GwStruct,FieldMngtStruct,CropChoices,FileLocation,AOS_ClockStruct)
 % Function to set up initial model conditions
-
-%% Declare global variables %%
-global AOS_ClockStruct
 
 %% Define initial conditions %%
 InitCondStruct = struct();

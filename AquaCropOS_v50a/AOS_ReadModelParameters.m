@@ -1,8 +1,6 @@
-function [ParamStruct,CropChoices,FileLocation] = AOS_ReadModelParameters(FileLocation)
+function [ParamStruct,CropChoices,FileLocation,AOS_ClockStruct] = AOS_ReadModelParameters(FileLocation,...
+    AOS_ClockStruct)
 % Function to read input files and initialise soil and crop parameters
-
-%% Define global variables %% 
-global AOS_ClockStruct
 
 %% Read input file location %%
 Location = FileLocation.Input;

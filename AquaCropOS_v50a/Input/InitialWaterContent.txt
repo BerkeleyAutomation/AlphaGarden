@@ -6,4 +6,4 @@ Layer
 %% Number of input points (NOTE: Must be at least one point per soil layer) %%
 1
 %% Input data points (Depth/Layer   Value) %%
-1	FC
+1	WP

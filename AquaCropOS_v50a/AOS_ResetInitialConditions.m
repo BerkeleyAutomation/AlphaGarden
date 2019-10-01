@@ -1,10 +1,7 @@
-function [] = AOS_ResetInitialConditions()
+function [AOS_InitialiseStruct] = AOS_ResetInitialConditions(AOS_InitialiseStruct,...
+    AOS_ClockStruct)
 % Function to reset initial model conditions for start of growing
 % season (when running model over multiple seasons)
-
-%% Declare global variables %%
-global AOS_InitialiseStruct
-global AOS_ClockStruct
 
 %% Extract crop type %%
 CropType = AOS_InitialiseStruct.CropChoices{AOS_ClockStruct.SeasonCounter};

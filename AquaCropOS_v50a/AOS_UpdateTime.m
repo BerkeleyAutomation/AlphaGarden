@@ -1,9 +1,6 @@
-function [] = AOS_UpdateTime()
+function [AOS_ClockStruct,AOS_InitialiseStruct] = AOS_UpdateTime(AOS_ClockStruct,...
+    AOS_InitialiseStruct)
 % Function to update current time in model
-
-%% Define global variables %%
-global AOS_ClockStruct
-global AOS_InitialiseStruct
 
 %% Update time %%
 if AOS_ClockStruct.ModelTermination == false
@@ -26,7 +23,8 @@ if AOS_ClockStruct.ModelTermination == false
             AOS_ClockStruct.StepEndTime = ...
                 AOS_ClockStruct.TimeSpan(AOS_ClockStruct.TimeStepCounter+1);
             % Reset initial conditions for start of growing season
-            AOS_ResetInitialConditions();
+            AOS_InitialiseStruct = AOS_ResetInitialConditions(AOS_InitialiseStruct,...
+                AOS_ClockStruct);
         end
     else
         % Simulation considers off-season, so progress by one time-step
@@ -43,11 +41,12 @@ if AOS_ClockStruct.ModelTermination == false
         if AOS_ClockStruct.SeasonCounter < AOS_ClockStruct.nSeasons
             % Check if upcoming day is the start of a new growing season
             if AOS_ClockStruct.StepStartTime == ...
-                    AOS_ClockStruct.PlantingDate(AOS_ClockStruct.SeasonCounter+1);
+                    AOS_ClockStruct.PlantingDate(AOS_ClockStruct.SeasonCounter+1)
                 % Update growing season counter
                 AOS_ClockStruct.SeasonCounter = AOS_ClockStruct.SeasonCounter+1;
                 % Reset initial conditions for start of growing season
-                AOS_ResetInitialConditions();
+                AOS_InitialiseStruct = AOS_ResetInitialConditions(AOS_InitialiseStruct,...
+                	AOS_ClockStruct);
             end
         end
     end

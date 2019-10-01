@@ -1,5 +1,5 @@
 function [ParamStruct] = AOS_ComputeVariables(ParamStruct,Weather,...
-    ClockStruct,GwStruct,CropChoices,FileLocation)
+    ClockStruct,GwStruct,CropChoices,FileLocation,AOS_ClockStruct)
 % Function to compute additional variables needed to run AOS
 
 %% Compute water contents and saturated hydraulic conductivity %%
@@ -220,7 +220,7 @@ for ii = 1:nCrops
     % Crop calendar
     ParamStruct.Crop.(CropNames{ii}) =...
         AOS_ComputeCropCalendar(ParamStruct.Crop.(CropNames{ii}),CropNames{ii},...
-        CropChoices,Weather);
+        CropChoices,Weather,AOS_ClockStruct);
 
     % Harvest index growth coefficient
     ParamStruct.Crop.(CropNames{ii}).HIGC =...

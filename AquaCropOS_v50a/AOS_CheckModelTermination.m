@@ -1,9 +1,6 @@
-function [] = AOS_CheckModelTermination()
+function [AOS_ClockStruct,AOS_InitialiseStruct] = AOS_CheckModelTermination(AOS_ClockStruct,...
+    AOS_InitialiseStruct)
 % Function to check and declare model termination
-
-%% Define global variables %%
-global AOS_ClockStruct
-global AOS_InitialiseStruct
 
 %% Check if current time-step is the last
 CurrentTime = AOS_ClockStruct.StepEndTime;

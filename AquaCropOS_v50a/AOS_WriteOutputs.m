@@ -1,9 +1,5 @@
-function [] = AOS_WriteOutputs()
+function [] = AOS_WriteOutputs(AOS_ClockStruct,AOS_InitialiseStruct)
 % Function to write output files 
-
-%% Define global variables %%
-global AOS_ClockStruct
-global AOS_InitialiseStruct
 
 %% Define output file location and name %%
 FileLoc = AOS_InitialiseStruct.FileLocation.Output;

@@ -1,10 +1,10 @@
 %% ---------- Irrigation management parameters for AquaCropOS ---------- %%
 %% Irrigation time-series filename %%
 IrrigationSchedule.txt
-%% Irrigation method (0: Rainfed; 1: Soil moisture based; 2: Fixed interval; 3: Specified time series; 4: Net calculation) %%
+%% Irrigation method (0: Rainfed; 1: Soil moisture based; 2: Fixed interval; 3: Specified time series; 4: Net calculation; 5: Adaptive irrigation control) %%
 IrrMethod : 1
 %% Irrigation interval in days (only used if IrrMethod = 2) %%
-IrrInterval : 3
+IrrInterval : 10
 %% Soil moisture target in FAO56 growth stage one (% of total PAW below which irrigation is triggered) %%
 SMT1 : 70
 %% Soil moisture target in FAO56 growth stage two (% of total PAW below which irrigation is triggered) %%

@@ -1,4 +1,4 @@
 %% Enter Location of Input files %%
-/Users/williamwong/Documents/Berkeley/Research/AquaCropOS_v50a/Input
+/Users/jensengao/Documents/autolab/SimAlphaGarden/AquaCropOS_v50a/Input
 %% Enter Location of Output files %%
-/Users/williamwong/Documents/Berkeley/Research/AquaCropOS_v50a/Output
+/Users/jensengao/Documents/autolab/SimAlphaGarden/AquaCropOS_v50a/Output

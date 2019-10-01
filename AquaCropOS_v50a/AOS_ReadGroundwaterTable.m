@@ -1,8 +1,5 @@
-function [GwStruct] = AOS_ReadGroundwaterTable(FileLocation)
+function [GwStruct] = AOS_ReadGroundwaterTable(FileLocation,AOS_ClockStruct)
 % Function to read input file and initialise groundwater table parameters
-
-%% Declare global variables %%
-global AOS_ClockStruct
 
 %% Read input file location %%
 Location = FileLocation.Input;

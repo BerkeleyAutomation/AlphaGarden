@@ -1,9 +1,7 @@
-function [Crop] = AOS_ComputeCropCalendar(Crop,CropName,CropChoices,Weather)
+function [Crop] = AOS_ComputeCropCalendar(Crop,CropName,CropChoices,Weather,...
+    AOS_ClockStruct)
 % Function to compute additional parameters needed to define crop
 % phenological calendar
-
-%% Declare global variables %%
-global AOS_ClockStruct
 
 %% Define crop calendar mode %%
 Mode = Crop.CalendarType;

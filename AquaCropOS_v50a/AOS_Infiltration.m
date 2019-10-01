@@ -1,5 +1,5 @@
 function [NewCond,DeepPerc,RunoffTot,Infl,FluxOut] = AOS_Infiltration(Soil,...
-    InitCond,Infl,Irr,IrrMngt,FieldMngt,FluxOut,DeepPerc0,Runoff0)
+    InitCond,Infl,Irr,FieldMngt,FluxOut,DeepPerc0,Runoff0)
 % Function to infiltrate incoming water (rainfall and irrigation)
 
 %% Store initial conditions in new structure for updating %%
@@ -7,8 +7,7 @@ NewCond = InitCond;
 thnew = NewCond.th;
 
 %% Update infiltration rate for irrigation %%
-% Note: irrigation amount adjusted for specified application efficiency
-Infl = Infl+(Irr*(IrrMngt.AppEff/100));
+Infl = Infl+Irr;
 
 %% Determine surface storage (if bunds are present) %%
 if FieldMngt.Bunds == 1

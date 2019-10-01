@@ -1,9 +1,7 @@
-function [NewCond,EsAct,EsPot] = AOS_SoilEvaporation(Soil,Crop,IrrMngt,...
-    FieldMngt,InitCond,Et0,Infl,Rain,Irr,GrowingSeason)
+function [NewCond,EsAct,EsPot] = AOS_SoilEvaporation(Soil,Crop,FieldMngt,...
+    InitCond,Et0,Infl,Rain,Irr,GrowingSeason,AOS_ClockStruct)
 % Function to calculate daily soil evaporation in AOS
 
-%% Declare global variables %%
-global AOS_ClockStruct
 
 %% Store initial conditions in new structure that will be updated %%
 NewCond = InitCond;
@@ -33,9 +31,9 @@ end
 
 %% Prepare soil evaporation stage 1 %%
 % Adjust water in surface evaporation layer for any infiltration
-if (Rain > 0) || ((Irr > 0) && (IrrMngt.IrrMethod~=4))
+if (Rain > 0) || ((Irr > 0))
     % Only prepare stage one when rainfall occurs, or when irrigation is
-    % trigerred (not in net irrigation mode)
+    % trigerred
     if Infl > 0
         % Update storage in surface evaporation layer for incoming
         % infiltration
@@ -99,7 +97,7 @@ else
     EsPot = Soil.Kex*Et0;
 end
 
-%% Adjust potential soil evaporation for mulches and/or partial wetting %%
+%% Adjust potential soil evaporation for mulches %%
 % Mulches
 if NewCond.SurfaceStorage < 0.000001
     if FieldMngt.Mulches == 0
@@ -120,24 +118,8 @@ else
     EsPotMul = EsPot;
 end
 
-% Partial surface wetting by irrigation
-if (Irr > 0) && (IrrMngt.IrrMethod~=4)
-    % Only apply adjustment if irrigation occurs and not in net irrigation
-    % mode
-    if (Rain > 1) || (NewCond.SurfaceStorage > 0)
-        % No adjustment for partial wetting - assume surface is fully wet
-        EsPotIrr = EsPot;
-    else
-        % Adjust for proprtion of surface area wetted by irrigation
-        EsPotIrr = EsPot*(IrrMngt.WetSurf/100);
-    end
-else
-    % No adjustment for partial surface wetting
-    EsPotIrr = EsPot;
-end
-
-% Assign minimum value (mulches and partial wetting don't combine)
-EsPot = min(EsPotIrr,EsPotMul);
+% Assign minimum value
+EsPot = min(EsPot,EsPotMul);
 
 %% Surface evaporation %%
 % Initialise actual evaporation counter
