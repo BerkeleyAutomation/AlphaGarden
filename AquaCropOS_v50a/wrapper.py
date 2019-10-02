@@ -1,6 +1,6 @@
 import matlab.engine
 import time
-import json
+import simplejson as json
 import pathlib
 
 '''
@@ -64,6 +64,34 @@ def initialize_structs(eng):
     return clock_struct, initialize_struct
 
 '''
+    Writes clock and initialize structs to json files.
+'''
+def write_structs(clock_struct, initialize_struct):
+    pathlib.Path('Wrapper_Inputs').mkdir(parents=True, exist_ok=True) 
+    # Overwrite existing structs
+    f = open('Wrapper_Inputs/clock_struct.json', 'w')
+    f.write(json.dumps(clock_struct))
+    f.close()
+
+    f = open('Wrapper_Inputs/initialize_struct.json', 'w')
+    f.write(json.dumps(initialize_struct))
+    f.close()
+
+'''
+    Reads existing clock and initialize structs.
+
+    Outputs;
+    clock_struct = previous clock struct
+    initialize_struct = previoous initialize struct
+'''
+def read_structs():
+    with open('Wrapper_Inputs/clock_struct.json') as f_in:
+       clock_struct = json.load(f_in)
+    with open('Wrapper_Inputs/initialize_struct.json') as f_in:
+       initialize_struct = json.load(f_in)
+    return clock_struct, initialize_struct
+
+'''
     Writes states and irrigation amounts array to an output file.
     Will create Wrapper_Outputs directory in current directory if one does not exist.
 
@@ -73,19 +101,15 @@ def initialize_structs(eng):
 '''
 def write_outputs(states, irrAmounts):
     pathlib.Path('Wrapper_Outputs').mkdir(parents=True, exist_ok=True) 
-    filename = "Wrapper_Outputs/" + time.strftime("%Y-%m-%d-%H-%M-%S") + ".json"
-    f = open(filename, "w")
+    filename = 'Wrapper_Outputs/' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.json'
+    f = open(filename, 'w')
     f.write(json.dumps({'irrAmounts': irrAmounts, 'states': states}))
     f.close()
 
-    #open and read the file after the appending:
-    f = open(filename, "r")
-    print(f.read())
-
 if __name__ == '__main__':
     eng = matlab.engine.start_matlab()
-    clock_struct, initialize_structs = initialize_structs(eng)
+    clock_struct, initialize_struct = initialize_structs(eng)
     irrAmounts = [i for i in range(10)]
-    clock_struct, initialize_structs, states = multiple_runs(eng, clock_struct, initialize_structs, irrAmounts, 10)
+    clock_struct, initialize_struct, states = multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, 10)
     # Write outputs
     write_outputs(states, irrAmounts)
