@@ -1,25 +1,25 @@
 import matlab.engine
 import time
-import simplejson as json
+import json
 import pathlib
 
 '''
-    Performs multiple timesteps of the simulator at different irrigationo levels.
-    
-    Will error if the number of timesteps exceeds the number of timesteps left
-    in the simulator.
+Performs multiple timesteps of the simulator at different irrigation levels.
 
-    Inputs:
-        eng - matlab.engine object
-        irrAmounts - a (1, timesteps) length array of irrigation amounts.
-                    The nth amount corresponds to nth timestemp.
-        clock_struct - clock struct of first timestep
-        initialize_struct - initialize struct of first timestep
-        timesteps - the number of timesteps to perform
-    Outputs:
-        c_struct - clock struct after all timesteps
-        i_struct - initialize struct after all timesteps
-        states - output states at every timestep
+Will error if the number of timesteps exceeds the number of timesteps left
+in the simulator.
+
+Inputs:
+    eng - matlab.engine object
+    irrAmounts - a (1, timesteps) length array of irrigation amounts.
+                The nth amount corresponds to nth timestemp.
+    clock_struct - clock struct of first timestep
+    initialize_struct - initialize struct of first timestep
+    timesteps - the number of timesteps to perform
+Outputs:
+    c_struct - clock struct after all timesteps
+    i_struct - initialize struct after all timesteps
+    states - output states at every timestep
 '''
 def multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, timesteps):
     c_struct = clock_struct
@@ -33,31 +33,31 @@ def multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, timesteps):
     return c_struct, i_struct, states
 
 '''
-    Performs one timestep of the simulator.
-    Creates a clock struct and initialize struct from AOS_Initialize.
+Performs one timestep of the simulator.
+Creates a clock struct and initialize struct from AOS_Initialize.
 
-    Inputs:
-        eng - matlab.engine object
-        irrAmount - irrigation amoung
-        clock_struct - initial clock struct
-        initialize_struct - initial initialize struct
-    Outputs:
-        c_struct - updated clock struct
-        i_struct - update initialize struct
-        state - state of crop field including canopy cover and water stress level
+Inputs:
+    eng - matlab.engine object
+    irrAmount - irrigation amoung
+    clock_struct - initial clock struct
+    initialize_struct - initial initialize struct
+Outputs:
+    c_struct - updated clock struct
+    i_struct - update initialize struct
+    state - state of crop field including canopy cover and water stress level
 ''' 
 def single_run(eng, clock_struct, initialize_struct, irrAmount):
     c_struct, i_struct, state = eng.AOS_PerformUpdate(clock_struct, initialize_struct, irrAmount, nargout=3)
     return c_struct, i_struct, state
 
 '''
-    Initializes structs according to initial configuration input files.
+Initializes structs according to initial configuration input files.
 
-    Inputs:
-        eng - matlab.engine oobject
-    Outputs:
-        clock_struct - initial clock struct
-        initialize_struct - initial initialize struct
+Inputs:
+    eng - matlab.engine object
+Outputs:
+    clock_struct - initial clock struct
+    initialize_struct - initial initialize struct
 '''
 def initialize_structs(eng):
     clock_struct, initialize_struct = eng.AOS_Initialize(nargout=2)
@@ -78,11 +78,11 @@ def write_structs(clock_struct, initialize_struct):
     f.close()
 
 '''
-    Reads existing clock and initialize structs.
+Reads existing clock and initialize structs.
 
-    Outputs;
+Outputs;
     clock_struct = previous clock struct
-    initialize_struct = previoous initialize struct
+    initialize_struct = previous initialize struct
 '''
 def read_structs():
     with open('Wrapper_Inputs/clock_struct.json') as f_in:
@@ -92,10 +92,10 @@ def read_structs():
     return clock_struct, initialize_struct
 
 '''
-    Writes states and irrigation amounts array to an output file.
-    Will create Wrapper_Outputs directory in current directory if one does not exist.
+Writes states and irrigation amounts array to an output file.
+Will create Wrapper_Outputs directory in current directory if one does not exist.
 
-    Inputs:
+Inputs:
     states - obtained from runs
     irrAmounts - irrigation amounts where the nth amouht corresponds to the nth state
 '''
