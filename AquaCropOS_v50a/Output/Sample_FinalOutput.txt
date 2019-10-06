@@ -1,2 +1,1 @@
 GSeason	Crop	PlantD	PlantSD	HarvestCD	HarvestSD	Yield	TotIrr	
-   1	Maize	01/05/1982	       1	23/10/1982	     176	13.53	1760.00	
