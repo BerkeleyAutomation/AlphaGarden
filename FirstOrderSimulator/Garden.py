@@ -23,10 +23,13 @@ class Garden:
 
     # Updates plants after one timestep, returns map of plant locations to their radius
     # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, irrigations, light_amount):
+    def perform_timestep(self, light_amount, uniform_irrigation=False, water_amount=0, irrigations=None):
         # updates resource levels
-        for irrigation in irrigations:
-            self.irrigate(irrigation[0], irrigation[1])
+        if uniform_irrigation:
+            self.reset_water(water_amount)
+        else:
+            for irrigation in irrigations:
+                self.irrigate(irrigation[0], irrigation[1])
         self.reset_light(light_amount)
 
         # updates plants in random order (order affects resource allocation)
@@ -35,7 +38,7 @@ class Garden:
         for location in locations:
             self.grow_plant(self.plants[location], location)
 
-        return self.get_growth_map()
+        return self.get_plants()
 
     # Updates water levels in resource grid in response to irrigation, location is (x, y) tuple
     def irrigate(self, location, amount):
@@ -49,6 +52,10 @@ class Garden:
 
                 # updates water level in resource grid
                 self.resource_grid[i,j,0] += amount * np.exp(-self.water_spread * dist)
+
+    # Resets all water resource levels to the same amount
+    def reset_water(self, amount):
+        self.resource_grid[:,:,0] = amount
 
     # Resets all light resource levels to the same amount
     def reset_light(self, amount):
@@ -64,9 +71,14 @@ class Garden:
                 grid_y = (j + 0.5) * self.step
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
+                # resource demand increases as plant grows
+                growth_factor = plant.max_radius / (plant.radius + 0.01 * plant.max_radius)
+                water_demand = growth_factor * plant.water_demand
+                light_demand = growth_factor * plant.light_demand
+
                 # calculates resources drawn, updates plant and cell resource levels
-                water_drawn = self.resource_grid[i,j,0] * np.exp(-plant.water_demand * dist)
-                light_drawn = self.resource_grid[i,j,1] * np.exp(-plant.light_demand * dist)
+                water_drawn = self.resource_grid[i,j,0] * np.exp(-water_demand * dist)
+                light_drawn = self.resource_grid[i,j,1] * np.exp(-light_demand * dist)
                 plant.water += water_drawn
                 plant.light += light_drawn
                 self.resource_grid[i,j,0] -= water_drawn
@@ -76,7 +88,8 @@ class Garden:
         scaled_resources = -plant.water_growth * plant.water + -plant.light_growth * plant.light
 
         # growth calculated as logistic function of resources, with Gaussian noise
-        new_radius = np.random.normal(plant.max_radius / (1 + np.exp(scaled_resources)), plant.growth_variation_std)
+        #new_radius = np.random.normal(plant.max_radius / (1 + np.exp(scaled_resources)), plant.growth_variation_std)
+        new_radius = plant.max_radius / (1 + np.exp(scaled_resources))
 
         # limit growth to boundaries of garden
         limit = min(location[0], location[1], (self.step * self.resource_grid.shape[0]) - location[0],
@@ -92,6 +105,6 @@ class Garden:
     def remove_plant(self, location):
         self.plants.pop(location, None)
 
-    # Returns map of plant locations to their radius
-    def get_growth_map(self):
-        return {location: plant.radius for location, plant in self.plants.items()}
+    # Returns map of locations to plants
+    def get_plants(self):
+        return self.plants

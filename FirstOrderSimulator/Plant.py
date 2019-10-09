@@ -3,13 +3,13 @@ import numpy as np
 
 class Plant:
 
-    def __init__(self, water_demand=1, light_demand=1, water_growth=0.01, light_growth=0.01, max_radius=5,
-                 max_biomass=100, growth_variation_std=0.1):
-        # resource demand parameters
+    def __init__(self, water_demand=10, light_demand=10, water_growth=0.01, light_growth=0.01, max_radius=10,
+                 max_biomass=100, growth_variation_std=0.1, color = 'g'):
+        # resource demand parameters (positive number, lower is increased demand)
         self.water_demand = water_demand
         self.light_demand = light_demand
 
-        # parameters for how resource levels affect plant growth
+        # parameters for how resource levels affect plant growth (positive number, higher is faster growth)
         self.water_growth = water_growth
         self.light_growth = light_growth
 
@@ -27,6 +27,9 @@ class Plant:
         # TODO: potentially change growth model to depend on daily resources, to account for effect of excess resources
         self.water = 0
         self.light = 0
+
+        # color of plant when plotted
+        self.color = color
 
     def get_plant_area(self):
         return np.pi * (self.radius ** 2)
