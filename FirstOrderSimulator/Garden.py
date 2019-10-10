@@ -21,6 +21,7 @@ class Garden:
         # parameter for how much water spreads throughout soil after irrigation
         self.water_spread = water_spread
 
+
     # Updates plants after one timestep, returns map of plant locations to their radius
     # irrigations is list of (location, amount) tuples
     def perform_timestep(self, light_amount, uniform_irrigation=False, water_amount=0, irrigations=None):
@@ -85,16 +86,17 @@ class Garden:
                 self.resource_grid[i,j,1] -= light_drawn
 
         # linear combination of resources
-        scaled_resources = -plant.water_growth * plant.water + -plant.light_growth * plant.light
+        scaled_resources = plant.water_growth * plant.water + plant.light_growth * plant.light
 
         # growth calculated as logistic function of resources, with Gaussian noise
         #new_radius = np.random.normal(plant.max_radius / (1 + np.exp(scaled_resources)), plant.growth_variation_std)
-        new_radius = plant.max_radius / (1 + np.exp(scaled_resources))
+        new_radius = plant.max_radius / (1 + np.exp(-(scaled_resources - plant.resource_midpoint)))
 
         # limit growth to boundaries of garden
-        limit = min(location[0], location[1], (self.step * self.resource_grid.shape[0]) - location[0],
-                    (self.step * self.resource_grid.shape[1]) - location[1])
-        plant.radius = min(new_radius, limit)
+        # limit = min(location[0], location[1], (self.step * self.resource_grid.shape[0]) - location[0],
+                    #(self.step * self.resource_grid.shape[1]) - location[1])
+        # plant.radius = min(new_radius, limit)
+        plant.radius = new_radius
 
     # Adds plant at location if there is not one already there, does nothing otherwise
     def add_plant(self, plant, location):
