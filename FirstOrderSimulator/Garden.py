@@ -21,7 +21,6 @@ class Garden:
         # parameter for how much water spreads throughout soil after irrigation
         self.water_spread = water_spread
 
-
     # Updates plants after one timestep, returns map of plant locations to their radius
     # irrigations is list of (location, amount) tuples
     def perform_timestep(self, light_amount, uniform_irrigation=False, water_amount=0, irrigations=None):
@@ -73,13 +72,12 @@ class Garden:
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # resource demand increases as plant grows
-                growth_factor = plant.max_radius / (plant.radius + 0.01 * plant.max_radius)
-                water_demand = growth_factor * plant.water_demand
-                light_demand = growth_factor * plant.light_demand
+                # water_demand = growth_factor * plant.water_demand
+                # light_demand = growth_factor * plant.light_demand
 
                 # calculates resources drawn, updates plant and cell resource levels
-                water_drawn = self.resource_grid[i,j,0] * np.exp(-water_demand * dist)
-                light_drawn = self.resource_grid[i,j,1] * np.exp(-light_demand * dist)
+                water_drawn = self.resource_grid[i,j,0] * np.exp(-plant.water_demand * dist)
+                light_drawn = self.resource_grid[i,j,1] * np.exp(-plant.light_demand * dist)
                 plant.water += water_drawn
                 plant.light += light_drawn
                 self.resource_grid[i,j,0] -= water_drawn
