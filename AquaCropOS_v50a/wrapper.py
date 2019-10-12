@@ -107,9 +107,16 @@ def write_outputs(states, irrAmounts):
     f.close()
 
 if __name__ == '__main__':
+    begin = time.clock()
     eng = matlab.engine.start_matlab()
+    print(time.clock() - begin)
+    start = time.clock()
     clock_struct, initialize_struct = initialize_structs(eng)
-    irrAmounts = [i for i in range(10)]
-    clock_struct, initialize_struct, states = multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, 10)
+    irrAmounts = [i for i in range(100)]
+    clock_struct, initialize_struct, states = multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, 100)
+    elapsed = (time.clock() - start)
+    print("Time used:", elapsed)
     # Write outputs
     write_outputs(states, irrAmounts)
+    elapsed = (time.clock() - begin)
+    print("Time final:", elapsed)
