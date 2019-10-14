@@ -3,35 +3,6 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 import numpy as np
 
-MAX_HORIZON = 1e10
-
-# class SimAlphaGarden(object):
-#     '''
-#     An environment wrapper for the SimAlphaGarden gym environment.
-
-#     Takes in a python wrapper for a simulator to execute actions and receive states.
-#     '''
-#     def __init__(self, wrapper, start_state_fn=None, horizon=MAX_HORIZON, debug=False):
-#         self.wrapper = wrapper
-#         self.start_state_fn = start_state_fn
-#         self.horizon = horizon
-#         self.reset()
-#         if self.horizon >= MAX_HORIZON and self.state.order_list is None and debug:
-#             print('Environment has (near-)infinite horizon and no terminal states')
-
-#     '''Performs a farming action, updating the environment state and providing a reward.'''
-#     def step(self, action):
-#         assert not self.is_done()
-
-#     '''Whether the episode is oover.'''
-#     def is_done(self):
-#         return self.t >= self.horizon or self.wrapper.is_terminal(self.state)
-
-#     '''Resets the environment.'''
-#     def reset():
-#         self.t = 0
-
-
 class SimAlphaGardenEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
@@ -42,7 +13,7 @@ class SimAlphaGardenEnv(gym.Env):
         # Reward ranges from 0 to 1 representing canopy cover percentage.
         self.reward_range = (0.0, 1.0)
         # Action of the format Irrigation x
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Discrete(100)
         # Observations include canopy cover, stomata water stress level
         self.observation_space = spaces.Box(low=0, high=1, shape=(2, 2), dtype=np.float16)
         self.reset()

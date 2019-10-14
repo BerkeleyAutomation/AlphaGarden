@@ -47,18 +47,8 @@ class AquaCropOSWrapper(object):
         state - state of crop field including canopy cover and water stress level
     ''' 
     def single_run(self, irrAmount):
-        # print(irrAmount)
         self.clock_struct, self.initialize_struct, state = self.eng.AOS_PerformUpdate(self.clock_struct, self.initialize_struct, irrAmount, nargout=3)
-        # print(state)
-        # print(self.initialize_struct)
-        # self.clock_struct = c_struct
-        # self.initialize_struct = i_struct
-        # print("Soil", len(self.initialize_struct['Parameter']['Soil']))
-        # print("FieldMngt", len(self.initialize_struct['FieldManagement']))
-        # print("Crop", len(self.initialize_struct['Parameter']['Crop']))
-        # print("Groundwater", len(self.initialize_struct['Groundwater']))
         self.state = np.array([state['CC'], state['Ksw']['Sto']])
-        # print(self.state)
         return state
 
     '''
@@ -126,7 +116,7 @@ class AquaCropOSWrapper(object):
     '''
     def _take_action(self, action):
         # Convert numpy.int64 to native int.
-        self.single_run(action.item()*100)
+        self.single_run(action.item())
         return self.state
 
     '''
