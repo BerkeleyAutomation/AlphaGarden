@@ -72,29 +72,29 @@ class Garden:
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # resource demand increases as plant grows
-                growth_factor = plant.max_radius / (plant.radius + 0.01 * plant.max_radius)
-                water_demand = growth_factor * plant.water_demand
-                light_demand = growth_factor * plant.light_demand
+                # water_demand = growth_factor * plant.water_demand
+                # light_demand = growth_factor * plant.light_demand
 
                 # calculates resources drawn, updates plant and cell resource levels
-                water_drawn = self.resource_grid[i,j,0] * np.exp(-water_demand * dist)
-                light_drawn = self.resource_grid[i,j,1] * np.exp(-light_demand * dist)
+                water_drawn = self.resource_grid[i,j,0] * np.exp(-plant.water_demand * dist)
+                light_drawn = self.resource_grid[i,j,1] * np.exp(-plant.light_demand * dist)
                 plant.water += water_drawn
                 plant.light += light_drawn
                 self.resource_grid[i,j,0] -= water_drawn
                 self.resource_grid[i,j,1] -= light_drawn
 
         # linear combination of resources
-        scaled_resources = -plant.water_growth * plant.water + -plant.light_growth * plant.light
+        scaled_resources = plant.water_growth * plant.water + plant.light_growth * plant.light
 
         # growth calculated as logistic function of resources, with Gaussian noise
         #new_radius = np.random.normal(plant.max_radius / (1 + np.exp(scaled_resources)), plant.growth_variation_std)
-        new_radius = plant.max_radius / (1 + np.exp(scaled_resources))
+        new_radius = plant.max_radius / (1 + np.exp(-(scaled_resources - plant.resource_midpoint)))
 
         # limit growth to boundaries of garden
-        limit = min(location[0], location[1], (self.step * self.resource_grid.shape[0]) - location[0],
-                    (self.step * self.resource_grid.shape[1]) - location[1])
-        plant.radius = min(new_radius, limit)
+        # limit = min(location[0], location[1], (self.step * self.resource_grid.shape[0]) - location[0],
+                    #(self.step * self.resource_grid.shape[1]) - location[1])
+        # plant.radius = min(new_radius, limit)
+        plant.radius = new_radius
 
     # Adds plant at location if there is not one already there, does nothing otherwise
     def add_plant(self, plant, location):

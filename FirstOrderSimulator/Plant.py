@@ -3,15 +3,18 @@ import numpy as np
 
 class Plant:
 
-    def __init__(self, water_demand=10, light_demand=10, water_growth=0.01, light_growth=0.01, max_radius=10,
-                 max_biomass=100, growth_variation_std=0.1, color = 'g'):
+    def __init__(self, water_demand=0.1, light_demand=0.1, water_growth=0.005, light_growth=0.005, resource_midpoint=1,
+                 max_radius=10, max_biomass=100, growth_variation_std=0.1, color = 'g'):
         # resource demand parameters (positive number, lower is increased demand)
         self.water_demand = water_demand
         self.light_demand = light_demand
 
-        # parameters for how resource levels affect plant growth (positive number, higher is faster growth)
+        # parameters for how resource levels affect plant growth (positive number, higher is steeper growth)
         self.water_growth = water_growth
         self.light_growth = light_growth
+
+        # parameter for how much resources needed to achieve 50% growth
+        self.resource_midpoint = resource_midpoint
 
         # maximum possible dimensions that plant can grow to
         self.max_radius = max_radius
