@@ -233,11 +233,11 @@ if ToExtract > 0
         % Get water storage (mm) when there is no evaporation
         Wlower = Wevap.Dry;
         % Get relative depletion of evaporation storage in stage 2
-        Wrel = (Wevap.Act-Wlower)/(Wupper-Wlower);
+        Wrel = (Wevap.Act-Wlower)./(Wupper-Wlower);
         % Check if need to expand evaporation layer
         if Soil.EvapZmax > Soil.EvapZmin
             Wcheck = Soil.fWrelExp*((Soil.EvapZmax-NewCond.EvapZ)/(Soil.EvapZmax-Soil.EvapZmin));
-            while (Wrel < Wcheck) && (NewCond.EvapZ < Soil.EvapZmax)
+            while (Wrel < Wcheck) & (NewCond.EvapZ < Soil.EvapZmax)
                 % Expand evaporation layer by 1 mm
                 NewCond.EvapZ = NewCond.EvapZ+0.001;
                 % Update water storage (mm) in evaporation layer
@@ -260,7 +260,7 @@ if ToExtract > 0
         % Extract water from compartments
         comp_sto = sum(Soil.Comp.dzsum<NewCond.EvapZ)+1;
         comp = 0;     
-        while (ToExtractStg2 > 0) && (comp < comp_sto)
+        while (ToExtractStg2 > 0) & (comp < comp_sto)
             % Increment compartment counter
             comp = comp+1;
             % Specify layer number
