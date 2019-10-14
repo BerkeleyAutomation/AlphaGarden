@@ -1,1 +1,1 @@
-from simalphagarden.envs.simalphagarden_env import SimAlphaGardenEnv
+from simalphagarden.envs.lqr_env import LqrEnv

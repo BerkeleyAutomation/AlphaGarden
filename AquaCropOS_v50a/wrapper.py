@@ -9,14 +9,14 @@ Performs multiple timesteps of the simulator at different irrigation levels.
 Will error if the number of timesteps exceeds the number of timesteps left
 in the simulator.
 
-Inputs:
+Parameters:
     eng - matlab.engine object
     irrAmounts - a (1, timesteps) length array of irrigation amounts.
                 The nth amount corresponds to nth timestemp.
     clock_struct - clock struct of first timestep
     initialize_struct - initialize struct of first timestep
     timesteps - the number of timesteps to perform
-Outputs:
+Returns:
     c_struct - clock struct after all timesteps
     i_struct - initialize struct after all timesteps
     states - output states at every timestep
@@ -36,12 +36,12 @@ def multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, timesteps):
 Performs one timestep of the simulator.
 Creates a clock struct and initialize struct from AOS_Initialize.
 
-Inputs:
+Parameters:
     eng - matlab.engine object
     irrAmount - irrigation amoung
     clock_struct - initial clock struct
     initialize_struct - initial initialize struct
-Outputs:
+Returns:
     c_struct - updated clock struct
     i_struct - update initialize struct
     state - state of crop field including canopy cover and water stress level
@@ -53,9 +53,9 @@ def single_run(eng, clock_struct, initialize_struct, irrAmount):
 '''
 Initializes structs according to initial configuration input files.
 
-Inputs:
+Parameters:
     eng - matlab.engine object
-Outputs:
+Returns:
     clock_struct - initial clock struct
     initialize_struct - initial initialize struct
 '''
@@ -67,56 +67,50 @@ def initialize_structs(eng):
     Writes clock and initialize structs to json files.
 '''
 def write_structs(clock_struct, initialize_struct):
-    pathlib.Path('Wrapper_Inputs').mkdir(parents=True, exist_ok=True) 
+    pathlib.Path('Wrapper_Parameters').mkdir(parents=True, exist_ok=True) 
     # Overwrite existing structs
-    f = open('Wrapper_Inputs/clock_struct.json', 'w')
+    f = open('Wrapper_Parameters/clock_struct.json', 'w')
     f.write(json.dumps(clock_struct))
     f.close()
 
-    f = open('Wrapper_Inputs/initialize_struct.json', 'w')
+    f = open('Wrapper_Parameters/initialize_struct.json', 'w')
     f.write(json.dumps(initialize_struct))
     f.close()
 
 '''
 Reads existing clock and initialize structs.
 
-Outputs;
+Returns;
     clock_struct = previous clock struct
     initialize_struct = previous initialize struct
 '''
 def read_structs():
-    with open('Wrapper_Inputs/clock_struct.json') as f_in:
+    with open('Wrapper_Parameters/clock_struct.json') as f_in:
        clock_struct = json.load(f_in)
-    with open('Wrapper_Inputs/initialize_struct.json') as f_in:
+    with open('Wrapper_Parameters/initialize_struct.json') as f_in:
        initialize_struct = json.load(f_in)
     return clock_struct, initialize_struct
 
 '''
 Writes states and irrigation amounts array to an output file.
-Will create Wrapper_Outputs directory in current directory if one does not exist.
+Will create Wrapper_Returns directory in current directory if one does not exist.
 
-Inputs:
+Parameters:
     states - obtained from runs
     irrAmounts - irrigation amounts where the nth amouht corresponds to the nth state
 '''
-def write_outputs(states, irrAmounts):
-    pathlib.Path('Wrapper_Outputs').mkdir(parents=True, exist_ok=True) 
-    filename = 'Wrapper_Outputs/' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.json'
+def write_Returns(states, irrAmounts):
+    pathlib.Path('Wrapper_Returns').mkdir(parents=True, exist_ok=True) 
+    filename = 'Wrapper_Returns/' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.json'
     f = open(filename, 'w')
     f.write(json.dumps({'irrAmounts': irrAmounts, 'states': states}))
     f.close()
 
 if __name__ == '__main__':
-    begin = time.clock()
     eng = matlab.engine.start_matlab()
-    print(time.clock() - begin)
-    start = time.clock()
+
     clock_struct, initialize_struct = initialize_structs(eng)
     irrAmounts = [i for i in range(100)]
     clock_struct, initialize_struct, states = multiple_runs(eng, clock_struct, initialize_struct, irrAmounts, 100)
-    elapsed = (time.clock() - start)
-    print("Time used:", elapsed)
-    # Write outputs
-    write_outputs(states, irrAmounts)
-    elapsed = (time.clock() - begin)
-    print("Time final:", elapsed)
+
+    write_Returns(states, irrAmounts)
