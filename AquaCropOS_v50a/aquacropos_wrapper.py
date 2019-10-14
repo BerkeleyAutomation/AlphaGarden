@@ -7,12 +7,10 @@ import numpy as np
 class AquaCropOSWrapper(object):
     def __init__(self):
         self.eng = matlab.engine.start_matlab()
-        clock_struct, initialize_struct = self.initialize_structs()
-        self.clock_struct = clock_struct
-        self.initialize_struct = initialize_struct
+        self.initialize_structs()
         # Determined by Inputs/Clock.txt duration
         self.max_time_steps = 182
-        self.state = np.array([0, 0])
+        self.state = np.zeros(2)
 
     '''
     Performs multiple timesteps of the simulator at different irrigation levels.
@@ -36,8 +34,7 @@ class AquaCropOSWrapper(object):
         for i in range(timesteps):
             if 'ModelTermination' in self.clock_struct and self.clock_struct['ModelTermination'] == True:
                 raise Exception('Number of timesteps exceeds simulator limit.')
-            c_struct, i_struct, state = self.single_run(irrAmounts[i])
-            states.append(state)
+            states.append(self.single_run(irrAmounts[i]))
         return c_struct, i_struct, states
 
     '''
@@ -47,16 +44,22 @@ class AquaCropOSWrapper(object):
     Parameters:
         irrAmount - irrigation amoung
     Returns:
-        c_struct - updated clock struct
-        i_struct - update initialize struct
         state - state of crop field including canopy cover and water stress level
     ''' 
     def single_run(self, irrAmount):
-        c_struct, i_struct, state = self.eng.AOS_PerformUpdate(self.clock_struct, self.initialize_struct, irrAmount, nargout=3)
-        self.clock_struct = c_struct
-        self.initialize_struct = i_struct
-        self.state = state
-        return c_struct, i_struct, state
+        # print(irrAmount)
+        self.clock_struct, self.initialize_struct, state = self.eng.AOS_PerformUpdate(self.clock_struct, self.initialize_struct, irrAmount, nargout=3)
+        # print(state)
+        # print(self.initialize_struct)
+        # self.clock_struct = c_struct
+        # self.initialize_struct = i_struct
+        # print("Soil", len(self.initialize_struct['Parameter']['Soil']))
+        # print("FieldMngt", len(self.initialize_struct['FieldManagement']))
+        # print("Crop", len(self.initialize_struct['Parameter']['Crop']))
+        # print("Groundwater", len(self.initialize_struct['Groundwater']))
+        self.state = np.array([state['CC'], state['Ksw']['Sto']])
+        # print(self.state)
+        return state
 
     '''
     Initializes structs according to initial configuration input files.
@@ -67,7 +70,8 @@ class AquaCropOSWrapper(object):
     '''
     def initialize_structs(self):
         clock_struct, initialize_struct = self.eng.AOS_Initialize(nargout=2)
-        return clock_struct, initialize_struct
+        self.clock_struct = clock_struct
+        self.initialize_struct = initialize_struct
 
     '''
         Writes clock and initialize structs to json files.
@@ -116,10 +120,17 @@ class AquaCropOSWrapper(object):
     Method called by the gym environment to execute an action.
 
     Parameters:
-        action - irrigation amount to apply
+        action - irrigation amount to apply.  Type: np.int64
     Returns:
         state - state of the environment after irrigation
     '''
     def _take_action(self, action):
-        self.single_run(action)
+        # Convert numpy.int64 to native int.
+        self.single_run(action.item()*100)
         return self.state
+
+    '''
+    Method called by the gym enviroonment to reset the simulator.
+    '''
+    def reset(self):
+        self.initialize_structs()

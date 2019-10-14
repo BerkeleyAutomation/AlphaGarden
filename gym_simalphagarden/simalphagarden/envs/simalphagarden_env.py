@@ -42,9 +42,10 @@ class SimAlphaGardenEnv(gym.Env):
         # Reward ranges from 0 to 1 representing canopy cover percentage.
         self.reward_range = (0.0, 1.0)
         # Action of the format Irrigation x
-        self.action_space = spaces.Box(low=np.array([0]), high=np.array([100]), dtype=np.int32)
-        # Observations include canopy cover, water stress level
+        self.action_space = spaces.Discrete(2)
+        # Observations include canopy cover, stomata water stress level
         self.observation_space = spaces.Box(low=0, high=1, shape=(2, 2), dtype=np.float16)
+        self.reset()
 
     def _next_observation(self):
         return np.array([self.canopy_cover, self.water_stress])
@@ -67,6 +68,7 @@ class SimAlphaGardenEnv(gym.Env):
         self.canopy_cover = 0
         self.water_stress = 0
         self.current_step = 0
+        self.wrapper_env.reset()
         return self._next_observation()
 
     def render(self, mode='human', close=False):
