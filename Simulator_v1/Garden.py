@@ -71,10 +71,6 @@ class Garden:
                 grid_y = (j + 0.5) * self.step
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
-                # resource demand increases as plant grows
-                # water_demand = growth_factor * plant.water_demand
-                # light_demand = growth_factor * plant.light_demand
-
                 # calculates resources drawn, updates plant and cell resource levels
                 water_drawn = self.resource_grid[i,j,0] * np.exp(-plant.water_demand * dist)
                 light_drawn = self.resource_grid[i,j,1] * np.exp(-plant.light_demand * dist)

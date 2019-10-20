@@ -41,11 +41,9 @@ def run_simulation():
     # creates garden, runs simulation for NUM_TIMESTEPS timesteps, creates circles to plot
     garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, WATER_SPREAD)
     frames = []
-    #print(list(plants.values())[0].radius)
     for _ in range(NUM_TIMESTEPS):
         plants = garden.perform_timestep(light_amount=DAILY_LIGHT, uniform_irrigation=True, water_amount=DAILY_WATER)
         plots = []
-        #print(list(plants.values())[0].radius)
         for location, plant in plants.items():
             circle = plt.Circle(location, plant.radius, color=plant.color)
             circleplot = ax.add_artist(circle)
