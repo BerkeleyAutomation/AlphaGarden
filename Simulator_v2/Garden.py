@@ -1,5 +1,6 @@
 import numpy as np
-
+from Logger import Logger, Event
+from Plant import Plant
 
 class Garden:
 
@@ -24,9 +25,13 @@ class Garden:
         self.curr_id = 0
         for plant in plants:
             self.add_plant(plant)
-        print(self.plants)
+
+        self.control_plant = Plant(0, 0, color='red')
+
+        self.logger = Logger()
 
     def add_plant(self, plant):
+        plant.id = self.curr_id
         self.plants[self.curr_id] = plant
         self.curr_id += 1
         self.grid[plant.row, plant.col]['nearby'].add(plant)
@@ -38,7 +43,24 @@ class Garden:
         self.distribute_light(light_amt)
         self.distribute_water()
         self.grow_plants()
+        self.grow_control_plant()
+
         return self.plants.values()
+
+    def grow_control_plant(self):
+        cp = self.control_plant
+        cp.num_sunlight_points = cp.num_grid_points = ((cp.radius // self.step * self.step) * 2 + 1) ** 2
+        cp.water_amt = cp.desired_water_amt()
+        self.logger.log(Event.WATER_REQUIRED, "Control", cp.water_amt)
+
+        upward, outward = cp.amount_to_grow()
+        cp.height += upward
+        cp.radius += outward
+
+        self.logger.log(Event.WATER_ABSORBED, "Control", cp.water_amt)
+        self.logger.log(Event.RADIUS_UPDATED, "Control", cp.radius)
+        self.logger.log(Event.HEIGHT_UPDATED, "Control", cp.height)
+        cp.reset()
 
     # Resets all water resource levels to the same amount
     def reset_water(self, water_amt):
@@ -56,6 +78,10 @@ class Garden:
                 tallest.add_sunlight_point()
 
     def distribute_water(self):
+        # Log desired water levels of each plant before distributing
+        for plant in self.plants.values():
+            self.logger.log(Event.WATER_REQUIRED, plant.id, plant.desired_water_amt())
+
         for point in self.enumerate_grid():
             if point['nearby']:
                 plants = list(point['nearby'])
@@ -67,9 +93,10 @@ class Garden:
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
-                    water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
-                    plant.water_amt += water_to_absorb
-                    point['water'] -= water_to_absorb
+                    if plant.num_sunlight_points > 0:
+                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
+                        plant.water_amt += water_to_absorb
+                        point['water'] -= water_to_absorb
 
                     plants.pop(i)
 
@@ -84,6 +111,10 @@ class Garden:
             plant.radius += outward
             if prev_radius < next_line_dist and plant.radius >= next_line_dist:
                 self.update_plant_coverage(plant, int(next_step))
+
+            self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
+            self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
+            self.logger.log(Event.HEIGHT_UPDATED, plant.id, plant.height)
             plant.reset()
 
     def update_plant_coverage(self, plant, next_step):
