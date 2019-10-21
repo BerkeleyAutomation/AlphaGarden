@@ -2,20 +2,23 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 import numpy as np
+import configparser
 
 class SimAlphaGardenEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, wrapper_env):
+    def __init__(self, wrapper_env, config_file):
         super(SimAlphaGardenEnv, self).__init__()
         self.wrapper_env = wrapper_env
         self.max_time_steps = self.wrapper_env.max_time_steps
+        config = configparser.ConfigParser()
+        config.read(config_file)
         # Reward ranges from 0 to 1 representing canopy cover percentage.
-        self.reward_range = (0.0, 1.0)
+        self.reward_range = (config.getfloat('reward', 'low'), config.getfloat('reward', 'high'))
         # Action of the format Irrigation x
-        self.action_space = spaces.Discrete(100)
+        self.action_space = spaces.Discrete(config.getint('action', 'range'))
         # Observations include canopy cover, stomata water stress level
-        self.observation_space = spaces.Box(low=0, high=1, shape=(2, 2), dtype=np.float16)
+        self.observation_space = spaces.Box(low=config.getint('obs', 'low'), high=config.getint('obs', 'high'), shape=(config.getint('obs', 'shape_x'), config.getint('obs', 'shape_y')), dtype=np.float16)
         self.reset()
 
     def _next_observation(self):
