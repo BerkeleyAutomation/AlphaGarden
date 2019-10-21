@@ -3,8 +3,8 @@ import numpy as np
 
 class Garden:
 
-    def __init__(self, plants=None, N=50, M=50, step=1):
-        # dictionary with (x, y) coordinate tuples as keys, plants as values
+    def __init__(self, plants=[], N=50, M=50, step=1):
+        # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
         # Structured array of gridpoints. Each point contains its water levels
@@ -21,25 +21,24 @@ class Garden:
         self.step = step
 
         # Add initial plants to grid
-        if plants:
-            for pos, plant in plants.items():
-                self.add_plant(pos, plant)
+        self.curr_id = 0
+        for plant in plants:
+            self.add_plant(plant)
+        print(self.plants)
 
-    def add_plant(self, pos, plant):
-        if pos in self.plants:
-            print(f"[Warning] Tried to add a plant to {pos}, but there was already one in that spot")
-        else:
-            self.plants[pos] = plant
-            self.grid[pos[0], pos[1]]['nearby'].add(plant)
+    def add_plant(self, plant):
+        self.plants[self.curr_id] = plant
+        self.curr_id += 1
+        self.grid[plant.row, plant.col]['nearby'].add(plant)
 
-    # Updates plants after one timestep, returns map of plant locations to their radius
+    # Updates plants after one timestep, returns list of plant objects
     def perform_timestep(self, light_amt, water_amt):
         self.reset_water(water_amt)
 
         self.distribute_light(light_amt)
         self.distribute_water()
         self.grow_plants()
-        return self.plants
+        return self.plants.values()
 
     # Resets all water resource levels to the same amount
     def reset_water(self, water_amt):
@@ -69,15 +68,13 @@ class Garden:
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
                     water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
-                    print(plant.desired_water_amt())
                     plant.water_amt += water_to_absorb
                     point['water'] -= water_to_absorb
 
-                    print(f"Gave {water_to_absorb} water")
                     plants.pop(i)
 
     def grow_plants(self):
-        for pos, plant in self.plants.items():
+        for plant in self.plants.values():
             next_step = plant.radius // self.step + 1
             next_line_dist = next_step * self.step
 
@@ -86,11 +83,11 @@ class Garden:
             plant.height += upward
             plant.radius += outward
             if prev_radius < next_line_dist and plant.radius >= next_line_dist:
-                self.update_plant_coverage(plant, pos, int(next_step))
+                self.update_plant_coverage(plant, int(next_step))
             plant.reset()
 
-    def update_plant_coverage(self, plant, pos, next_step):
-        row, col = pos
+    def update_plant_coverage(self, plant, next_step):
+        row, col = plant.row, plant.col
         start_row, end_row = max(row - next_step, 0), min(row + next_step, self.grid.shape[0] - 1)
         start_col, end_col = max(col - next_step, 0), min(col + next_step, self.grid.shape[1] - 1)
         for col in range(start_col, end_col + 1):

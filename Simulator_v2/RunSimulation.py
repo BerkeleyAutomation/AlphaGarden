@@ -11,19 +11,19 @@ NUM_Y_STEPS = 50
 STEP = 1
 DAILY_LIGHT = 1
 DAILY_WATER = 1
-PLANTS_PER_COLOR = 5
+PLANTS_PER_COLOR = 1
 PLANT_COLORS = [(.49, .99, 0), (.13, .55, .13), (0, .39, 0)]
 
 # Creates different color plants in random locations
 def get_random_plants():
-    # plants = {}
-    # for c in PLANT_COLORS:
-    #     x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
-    #     y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
-    #     locations = np.hstack((x_locations, y_locations))
-    #     plants.update({tuple(location): Plant(color=c) for location in locations})
-    # return plants
-    return {(30, 30): Plant(), (32, 32): Plant(), (10, 10): Plant(), (40, 10): Plant(), (39, 12): Plant(), (38, 10): Plant()}
+    plants = []
+    for c in PLANT_COLORS:
+        x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
+        y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
+        locations = np.hstack((x_locations, y_locations))
+        plants.extend([Plant(row, col, color=c) for row, col in locations])
+    return plants
+    # return {(30, 30): Plant(), (32, 32): Plant(), (10, 10): Plant(), (40, 10): Plant(), (39, 12): Plant(), (38, 10): Plant()}
 
 # Test run of simulation
 def run_simulation():
@@ -47,15 +47,11 @@ def run_simulation():
     # creates garden, runs simulation for NUM_TIMESTEPS timesteps, creates circles to plot
     garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP)
     frames = []
-    r_vals = {coord: [] for coord in plants}
-    print('starting!')
     for _ in range(NUM_TIMESTEPS):
         plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=DAILY_WATER)
         plots = []
-        for coord, plant in plants.items():
-            # print(plant)
-            r_vals[coord] += [plant.radius]
-            circle = plt.Circle(coord * STEP, plant.radius, color=plant.color)
+        for plant in plants:
+            circle = plt.Circle((plant.row, plant.col) * STEP, plant.radius, color=plant.color)
             circleplot = ax.add_artist(circle)
             plots.append(circleplot)
         frames.append(plots)

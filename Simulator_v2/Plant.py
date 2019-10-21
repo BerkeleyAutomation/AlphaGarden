@@ -1,6 +1,9 @@
 class Plant:
 
-    def __init__(self, c1=0.05, c2=0.05, k1=0.1, k2=0.9, max_radius=7, color='g'):
+    def __init__(self, row, col, c1=0.05, c2=0.05, k1=0.1, k2=0.9, max_radius=7, color='g'):
+        # coordinates of plant
+        self.row = row
+        self.col = col
 
         # growth state of plant
         self.radius = 0
@@ -36,7 +39,6 @@ class Plant:
 
     def desired_water_amt(self):
         max_water = self.c2 / self.c1 * self.num_sunlight_points
-        print("max water:", max_water)
         return max_water - self.water_amt
 
     def amount_to_grow(self):
