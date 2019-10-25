@@ -12,27 +12,37 @@ NUM_X_STEPS = 50
 NUM_Y_STEPS = 50
 STEP = 1
 DAILY_LIGHT = 1
-DAILY_WATER = 5
+DAILY_WATER = 1
 PLANTS_PER_COLOR = 3
 PLANT_COLORS = [(.49, .99, 0), (.13, .55, .13), (0, .39, 0), (0, .65, .15)]
 
+PLANT_PRESETS = {
+    "control-and-3": {
+        "seed": 38572912,
+        "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'), Plant(40, 40, color='c')]
+    },
+    "random": {
+        "seed": None,
+        "plants": lambda: get_random_plants()
+    }
+}
 # Creates different color plants in random locations
 def get_random_plants():
-    # np.random.seed(28506631)
-    # plants = []
-    # for c in PLANT_COLORS:
-    #     x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
-    #     y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
-    #     locations = np.hstack((x_locations, y_locations))
-    #     plants.extend([Plant(row, col, color=c) for row, col in locations])
-    # return plants
-    np.random.seed(38572912)
-    return [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'), Plant(40, 40, color='c')]
+    np.random.seed(28506631)
+    plants = []
+    for c in PLANT_COLORS:
+        x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
+        y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
+        locations = np.hstack((x_locations, y_locations))
+        plants.extend([Plant(row, col, color=c) for row, col in locations])
+    return plants
 
 # Test run of simulation
 def run_simulation(args):
-    # np.random.seed(38572912)
-    plants = get_random_plants()
+    preset = PLANT_PRESETS[args.setup]
+    if preset["seed"]:
+        np.random.seed(preset["seed"])
+    plants = preset["plants"]()
 
     # Sets up figure
     fig, ax = plt.subplots()
@@ -77,6 +87,7 @@ def run_simulation(args):
 
 def get_parsed_args():
     parser = argparse.ArgumentParser(description='Run the garden simulation.')
+    parser.add_argument('--setup', type=str, default='random', help='Which plant setup to use. (`random` will place plants randomly across the garden.)')
     parser.add_argument('--display', type=str, help='[a|p] Whether to show full animation [a] or just plots of plant behaviors [p]')
     return parser.parse_args()
 
