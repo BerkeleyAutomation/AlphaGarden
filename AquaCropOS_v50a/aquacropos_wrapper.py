@@ -3,13 +3,13 @@ import time
 import json
 import pathlib
 import numpy as np
+import wrapperenv
 
-class AquaCropOSWrapper(object):
+class AquaCropOSWrapper(wrapperenv.WrapperEnv):
     def __init__(self):
+        super(AquaCropOSWrapper, self).__init__(max_time_steps=182)
         self.eng = matlab.engine.start_matlab()
         self.initialize_structs()
-        # Determined by Inputs/Clock.txt duration
-        self.max_time_steps = 182
         self.state = np.zeros(2)
 
     '''
@@ -48,7 +48,7 @@ class AquaCropOSWrapper(object):
     ''' 
     def single_run(self, irrAmount):
         self.clock_struct, self.initialize_struct, state = self.eng.AOS_PerformUpdate(self.clock_struct, self.initialize_struct, irrAmount, nargout=3)
-        self.state = np.array([state['CC'], state['Ksw']['Sto']])
+        self.state = np.array([state['CC'], state['Ksw']['Exp']])
         return state
 
     '''
@@ -114,8 +114,14 @@ class AquaCropOSWrapper(object):
     Returns:
         state - state of the environment after irrigation
     '''
-    def _take_action(self, action):
+    def take_action(self, current_step, action):
         # Convert numpy.int64 to native int.
+        # if current_step % 5 != 0:
+
+        #     self.single_run(0)
+        # else:
+        #     print(action.item())
+            # self.single_run(action.item())
         self.single_run(action.item())
         return self.state
 

@@ -22,6 +22,7 @@ class SimAlphaGardenEnv(gym.Env):
         self.reset()
 
     def _next_observation(self):
+        #TODO: generalize this more to inherit from the wrapper
         return np.array([self.canopy_cover, self.water_stress])
 
     def _take_action(self, action):
@@ -30,6 +31,7 @@ class SimAlphaGardenEnv(gym.Env):
         self.water_stress = water_stress
 
     def step(self, action):
+        # TODO: Figure out how to take an action every few days: ie. advance the time step a number of days
         #Execute one time step within the environment
         self._take_action(action)
         self.current_step += 1

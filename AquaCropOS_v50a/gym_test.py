@@ -11,7 +11,17 @@ import pathlib
 env = gym.make('simalphagarden-v0', wrapper_env=AquaCropOSWrapper(), config_file='config/aquacropos_config.ini')
 env = DummyVecEnv([lambda: env])
 
+#TODO: 1st step is to make the environment
+
 model = PPO2(MlpPolicy, env, verbose=1)
+#TODO:
+# learning rate, more batches
+# tensorboard
+# access how reward changed over time from the learned model
+# crank up learning rate until reward starts looooking fuzzy, access gpus
+# higher batch size = higher learning rate it can sustain
+    # try different optimal learning rate and batch size pairs
+# put hyperparameters in config file
 model.learn(total_timesteps=20000)
 model.save("ppo2_simalphagarden")
 
@@ -29,6 +39,7 @@ model.save("ppo2_simalphagarden")
 #     e['action'].append(action.item())
 #     env.render()
 #   done = False
+
 #   pathlib.Path('PPO_Returns').mkdir(parents=True, exist_ok=True) 
 #   filename = 'PPO_Returns/predict_' + str(i) + '.json'
 #   f = open(filename, 'w')
