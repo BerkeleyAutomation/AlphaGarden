@@ -126,7 +126,7 @@ class AquaCropOSWrapper(wrapperenv.WrapperEnv):
         return self.state
 
     '''
-    Method called by the gym enviroonment to reset the simulator.
+    Method called by the gym environment to reset the simulator.
     '''
     def reset(self):
         self.initialize_structs()
