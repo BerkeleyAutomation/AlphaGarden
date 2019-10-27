@@ -13,10 +13,10 @@ class Garden:
         # First dimension is horizontal, second is vertical.
         self.grid = np.empty((N, M), dtype=[('water', 'f'), ('nearby', 'O')])
 
-        # initializes empty sets in grid
+        # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
-                self.grid[i,j]['nearby'] = set()
+                self.grid[i,j]['nearby'] = []
 
         # distance between adjacent points in grid
         self.step = step
@@ -34,7 +34,7 @@ class Garden:
         plant.id = self.curr_id
         self.plants[self.curr_id] = plant
         self.curr_id += 1
-        self.grid[plant.row, plant.col]['nearby'].add(plant)
+        self.grid[plant.row, plant.col]['nearby'].append(plant)
 
     # Updates plants after one timestep, returns list of plant objects
     def perform_timestep(self, light_amt, water_amt):
@@ -85,6 +85,7 @@ class Garden:
         for point in self.enumerate_grid():
             if point['nearby']:
                 plants = list(point['nearby'])
+
                 while point['water'] > 0 and plants:
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plants)))
@@ -97,6 +98,7 @@ class Garden:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
                         point['water'] -= water_to_absorb
+                        # print(f"Giving {water_to_absorb} water to plant {plant.id} -- desired {plant.desired_water_amt()}, {plant.num_grid_points} grid pts, total water {point['water'] + water_to_absorb}")
 
                     plants.pop(i)
 
@@ -122,11 +124,11 @@ class Garden:
         start_row, end_row = max(row - next_step, 0), min(row + next_step, self.grid.shape[0] - 1)
         start_col, end_col = max(col - next_step, 0), min(col + next_step, self.grid.shape[1] - 1)
         for col in range(start_col, end_col + 1):
-            self.grid[start_row, col]['nearby'].add(plant)
-            self.grid[end_row, col]['nearby'].add(plant)
-        for row in range(start_row, end_row + 1):
-            self.grid[row, start_col]['nearby'].add(plant)
-            self.grid[row, end_col]['nearby'].add(plant)
+            self.grid[start_row, col]['nearby'].append(plant)
+            self.grid[end_row, col]['nearby'].append(plant)
+        for row in range(start_row + 1, end_row):
+            self.grid[row, start_col]['nearby'].append(plant)
+            self.grid[row, end_col]['nearby'].append(plant)
 
         plant.num_grid_points += next_step * 8
 
