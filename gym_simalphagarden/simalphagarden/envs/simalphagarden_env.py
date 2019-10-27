@@ -26,7 +26,7 @@ class SimAlphaGardenEnv(gym.Env):
         return np.array([self.canopy_cover, self.water_stress])
 
     def _take_action(self, action):
-        canopy_cover, water_stress = self.wrapper_env._take_action(action)
+        canopy_cover, water_stress = self.wrapper_env.take_action(self.current_step, action)
         self.canopy_cover = canopy_cover
         self.water_stress = water_stress
 

@@ -8,5 +8,4 @@ setup(name='simalphagarden',
 
 setup(name='wrapperenv',
       version='0.0.1',
-      install_requires=[
-      ])
+      )
