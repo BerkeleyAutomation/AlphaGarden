@@ -33,23 +33,20 @@ Create your config file with the following structure. An example can be found [h
 
 ```
 [reward]
-// the lowest value a reward can take
-low = float value
-// the highest reward value
-high = float value
+# the lowest/highest value a reward can take
+low = <float> 
+high = <float> 
 
 [action]
-// actions are discrete numbers from [0, n) with n specified below
-range = int value
+# actions are discrete numbers from [0, n) with n specified below
+range = <int> 
 
 [obs]
-// the lowest value an observation can have
-low = float value
-// the highest observation value
-high = float value
-// currently, only supports 2 observations. TODO: modify the environment to support more
+# the lowest/highest value an observation can have
+low = <float>
+high = <float>
+# currently, only supports 2 observations. TODO: modify the environment to support more
 shape_x = 2
-// same as above
 shape_y = 2
 ```
 
