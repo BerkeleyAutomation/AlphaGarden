@@ -1,6 +1,6 @@
 class Plant:
 
-    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=30, color='g'):
+    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=30, color='g', plant_type='basil'):
         self.id = None
 
         # coordinates of plant
@@ -33,6 +33,9 @@ class Plant:
         # color of plant when plotted
         self.color = color
 
+        # plant species (for visualization purposes)
+        self.type = plant_type
+    
     def add_sunlight_point(self):
         self.num_sunlight_points += 1
         if self.num_sunlight_points > self.num_grid_points:

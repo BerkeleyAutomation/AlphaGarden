@@ -5,6 +5,7 @@ import itertools
 from Garden import Garden
 from Plant import Plant
 from Logger import Event
+from utils import export_results
 import argparse
 
 NUM_TIMESTEPS = 40
@@ -26,6 +27,10 @@ and a dictionary of setup params as the value. Setup params must at minimum incl
 - A FUNCTION that returns a list of initial plants (so we don't create all the plants unnecessarily)
 """
 PLANT_PRESETS = {
+    "single-plant": {
+        "seed": 12345,
+        "plants": lambda: [Plant(20, 20, color='g')]
+    },
     "control-and-3": {
         "seed": 38572912,
         "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'), Plant(40, 40, color='c')]
@@ -110,10 +115,14 @@ def run_simulation(args):
         plt.show()
         growth_animation.save('simulation.mp4')
 
+    if args.export:
+        export_results(plants, garden.logger, args.export)
+
 def get_parsed_args():
     parser = argparse.ArgumentParser(description='Run the garden simulation.')
     parser.add_argument('--setup', type=str, default='random', help='Which plant setup to use. (`random` will place plants randomly across the garden.)')
     parser.add_argument('--display', type=str, help='[a|p] Whether to show full animation [a] or just plots of plant behaviors [p]')
+    parser.add_argument('--export', type=str, help='Name of file to save results to (if "none", will not save results)')
     return parser.parse_args()
 
 args = get_parsed_args()
