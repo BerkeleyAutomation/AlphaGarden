@@ -13,28 +13,51 @@ NUM_Y_STEPS = 50
 STEP = 1
 DAILY_LIGHT = 1
 DAILY_WATER = 1
-PLANTS_PER_COLOR = 3
-PLANT_COLORS = [(.49, .99, 0), (.13, .55, .13), (0, .39, 0), (0, .65, .15)]
+PLANTS_PER_COLOR = 4
+PLANT_TYPES = [((.49, .99, 0), (0.1, 30)), ((.13, .55, .13), (0.11, 30)), ((0, .39, 0), (0.13, 18))]
 
+"""
+Preset values for plant parameters and locations, for convenience when testing.
+To do a non-deterministic simulation setup, use the `random` preset.
+
+Each preset has a name as the key (used as the command line argument for --setup when running the simulator),
+and a dictionary of setup params as the value. Setup params must at minimum include:
+- A seed to allow deterministic runs (or None if randomness is desired)
+- A FUNCTION that returns a list of initial plants (so we don't create all the plants unnecessarily)
+"""
 PLANT_PRESETS = {
     "control-and-3": {
         "seed": 38572912,
         "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'), Plant(40, 40, color='c')]
+    },
+    "greedy-plant-limited": {
+        "seed": 6937103,
+        "plants": lambda: [Plant(30, 30, color='b'), Plant(31, 31, color='r', c2=2, growth_time=15)]
+    },
+    "greedy-plant-fulfilled": {
+        "seed": 6937103,
+        "daily-water": 2,
+        "plants": lambda: [Plant(30, 30, color='b'), Plant(31, 31, color='r', c2=2, growth_time=9)]
+    },
+    "faster-plant": {
+        "seed": 76721,
+        "plants": lambda: [Plant(25, 25, color='g'), Plant(26, 26, color='tab:orange', c1=0.15, growth_time=15), Plant(25, 29, color='c')]
     },
     "random": {
         "seed": None,
         "plants": lambda: get_random_plants()
     }
 }
+
 # Creates different color plants in random locations
 def get_random_plants():
-    np.random.seed(28506631)
+    np.random.seed(285631)
     plants = []
-    for c in PLANT_COLORS:
+    for color, (c1, growth_time) in PLANT_TYPES:
         x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
         y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
         locations = np.hstack((x_locations, y_locations))
-        plants.extend([Plant(row, col, color=c) for row, col in locations])
+        plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color) for row, col in locations])
     return plants
 
 # Test run of simulation
@@ -43,6 +66,8 @@ def run_simulation(args):
     if preset["seed"]:
         np.random.seed(preset["seed"])
     plants = preset["plants"]()
+
+    daily_water = preset["daily-water"] if "daily-water" in preset else DAILY_WATER
 
     # Sets up figure
     fig, ax = plt.subplots()
@@ -63,9 +88,9 @@ def run_simulation(args):
     garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP)
     frames = []
     for _ in range(NUM_TIMESTEPS):
-        plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=DAILY_WATER)
+        plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=daily_water)
         plots = []
-        for plant in sorted(plants, key=lambda plant: plant.height):
+        for plant in sorted(plants, key=lambda plant: plant.height, reverse=(args.display == 'p')):
             circle = plt.Circle((plant.row, plant.col) * STEP, plant.radius, color=plant.color)
             circleplot = ax.add_artist(circle)
             plots.append(circleplot)
@@ -76,7 +101,7 @@ def run_simulation(args):
             plt.figure()
             for plant in plants:
                 plt.plot(range(NUM_TIMESTEPS), garden.logger.get_data(event_type, plant.id), color=plant.color)
-            plt.plot(range(NUM_TIMESTEPS), garden.logger.get_data(event_type, "Control"), color='r', linestyle='--')
+            plt.plot(range(NUM_TIMESTEPS), garden.logger.get_data(event_type, "Control"), color='0.5', linestyle='--')
             plt.title(event_type.value)
         plt.show()
     else:

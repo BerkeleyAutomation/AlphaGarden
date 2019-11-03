@@ -26,7 +26,7 @@ class Garden:
         for plant in plants:
             self.add_plant(plant)
 
-        self.control_plant = Plant(0, 0, color='red')
+        self.control_plant = Plant(0, 0, color='gray')
 
         self.logger = Logger()
 
