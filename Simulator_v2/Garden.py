@@ -4,7 +4,7 @@ from Plant import Plant
 
 class Garden:
 
-    def __init__(self, plants=[], plant_types=[], N=50, M=50, step=1, spread=1):
+    def __init__(self, plants=[], N=50, M=50, step=1, spread=1, plant_types=[]):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 

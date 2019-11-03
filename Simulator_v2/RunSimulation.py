@@ -90,7 +90,7 @@ def run_simulation(args):
     ax.grid(which='major', alpha=0.5)
 
     # creates garden, runs simulation for NUM_TIMESTEPS timesteps, creates circles to plot
-    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP)
+    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil'])
     frames = []
     for _ in range(NUM_TIMESTEPS):
         plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=daily_water)
