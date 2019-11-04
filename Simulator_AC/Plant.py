@@ -1,6 +1,7 @@
+import aquacrop
 class Plant:
 
-    def __init__(self, row, col, c1=1, c2=10, k1=0.3, k2=0.7, max_radius=20, color='g'):
+    def __init__(self, row, col, c1=1, c2=10, k1=0.3, k2=0.7, max_radius=7, color='g'):
         self.id = None
 
         # coordinates of plant
