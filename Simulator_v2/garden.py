@@ -38,7 +38,7 @@ class Garden:
         epsilon = 0.01
         self.irr_threshold = int(round(-np.log(epsilon) / (spread * step)))
         print(f"THRESHOLD: {self.irr_threshold}")
-        self.irr_threshold = 3
+        self.irr_threshold = 5
 
         # Add initial plants to grid
         self.curr_id = 0
@@ -124,7 +124,6 @@ class Garden:
                         water_amt += self.grid[a, b]['water']
                 midpt = (i + step // 2, j + step // 2)
                 amounts.append((midpt, water_amt))
-        print(self.grid[20, 20]['water'])
         return amounts
 
     def enumerate_grid(self, coords=False):

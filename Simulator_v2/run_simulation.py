@@ -17,8 +17,7 @@ def run_simulation(args):
     plants = preset["plants"]()
 
     daily_water = preset["daily-water"] if "daily-water" in preset else DAILY_WATER
-    if args.irrigator in IRRIGATION_POLICIES:
-        irrigation_policy = IRRIGATION_POLICIES[args.irrigator]["policy"]()
+    irrigation_policy = IRRIGATION_POLICIES[args.irrigator]["policy"]() if args.irrigator in IRRIGATION_POLICIES else lambda _: None
 
     # Sets up figure
     fig, ax = plt.subplots()
@@ -39,7 +38,7 @@ def run_simulation(args):
     garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil'])
     frames = []
     for i in range(NUM_TIMESTEPS):
-        plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=daily_water, irrigations=irrigation_policy(i) if irrigation_policy else None)
+        plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=daily_water, irrigations=irrigation_policy(i))
         plots = []
         for plant in sorted(plants, key=lambda plant: plant.height, reverse=(args.display == 'p')):
             circle = plt.Circle((plant.row, plant.col) * STEP, plant.radius, color=plant.color)
