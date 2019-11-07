@@ -3,7 +3,7 @@ from logger import Logger, Event
 from plant import Plant
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, spread=0.5, plant_types=[], skip_initial_germination=True):
+    def __init__(self, plants=[], N=50, M=50, step=1, spread=0.5, drainage_rate=2, plant_types=[], skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -28,6 +28,9 @@ class Garden:
 
         # parameter for rate of water spread in field after irrigation
         self.spread = spread
+
+        # Drainage rate of water in soil
+        self.drainage_rate = drainage_rate
 
         # amount of grid points away from irrigation point that water will spread to
         # based on points further away receiving less than epsilon percent of irrigation amount
@@ -157,6 +160,9 @@ class Garden:
                         point['water'] -= water_to_absorb
 
                     plants.pop(i)
+
+            # Water evaporation/drainage from soil
+            point['water'] = max(0, point['water'] - self.drainage_rate)
 
     def grow_plants(self):
         for plant in self.plants.values():
