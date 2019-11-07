@@ -203,4 +203,4 @@ class Garden:
 
     def get_state(self):
         water = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack(self.plant_grid, water)
+        return np.dstack((self.plant_grid, water))
