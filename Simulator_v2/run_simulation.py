@@ -17,6 +17,8 @@ def run_simulation(args):
     plants = preset["plants"]()
 
     daily_water = preset["daily-water"] if "daily-water" in preset else DAILY_WATER
+    if args.irrigator in IRRIGATION_POLICIES:
+        irrigation_policy = IRRIGATION_POLICIES[args.irrigator]["policy"]()
 
     # Sets up figure
     fig, ax = plt.subplots()
@@ -36,11 +38,15 @@ def run_simulation(args):
     # creates garden, runs simulation for NUM_TIMESTEPS timesteps, creates circles to plot
     garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil'])
     frames = []
-    for _ in range(NUM_TIMESTEPS):
-        plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=daily_water)
+    for i in range(NUM_TIMESTEPS):
+        plants = garden.perform_timestep(light_amt=DAILY_LIGHT, water_amt=daily_water, irrigations=irrigation_policy(i) if irrigation_policy else None)
         plots = []
         for plant in sorted(plants, key=lambda plant: plant.height, reverse=(args.display == 'p')):
             circle = plt.Circle((plant.row, plant.col) * STEP, plant.radius, color=plant.color)
+            circleplot = ax.add_artist(circle)
+            plots.append(circleplot)
+        for coord, water_amt in garden.get_water_amounts():
+            circle = plt.Circle(coord * STEP, water_amt / 100, color='b', alpha=0.3)
             circleplot = ax.add_artist(circle)
             plots.append(circleplot)
         frames.append(plots)
@@ -66,6 +72,7 @@ def get_parsed_args():
     parser = argparse.ArgumentParser(description='Run the garden simulation.')
     parser.add_argument('--setup', type=str, default='random', help='Which plant setup to use. (`random` will place plants randomly across the garden.)')
     parser.add_argument('--display', type=str, help='[a|p] Whether to show full animation [a] or just plots of plant behaviors [p]')
+    parser.add_argument('--irrigator', type=str, help='[uniform|sequential] The irrigation policy to use')
     parser.add_argument('--export', type=str, help='Name of file to save results to (if "none", will not save results)')
     return parser.parse_args()
 

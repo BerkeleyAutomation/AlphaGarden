@@ -3,7 +3,7 @@ from logger import Logger, Event
 from plant import Plant
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, spread=1, plant_types=[], skip_initial_germination=True):
+    def __init__(self, plants=[], N=50, M=50, step=1, spread=0.5, plant_types=[], skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -32,8 +32,10 @@ class Garden:
         # amount of grid points away from irrigation point that water will spread to
         # based on points further away receiving less than epsilon percent of irrigation amount
         # according to exponential water spread
-        epsilon = 0.001
-        self.irr_threshold = round(-np.log(epsilon) / (spread * step))
+        epsilon = 0.01
+        self.irr_threshold = int(round(-np.log(epsilon) / (spread * step)))
+        print(f"THRESHOLD: {self.irr_threshold}")
+        self.irr_threshold = 3
 
         # Add initial plants to grid
         self.curr_id = 0
@@ -59,10 +61,13 @@ class Garden:
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=[]):
-        if uniform_irrigation:
+    def perform_timestep(self, light_amt, water_amt=0, irrigations=None):
+        if not irrigations:
+            # Default to uniform irrigation
             self.reset_water(water_amt)
         else:
+            # print("irrigating at:")
+            # print(irrigations)
             for location, amount in irrigations:
                 self.irrigate(location, amount)
 
@@ -103,12 +108,26 @@ class Garden:
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # updates water level in resource grid
-                self.grid[i,j]['water'] += amount * np.exp(-self.spread * dist)
+                # print(i, j)
+                self.grid[i,j]['water'] += amount
 
-    def enumerate_grid(self):
-        for i in range(len(self.grid)):
+    def get_water_amounts(self, step=5):
+        amounts = []
+        for i in range(0, len(self.grid), step):
+            for j in range(0, len(self.grid[i]), step):
+                water_amt = 0
+                for a in range(i, i+step):
+                    for b in range(j, j+step):
+                        water_amt += self.grid[a, b]['water']
+                midpt = (i + step // 2, j + step // 2)
+                amounts.append((midpt, water_amt))
+        print(self.grid[20, 20]['water'])
+        return amounts
+
+    def enumerate_grid(self, coords=False):
+        for i in range(0, len(self.grid)):
             for j in range(len(self.grid[i])):
-                yield self.grid[i, j]
+                yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
 
     def distribute_light(self, light_amt):
         for point in self.enumerate_grid():
