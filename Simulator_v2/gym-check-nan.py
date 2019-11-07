@@ -15,7 +15,7 @@ import pathlib
 
 #TODO extract plants to wrapper
 import numpy as np
-from Plant import Plant
+from plant import Plant
 
 NUM_TIMESTEPS = 40
 NUM_X_STEPS = 50

@@ -1,5 +1,5 @@
 from wrapperenv import WrapperEnv
-from Garden import Garden
+from garden import Garden
 import numpy as np
 
 class SimAlphaGardenWrapper(WrapperEnv):
@@ -41,4 +41,4 @@ class SimAlphaGardenWrapper(WrapperEnv):
     Method called by the gym environment to reset the simulator.
     '''
     def reset(self):
-        self.garden = Garden(self.plants, self.N, self.M, self.step, self.spread, self.plant_types)
+        self.garden = Garden(plants=self.plants, N=self.N, M=self.M, step=self.step, spread=self.spread, plant_types=self.plant_types)

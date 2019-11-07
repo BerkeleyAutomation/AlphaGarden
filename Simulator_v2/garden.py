@@ -7,6 +7,9 @@ class Garden:
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
+        self.N = N
+        self.M = M
+
         # list of plant types the garden will support
         self.plant_types = plant_types
 
@@ -72,8 +75,10 @@ class Garden:
         if uniform_irrigation:
             self.reset_water(water_amt)
         else:
-            for pair in zip(self.locations, irrigations):
-                self.irrigate(pair[0], pair[1])
+            for i in range(len(irrigations)):
+                location = (i / self.N, i % self.M)
+                print(location)
+                # self.irrigate(loc, irrigations[i])
 
         self.distribute_light(light_amt)
         self.distribute_water()
@@ -112,8 +117,8 @@ class Garden:
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # updates water level in resource grid
-                # print(i, j)
-                self.grid[i,j]['water'] += amount
+                # print(location, amount)
+                self.grid[i,j]['water'] += dist
 
     def get_water_amounts(self, step=5):
         amounts = []
