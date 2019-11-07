@@ -47,7 +47,7 @@ PLANT_PRESETS = {
 
 IRRIGATION_POLICIES = {
     "sequential": {
-        "policy": lambda: _make_sequential_irrigator(5, 10, 30)
+        "policy": lambda: _make_sequential_irrigator(10, 10, 30)
     }
 }
 
@@ -66,7 +66,7 @@ def _make_sequential_irrigator(grid_step, amount, shift):
 # Creates different color plants in random locations
 def _get_random_plants():
     PLANTS_PER_COLOR = 4
-    PLANT_TYPES = [((.49, .99, 0), (0.1, 30)), ((.13, .55, .13), (0.11, 30)), ((0, .39, 0), (0.13, 18))]
+    PLANT_TYPES = [((.49, .99, 0), (0.1, 25)), ((.13, .55, .13), (0.11, 25)), ((0, .39, 0), (0.13, 15))]
 
     np.random.seed(285631)
     plants = []
