@@ -2,7 +2,6 @@ import numpy as np
 from logger import Logger, Event
 from plant import Plant
 
-
 class Garden:
     def __init__(self, plants=[], N=50, M=50, step=1, spread=1, plant_types=[], skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
@@ -60,12 +59,12 @@ class Garden:
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=False):
+    def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=[]):
         if uniform_irrigation:
             self.reset_water(water_amt)
         else:
-            for irrigation in irrigations:
-                self.irrigate(irrigation)
+            for location, amount in irrigations:
+                self.irrigate(location, amount)
 
         self.distribute_light(light_amt)
         self.distribute_water()
@@ -95,9 +94,9 @@ class Garden:
 
     # Updates water levels in grid in response to irrigation, location is (x, y) tuple
     def irrigate(self, location, amount):
-        closest_x, closest_y = round(location[0] / step), round(location[1] / step)
-        for i in range(max(0, closest_x - irr_threshold), min(self.grid.shape[0], closest_x + irr_threshold + 1)):
-            for j in range(max(0, closest_y - irr_threshold), min(self.grid.shape[1], closest_y + irr_threshold + 1)):
+        closest_x, closest_y = round(location[0] / self.step), round(location[1] / self.step)
+        for i in range(max(0, closest_x - self.irr_threshold), min(self.grid.shape[0], closest_x + self.irr_threshold + 1)):
+            for j in range(max(0, closest_y - self.irr_threshold), min(self.grid.shape[1], closest_y + self.irr_threshold + 1)):
                 # calculates distance from irrigation location to center of resource cell
                 grid_x = i * self.step
                 grid_y = j * self.step
