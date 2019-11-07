@@ -202,4 +202,5 @@ class Garden:
         plant.num_grid_points += next_step * 8
 
     def get_state(self):
-        return np.concatenate((self.grid['water'], self.plant_grid), axis=None)
+        water = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack(self.plant_grid, water)
