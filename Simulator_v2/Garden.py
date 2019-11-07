@@ -2,6 +2,7 @@ import numpy as np
 from logger import Logger, Event
 from plant import Plant
 
+
 class Garden:
 
     def __init__(self, plants=[], N=50, M=50, step=1):
@@ -16,7 +17,7 @@ class Garden:
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
-                self.grid[i,j]['nearby'] = []
+                self.grid[i, j]['nearby'] = []
 
         # distance between adjacent points in grid
         self.step = step
@@ -31,10 +32,13 @@ class Garden:
         self.logger = Logger()
 
     def add_plant(self, plant):
-        plant.id = self.curr_id
-        self.plants[self.curr_id] = plant
-        self.curr_id += 1
-        self.grid[plant.row, plant.col]['nearby'].append(plant)
+        if (plant.row, plant.col) in self.plants:
+            print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
+        else:
+            plant.id = self.curr_id
+            self.plants[plant.row, plant.col] = plant
+            self.curr_id += 1
+            self.grid[plant.row, plant.col]['nearby'].append(plant)
 
     # Updates plants after one timestep, returns list of plant objects
     def perform_timestep(self, light_amt, water_amt):
@@ -90,7 +94,6 @@ class Garden:
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plants)))
                     plant = plants[i]
-                    # print(f"Giving water to {plant}")
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
@@ -98,7 +101,6 @@ class Garden:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
                         point['water'] -= water_to_absorb
-                        # print(f"Giving {water_to_absorb} water to plant {plant.id} -- desired {plant.desired_water_amt()}, {plant.num_grid_points} grid pts, total water {point['water'] + water_to_absorb}")
 
                     plants.pop(i)
 
@@ -131,5 +133,3 @@ class Garden:
             self.grid[row, end_col]['nearby'].append(plant)
 
         plant.num_grid_points += next_step * 8
-
-    
