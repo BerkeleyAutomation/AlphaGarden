@@ -1,4 +1,4 @@
-from Logger import Logger, Event
+from logger import Logger, Event
 import json
 import time 
 

@@ -1,6 +1,6 @@
 import numpy as np
-from Logger import Logger, Event
-from Plant import Plant
+from logger import Logger, Event
+from plant import Plant
 
 class Garden:
 
