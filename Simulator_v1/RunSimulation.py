@@ -13,7 +13,7 @@ WATER_SPREAD = 1
 MAX_RADIUS = 5
 DAILY_LIGHT = 0.1
 DAILY_WATER = 0.1
-PLANTS_PER_COLOR = 5
+PLANTS_PER_COLOR = 6
 PLANT_TYPES = [((.49, .99, 0), 0.1), ((.13, .55, .13), 0.11), ((0, .39, 0), 0.12)]
 
 # Creates different color plants in random locations

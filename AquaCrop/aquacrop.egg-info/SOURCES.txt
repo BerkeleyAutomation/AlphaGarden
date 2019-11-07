@@ -1,0 +1,5 @@
+setup.py
+aquacrop.egg-info/PKG-INFO
+aquacrop.egg-info/SOURCES.txt
+aquacrop.egg-info/dependency_links.txt
+aquacrop.egg-info/top_level.txt

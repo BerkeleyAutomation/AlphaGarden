@@ -1,4 +1,0 @@
-%% Enter Location of Input files %%
-/Users/williamwong/Documents/Berkeley/Research/SimAlphaGarden/AquaCropOS_v50a/Input
-%% Enter Location of Output files %%
-/Users/williamwong/Documents/Berkeley/Research/SimAlphaGarden/AquaCropOS_v50a/Output
