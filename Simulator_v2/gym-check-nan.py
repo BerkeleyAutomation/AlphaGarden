@@ -44,10 +44,11 @@ env = gym.make(
             wrapper_env=SimAlphaGardenWrapper(NUM_TIMESTEPS, get_random_plants(), NUM_X_STEPS, NUM_Y_STEPS, STEP, SPREAD, DAILY_LIGHT, ['basil']),
             config_file='gym-config/config.ini')
 env = DummyVecEnv([lambda: env])
-env = VecCheckNan(env, raise_exception=True)
+env = VecCheckNan(env, raise_exception=False)
 
 # Instantiate the agent
-model = PPO2('MlpPolicy', env)
+model = PPO2(MlpPolicy, env, learning_rate=1e-8)
 
 # Train the agent
-model.learn(total_timesteps=int(2e5))  # this will crash explaining that the invalid value originated from the env
+model.learn(total_timesteps=20000)  # this will crash explaining that the invalid value originated from the env
+model.save("ppo2_v2")
