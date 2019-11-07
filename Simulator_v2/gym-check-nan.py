@@ -18,13 +18,14 @@ import numpy as np
 from plant import Plant
 
 NUM_TIMESTEPS = 40
-NUM_X_STEPS = 50
-NUM_Y_STEPS = 50
+NUM_X_STEPS = 3
+NUM_Y_STEPS = 3
 STEP = 1
 SPREAD = 1
 DAILY_LIGHT = 1
-PLANTS_PER_COLOR = 4
-PLANT_TYPES = [((.49, .99, 0), (0.1, 30)), ((.13, .55, .13), (0.11, 30)), ((0, .39, 0), (0.13, 18))]
+PLANTS_PER_COLOR = 1
+# PLANT_TYPES = [((.49, .99, 0), (0.1, 30)), ((.13, .55, .13), (0.11, 30)), ((0, .39, 0), (0.13, 18))]
+PLANT_TYPES = [((.49, .99, 0), (0.1, 30))]
 
 # Creates different color plants in random locations
 def get_random_plants():
@@ -35,11 +36,12 @@ def get_random_plants():
         y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
         locations = np.hstack((x_locations, y_locations))
         plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color) for row, col in locations])
+    print(plants)
     return plants
 
 env = gym.make(
             'simalphagarden-v0', 
-            wrapper_env=SimAlphaGardenWrapper(NUM_TIMESTEPS, get_random_plants(), NUM_X_STEPS, NUM_Y_STEPS, STEP, SPREAD, DAILY_LIGHT, ['basil', 'basil', 'basil']),
+            wrapper_env=SimAlphaGardenWrapper(NUM_TIMESTEPS, get_random_plants(), NUM_X_STEPS, NUM_Y_STEPS, STEP, SPREAD, DAILY_LIGHT, ['basil']),
             config_file='gym-config/config.ini')
 env = DummyVecEnv([lambda: env])
 env = VecCheckNan(env, raise_exception=True)

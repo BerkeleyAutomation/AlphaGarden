@@ -20,9 +20,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return self.garden.get_state()
 
     def reward(self, state):
-        '''TODO: Replace with actual reward function.'''
-        cc_tensor = self.get_state()[self.N*self.M:]
-        return np.sum(cc_tensor)
+        total_cc = 0
+        for row_matrix in state:
+            # Iterate over columns
+            for i, column in enumerate(row_matrix.T):
+                if i != len(row_matrix.T) - 1:
+                    total_cc += sum(column)
+        return total_cc
 
     '''
     Method called by the gym environment to execute an action.

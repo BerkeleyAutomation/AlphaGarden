@@ -72,13 +72,13 @@ class Garden:
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
     def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=[]):
+        irrigations = irrigations[0]
         if uniform_irrigation:
             self.reset_water(water_amt)
         else:
             for i in range(len(irrigations)):
                 location = (i / self.N, i % self.M)
-                print(i, location)
-                # self.irrigate(loc, irrigations[i])
+                self.irrigate(location, irrigations[i])
 
         self.distribute_light(light_amt)
         self.distribute_water()
@@ -117,7 +117,6 @@ class Garden:
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # updates water level in resource grid
-                # print(location, amount)
                 self.grid[i,j]['water'] += amount
 
     def get_water_amounts(self, step=5):
