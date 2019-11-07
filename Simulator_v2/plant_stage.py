@@ -20,6 +20,10 @@ class PlantStage:
         self.current_time += 1
         return self.current_time >= self.duration
 
+    def skip_to_end(self):
+        # Skip to last time step of current stage
+        self.current_time = self.duration - 1
+
     def __str__(self):
         return f"{self.__class__.__name__} (current={self.current_time}, max={self.duration})"
 

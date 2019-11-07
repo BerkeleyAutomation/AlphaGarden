@@ -5,7 +5,7 @@ from plant import Plant
 
 class Garden:
 
-    def __init__(self, plants=[], N=50, M=50, step=1):
+    def __init__(self, plants=[], N=50, M=50, step=1, skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -25,9 +25,13 @@ class Garden:
         # Add initial plants to grid
         self.curr_id = 0
         for plant in plants:
+            if skip_initial_germination:
+                plant.current_stage().skip_to_end()
             self.add_plant(plant)
 
         self.control_plant = Plant(0, 0, color='gray')
+        if skip_initial_germination:
+            self.control_plant.current_stage().skip_to_end()
 
         self.logger = Logger()
 
