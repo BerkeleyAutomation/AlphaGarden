@@ -1,4 +1,4 @@
-from plant_stage import GerminationStage, GrowthStage, DeathStage
+from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 
 class Plant:
 
@@ -34,13 +34,17 @@ class Plant:
         # plant species (for visualization purposes)
         self.type = plant_type
 
-        # Determines how the plant grows and what resources it needs
+        # The plant will transition through the following series of stages. 
+        # Its current stage determines how it grows and what resources it needs.
         self.stages = [
             GerminationStage(self, germination_time, 1, 0.2),
             GrowthStage(self, growth_time),
+            WaitingStage(self, 10),
+            WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
-        self.stage_index = 0
+        self.stage_index = -1
+        self.switch_stage()
     
     def add_sunlight_point(self):
         self.num_sunlight_points += 1
@@ -50,15 +54,19 @@ class Plant:
     def current_stage(self):
         return self.stages[self.stage_index]
 
+    def switch_stage(self):
+        self.stage_index += 1
+        self.current_stage().start_stage()
+        print(f"Plant {self.id} moving to new stage!")
+        print(self.current_stage())
+
     def reset(self):
         self.num_sunlight_points = 0
         self.water_amt = 0
 
         should_transition = self.current_stage().step()
         if should_transition and self.stage_index + 1 < len(self.stages):
-            self.stage_index += 1
-            print(f"Plant {self.id} moving to new stage!")
-            print(self.current_stage())
+            self.switch_stage()
 
     def desired_water_amt(self):
         return self.current_stage().desired_water_amt()

@@ -2,6 +2,8 @@ class PlantStage:
     def __init__(self, plant, duration):
         self.plant = plant
         self.duration = duration
+
+    def start_stage(self):
         self.current_time = 0
 
     def desired_water_amt(self):
@@ -51,9 +53,36 @@ class GrowthStage(PlantStage):
     def __str__(self):
         return f"{super().__str__()}: c1={self.plant.c1}, c2={self.plant.c2}, k1={self.plant.k1}, k2={self.plant.k2}"
 
+class WaitingStage(PlantStage):
+    def amount_to_grow(self):
+        return 0, 0
+
+class WiltingStage(PlantStage):
+    def __init__(self, plant, duration, final_radius):
+        super().__init__(plant, duration)
+        self.max_final_radius = final_radius
+
+    def start_stage(self):
+        super().start_stage()
+        self.final_radius = min(self.plant.radius, self.max_final_radius)
+        self.dr = (self.plant.radius - self.final_radius) / self.duration
+
+    def desired_water_amt(self):
+        healthy_amt = super().desired_water_amt()
+        return (1 - self.current_time / self.duration) * healthy_amt
+
+    def amount_to_grow(self):
+        return 0, -self.dr
+
+    def __str__(self):
+        return f"{super().__str__()}: currently at radius={self.plant.radius}, will wilt to radius={self.final_radius}"
+
 class DeathStage(PlantStage):
     def __init__(self, plant):
         super().__init__(plant, -1)
+
+    def desired_water_amt(self):
+        return 0
 
     def amount_to_grow(self):
         return 0, 0

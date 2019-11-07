@@ -1,7 +1,7 @@
 from plant import Plant
 import numpy as np
 
-NUM_TIMESTEPS = 40
+NUM_TIMESTEPS = 60
 NUM_X_STEPS = 50
 NUM_Y_STEPS = 50
 STEP = 1
