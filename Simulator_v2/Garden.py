@@ -19,10 +19,14 @@ class Garden:
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
 
+        # Defines the order in which irrigations are applied
+        self.locations = []
+
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
                 self.grid[i,j]['nearby'] = []
+                self.locations.append((i, j))
 
         # distance between adjacent points in grid
         self.step = step
@@ -34,7 +38,7 @@ class Garden:
         # based on points further away receiving less than epsilon percent of irrigation amount
         # according to exponential water spread
         epsilon = 0.001
-        self.irr_threshold = round(-np.log(epsilon) / (spread * step))
+        self.irr_threshold = int(round(-np.log(epsilon) / (spread * step)))
 
         # Add initial plants to grid
         self.curr_id = 0
@@ -53,12 +57,12 @@ class Garden:
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=False):
+    def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=[]):
         if uniform_irrigation:
             self.reset_water(water_amt)
         else:
-            for irrigation in irrigations:
-                self.irrigate(irrigation)
+            for pair in zip(self.locations, irrigations):
+                self.irrigate(pair[0], pair[1])
 
         self.distribute_light(light_amt)
         self.distribute_water()
@@ -88,16 +92,16 @@ class Garden:
 
     # Updates water levels in grid in response to irrigation, location is (x, y) tuple
     def irrigate(self, location, amount):
-        closest_x, closest_y = round(location[0] / step), round(location[1] / step)
-        for i in range(max(0, closest_x - irr_threshold), min(self.grid.shape[0], closest_x + irr_threshold + 1)):
-            for j in range(max(0, closest_y - irr_threshold), min(self.grid.shape[1], closest_y + irr_threshold + 1)):
+        closest_x, closest_y = round(location[0] / self.step), round(location[1] / self.step)
+        for i in range(max(0, closest_x - self.irr_threshold), min(self.grid.shape[0], closest_x + self.irr_threshold + 1)):
+            for j in range(max(0, closest_y - self.irr_threshold), min(self.grid.shape[1], closest_y + self.irr_threshold + 1)):
                 # calculates distance from irrigation location to center of resource cell
                 grid_x = i * self.step
                 grid_y = j * self.step
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # updates water level in resource grid
-                self.grid[i,j]['water'] += amount * np.exp(-self.spread * dist)
+                self.grid[i,j]['water'] += amount
 
     def enumerate_grid(self):
         for i in range(len(self.grid)):
