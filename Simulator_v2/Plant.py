@@ -1,6 +1,9 @@
+from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
+
 class Plant:
 
-    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=30, color='g', plant_type='basil'):
+    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color='g', plant_type='basil',
+                        germination_time=3, start_height=1, start_radius=1):
         self.id = None
 
         # coordinates of plant
@@ -18,11 +21,6 @@ class Plant:
         self.k1 = k1 # minimum proportion plant will allocate to upward growth
         self.k2 = k2 # maximum proportion plant will allocate to upward growth
 
-        # Once `age` reaches `growth_time`, plant will stop growing
-        # (TODO: switch to next growth stage, instead of stopping growth entirely)
-        self.growth_time = growth_time
-        self.age = 0
-
         # number of grid points the plant can absorb light/water from
         self.num_grid_points = 1
 
@@ -35,31 +33,46 @@ class Plant:
 
         # plant species (for visualization purposes)
         self.type = plant_type
+
+        # The plant will transition through the following series of stages. 
+        # Its current stage determines how it grows and what resources it needs.
+        self.stages = [
+            GerminationStage(self, germination_time, 1, 0.2),
+            GrowthStage(self, growth_time),
+            WaitingStage(self, 10),
+            WiltingStage(self, 20, 2),
+            DeathStage(self)
+        ]
+        self.stage_index = -1
+        self.switch_stage()
     
     def add_sunlight_point(self):
         self.num_sunlight_points += 1
         if self.num_sunlight_points > self.num_grid_points:
             raise Exception("Plant received more sunlight points than total grid points!")
 
+    def current_stage(self):
+        return self.stages[self.stage_index]
+
+    def switch_stage(self):
+        self.stage_index += 1
+        self.current_stage().start_stage()
+        print(f"Plant {self.id} moving to new stage!")
+        print(self.current_stage())
+
     def reset(self):
-        self.age += 1
         self.num_sunlight_points = 0
         self.water_amt = 0
 
+        should_transition = self.current_stage().step()
+        if should_transition and self.stage_index + 1 < len(self.stages):
+            self.switch_stage()
+
     def desired_water_amt(self):
-        max_water = self.c2 * (self.num_sunlight_points ** 0.5)
-        return max_water
+        return self.current_stage().desired_water_amt()
 
     def amount_to_grow(self):
-        if self.age >= self.growth_time:
-            return 0, 0
-
-        G = self.c1 * self.water_amt
-        unocc_ratio = self.num_sunlight_points / self.num_grid_points
-        unocc_ratio = min(max(self.k1, unocc_ratio), self.k2)
-        upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
-
-        return upward, outward
+        return self.current_stage().amount_to_grow()
     
     def __str__(self):
         return f"[Plant] Radius: {self.radius} | Height: {self.height}"

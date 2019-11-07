@@ -1,10 +1,9 @@
 import numpy as np
-from Logger import Logger, Event
-from Plant import Plant
+from logger import Logger, Event
+from plant import Plant
 
 class Garden:
-
-    def __init__(self, plants=[], N=50, M=50, step=1, spread=1, plant_types=[]):
+    def __init__(self, plants=[], N=50, M=50, step=1, spread=0.5, drainage_rate=2, plant_types=[], skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -34,26 +33,38 @@ class Garden:
         # parameter for rate of water spread in field after irrigation
         self.spread = spread
 
+        # Drainage rate of water in soil
+        self.drainage_rate = drainage_rate
+
         # amount of grid points away from irrigation point that water will spread to
         # based on points further away receiving less than epsilon percent of irrigation amount
         # according to exponential water spread
-        epsilon = 0.001
+        epsilon = 0.01
         self.irr_threshold = int(round(-np.log(epsilon) / (spread * step)))
+        print(f"THRESHOLD: {self.irr_threshold}")
+        self.irr_threshold = 5
 
         # Add initial plants to grid
         self.curr_id = 0
         for plant in plants:
+            if skip_initial_germination:
+                plant.current_stage().skip_to_end()
             self.add_plant(plant)
 
         self.control_plant = Plant(0, 0, color='gray')
+        if skip_initial_germination:
+            self.control_plant.current_stage().skip_to_end()
 
         self.logger = Logger()
 
     def add_plant(self, plant):
-        plant.id = self.curr_id
-        self.plants[self.curr_id] = plant
-        self.curr_id += 1
-        self.grid[plant.row, plant.col]['nearby'].append(plant)
+        if (plant.row, plant.col) in self.plants:
+            print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
+        else:
+            plant.id = self.curr_id
+            self.plants[plant.row, plant.col] = plant
+            self.curr_id += 1
+            self.grid[plant.row, plant.col]['nearby'].append(plant)
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
@@ -101,12 +112,25 @@ class Garden:
                 dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # updates water level in resource grid
+                # print(i, j)
                 self.grid[i,j]['water'] += amount
 
-    def enumerate_grid(self):
-        for i in range(len(self.grid)):
+    def get_water_amounts(self, step=5):
+        amounts = []
+        for i in range(0, len(self.grid), step):
+            for j in range(0, len(self.grid[i]), step):
+                water_amt = 0
+                for a in range(i, i+step):
+                    for b in range(j, j+step):
+                        water_amt += self.grid[a, b]['water']
+                midpt = (i + step // 2, j + step // 2)
+                amounts.append((midpt, water_amt))
+        return amounts
+
+    def enumerate_grid(self, coords=False):
+        for i in range(0, len(self.grid)):
             for j in range(len(self.grid[i])):
-                yield self.grid[i, j]
+                yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
 
     def distribute_light(self, light_amt):
         for point in self.enumerate_grid():
@@ -127,7 +151,6 @@ class Garden:
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plants)))
                     plant = plants[i]
-                    # print(f"Giving water to {plant}")
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
@@ -135,9 +158,11 @@ class Garden:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
                         point['water'] -= water_to_absorb
-                        # print(f"Giving {water_to_absorb} water to plant {plant.id} -- desired {plant.desired_water_amt()}, {plant.num_grid_points} grid pts, total water {point['water'] + water_to_absorb}")
 
                     plants.pop(i)
+
+            # Water evaporation/drainage from soil
+            point['water'] = max(0, point['water'] - self.drainage_rate)
 
     def grow_plants(self):
         for plant in self.plants.values():
