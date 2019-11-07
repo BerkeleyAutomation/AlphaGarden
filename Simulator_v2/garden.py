@@ -77,7 +77,7 @@ class Garden:
         else:
             for i in range(len(irrigations)):
                 location = (i / self.N, i % self.M)
-                print(location)
+                print(i, location)
                 # self.irrigate(loc, irrigations[i])
 
         self.distribute_light(light_amt)
@@ -118,7 +118,7 @@ class Garden:
 
                 # updates water level in resource grid
                 # print(location, amount)
-                self.grid[i,j]['water'] += dist
+                self.grid[i,j]['water'] += amount
 
     def get_water_amounts(self, step=5):
         amounts = []
