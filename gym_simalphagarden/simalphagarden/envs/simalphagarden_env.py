@@ -16,38 +16,31 @@ class SimAlphaGardenEnv(gym.Env):
         # Reward ranges from 0 to 1 representing canopy cover percentage.
         self.reward_range = (config.getfloat('reward', 'low'), config.getfloat('reward', 'high'))
         # Action of the format Irrigation x
-        self.action_space = spaces.Discrete(config.getint('action', 'range'))
-        # Observations include canopy cover, stomata water stress level
-        self.observation_space = spaces.Box(low=config.getint('obs', 'low'), high=config.getint('obs', 'high'), shape=(config.getint('obs', 'shape_x'), config.getint('obs', 'shape_y')), dtype=np.float16)
+        # self.action_space = spaces.Discrete(config.getint('action', 'range'))
+        self.action_space = spaces.Box(low=np.array([0.0 for i in range(config.getint('action', 'shape'))]), high=np.array([config.getfloat('action', 'range') for i in range(config.getint('action', 'shape'))]), dtype=np.float16)
+        # Observations include canopy cover for each plant in the garden
+        self.observation_space = spaces.Box(low=config.getint('obs', 'low'), high=config.getint('obs', 'high'), shape=(config.getint('obs', 'shape_x'), config.getint('obs', 'shape_y'), config.getint('obs', 'shape_z')), dtype=np.float16)
         self.reset()
 
     def _next_observation(self):
-        #TODO: generalize this more to inherit from the wrapper
-        return np.array([self.canopy_cover, self.water_stress])
+        return self.wrapper_env.get_state()
 
     def _take_action(self, action):
-        canopy_cover, water_stress = self.wrapper_env.take_action(self.current_step, action)
-        self.canopy_cover = canopy_cover
-        self.water_stress = water_stress
+        return self.wrapper_env.take_action(action)
 
     def step(self, action):
-        # TODO: Figure out how to take an action every few days: ie. advance the time step a number of days
-        #Execute one time step within the environment
-        self._take_action(action)
+        state = self._take_action(action)
         self.current_step += 1
-        reward = self.canopy_cover
+        reward = self.wrapper_env.reward(state)
         done = self.current_step == self.max_time_steps
         obs = self._next_observation()
+        print(self.current_step, reward, action, obs)
         return obs, reward, done, {}
     
     def reset(self):
-        self.canopy_cover = 0
-        self.water_stress = 0
         self.current_step = 0
         self.wrapper_env.reset()
         return self._next_observation()
 
     def render(self, mode='human', close=False):
         print(f'Step: {self.current_step}')
-        print(f'Canopy Cover: {self.canopy_cover}')
-        print(f'Water Stress: {self.water_stress}')
