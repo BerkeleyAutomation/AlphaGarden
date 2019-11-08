@@ -14,12 +14,13 @@ class SimAlphaGardenEnv(gym.Env):
         config = configparser.ConfigParser()
         config.read(config_file)
         # Reward ranges from 0 to 1 representing canopy cover percentage.
-        self.reward_range = (config.getfloat('reward', 'low'), config.getfloat('reward', 'high'))
+        self.reward_range = (0, config.getfloat('garden', 'X') * config.getfloat('garden', 'Y'))
         # Action of the format Irrigation x
         # self.action_space = spaces.Discrete(config.getint('action', 'range'))
-        self.action_space = spaces.Box(low=np.array([0.0 for i in range(config.getint('action', 'shape'))]), high=np.array([config.getfloat('action', 'range') for i in range(config.getint('action', 'shape'))]), dtype=np.float16)
+        action_range = config.getint('garden', 'X') * config.getint('garden', 'Y')
+        self.action_space = spaces.Box(low=np.array([0.0 for i in range(action_range)]), high=np.array([config.getfloat('action', 'high') for i in range(action_range)]), dtype=np.float16)
         # Observations include canopy cover for each plant in the garden
-        self.observation_space = spaces.Box(low=config.getint('obs', 'low'), high=config.getint('obs', 'high'), shape=(config.getint('obs', 'shape_x'), config.getint('obs', 'shape_y'), config.getint('obs', 'shape_z')), dtype=np.float16)
+        self.observation_space = spaces.Box(low=config.getint('obs', 'low'), high=config.getint('obs', 'high'), shape=(config.getint('garden', 'X'), config.getint('garden', 'Y'), config.getint('garden', 'num_plant_types') + 1), dtype=np.float16)
         self.reset()
 
     def _next_observation(self):
