@@ -4,17 +4,15 @@ from plant_type import PlantType
 import numpy as np
 
 class SimAlphaGardenWrapper(WrapperEnv):
-    def __init__(self, max_time_steps, N, M, num_plant_types, num_plants_per_type, step=1, spread=1, light_amt=1):
+    def __init__(self, max_time_steps, N, M, num_plant_types, num_plants_per_type, step=1):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.N = N
         self.M = M
         self.step = step
-        self.spread = spread
         self.num_plant_types = num_plant_types
         self.num_plants_per_type = num_plants_per_type
         self.PlantType = PlantType()
         self.reset()
-        self.light_amt = light_amt
         self.state = self.garden.get_state()
 
     def get_state(self):
@@ -39,7 +37,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         state - state of the environment after irrigation
     '''
     def take_action(self, action):
-        self.garden.perform_timestep(self.light_amt, uniform_irrigation=False, irrigations=[action])
+        self.garden.perform_timestep(uniform_irrigation=False, irrigations=[action])
         return self.garden.get_state()
 
     '''
@@ -52,5 +50,4 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 N=self.N,
                 M=self.M,
                 step=self.step,
-                spread=self.spread,
                 plant_types=self.PlantType.get_n_names(self.num_plant_types))

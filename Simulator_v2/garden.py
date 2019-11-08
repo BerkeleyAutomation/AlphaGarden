@@ -3,7 +3,7 @@ from logger import Logger, Event
 from plant import Plant
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, spread=0.5, drainage_rate=2, plant_types=[], skip_initial_germination=True):
+    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -33,19 +33,11 @@ class Garden:
         # distance between adjacent points in grid
         self.step = step
 
-        # parameter for rate of water spread in field after irrigation
-        self.spread = spread
-
         # Drainage rate of water in soil
         self.drainage_rate = drainage_rate
 
         # amount of grid points away from irrigation point that water will spread to
-        # based on points further away receiving less than epsilon percent of irrigation amount
-        # according to exponential water spread
-        epsilon = 0.01
-        self.irr_threshold = int(round(-np.log(epsilon) / (spread * step)))
-        print(f"THRESHOLD: {self.irr_threshold}")
-        self.irr_threshold = 5
+        self.irr_threshold = irr_threshold
 
         # Add initial plants to grid
         self.curr_id = 0
@@ -71,7 +63,7 @@ class Garden:
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, light_amt, water_amt=0, uniform_irrigation=True, irrigations=[]):
+    def perform_timestep(self, water_amt=0, uniform_irrigation=True, irrigations=[]):
         irrigations = irrigations[0]
         if uniform_irrigation:
             self.reset_water(water_amt)
@@ -80,7 +72,7 @@ class Garden:
                 location = (i / self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
 
-        self.distribute_light(light_amt)
+        self.distribute_light()
         self.distribute_water()
         self.grow_plants()
         self.grow_control_plant()
@@ -136,7 +128,7 @@ class Garden:
             for j in range(len(self.grid[i])):
                 yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
 
-    def distribute_light(self, light_amt):
+    def distribute_light(self):
         for point in self.enumerate_grid():
             if point['nearby']:
                 tallest = max(point['nearby'], key=lambda plant: plant.height)
