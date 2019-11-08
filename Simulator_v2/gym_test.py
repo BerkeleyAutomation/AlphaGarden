@@ -30,6 +30,7 @@ PLANTS_PER_COLOR = config.getint('garden', 'num_plants_per_type')
 PLANT_TYPES = [((.49, .99, 0), (0.1, 30)), ((.13, .55, .13), (0.11, 30)), ((0, .39, 0), (0.13, 18))][:config.getint('garden', 'num_plant_types')]
 
 # Creates different color plants in random locations
+# TODO: make random
 def get_random_plants():
     np.random.seed(285631)
     plants = []
@@ -52,28 +53,28 @@ env = VecCheckNan(env, raise_exception=False)
 model = PPO2(MlpPolicy, env, learning_rate=1e-8, verbose=1, tensorboard_log="./ppo_v2_tensorboard/")
 
 # Train the agent
-model.learn(total_timesteps=200000)  # this will crash explaining that the invalid value originated from the env
-model_name = 'ppo2_v2_' + time.strftime('%Y-%m-%d-%H-%M-%S')
-model.save(model_name)
-pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True) 
-copyfile('./gym-config/config.ini', './PPO_Configs/' + model_name)
+# model.learn(total_timesteps=200000)  # this will crash explaining that the invalid value originated from the env
+# model_name = 'ppo2_v2_' + time.strftime('%Y-%m-%d-%H-%M-%S')
+# model.save(model_name)
+# pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True) 
+# copyfile('./gym-config/config.ini', './PPO_Configs/' + model_name)
 
-# model = PPO2.load("ppo2_v2")
-# obs = env.reset()
-# done = False
-# for i in range(50):
-#   e = {'obs': [], 'rewards': [], 'action': []}
-#   while not done:
-#     action, _states = model.predict(obs)
-#     obs, rewards, done, info = env.step(action)
-#     e['obs'].append(obs[0].tolist())
-#     e['rewards'].append(rewards.item())
-#     e['action'].append(action[0].tolist())
-#     env.render()
-#   done = False
+model = PPO2.load("ppo2_v2_2019-11-07-17-53-22")
+obs = env.reset()
+done = False
+for i in range(50):
+  e = {'obs': [], 'rewards': [], 'action': []}
+  while not done:
+    action, _states = model.predict(obs)
+    obs, rewards, done, info = env.step(action)
+    e['obs'].append(obs[0].tolist())
+    e['rewards'].append(rewards.item())
+    e['action'].append(action[0].tolist())
+    env.render()
+  done = False
 
-#   pathlib.Path('PPO_Returns').mkdir(parents=True, exist_ok=True) 
-#   filename = 'PPO_Returns/predict_' + str(i) + '.json'
-#   f = open(filename, 'w')
-#   f.write(json.dumps(e))
-#   f.close()
+  pathlib.Path('PPO_Returns').mkdir(parents=True, exist_ok=True) 
+  filename = 'PPO_Returns/predict_' + str(i) + '.json'
+  f = open(filename, 'w')
+  f.write(json.dumps(e))
+  f.close()
