@@ -11,6 +11,7 @@ import json
 import pathlib
 import configparser
 from shutil import copyfile
+from baseline_policy import baseline_policy
 
 #TODO extract plants to wrapper
 import numpy as np
@@ -43,7 +44,7 @@ def get_random_plants():
     return plants
 
 env = gym.make(
-            'simalphagarden-v0', 
+            'simalphagarden-v0',
             wrapper_env=SimAlphaGardenWrapper(NUM_TIMESTEPS, get_random_plants(), NUM_X_STEPS, NUM_Y_STEPS, STEP, SPREAD, DAILY_LIGHT, ['basil' for i in range(len(PLANT_TYPES))]),
             config_file='gym-config/config.ini')
 env = DummyVecEnv([lambda: env])
@@ -56,25 +57,33 @@ model = PPO2(MlpPolicy, env, learning_rate=1e-8, verbose=1, tensorboard_log="./p
 # model.learn(total_timesteps=200000)  # this will crash explaining that the invalid value originated from the env
 # model_name = 'ppo2_v2_' + time.strftime('%Y-%m-%d-%H-%M-%S')
 # model.save(model_name)
-# pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True) 
+# pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True)
 # copyfile('./gym-config/config.ini', './PPO_Configs/' + model_name)
 
+baseline = True
 model = PPO2.load("ppo2_v2_2019-11-07-17-53-22")
 obs = env.reset()
 done = False
-for i in range(50):
-  e = {'obs': [], 'rewards': [], 'action': []}
-  while not done:
-    action, _states = model.predict(obs)
-    obs, rewards, done, info = env.step(action)
-    e['obs'].append(obs[0].tolist())
-    e['rewards'].append(rewards.item())
-    e['action'].append(action[0].tolist())
-    env.render()
-  done = False
+for i in range(1):
+    e = {'obs': [], 'rewards': [], 'action': []}
+    while not done:
+        if baseline:
+            action = baseline_policy(obs, STEP, 0.5, 0.5, 5)
+        else:
+            action, _states = model.predict(obs)
+        obs, rewards, done, info = env.step(action)
+        e['obs'].append(obs[0].tolist())
+        e['rewards'].append(rewards.item())
+        e['action'].append(action[0].tolist())
+        env.render()
+    done = False
 
-  pathlib.Path('PPO_Returns').mkdir(parents=True, exist_ok=True) 
-  filename = 'PPO_Returns/predict_' + str(i) + '.json'
-  f = open(filename, 'w')
-  f.write(json.dumps(e))
-  f.close()
+    if baseline:
+        path = 'Baseline_Returns'
+    else:
+        path = 'PPO_Returns'
+    pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+    filename = path + '/predict_' + str(i) + '.json'
+    f = open(filename, 'w')
+    f.write(json.dumps(e))
+    f.close()
