@@ -34,7 +34,7 @@ class Plant:
         # plant species (for visualization purposes)
         self.type = plant_type
 
-        # The plant will transition through the following series of stages. 
+        # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
         self.stages = [
             GerminationStage(self, germination_time, 1, 0.2),
@@ -45,7 +45,7 @@ class Plant:
         ]
         self.stage_index = -1
         self.switch_stage()
-    
+
     def add_sunlight_point(self):
         self.num_sunlight_points += 1
         if self.num_sunlight_points > self.num_grid_points:
@@ -73,6 +73,6 @@ class Plant:
 
     def amount_to_grow(self):
         return self.current_stage().amount_to_grow()
-    
+
     def __str__(self):
         return f"[Plant] Radius: {self.radius} | Height: {self.height}"

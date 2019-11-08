@@ -19,7 +19,7 @@ class Pipeline:
     def __init__(self):
         pass
 
-    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, spread=1, light_amt=1, action_low=0.0, action_high=0.5, obs_low=0, obs_high=1000):
+    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=0.5, obs_low=0, obs_high=1000):
         config = configparser.ConfigParser()
         config.add_section('rl')
         config['rl']['time_steps'] = str(rl_time_steps)
@@ -30,15 +30,13 @@ class Pipeline:
         config['garden']['num_plant_types'] = str(num_plant_types)
         config['garden']['num_plants_per_type'] = str(num_plants_per_type)
         config['garden']['step'] = str(step)
-        config['garden']['spread'] = str(spread)
-        config['garden']['light_amt'] = str(light_amt)
         config.add_section('action')
         config['action']['low'] = str(action_low)
         config['action']['high'] = str(action_high)
         config.add_section('obs')
         config['obs']['low'] = str(obs_low)
         config['obs']['high'] = str(obs_high)
-        
+
         pathlib.Path('gym_config').mkdir(parents=True, exist_ok=True)
         with open('gym_config/config.ini', 'w') as configfile:
             config.write(configfile)
@@ -53,9 +51,9 @@ class Pipeline:
         plt.imshow(heatmap, cmap='Blues', origin='lower', interpolation='nearest')
         for plant in plants:
             plt.plot(plant[0], plant[1], marker='X', markersize=20, color="lawngreen")
-        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True) 
+        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/water_map_' + str(i) + '.png')
-        
+
     def plot_final_garden(self, folder_prefix, model_name, i, garden, x, y, step):
         fig, ax = plt.subplots(figsize=(10, 10))
         plt.xlim((0, x * step))
@@ -81,10 +79,10 @@ class Pipeline:
                     circle = plt.Circle((x,y) * step, garden[x,y], color="green", alpha=0.4)
                     plt.plot(x, y, marker='X', markersize=15, color="lawngreen")
                     ax.add_artist(circle)
-        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True) 
+        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/final_garden_' + str(i) + '.png')
         return plant_locations
-        
+
     def plot_average_reward(self, folder_prefix, model_name, reward, days, y_range):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days, 5))
@@ -94,9 +92,9 @@ class Pipeline:
         plt.ylabel('Reward', fontsize=16)
 
         plt.plot([i for i in range(days)], reward, linestyle='--', marker='o', color='g')
-        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True) 
+        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/avg_reward.png')
-        
+
     def plot_stddev_reward(self, folder_prefix, model_name, reward, reward_stddev, days, y_range):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days, 10))
@@ -106,7 +104,7 @@ class Pipeline:
         plt.ylabel('Reward', fontsize=16)
 
         plt.errorbar([i for i in range(40)], reward, reward_stddev, linestyle='None', marker='o', color='g')
-        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True) 
+        pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/std_reward.png')
 
     def graph_evaluations(self, folder_prefix, model_name, garden_x, garden_y, time_steps, step, num_evals, num_plant_types):
@@ -128,7 +126,7 @@ class Pipeline:
                     for t in range(num_plant_types):
                         s = np.add(s, np.array(final_obs[x]).T[t])
                     garden[x] = s
-                    
+
                 plant_locations = self.plot_final_garden(folder_prefix, model_name, i, garden, garden_x, garden_y, step)
                 self.plot_water_map(folder_prefix, model_name, i, action, garden_x, garden_y, plant_locations)
 
@@ -158,7 +156,7 @@ class Pipeline:
                 env.render()
             done = False
 
-            pathlib.Path(folder_prefix + '_Returns/' + model_name).mkdir(parents=True, exist_ok=True) 
+            pathlib.Path(folder_prefix + '_Returns/' + model_name).mkdir(parents=True, exist_ok=True)
             filename = folder_prefix + '_Returns/' + model_name + '/predict_' + str(i) + '.json'
             f = open(filename, 'w')
             f.write(json.dumps(e))
@@ -173,8 +171,6 @@ class Pipeline:
         rl_time_steps = config.getint('rl', 'time_steps')
         time_steps = config.getint('garden', 'time_steps')
         step = config.getint('garden', 'step')
-        spread = config.getint('garden', 'spread')
-        light_amt = config.getint('garden', 'light_amt')
         num_plants_per_type = config.getint('garden', 'num_plants_per_type')
         num_plant_types = config.getint('garden', 'num_plant_types')
         garden_x = config.getint('garden', 'X')
@@ -186,9 +182,9 @@ class Pipeline:
         obs_low = config.getint('obs', 'low')
         obs_high = config.getint('obs', 'high')
 
-        env = gym.make( 
-                    'simalphagarden-v0', 
-                    wrapper_env=SimAlphaGardenWrapper(time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, step=step, spread=spread, light_amt=light_amt),
+        env = gym.make(
+                    'simalphagarden-v0',
+                    wrapper_env=SimAlphaGardenWrapper(time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, step=step),
                     garden_x=garden_x,
                     garden_y=garden_y,
                     garden_z=garden_z,
@@ -202,7 +198,7 @@ class Pipeline:
         if is_baseline:
             model_name = 'baseline_v2_' + filename_time
 
-            pathlib.Path('Baseline_Configs').mkdir(parents=True, exist_ok=True) 
+            pathlib.Path('Baseline_Configs').mkdir(parents=True, exist_ok=True)
             copyfile('gym_config/config.ini', './Baseline_Configs/' + model_name + '.ini')
 
             # Evaluate baseline on 50 random environments of same parameters.
@@ -217,12 +213,12 @@ class Pipeline:
 
             # Train the agent
             model.learn(total_timesteps=rl_time_steps)  # this will crash explaining that the invalid value originated from the env
-            
-            pathlib.Path('PPO_Models').mkdir(parents=True, exist_ok=True) 
+
+            pathlib.Path('PPO_Models').mkdir(parents=True, exist_ok=True)
             model_name = 'ppo2_v2_' + filename_time
             model.save('./PPO_Models/' + model_name)
 
-            pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True) 
+            pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True)
             copyfile('gym_config/config.ini', './PPO_Configs/' + model_name + '.ini')
 
             # Evaluate model on 50 random environments of same parameters.
