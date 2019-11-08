@@ -1,18 +1,18 @@
 from wrapperenv import WrapperEnv
 from garden import Garden
+from plant_type import PlantType
 import numpy as np
-import copy
 
 class SimAlphaGardenWrapper(WrapperEnv):
-    def __init__(self, max_time_steps, plants, N, M, step, spread, light_amt, plant_types):
+    def __init__(self, max_time_steps, N, M, num_plant_types, num_plants_per_type, step=1, spread=1, light_amt=1):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
-        self.plants = plants
-        self.num_plants = len(plants)
         self.N = N
         self.M = M
         self.step = step
         self.spread = spread
-        self.plant_types = plant_types
+        self.num_plant_types = num_plant_types
+        self.num_plants_per_type = num_plants_per_type
+        self.PlantType = PlantType()
         self.reset()
         self.light_amt = light_amt
         self.state = self.garden.get_state()
@@ -46,4 +46,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
     Method called by the gym environment to reset the simulator.
     '''
     def reset(self):
-        self.garden = Garden(plants=copy.deepcopy(self.plants), N=self.N, M=self.M, step=self.step, spread=self.spread, plant_types=self.plant_types)
+        self.garden = \
+            Garden(
+                plants=self.PlantType.get_random_plants(self.PlantType.get_n_types(self.num_plant_types), self.M, self.N, self.num_plants_per_type),
+                N=self.N,
+                M=self.M,
+                step=self.step,
+                spread=self.spread,
+                plant_types=self.PlantType.get_n_names(self.num_plant_types))
