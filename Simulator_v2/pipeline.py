@@ -267,3 +267,6 @@ if __name__ == '__main__':
     import baselines.baseline_policy as bp
     baseline_policy = bp.baseline_policy
     Pipeline().batch_run(n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
+
+
+#TODO: garden size, learning rate, rl time steps, total plants
