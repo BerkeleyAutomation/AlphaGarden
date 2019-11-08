@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import gym
 import simalphagarden
 from SimAlphaGardenWrapper import SimAlphaGardenWrapper
@@ -47,7 +49,7 @@ env = DummyVecEnv([lambda: env])
 env = VecCheckNan(env, raise_exception=False)
 
 # Instantiate the agent
-model = PPO2(MlpPolicy, env, learning_rate=1e-8)
+model = PPO2(MlpPolicy, env, learning_rate=1e-8, verbose=1, tensorboard_log="./ppo_v2_tensorboard/")
 
 # Train the agent
 model.learn(total_timesteps=200000)  # this will crash explaining that the invalid value originated from the env
