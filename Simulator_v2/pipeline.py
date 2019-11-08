@@ -264,6 +264,6 @@ if __name__ == '__main__':
     num_plant_types = [2, 2, 3]
     num_plants_per_type = [2, 2, 2]
     is_baseline = [False, True, False]
-    import Baselines.baseline_policy as bp
+    import baselines.baseline_policy as bp
     baseline_policy = bp.baseline_policy
     Pipeline().batch_run(n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
