@@ -105,7 +105,7 @@ class Garden:
                 # calculates distance from irrigation location to center of resource cell
                 grid_x = i * self.step
                 grid_y = j * self.step
-                dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
+                # dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
 
                 # updates water level in resource grid
                 self.grid[i,j]['water'] += amount
@@ -185,18 +185,6 @@ class Garden:
             return next_step
 
     def update_plant_coverage(self, plant):
-        # expected = next_step * 8
-        # actual = 0
-        # for point in self._get_new_points(plant, next_step):
-        #     if self.within_radius(point, plant):
-        #         self.grid[point]['nearby'].append(plant)
-        #         plant.num_grid_points += 1
-        #         actual += 1
-        # print(f"Added {actual}/{expected} possible new points")
-        # rad_step = int(plant.radius // self.step) + 1
-        # start_row, end_row = max(0, plant.row - rad_step), min(self.grid.shape[0] - 1, plant.row + rad_step)
-        # start_col, end_col = max(0, plant.col - rad_step), min(self.grid.shape[1] - 1, plant.col + rad_step)
-
         for point in self._get_new_points(plant):
             if self.within_radius(point, plant):
                 if plant.id not in self.grid[point]['nearby']:
