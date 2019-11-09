@@ -27,8 +27,10 @@ class Garden:
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
-                self.grid[i,j]['nearby'] = []
+                self.grid[i,j]['nearby'] = set()
                 self.locations.append((i, j))
+
+        self.plant_locations = {}
 
         # distance between adjacent points in grid
         self.step = step
@@ -47,25 +49,27 @@ class Garden:
             self.add_plant(plant)
 
         self.control_plant = Plant(0, 0, color='gray')
+        self.control_plant.id = "Control"
         if skip_initial_germination:
             self.control_plant.current_stage().skip_to_end()
 
         self.logger = Logger()
 
     def add_plant(self, plant):
-        if (plant.row, plant.col) in self.plants:
+        if (plant.row, plant.col) in self.plant_locations:
             print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
         else:
             plant.id = self.curr_id
-            self.plants[plant.row, plant.col] = plant
+            self.plants[plant.id] = plant
+            self.plant_locations[plant.row, plant.col] = True
             self.curr_id += 1
-            self.grid[plant.row, plant.col]['nearby'].append(plant)
+            self.grid[plant.row, plant.col]['nearby'].add(plant.id)
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, water_amt=0, uniform_irrigation=True, irrigations=[]):
-        irrigations = irrigations[0]
-        if uniform_irrigation:
+    def perform_timestep(self, water_amt=0, irrigations=None):
+        if not irrigations:
+            # Default to uniform irrigation
             self.reset_water(water_amt)
         else:
             for i in range(len(irrigations)):
@@ -81,18 +85,13 @@ class Garden:
 
     def grow_control_plant(self):
         cp = self.control_plant
-        cp.num_sunlight_points = cp.num_grid_points = ((cp.radius // self.step * self.step) * 2 + 1) ** 2
+        cp.num_sunlight_points = cp.num_grid_points
         cp.water_amt = cp.desired_water_amt()
         self.logger.log(Event.WATER_REQUIRED, "Control", cp.water_amt)
 
-        upward, outward = cp.amount_to_grow()
-        cp.height += upward
-        cp.radius += outward
-
-        self.logger.log(Event.WATER_ABSORBED, "Control", cp.water_amt)
-        self.logger.log(Event.RADIUS_UPDATED, "Control", cp.radius)
-        self.logger.log(Event.HEIGHT_UPDATED, "Control", cp.height)
-        cp.reset()
+        next_step = self.grow_plant(cp)
+        if next_step:
+            cp.num_grid_points += next_step * 8
 
     # Resets all water resource levels to the same amount
     def reset_water(self, water_amt):
@@ -131,8 +130,8 @@ class Garden:
     def distribute_light(self):
         for point in self.enumerate_grid():
             if point['nearby']:
-                tallest = max(point['nearby'], key=lambda plant: plant.height)
-                tallest.add_sunlight_point()
+                tallest_id = max(point['nearby'], key=lambda id: self.plants[id].height)
+                self.plants[tallest_id].add_sunlight_point()
 
     def distribute_water(self):
         # Log desired water levels of each plant before distributing
@@ -141,12 +140,12 @@ class Garden:
 
         for point in self.enumerate_grid():
             if point['nearby']:
-                plants = list(point['nearby'])
+                plant_ids = list(point['nearby'])
 
-                while point['water'] > 0 and plants:
+                while point['water'] > 0 and plant_ids:
                     # Pick a random plant to give water to
-                    i = np.random.choice(range(len(plants)))
-                    plant = plants[i]
+                    i = np.random.choice(range(len(plant_ids)))
+                    plant = self.plants[plant_ids[i]]
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
@@ -155,42 +154,74 @@ class Garden:
                         plant.water_amt += water_to_absorb
                         point['water'] -= water_to_absorb
 
-                    plants.pop(i)
+                    plant_ids.pop(i)
 
             # Water evaporation/drainage from soil
             point['water'] = max(0, point['water'] - self.drainage_rate)
 
     def grow_plants(self):
         for plant in self.plants.values():
-            next_step = plant.radius // self.step + 1
-            next_line_dist = next_step * self.step
+            self.grow_plant(plant)
+            # if next_step:
+            self.update_plant_coverage(plant)
 
-            prev_radius = plant.radius
-            upward, outward = plant.amount_to_grow()
-            plant.height += upward
-            plant.radius += outward
-            self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
+    def grow_plant(self, plant):
+        next_step = plant.radius // self.step + 1
+        next_line_dist = next_step * self.step
 
-            if prev_radius < next_line_dist and plant.radius >= next_line_dist:
-                self.update_plant_coverage(plant, int(next_step))
+        prev_radius = plant.radius
+        upward, outward = plant.amount_to_grow()
+        plant.height += upward
+        plant.radius += outward
+        self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
 
-            self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
-            self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
-            self.logger.log(Event.HEIGHT_UPDATED, plant.id, plant.height)
-            plant.reset()
+        self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
+        self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
+        self.logger.log(Event.HEIGHT_UPDATED, plant.id, plant.height)
 
-    def update_plant_coverage(self, plant, next_step):
-        row, col = plant.row, plant.col
-        start_row, end_row = max(row - next_step, 0), min(row + next_step, self.grid.shape[0] - 1)
-        start_col, end_col = max(col - next_step, 0), min(col + next_step, self.grid.shape[1] - 1)
+        plant.reset()
+
+        if prev_radius < next_line_dist and plant.radius >= next_line_dist:
+            return next_step
+
+    def update_plant_coverage(self, plant):
+        # expected = next_step * 8
+        # actual = 0
+        # for point in self._get_new_points(plant, next_step):
+        #     if self.within_radius(point, plant):
+        #         self.grid[point]['nearby'].append(plant)
+        #         plant.num_grid_points += 1
+        #         actual += 1
+        # print(f"Added {actual}/{expected} possible new points")
+        # rad_step = int(plant.radius // self.step) + 1
+        # start_row, end_row = max(0, plant.row - rad_step), min(self.grid.shape[0] - 1, plant.row + rad_step)
+        # start_col, end_col = max(0, plant.col - rad_step), min(self.grid.shape[1] - 1, plant.col + rad_step)
+
+        for point in self._get_new_points(plant):
+            if self.within_radius(point, plant):
+                if plant.id not in self.grid[point]['nearby']:
+                    plant.num_grid_points += 1
+                    self.grid[point]['nearby'].add(plant.id)
+
+    def _get_new_points(self, plant):
+        rad_step = int(plant.radius // self.step)
+        start_row, end_row = max(0, plant.row - rad_step), min(self.grid.shape[0] - 1, plant.row + rad_step)
+        start_col, end_col = max(0, plant.col - rad_step), min(self.grid.shape[1] - 1, plant.col + rad_step)
+
         for col in range(start_col, end_col + 1):
-            self.grid[start_row, col]['nearby'].append(plant)
-            self.grid[end_row, col]['nearby'].append(plant)
-        for row in range(start_row + 1, end_row):
-            self.grid[row, start_col]['nearby'].append(plant)
-            self.grid[row, end_col]['nearby'].append(plant)
+            yield (start_row, col)
+            yield (start_row + 1, col)
+            yield (end_row - 1, col)
+            yield (end_row, col)
+        for row in range(start_row, end_row + 1):
+            yield (row, start_col)
+            yield (row, start_col + 1)
+            yield (row, end_col - 1)
+            yield (row, end_col)
 
-        plant.num_grid_points += next_step * 8
+    def within_radius(self, grid_pos, plant):
+        dist = self.step ** 0.5 * np.linalg.norm((grid_pos[0] - plant.row, grid_pos[1] - plant.col))
+        return dist <= plant.radius
 
     def get_state(self):
         water = np.expand_dims(self.grid['water'], axis=2)
