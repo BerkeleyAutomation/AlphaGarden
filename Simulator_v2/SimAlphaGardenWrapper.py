@@ -37,7 +37,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         state - state of the environment after irrigation
     '''
     def take_action(self, action):
-        self.garden.perform_timestep(uniform_irrigation=False, irrigations=[action])
+        self.garden.perform_timestep(irrigations=action)
         return self.garden.get_state()
 
     '''

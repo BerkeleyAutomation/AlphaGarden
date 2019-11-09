@@ -66,14 +66,14 @@ class Garden:
             self.grid[plant.row, plant.col]['nearby'].add(plant.id)
 
     # Updates plants after one timestep, returns list of plant objects
-    # irrigations is list of (location, amount) tuples
+    # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, water_amt=0, irrigations=None):
-        if not irrigations:
+        if irrigations is None:
             # Default to uniform irrigation
             self.reset_water(water_amt)
         else:
-            for i in range(len(irrigations)):
-                location = (i / self.N, i % self.M)
+            for i in np.nonzero(irrigations)[0]:
+                location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
 
         self.distribute_light()
@@ -97,18 +97,13 @@ class Garden:
     def reset_water(self, water_amt):
         self.grid['water'] = water_amt
 
-    # Updates water levels in grid in response to irrigation, location is (x, y) tuple
+    # Updates water levels in grid in response to irrigation, location is (x, y) coordinate tuple
     def irrigate(self, location, amount):
-        closest_x, closest_y = round(location[0] / self.step), round(location[1] / self.step)
-        for i in range(max(0, closest_x - self.irr_threshold), min(self.grid.shape[0], closest_x + self.irr_threshold + 1)):
-            for j in range(max(0, closest_y - self.irr_threshold), min(self.grid.shape[1], closest_y + self.irr_threshold + 1)):
-                # calculates distance from irrigation location to center of resource cell
-                grid_x = i * self.step
-                grid_y = j * self.step
-                dist = np.sqrt((location[0] - grid_x)**2 + (location[1] - grid_y)**2)
-
-                # updates water level in resource grid
-                self.grid[i,j]['water'] += amount
+        lower_x = max(0, location[0] - self.irr_threshold)
+        upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
+        lower_y = max(0, location[1] - self.irr_threshold)
+        upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
+        self.grid[lower_x:upper_x,lower_y:upper_y]['water'] += amount
 
     def get_water_amounts(self, step=5):
         amounts = []
