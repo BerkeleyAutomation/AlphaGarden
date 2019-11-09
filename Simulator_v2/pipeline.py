@@ -108,8 +108,8 @@ class Pipeline:
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/std_reward.png')
 
     def graph_evaluations(self, folder_prefix, model_name, garden_x, garden_y, time_steps, step, num_evals, num_plant_types):
-        obs = [0] * 182
-        r = [0] * 182
+        obs = [0] * time_steps
+        r = [0] * time_steps
         for i in range(num_evals):
             with open(folder_prefix + '_Returns/' + model_name + '/predict_' + str(i) + '.json') as f_in:
                 data = json.load(f_in)
@@ -118,7 +118,7 @@ class Pipeline:
                 r = self.running_avg(r, rewards, i)
                 action = data['action']
 
-                final_obs = obs[38]
+                final_obs = obs[time_steps-2]
                 dimensions = len(final_obs)
                 garden = np.array([[0.0 for x in range(dimensions)] for y in range(dimensions)])
                 for x in range(dimensions):
@@ -263,3 +263,5 @@ if __name__ == '__main__':
     import baselines.baseline_policy as bp
     baseline_policy = bp.baseline_policy
     Pipeline().batch_run(n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
+
+#TODO: garden size, learning rate, rl time steps, total plants
