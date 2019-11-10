@@ -7,11 +7,11 @@ import pathlib
 import configparser
 import matplotlib.pyplot as plt
 import numpy as np
+from cnn_policy import CustomCnnPolicy
 from shutil import copyfile
 from plant import Plant
 from plant_type import PlantType
 from SimAlphaGardenWrapper import SimAlphaGardenWrapper
-from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv, VecCheckNan
 from stable_baselines import PPO2
 
@@ -85,7 +85,7 @@ class Pipeline:
 
     def plot_average_reward(self, folder_prefix, model_name, reward, days, y_range):
         fig = plt.figure(figsize=(28, 10))
-        plt.xticks(np.arange(0, days, 5))
+        plt.xticks(np.arange(0, days + 5, 5))
         plt.yticks(np.arange(0.0, y_range, 1))
         plt.title('Average Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
@@ -162,7 +162,7 @@ class Pipeline:
             f.write(json.dumps(e))
             f.close()
 
-    def single_run(self, filename_time, num_evals, is_baseline=False, baseline_policy=None):
+    def single_run(self, filename_time, num_evals, policy_kwargs=None, is_baseline=False, baseline_policy=None):
         filename_time = str(filename_time)
 
         config = configparser.ConfigParser()
@@ -209,7 +209,7 @@ class Pipeline:
         else:
             pathlib.Path('ppo_v2_tensorboard').mkdir(parents=True, exist_ok=True)
             # Instantiate the agent
-            model = PPO2(MlpPolicy, env, learning_rate=1e-8, verbose=1, tensorboard_log="./ppo_v2_tensorboard/")
+            model = PPO2(CustomCnnPolicy, env, policy_kwargs=policy_kwargs, learning_rate=1e-8, verbose=1, tensorboard_log="./ppo_v2_tensorboard/")
 
             # Train the agent
             model.learn(total_timesteps=rl_time_steps)  # this will crash explaining that the invalid value originated from the env
@@ -227,7 +227,7 @@ class Pipeline:
             # Graph evaluations
             self.graph_evaluations('PPO', model_name, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
 
-    def batch_run(self, n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=50, is_baseline=[], baseline_policy=None):
+    def batch_run(self, n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=[], num_evals=50, is_baseline=[], baseline_policy=None):
         assert(len(rl_time_steps) == n)
         assert(len(garden_x) == n)
         assert(len(garden_y) == n)
@@ -237,6 +237,9 @@ class Pipeline:
         if is_baseline:
             assert(len(is_baseline) == n)
             assert(baseline_policy != None)
+            assert(len(policy_kwargs) == n)
+        else:
+            assert(len(policy_kwargs) == 1)
 
         if is_baseline:
             for i in range(n):
@@ -245,23 +248,34 @@ class Pipeline:
                 if is_baseline[i]:
                     self.single_run(filename_time, num_evals, is_baseline=True, baseline_policy=baseline_policy)
                 else:
-                    self.single_run(filename_time, num_evals, is_baseline=False)
+                    self.single_run(filename_time, num_evals, policy_kwargs[i], is_baseline=False)
         else:
             for i in range(n):
                 filename_time = time.strftime('%Y-%m-%d-%H-%M-%S')
                 self.create_config(rl_time_steps=rl_time_steps[i], garden_x=garden_x[i], garden_y=garden_y[i], num_plant_types=num_plant_types[i], num_plants_per_type=num_plants_per_type[i])
-                self.single_run(filename_time, num_evals, is_baseline=False)
+                self.single_run(filename_time, num_evals, policy_kwargs[0], is_baseline=False)
 
 if __name__ == '__main__':
-    n = 3
-    rl_time_steps = [1, 1, 1]
-    garden_x = [10, 20, 50]
-    garden_y = [10, 20, 50]
-    num_plant_types = [2, 2, 3]
-    num_plants_per_type = [2, 2, 2]
-    is_baseline = [False, True, False]
+    n = 1
+    rl_time_steps = [1]
+    garden_x = [10]
+    garden_y = [10]
+    num_plant_types = [2]
+    num_plants_per_type = [1]
+    is_baseline = [False]
     import baselines.baseline_policy as bp
     baseline_policy = bp.baseline_policy
-    Pipeline().batch_run(n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
+    policy_kwargs = [
+        {
+            "OUTPUT_X": 10,
+            "OUTPUT_Y": 10,
+            "NUM_HIDDEN_LAYERS": 1,
+            "NUM_FILTERS": 3, # k+1 for old state representation
+            "NUM_CONVS": 1,
+            "FILTER_SIZE": 3,
+            "STRIDE": 1
+        }
+    ]
+    Pipeline().batch_run(n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=policy_kwargs, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
 
 #TODO: garden size, learning rate, rl time steps, total plants
