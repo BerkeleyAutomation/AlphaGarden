@@ -14,6 +14,9 @@ class Plant:
         self.radius = 0
         self.height = 0
 
+        # current index of progression in circular growth map
+        self.growth_index = 0
+
         # parameters for how water and light affect growth
         self.c1 = c1
         self.c2 = c2

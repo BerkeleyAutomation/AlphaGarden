@@ -98,7 +98,7 @@ class Pipeline:
     def plot_average_reward(self, folder_prefix, model_name, reward, days, y_range):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days + 5, 5))
-        plt.yticks(np.arange(0.0, y_range, 1))
+        plt.yticks(np.arange(0.0, y_range, 5))
         plt.title('Average Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
@@ -110,7 +110,7 @@ class Pipeline:
     def plot_stddev_reward(self, folder_prefix, model_name, reward, reward_stddev, days, y_range):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days, 10))
-        plt.yticks(np.arange(0, y_range, 1))
+        plt.yticks(np.arange(0, y_range, 5))
         plt.title('Std Dev of Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
@@ -191,8 +191,8 @@ class Pipeline:
         num_plant_types = config.getint('garden', 'num_plant_types')
         garden_x = config.getint('garden', 'X')
         garden_y = config.getint('garden', 'Y')
-        # Z axis contains two matricies for every plant type plus one for water levels.
-        garden_z = config.getint('garden', 'num_plant_types') + 1
+        # Z axis contains a matrix for every plant type plus one for water levels.
+        garden_z = 2 * config.getint('garden', 'num_plant_types') + 1
         action_low = config.getfloat('action', 'low')
         action_high = config.getfloat('action', 'high')
         obs_low = config.getint('obs', 'low')
