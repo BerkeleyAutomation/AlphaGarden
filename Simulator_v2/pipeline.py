@@ -19,7 +19,7 @@ class Pipeline:
     def __init__(self):
         pass
 
-    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=0.5, obs_low=0, obs_high=1000, ent_coef=0.01, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
+    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=1.0, obs_low=0, obs_high=1000, ent_coef=0.01, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
         config = configparser.ConfigParser()
         config.add_section('rl')
         config['rl']['time_steps'] = str(rl_time_steps)
