@@ -51,11 +51,11 @@ def run_simulation(args):
             circle = plt.Circle(coord * STEP, water_amt / 100, color='b', alpha=0.3)
             circleplot = ax.add_artist(circle)
             plots.append(circleplot)
-        for grid_pt, coord in garden.enumerate_grid(coords=True):
-            if grid_pt['nearby']:
-                circle = plt.Circle(coord * STEP, 0.2, color='c', alpha=0.3)
-                circleplot = ax.add_artist(circle)
-                plots.append(circleplot)
+        # for grid_pt, coord in garden.enumerate_grid(coords=True):
+        #     if grid_pt['nearby']:
+        #         circle = plt.Circle(coord * STEP, 0.2, color='c', alpha=0.3)
+        #         circleplot = ax.add_artist(circle)
+        #         plots.append(circleplot)
         frames.append(plots)
 
     print("--- %s seconds ---" % (time.time() - start_time))
