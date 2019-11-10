@@ -11,6 +11,7 @@ class Garden:
         self.M = M
 
         # list of plant types the garden will support
+        # TODO: Set this list to be constant
         self.plant_types = plant_types
 
         # Structured array of gridpoints. Each point contains its water levels
@@ -20,6 +21,9 @@ class Garden:
 
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
+
+        # Grid for plant leaf state representation
+        self.leaf_grid = np.zeros((N, M, len(plant_types)))
 
         # initializes empty lists in grid
         for i in range(N):
@@ -63,6 +67,8 @@ class Garden:
             self.plant_locations[plant.row, plant.col] = True
             self.curr_id += 1
             self.grid[plant.row, plant.col]['nearby'].add(plant.id)
+            self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = 1
+            self.leaf_grid[plant.row, plant.col, self.plant_types.index(plant.type)] += 1
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
@@ -207,6 +213,7 @@ class Garden:
                     if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
                         plant.num_grid_points += 1
                         self.grid[point]['nearby'].add(plant.id)
+                        self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] += 1
         else:
             for i in range(next_growth_index_plus_1, plant.growth_index + 1):
                 points = self.growth_map[i][1]
@@ -215,6 +222,7 @@ class Garden:
                     if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove(plant.id)
+                        self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] -= 1
         plant.growth_index = next_growth_index_plus_1 - 1
 
     def _get_new_points(self, plant):
@@ -249,4 +257,4 @@ class Garden:
 
     def get_state(self):
         water = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, water))
+        return np.dstack((self.plant_grid, self.leaf_grid, water))
