@@ -56,6 +56,7 @@ class Pipeline:
     def running_avg(self, list1, list2, i):
         return [(x * i + y) / (i + 1) for x,y in zip(list1, list2)]
 
+    #TODO: FIX GRAPHS
     def plot_water_map(self, folder_prefix, model_name, i, actions, m, n, plants):
         fig = plt.figure(figsize=(10, 10))
         heatmap = np.sum(actions, axis=0)
