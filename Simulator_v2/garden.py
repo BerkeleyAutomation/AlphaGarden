@@ -25,6 +25,9 @@ class Garden:
         # Grid for plant leaf state representation
         self.leaf_grid = np.zeros((N, M, len(plant_types)))
 
+        # Grid for plant radius representation
+        self.radius_grid = np.zeros((N, M, len(plant_types)))
+
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
@@ -173,7 +176,7 @@ class Garden:
         upward, outward = plant.amount_to_grow()
         plant.height += upward
         plant.radius += outward
-        #self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
+        self.radius_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
 
         self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
         self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
@@ -257,4 +260,4 @@ class Garden:
 
     def get_state(self):
         water = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, water))
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, water))
