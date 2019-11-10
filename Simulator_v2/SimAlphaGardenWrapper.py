@@ -18,6 +18,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_state(self):
         return self.garden.get_state()
 
+    def get_garden_state(self):
+        return self.garden.get_garden_state()
+
     def reward(self, state):
         total_cc = np.sum(self.garden.leaf_grid)
         cc_per_plant = [np.sum(self.garden.leaf_grid[:,:,i]) for i in range(self.garden.leaf_grid.shape[2])]

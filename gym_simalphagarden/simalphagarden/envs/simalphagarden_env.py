@@ -43,6 +43,9 @@ class SimAlphaGardenEnv(gym.Env):
         self.wrapper_env.reset()
         return self._next_observation()
 
+    def get_garden_state(self):
+        return self.wrapper_env.get_garden_state()
+
     def render(self, mode='human', close=False):
         print(f'Step: {self.current_step}')
         print(f'Reward: {self.reward}')

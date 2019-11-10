@@ -25,6 +25,9 @@ class Garden:
         # Grid for plant leaf state representation
         self.leaf_grid = np.zeros((N, M, len(plant_types)))
 
+        # Grid for plant radius representation
+        self.radius_grid = np.zeros((N, M, 1))
+
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
@@ -173,7 +176,7 @@ class Garden:
         upward, outward = plant.amount_to_grow()
         plant.height += upward
         plant.radius += outward
-        #self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
+        self.radius_grid[plant.row, plant.col, 0] = plant.radius
 
         self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
         self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
@@ -223,6 +226,8 @@ class Garden:
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove(plant.id)
                         self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] -= 1
+                        if self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] < 0:
+                            raise Exception("Cannot have negative leaf cover")
         plant.growth_index = next_growth_index_plus_1 - 1
 
     def _get_new_points(self, plant):
@@ -254,6 +259,10 @@ class Garden:
                 growth_map.append((self.step ** 0.5 * np.linalg.norm((i, j)), points))
         growth_map.sort(key = lambda x: x[0])
         return growth_map
+
+    def get_garden_state(self):
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid))
 
     def get_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)

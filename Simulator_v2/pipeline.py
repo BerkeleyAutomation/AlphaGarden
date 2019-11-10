@@ -27,14 +27,15 @@ class Pipeline:
         config['rl']['nminibatches'] = str(nminibatches)
         config['rl']['noptepochs'] = str(noptepochs)
         config['rl']['learning_rate'] = str(learning_rate)
-        config.add_section('cnn')
-        config['cnn']['output_x'] = str(cnn_args["OUTPUT_X"])
-        config['cnn']['output_y'] = str(cnn_args["OUTPUT_Y"])
-        config['cnn']['num_hidden_layers'] = str(cnn_args["NUM_HIDDEN_LAYERS"])
-        config['cnn']['num_filters'] = str(cnn_args["NUM_FILTERS"])
-        config['cnn']['num_convs'] = str(cnn_args["NUM_CONVS"])
-        config['cnn']['filter_size'] = str(cnn_args["FILTER_SIZE"])
-        config['cnn']['stride'] = str(cnn_args["STRIDE"])
+        if cnn_args:
+            config.add_section('cnn')
+            config['cnn']['output_x'] = str(cnn_args["OUTPUT_X"])
+            config['cnn']['output_y'] = str(cnn_args["OUTPUT_Y"])
+            config['cnn']['num_hidden_layers'] = str(cnn_args["NUM_HIDDEN_LAYERS"])
+            config['cnn']['num_filters'] = str(cnn_args["NUM_FILTERS"])
+            config['cnn']['num_convs'] = str(cnn_args["NUM_CONVS"])
+            config['cnn']['filter_size'] = str(cnn_args["FILTER_SIZE"])
+            config['cnn']['stride'] = str(cnn_args["STRIDE"])
         config.add_section('garden')
         config['garden']['time_steps'] = str(garden_time_steps)
         config['garden']['X'] = str(garden_x)
@@ -137,8 +138,7 @@ class Pipeline:
                 garden = np.array([[0.0 for x in range(dimensions)] for y in range(dimensions)])
                 for x in range(dimensions):
                     s = np.array([0.0 for d in range(dimensions)])
-                    for t in range(num_plant_types):
-                        s = np.add(s, np.array(final_obs[x]).T[t])
+                    s = np.add(s, np.array(final_obs[x]).T[-2])
                     garden[x] = s
 
                 plant_locations = self.plot_final_garden(folder_prefix, model_name, i, garden, garden_x, garden_y, step)
@@ -164,7 +164,8 @@ class Pipeline:
                 else:
                     action, _states = model.predict(obs)
                 obs, rewards, done, _ = env.step(action)
-                e['obs'].append(obs[0].tolist())
+                garden_obs = env.env_method('get_garden_state')
+                e['obs'].append(garden_obs[0].tolist())
                 e['rewards'].append(rewards.item())
                 e['action'].append(action[0].tolist())
                 env.render()
@@ -291,7 +292,7 @@ if __name__ == '__main__':
     garden_y = [10]
     num_plant_types = [2]
     num_plants_per_type = [1]
-    is_baseline = [False]
+    is_baseline = [True]
     import baselines.baseline_policy as bp
     baseline_policy = bp.baseline_policy
     policy_kwargs = [
@@ -299,7 +300,7 @@ if __name__ == '__main__':
             "OUTPUT_X": 10,
             "OUTPUT_Y": 10,
             "NUM_HIDDEN_LAYERS": 1,
-            "NUM_FILTERS": 5, # 2k+1 for new state representation
+            "NUM_FILTERS": 5, # 2k+2 for new state representation
             "NUM_CONVS": 1,
             "FILTER_SIZE": 3,
             "STRIDE": 1
