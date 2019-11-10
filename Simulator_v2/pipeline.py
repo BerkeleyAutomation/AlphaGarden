@@ -192,7 +192,7 @@ class Pipeline:
         garden_x = config.getint('garden', 'X')
         garden_y = config.getint('garden', 'Y')
         # Z axis contains a matrix for every plant type plus one for water levels.
-        garden_z = 3 * config.getint('garden', 'num_plant_types') + 1
+        garden_z = 2 * config.getint('garden', 'num_plant_types') + 2
         action_low = config.getfloat('action', 'low')
         action_high = config.getfloat('action', 'high')
         obs_low = config.getint('obs', 'low')
