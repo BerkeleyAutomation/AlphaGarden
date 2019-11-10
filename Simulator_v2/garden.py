@@ -173,7 +173,7 @@ class Garden:
         upward, outward = plant.amount_to_grow()
         plant.height += upward
         plant.radius += outward
-        self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
+        #self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
 
         self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
         self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
