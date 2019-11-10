@@ -51,10 +51,11 @@ class Garden:
                 plant.current_stage().skip_to_end()
             self.add_plant(plant)
 
-        self.control_plant = Plant(0, 0, color='gray')
-        self.control_plant.id = "Control"
-        if skip_initial_germination:
-            self.control_plant.current_stage().skip_to_end()
+        # Control plant
+        # self.control_plant = Plant(0, 0, color='gray')
+        # self.control_plant.id = "Control"
+        # if skip_initial_germination:
+        #     self.control_plant.current_stage().skip_to_end()
 
         # growth map for circular plant growth
         self.growth_map = self.compute_growth_map()
@@ -87,7 +88,7 @@ class Garden:
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        self.grow_control_plant()
+        # self.grow_control_plant()
 
         return self.plants.values()
 

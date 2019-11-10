@@ -60,8 +60,8 @@ class Plant:
     def switch_stage(self):
         self.stage_index += 1
         self.current_stage().start_stage()
-        print(f"Plant {self.id} moving to new stage!")
-        print(self.current_stage())
+        # print(f"Plant {self.id} moving to new stage!")
+        # print(self.current_stage())
 
     def reset(self):
         self.num_sunlight_points = 0
