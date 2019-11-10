@@ -256,5 +256,5 @@ class Garden:
         return growth_map
 
     def get_state(self):
-        water = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, water))
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))

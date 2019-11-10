@@ -66,6 +66,7 @@ class Pipeline:
         pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/water_map_' + str(i) + '.png')
 
+    ''' divide approx cc by pi and get radius^2'''
     def plot_final_garden(self, folder_prefix, model_name, i, garden, x, y, step):
         fig, ax = plt.subplots(figsize=(10, 10))
         plt.xlim((0, x * step))

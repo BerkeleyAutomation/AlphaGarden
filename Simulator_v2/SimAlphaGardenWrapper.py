@@ -19,14 +19,12 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return self.garden.get_state()
 
     def reward(self, state):
-        total_cc = 0
-        for row_matrix in state:
-            # Iterate over columns
-            for i, column in enumerate(row_matrix.T):
-                if i != len(row_matrix.T) - 1:
-                    total_cc += sum(column)
-        return total_cc
-
+        total_cc = np.sum(self.garden.leaf_grid)
+        cc_per_plant = [np.sum(self.garden.leaf_grid[:,:,i]) for i in range(self.garden.leaf_grid.shape[2])]
+        prob = cc_per_plant / total_cc
+        entropy = -np.sum(prob*np.log(prob)) 
+        return total_cc + entropy -np.sum(self.garden.water_grid) ## TODO: ADD Lambdas!!!!
+        
     '''
     Method called by the gym environment to execute an action.
 
