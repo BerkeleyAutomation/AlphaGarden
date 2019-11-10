@@ -21,14 +21,10 @@ class Garden:
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
 
-        # Defines the order in which irrigations are applied
-        self.locations = []
-
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
                 self.grid[i,j]['nearby'] = set()
-                self.locations.append((i, j))
 
         self.plant_locations = {}
 
@@ -52,6 +48,9 @@ class Garden:
         self.control_plant.id = "Control"
         if skip_initial_germination:
             self.control_plant.current_stage().skip_to_end()
+
+        # growth map for circular plant growth
+        self.growth_map = self.compute_growth_map()
 
         self.logger = Logger()
 
@@ -161,10 +160,10 @@ class Garden:
             self.update_plant_coverage(plant)
 
     def grow_plant(self, plant):
-        next_step = plant.radius // self.step + 1
-        next_line_dist = next_step * self.step
+        #next_step = plant.radius // self.step + 1
+        #next_line_dist = next_step * self.step
 
-        prev_radius = plant.radius
+        #prev_radius = plant.radius
         upward, outward = plant.amount_to_grow()
         plant.height += upward
         plant.radius += outward
@@ -176,8 +175,8 @@ class Garden:
 
         plant.reset()
 
-        if prev_radius < next_line_dist and plant.radius >= next_line_dist:
-            return next_step
+        #if prev_radius < next_line_dist and plant.radius >= next_line_dist:
+        #    return next_step
 
     def update_plant_coverage(self, plant):
         # expected = next_step * 8
@@ -192,11 +191,31 @@ class Garden:
         # start_row, end_row = max(0, plant.row - rad_step), min(self.grid.shape[0] - 1, plant.row + rad_step)
         # start_col, end_col = max(0, plant.col - rad_step), min(self.grid.shape[1] - 1, plant.col + rad_step)
 
-        for point in self._get_new_points(plant):
-            if self.within_radius(point, plant):
-                if plant.id not in self.grid[point]['nearby']:
-                    plant.num_grid_points += 1
-                    self.grid[point]['nearby'].add(plant.id)
+        # for point in self._get_new_points(plant):
+        #     if self.within_radius(point, plant):
+        #         if plant.id not in self.grid[point]['nearby']:
+        #             plant.num_grid_points += 1
+        #             self.grid[point]['nearby'].add(plant.id)
+
+        distances = np.array(list(zip(*self.growth_map))[0])
+        next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
+        if next_growth_index_plus_1 > plant.growth_index:
+            for i in range(plant.growth_index + 1, next_growth_index_plus_1):
+                points = self.growth_map[i][1]
+                for p in points:
+                    point = p[0] + plant.row, p[1] + plant.col
+                    if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
+                        plant.num_grid_points += 1
+                        self.grid[point]['nearby'].add(plant.id)
+        else:
+            for i in range(next_growth_index_plus_1, plant.growth_index + 1):
+                points = self.growth_map[i][1]
+                for p in points:
+                    point = p[0] + plant.row, p[1] + plant.col
+                    if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
+                        plant.num_grid_points -= 1
+                        self.grid[point]['nearby'].remove(plant.id)
+        plant.growth_index = next_growth_index_plus_1 - 1
 
     def _get_new_points(self, plant):
         rad_step = int(plant.radius // self.step)
@@ -217,6 +236,16 @@ class Garden:
     def within_radius(self, grid_pos, plant):
         dist = self.step ** 0.5 * np.linalg.norm((grid_pos[0] - plant.row, grid_pos[1] - plant.col))
         return dist <= plant.radius
+
+    def compute_growth_map(self):
+        growth_map = []
+        for i in range(max(self.M, self.N) // 2 + 1):
+            for j in range(i + 1):
+                points = set()
+                points.update(((i, j), (i, -j), (-i, j), (-i, -j), (j, i), (j, -i), (-j, i), (-j, -i)))
+                growth_map.append((self.step ** 0.5 * np.linalg.norm((i, j)), points))
+        growth_map.sort(key = lambda x: x[0])
+        return growth_map
 
     def get_state(self):
         water = np.expand_dims(self.grid['water'], axis=2)
