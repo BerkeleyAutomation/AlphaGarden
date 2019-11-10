@@ -7,11 +7,11 @@ import pathlib
 import configparser
 import matplotlib.pyplot as plt
 import numpy as np
+from cnn_policy import CustomCnnPolicy
 from shutil import copyfile
 from plant import Plant
 from plant_type import PlantType
 from SimAlphaGardenWrapper import SimAlphaGardenWrapper
-from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv, VecCheckNan
 from stable_baselines import PPO2
 
@@ -19,10 +19,22 @@ class Pipeline:
     def __init__(self):
         pass
 
-    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=0.5, obs_low=0, obs_high=1000):
+    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=0.5, obs_low=0, obs_high=1000, ent_coef=0.01, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
         config = configparser.ConfigParser()
         config.add_section('rl')
         config['rl']['time_steps'] = str(rl_time_steps)
+        config['rl']['ent_coef'] = str(ent_coef)
+        config['rl']['nminibatches'] = str(nminibatches)
+        config['rl']['noptepochs'] = str(noptepochs)
+        config['rl']['learning_rate'] = str(learning_rate)
+        config.add_section('cnn')
+        config['cnn']['output_x'] = str(cnn_args["OUTPUT_X"])
+        config['cnn']['output_y'] = str(cnn_args["OUTPUT_Y"])
+        config['cnn']['num_hidden_layers'] = str(cnn_args["NUM_HIDDEN_LAYERS"])
+        config['cnn']['num_filters'] = str(cnn_args["NUM_FILTERS"])
+        config['cnn']['num_convs'] = str(cnn_args["NUM_CONVS"])
+        config['cnn']['filter_size'] = str(cnn_args["FILTER_SIZE"])
+        config['cnn']['stride'] = str(cnn_args["STRIDE"])
         config.add_section('garden')
         config['garden']['time_steps'] = str(garden_time_steps)
         config['garden']['X'] = str(garden_x)
@@ -85,7 +97,7 @@ class Pipeline:
 
     def plot_average_reward(self, folder_prefix, model_name, reward, days, y_range):
         fig = plt.figure(figsize=(28, 10))
-        plt.xticks(np.arange(0, days, 5))
+        plt.xticks(np.arange(0, days + 5, 5))
         plt.yticks(np.arange(0.0, y_range, 1))
         plt.title('Average Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
@@ -162,20 +174,24 @@ class Pipeline:
             f.write(json.dumps(e))
             f.close()
 
-    def single_run(self, filename_time, num_evals, is_baseline=False, baseline_policy=None):
+    def single_run(self, filename_time, num_evals, policy_kwargs=None, is_baseline=False, baseline_policy=None):
         filename_time = str(filename_time)
 
         config = configparser.ConfigParser()
         config.read('gym_config/config.ini')
 
         rl_time_steps = config.getint('rl', 'time_steps')
+        ent_coef = config.getfloat('rl', 'ent_coef')
+        nminibatches = config.getint('rl', 'nminibatches')
+        noptepochs = config.getint('rl', 'noptepochs')
+        learning_rate = config.getfloat('rl', 'learning_rate')
         time_steps = config.getint('garden', 'time_steps')
         step = config.getint('garden', 'step')
         num_plants_per_type = config.getint('garden', 'num_plants_per_type')
         num_plant_types = config.getint('garden', 'num_plant_types')
         garden_x = config.getint('garden', 'X')
         garden_y = config.getint('garden', 'Y')
-        # Z axis contains a matrix for every plant type plus one for water levels.
+        # Z axis contains two matricies for every plant type plus one for water levels.
         garden_z = config.getint('garden', 'num_plant_types') + 1
         action_low = config.getfloat('action', 'low')
         action_high = config.getfloat('action', 'high')
@@ -196,7 +212,7 @@ class Pipeline:
         env = VecCheckNan(env, raise_exception=False)
 
         if is_baseline:
-            model_name = 'baseline_v2_' + filename_time
+            model_name = str(garden_x) + 'x' + str(garden_y) + '_garden_' + str(num_plant_types * num_plants_per_type) + '_plants_' + 'baseline_v2_' + filename_time
 
             pathlib.Path('Baseline_Configs').mkdir(parents=True, exist_ok=True)
             copyfile('gym_config/config.ini', './Baseline_Configs/' + model_name + '.ini')
@@ -209,13 +225,13 @@ class Pipeline:
         else:
             pathlib.Path('ppo_v2_tensorboard').mkdir(parents=True, exist_ok=True)
             # Instantiate the agent
-            model = PPO2(MlpPolicy, env, learning_rate=1e-8, verbose=1, tensorboard_log="./ppo_v2_tensorboard/")
+            model = PPO2(CustomCnnPolicy, env, policy_kwargs=policy_kwargs, ent_coef=ent_coef, nminibatches=nminibatches, noptepochs=noptepochs, learning_rate=learning_rate, verbose=1, tensorboard_log="./ppo_v2_tensorboard/")
 
             # Train the agent
             model.learn(total_timesteps=rl_time_steps)  # this will crash explaining that the invalid value originated from the env
 
             pathlib.Path('PPO_Models').mkdir(parents=True, exist_ok=True)
-            model_name = 'ppo2_v2_' + filename_time
+            model_name = str(garden_x) + 'x' + str(garden_y) + '_garden_' + str(num_plant_types * num_plants_per_type) + '_plants_' + 'ppo2_v2_' + filename_time
             model.save('./PPO_Models/' + model_name)
 
             pathlib.Path('PPO_Configs').mkdir(parents=True, exist_ok=True)
@@ -227,8 +243,8 @@ class Pipeline:
             # Graph evaluations
             self.graph_evaluations('PPO', model_name, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
 
-    def batch_run(self, n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=50, is_baseline=[], baseline_policy=None):
-        assert(len(rl_time_steps) == n)
+    def batch_run(self, n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=[], num_evals=50, is_baseline=[], baseline_policy=None):
+        assert(len(rl_config) == n)
         assert(len(garden_x) == n)
         assert(len(garden_y) == n)
         assert(len(num_plant_types) == n)
@@ -237,31 +253,54 @@ class Pipeline:
         if is_baseline:
             assert(len(is_baseline) == n)
             assert(baseline_policy != None)
+            assert(len(policy_kwargs) == n)
+        else:
+            assert(len(policy_kwargs) == 1)
 
         if is_baseline:
             for i in range(n):
                 filename_time = time.strftime('%Y-%m-%d-%H-%M-%S')
-                self.create_config(rl_time_steps=rl_time_steps[i], garden_x=garden_x[i], garden_y=garden_y[i], num_plant_types=num_plant_types[i], num_plants_per_type=num_plants_per_type[i])
                 if is_baseline[i]:
+                    self.create_config(rl_time_steps=rl_config[i]['time_steps'], garden_x=garden_x[i], garden_y=garden_y[i], num_plant_types=num_plant_types[i], num_plants_per_type=num_plants_per_type[i])
                     self.single_run(filename_time, num_evals, is_baseline=True, baseline_policy=baseline_policy)
                 else:
-                    self.single_run(filename_time, num_evals, is_baseline=False)
+                    self.create_config(\
+                        rl_time_steps=rl_config[i]['time_steps'], garden_x=garden_x[i], garden_y=garden_y[i], num_plant_types=num_plant_types[i], num_plants_per_type=num_plants_per_type[i], ent_coef=rl_config[i]['ent_coef'], nminibatches=rl_config[i]['nminibatches'], noptepochs=rl_config[i]['noptepochs'], learning_rate=rl_config[i]['learning_rate'], cnn_args=policy_kwargs[i])
+                    self.single_run(filename_time, num_evals, policy_kwargs[i], is_baseline=False)
         else:
             for i in range(n):
                 filename_time = time.strftime('%Y-%m-%d-%H-%M-%S')
-                self.create_config(rl_time_steps=rl_time_steps[i], garden_x=garden_x[i], garden_y=garden_y[i], num_plant_types=num_plant_types[i], num_plants_per_type=num_plants_per_type[i])
-                self.single_run(filename_time, num_evals, is_baseline=False)
+                self.create_config(\
+                    rl_time_steps=rl_config[i]['time_steps'], garden_x=garden_x[i], garden_y=garden_y[i], num_plant_types=num_plant_types[i], num_plants_per_type=num_plants_per_type[i], ent_coef=rl_config[i]['ent_coef'], nminibatches=rl_config[i]['nminibatches'], noptepochs=rl_config[i]['noptepochs'], learning_rate=rl_config[i]['learning_rate'], cnn_args=policy_kwargs[i])
+                self.single_run(filename_time, num_evals, policy_kwargs[0], is_baseline=False)
 
 if __name__ == '__main__':
-    n = 3
-    rl_time_steps = [1, 1, 1]
-    garden_x = [10, 20, 50]
-    garden_y = [10, 20, 50]
-    num_plant_types = [2, 2, 3]
-    num_plants_per_type = [2, 2, 2]
-    is_baseline = [False, True, False]
+    n = 1
+    rl_config = [
+        {
+            'time_steps': 1,
+            'ent_coef': 0.01,
+            'nminibatches': 4,
+            'noptepochs': 4,
+            'learning_rate': 1e-8
+        }
+    ]
+    garden_x = [10]
+    garden_y = [10]
+    num_plant_types = [2]
+    num_plants_per_type = [1]
+    is_baseline = [False]
     import baselines.baseline_policy as bp
     baseline_policy = bp.baseline_policy
-    Pipeline().batch_run(n, rl_time_steps, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
-
-#TODO: garden size, learning rate, rl time steps, total plants
+    policy_kwargs = [
+        {
+            "OUTPUT_X": 10,
+            "OUTPUT_Y": 10,
+            "NUM_HIDDEN_LAYERS": 1,
+            "NUM_FILTERS": 5, # 2k+1 for new state representation
+            "NUM_CONVS": 1,
+            "FILTER_SIZE": 3,
+            "STRIDE": 1
+        }
+    ]
+    Pipeline().batch_run(n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=policy_kwargs, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)
