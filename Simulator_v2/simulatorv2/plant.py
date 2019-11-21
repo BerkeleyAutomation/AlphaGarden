@@ -1,4 +1,4 @@
-from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
+from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 
 class Plant:
 
@@ -60,7 +60,6 @@ class Plant:
     def switch_stage(self):
         self.stage_index += 1
         self.current_stage().start_stage()
-
         # print(f"Plant {self.id} moving to new stage!")
         # print(self.current_stage())
 

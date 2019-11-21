@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from plant import Plant
+from simulatorv2.plant import Plant
 from datetime import datetime
 
 class PlantType:
@@ -34,8 +34,11 @@ class PlantType:
         np.random.seed(random.randint(0, 99999999))
         plants = []
         for color, (c1, growth_time), name in plant_types:
-            x_locations = np.random.randint(1, num_x_steps - 1, (plants_per_type, 1))
-            y_locations = np.random.randint(1, num_y_steps - 1, (plants_per_type, 1))
+            x_locations = np.array([[num_x_steps - 1]])
+            y_locations = np.array([[num_y_steps - 1]])
+            if num_x_steps > 2 and num_y_steps > 2:
+                x_locations = np.random.randint(1, num_x_steps - 1, (plants_per_type, 1))
+                y_locations = np.random.randint(1, num_y_steps - 1, (plants_per_type, 1))
             locations = np.hstack((x_locations, y_locations))
             plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color, plant_type=name) for row, col in locations])
         return plants

@@ -46,6 +46,9 @@ class SimAlphaGardenEnv(gym.Env):
     def get_garden_state(self):
         return self.wrapper_env.get_garden_state()
 
+    def get_radius_grid(self):
+       return self.wrapper_env.get_radius_grid()
+
     def render(self, mode='human', close=False):
         print(f'Step: {self.current_step}')
         print(f'Reward: {self.reward}')

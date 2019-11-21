@@ -1,6 +1,6 @@
 from wrapperenv import WrapperEnv
-from garden import Garden
-from plant_type import PlantType
+from simulatorv2.garden import Garden
+from simulatorv2.plant_type import PlantType
 import numpy as np
 import configparser
 
@@ -15,7 +15,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.PlantType = PlantType()
         self.reset()
         self.state = self.garden.get_state()
-        self.cumulative_action = np.zeros((N*M,))
+        self.curr_action = np.zeros((N*M,))
          
         self.config = configparser.ConfigParser()
         self.config.read('gym_config/config.ini')
@@ -26,13 +26,21 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_garden_state(self):
         return self.garden.get_garden_state()
 
+    def get_radius_grid(self):
+        return self.garden.get_radius_grid()
+
+    def get_cumulative_action(self):
+        return self.curr_action
+
     def reward(self, state):
         total_cc = np.sum(self.garden.leaf_grid)
         cc_per_plant = [np.sum(self.garden.leaf_grid[:,:,i]) for i in range(self.garden.leaf_grid.shape[2])]
         prob = cc_per_plant / total_cc
+        prob = prob[np.where(prob > 0)]
         entropy = -np.sum(prob*np.log(prob))
         water_coef = self.config.getfloat('cnn', 'water_coef')
-        return total_cc + (0 * entropy) - (water_coef * np.sum(self.cumulative_action)) ## TODO: ADD Lambdas!!!!
+        cc_coef = self.config.getfloat('cnn', 'cc_coef')
+        return (cc_coef * total_cc) + (0 * entropy) - (water_coef * np.sum(self.curr_action))
         
     '''
     Method called by the gym environment to execute an action.
@@ -44,7 +52,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         state - state of the environment after irrigation
     '''
     def take_action(self, action):
-        self.cumulative_action += action
+        self.curr_action = action
         self.garden.perform_timestep(irrigations=action)
         return self.garden.get_state()
 
