@@ -30,7 +30,6 @@ class SimAlphaGardenEnv(gym.Env):
 
     def step(self, action):
         state = self._take_action(action)
-
         self.current_step += 1
 
         self.reward = self.wrapper_env.reward(state)
@@ -43,6 +42,9 @@ class SimAlphaGardenEnv(gym.Env):
         self.current_step = 0
         self.wrapper_env.reset()
         return self._next_observation()
+
+    def get_garden_state(self):
+        return self.wrapper_env.get_garden_state()
 
     def render(self, mode='human', close=False):
         print(f'Step: {self.current_step}')

@@ -14,12 +14,15 @@ from plant_type import PlantType
 from SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from stable_baselines.common.vec_env import DummyVecEnv, VecCheckNan
 from stable_baselines import PPO2
+import cProfile
+import pstats
+import io
 
 class Pipeline:
     def __init__(self):
         pass
 
-    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=0.5, obs_low=0, obs_high=1000, ent_coef=0.01, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
+    def create_config(self, rl_time_steps=5000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=1.0, obs_low=0, obs_high=1000, ent_coef=0.01, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
         config = configparser.ConfigParser()
         config.add_section('rl')
         config['rl']['time_steps'] = str(rl_time_steps)
@@ -27,14 +30,16 @@ class Pipeline:
         config['rl']['nminibatches'] = str(nminibatches)
         config['rl']['noptepochs'] = str(noptepochs)
         config['rl']['learning_rate'] = str(learning_rate)
-        config.add_section('cnn')
-        config['cnn']['output_x'] = str(cnn_args["OUTPUT_X"])
-        config['cnn']['output_y'] = str(cnn_args["OUTPUT_Y"])
-        config['cnn']['num_hidden_layers'] = str(cnn_args["NUM_HIDDEN_LAYERS"])
-        config['cnn']['num_filters'] = str(cnn_args["NUM_FILTERS"])
-        config['cnn']['num_convs'] = str(cnn_args["NUM_CONVS"])
-        config['cnn']['filter_size'] = str(cnn_args["FILTER_SIZE"])
-        config['cnn']['stride'] = str(cnn_args["STRIDE"])
+        if cnn_args:
+            config.add_section('cnn')
+            config['cnn']['output_x'] = str(cnn_args["OUTPUT_X"])
+            config['cnn']['output_y'] = str(cnn_args["OUTPUT_Y"])
+            config['cnn']['num_hidden_layers'] = str(cnn_args["NUM_HIDDEN_LAYERS"])
+            config['cnn']['num_filters'] = str(cnn_args["NUM_FILTERS"])
+            config['cnn']['num_convs'] = str(cnn_args["NUM_CONVS"])
+            config['cnn']['filter_size'] = str(cnn_args["FILTER_SIZE"])
+            config['cnn']['stride'] = str(cnn_args["STRIDE"])
+            config['cnn']['water_coef'] = str(cnn_args['WATER_COEF'])
         config.add_section('garden')
         config['garden']['time_steps'] = str(garden_time_steps)
         config['garden']['X'] = str(garden_x)
@@ -56,6 +61,7 @@ class Pipeline:
     def running_avg(self, list1, list2, i):
         return [(x * i + y) / (i + 1) for x,y in zip(list1, list2)]
 
+    #TODO: FIX GRAPHS
     def plot_water_map(self, folder_prefix, model_name, i, actions, m, n, plants):
         fig = plt.figure(figsize=(10, 10))
         heatmap = np.sum(actions, axis=0)
@@ -66,6 +72,7 @@ class Pipeline:
         pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/water_map_' + str(i) + '.png')
 
+    ''' divide approx cc by pi and get radius^2'''
     def plot_final_garden(self, folder_prefix, model_name, i, garden, x, y, step):
         fig, ax = plt.subplots(figsize=(10, 10))
         plt.xlim((0, x * step))
@@ -95,10 +102,10 @@ class Pipeline:
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/final_garden_' + str(i) + '.png')
         return plant_locations
 
-    def plot_average_reward(self, folder_prefix, model_name, reward, days, y_range):
+    def plot_average_reward(self, folder_prefix, model_name, reward, days, x_range, y_range, ticks):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days + 5, 5))
-        plt.yticks(np.arange(0.0, y_range, 5))
+        plt.yticks(np.arange(x_range, y_range, ticks))
         plt.title('Average Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
@@ -107,10 +114,10 @@ class Pipeline:
         pathlib.Path(folder_prefix + '_Graphs/' + model_name).mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_prefix + '_Graphs/' + model_name + '/avg_reward.png')
 
-    def plot_stddev_reward(self, folder_prefix, model_name, reward, reward_stddev, days, y_range):
+    def plot_stddev_reward(self, folder_prefix, model_name, reward, reward_stddev, days, x_range, y_range, ticks):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days, 10))
-        plt.yticks(np.arange(0, y_range, 5))
+        plt.yticks(np.arange(x_range, y_range, ticks))
         plt.title('Std Dev of Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
@@ -135,8 +142,7 @@ class Pipeline:
                 garden = np.array([[0.0 for x in range(dimensions)] for y in range(dimensions)])
                 for x in range(dimensions):
                     s = np.array([0.0 for d in range(dimensions)])
-                    for t in range(num_plant_types):
-                        s = np.add(s, np.array(final_obs[x]).T[t])
+                    s = np.add(s, np.array(final_obs[x]).T[-2])
                     garden[x] = s
 
                 plant_locations = self.plot_final_garden(folder_prefix, model_name, i, garden, garden_x, garden_y, step)
@@ -144,8 +150,10 @@ class Pipeline:
 
         rewards_stddev = [np.std(val) for val in r]
 
-        self.plot_average_reward(folder_prefix, model_name, r, time_steps, max(r) + 10)
-        self.plot_stddev_reward(folder_prefix, model_name, rewards, rewards_stddev, time_steps, max(r) + 10)
+        min_r = min(r) - 10
+        max_r = max(r) + 10
+        self.plot_average_reward(folder_prefix, model_name, r, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
+        self.plot_stddev_reward(folder_prefix, model_name, rewards, rewards_stddev, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
 
     def evaulate_policy(self, folder_prefix, num_evals, env, model_name='', is_baseline=False, baseline_policy=None, step=1):
         model = None
@@ -154,15 +162,17 @@ class Pipeline:
         done = False
         for i in range(num_evals):
             obs = env.reset()
+            garden_obs = env.env_method('get_garden_state')
             e = {'obs': [], 'rewards': [], 'action': []}
             while not done:
                 action = None
                 if is_baseline:
-                    action = baseline_policy(obs, step, 0.5, 0.5, 5)
+                    action = baseline_policy(garden_obs, step, 0.5, 0.5, 5)
                 else:
                     action, _states = model.predict(obs)
                 obs, rewards, done, _ = env.step(action)
-                e['obs'].append(obs[0].tolist())
+                garden_obs = env.env_method('get_garden_state')
+                e['obs'].append(garden_obs[0].tolist())
                 e['rewards'].append(rewards.item())
                 e['action'].append(action[0].tolist())
                 env.render()
@@ -175,7 +185,9 @@ class Pipeline:
             f.close()
 
     def single_run(self, filename_time, num_evals, policy_kwargs=None, is_baseline=False, baseline_policy=None):
-        filename_time = str(filename_time)
+        # initialize cProfile
+        profiler_object = cProfile.Profile()
+        profiler_object.enable()
 
         config = configparser.ConfigParser()
         config.read('gym_config/config.ini')
@@ -192,7 +204,7 @@ class Pipeline:
         garden_x = config.getint('garden', 'X')
         garden_y = config.getint('garden', 'Y')
         # Z axis contains a matrix for every plant type plus one for water levels.
-        garden_z = 2 * config.getint('garden', 'num_plant_types') + 2
+        garden_z = 2 * config.getint('garden', 'num_plant_types') + 1
         action_low = config.getfloat('action', 'low')
         action_high = config.getfloat('action', 'high')
         obs_low = config.getint('obs', 'low')
@@ -243,6 +255,21 @@ class Pipeline:
             # Graph evaluations
             self.graph_evaluations('PPO', model_name, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
 
+        profiler_object.disable()
+
+        # dump the profiler stats 
+        s = io.StringIO()
+        ps = pstats.Stats(profiler_object, stream=s).sort_stats('cumulative')
+        pathlib.Path('Timings').mkdir(parents=True, exist_ok=True)
+        ps.dump_stats('Timings/dump.txt')
+
+        # convert to human readable format
+        out_stream = open('Timings/time.txt', 'w')
+        ps = pstats.Stats('Timings/dump.txt', stream=out_stream)
+        ps.strip_dirs().sort_stats('cumulative').print_stats()
+        filename_time = str(filename_time)
+
+
     def batch_run(self, n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=[], num_evals=50, is_baseline=[], baseline_policy=None):
         assert(len(rl_config) == n)
         assert(len(garden_x) == n)
@@ -282,7 +309,7 @@ if __name__ == '__main__':
             'ent_coef': 0.01,
             'nminibatches': 4,
             'noptepochs': 4,
-            'learning_rate': 1e-8
+            'learning_rate': 1e-8,
         }
     ]
     garden_x = [10]
@@ -297,10 +324,11 @@ if __name__ == '__main__':
             "OUTPUT_X": 10,
             "OUTPUT_Y": 10,
             "NUM_HIDDEN_LAYERS": 1,
-            "NUM_FILTERS": 5, # 2k+1 for new state representation
+            "NUM_FILTERS": 5, # 2k+2 for new state representation
             "NUM_CONVS": 1,
             "FILTER_SIZE": 3,
-            "STRIDE": 1
+            "STRIDE": 1,
+            'WATER_COEF': 1
         }
     ]
     Pipeline().batch_run(n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=policy_kwargs, num_evals=1, is_baseline=is_baseline, baseline_policy=baseline_policy)

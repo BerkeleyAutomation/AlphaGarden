@@ -51,10 +51,11 @@ class Garden:
                 plant.current_stage().skip_to_end()
             self.add_plant(plant)
 
-        self.control_plant = Plant(0, 0, color='gray')
-        self.control_plant.id = "Control"
-        if skip_initial_germination:
-            self.control_plant.current_stage().skip_to_end()
+        # Control plant
+        # self.control_plant = Plant(0, 0, color='gray')
+        # self.control_plant.id = "Control"
+        # if skip_initial_germination:
+        #     self.control_plant.current_stage().skip_to_end()
 
         # growth map for circular plant growth
         self.growth_map = self.compute_growth_map()
@@ -87,7 +88,7 @@ class Garden:
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        self.grow_control_plant()
+        # self.grow_control_plant()
 
         return self.plants.values()
 
@@ -226,6 +227,10 @@ class Garden:
         growth_map.sort(key = lambda x: x[0])
         return growth_map
 
+    def get_garden_state(self):
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid))
+
     def get_state(self):
-        water = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, water))
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))

@@ -38,10 +38,17 @@ def run_simulation(args):
     start_time = time.time()
 
     # creates garden, runs simulation for NUM_TIMESTEPS timesteps, creates circles to plot
-    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil'])
+    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil', 'thyme', 'oregano'])
     frames = []
     for i in range(NUM_TIMESTEPS):
         plants = garden.perform_timestep(water_amt=daily_water, irrigations=irrigation_policy(i))
+        total_cc = np.sum(garden.leaf_grid)
+        cc_per_plant = [np.sum(garden.leaf_grid[:,:,i]) for i in range(garden.leaf_grid.shape[2])]
+        print(cc_per_plant)
+        prob = cc_per_plant / total_cc
+        prob = prob[np.where(prob > 0)]
+        entropy = -np.sum(prob*np.log(prob))
+        print(entropy)
         plots = []
         for plant in sorted(plants, key=lambda plant: plant.height, reverse=(args.display == 'p')):
             circle = plt.Circle((plant.row, plant.col) * STEP, plant.radius, color=plant.color)
