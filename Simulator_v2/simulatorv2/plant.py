@@ -1,4 +1,4 @@
-from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
+from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 
 class Plant:
 
