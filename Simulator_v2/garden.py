@@ -11,6 +11,7 @@ class Garden:
         self.M = M
 
         # list of plant types the garden will support
+        # TODO: Set this list to be constant
         self.plant_types = plant_types
 
         # Structured array of gridpoints. Each point contains its water levels
@@ -21,14 +22,18 @@ class Garden:
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
 
-        # Defines the order in which irrigations are applied
-        self.locations = []
+        # Grid for plant leaf state representation
+        self.leaf_grid = np.zeros((N, M, len(plant_types)))
+
+        # Grid for plant radius representation
+        self.radius_grid = np.zeros((N, M, 1))
 
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
-                self.grid[i,j]['nearby'] = []
-                self.locations.append((i, j))
+                self.grid[i,j]['nearby'] = set()
+
+        self.plant_locations = {}
 
         # distance between adjacent points in grid
         self.step = step
@@ -47,29 +52,36 @@ class Garden:
             self.add_plant(plant)
 
         self.control_plant = Plant(0, 0, color='gray')
+        self.control_plant.id = "Control"
         if skip_initial_germination:
             self.control_plant.current_stage().skip_to_end()
+
+        # growth map for circular plant growth
+        self.growth_map = self.compute_growth_map()
 
         self.logger = Logger()
 
     def add_plant(self, plant):
-        if (plant.row, plant.col) in self.plants:
+        if (plant.row, plant.col) in self.plant_locations:
             print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
         else:
             plant.id = self.curr_id
-            self.plants[plant.row, plant.col] = plant
+            self.plants[plant.id] = plant
+            self.plant_locations[plant.row, plant.col] = True
             self.curr_id += 1
-            self.grid[plant.row, plant.col]['nearby'].append(plant)
+            self.grid[plant.row, plant.col]['nearby'].add(plant.id)
+            self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = 1
+            self.leaf_grid[plant.row, plant.col, self.plant_types.index(plant.type)] += 1
 
     # Updates plants after one timestep, returns list of plant objects
-    # irrigations is list of (location, amount) tuples
-    def perform_timestep(self, water_amt=0, uniform_irrigation=True, irrigations=[]):
-        irrigations = irrigations[0]
-        if uniform_irrigation:
+    # irrigations is NxM vector of irrigation amounts
+    def perform_timestep(self, water_amt=0, irrigations=None):
+        if irrigations is None:
+            # Default to uniform irrigation
             self.reset_water(water_amt)
         else:
-            for i in range(len(irrigations)):
-                location = (i / self.N, i % self.M)
+            for i in np.nonzero(irrigations)[0]:
+                location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
 
         self.distribute_light()
@@ -81,30 +93,25 @@ class Garden:
 
     def grow_control_plant(self):
         cp = self.control_plant
-        cp.num_sunlight_points = cp.num_grid_points = ((cp.radius // self.step * self.step) * 2 + 1) ** 2
+        cp.num_sunlight_points = cp.num_grid_points
         cp.water_amt = cp.desired_water_amt()
         self.logger.log(Event.WATER_REQUIRED, "Control", cp.water_amt)
 
-        upward, outward = cp.amount_to_grow()
-        cp.height += upward
-        cp.radius += outward
-
-        self.logger.log(Event.WATER_ABSORBED, "Control", cp.water_amt)
-        self.logger.log(Event.RADIUS_UPDATED, "Control", cp.radius)
-        self.logger.log(Event.HEIGHT_UPDATED, "Control", cp.height)
-        cp.reset()
+        next_step = self.grow_plant(cp)
+        if next_step:
+            cp.num_grid_points += next_step * 8
 
     # Resets all water resource levels to the same amount
     def reset_water(self, water_amt):
         self.grid['water'] = water_amt
 
-    # Updates water levels in grid in response to irrigation, location is (x, y) tuple
+    # Updates water levels in grid in response to irrigation, location is (x, y) coordinate tuple
     def irrigate(self, location, amount):
-        closest_x, closest_y = round(location[0] / self.step), round(location[1] / self.step)
-        for i in range(max(0, closest_x - self.irr_threshold), min(self.grid.shape[0], closest_x + self.irr_threshold + 1)):
-            for j in range(max(0, closest_y - self.irr_threshold), min(self.grid.shape[1], closest_y + self.irr_threshold + 1)):
-                # updates water level in resource grid
-                self.grid[i,j]['water'] += amount
+        lower_x = max(0, location[0] - self.irr_threshold)
+        upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
+        lower_y = max(0, location[1] - self.irr_threshold)
+        upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
+        self.grid[lower_x:upper_x,lower_y:upper_y]['water'] += amount
 
     def get_water_amounts(self, step=5):
         amounts = []
@@ -126,8 +133,8 @@ class Garden:
     def distribute_light(self):
         for point in self.enumerate_grid():
             if point['nearby']:
-                tallest = max(point['nearby'], key=lambda plant: plant.height)
-                tallest.add_sunlight_point()
+                tallest_id = max(point['nearby'], key=lambda id: self.plants[id].height)
+                self.plants[tallest_id].add_sunlight_point()
 
     def distribute_water(self):
         # Log desired water levels of each plant before distributing
@@ -136,12 +143,12 @@ class Garden:
 
         for point in self.enumerate_grid():
             if point['nearby']:
-                plants = list(point['nearby'])
+                plant_ids = list(point['nearby'])
 
-                while point['water'] > 0 and plants:
+                while point['water'] > 0 and plant_ids:
                     # Pick a random plant to give water to
-                    i = np.random.choice(range(len(plants)))
-                    plant = plants[i]
+                    i = np.random.choice(range(len(plant_ids)))
+                    plant = self.plants[plant_ids[i]]
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
@@ -150,43 +157,75 @@ class Garden:
                         plant.water_amt += water_to_absorb
                         point['water'] -= water_to_absorb
 
-                    plants.pop(i)
+                    plant_ids.pop(i)
 
             # Water evaporation/drainage from soil
             point['water'] = max(0, point['water'] - self.drainage_rate)
 
     def grow_plants(self):
         for plant in self.plants.values():
-            next_step = plant.radius // self.step + 1
-            next_line_dist = next_step * self.step
+            self.grow_plant(plant)
+            # if next_step:
+            self.update_plant_coverage(plant)
 
-            prev_radius = plant.radius
-            upward, outward = plant.amount_to_grow()
-            plant.height += upward
-            plant.radius += outward
-            self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
+    def grow_plant(self, plant):
+        #next_step = plant.radius // self.step + 1
+        #next_line_dist = next_step * self.step
 
-            if prev_radius < next_line_dist and plant.radius >= next_line_dist:
-                self.update_plant_coverage(plant, int(next_step))
+        #prev_radius = plant.radius
+        upward, outward = plant.amount_to_grow()
+        plant.height += upward
+        plant.radius += outward
+        self.radius_grid[plant.row, plant.col, 0] = plant.radius
 
-            self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
-            self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
-            self.logger.log(Event.HEIGHT_UPDATED, plant.id, plant.height)
-            plant.reset()
+        self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
+        self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
+        self.logger.log(Event.HEIGHT_UPDATED, plant.id, plant.height)
 
-    def update_plant_coverage(self, plant, next_step):
-        row, col = plant.row, plant.col
-        start_row, end_row = max(row - next_step, 0), min(row + next_step, self.grid.shape[0] - 1)
-        start_col, end_col = max(col - next_step, 0), min(col + next_step, self.grid.shape[1] - 1)
-        for col in range(start_col, end_col + 1):
-            self.grid[start_row, col]['nearby'].append(plant)
-            self.grid[end_row, col]['nearby'].append(plant)
-        for row in range(start_row + 1, end_row):
-            self.grid[row, start_col]['nearby'].append(plant)
-            self.grid[row, end_col]['nearby'].append(plant)
+        plant.reset()
 
-        plant.num_grid_points += next_step * 8
+        #if prev_radius < next_line_dist and plant.radius >= next_line_dist:
+        #    return next_step
+
+    def update_plant_coverage(self, plant):
+        distances = np.array(list(zip(*self.growth_map))[0])
+        next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
+        if next_growth_index_plus_1 > plant.growth_index:
+            for i in range(plant.growth_index + 1, next_growth_index_plus_1):
+                points = self.growth_map[i][1]
+                for p in points:
+                    point = p[0] + plant.row, p[1] + plant.col
+                    if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
+                        plant.num_grid_points += 1
+                        self.grid[point]['nearby'].add(plant.id)
+                        self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] += 1
+        else:
+            for i in range(next_growth_index_plus_1, plant.growth_index + 1):
+                points = self.growth_map[i][1]
+                for p in points:
+                    point = p[0] + plant.row, p[1] + plant.col
+                    if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
+                        plant.num_grid_points -= 1
+                        self.grid[point]['nearby'].remove(plant.id)
+                        self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] -= 1
+                        if self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] < 0:
+                            raise Exception("Cannot have negative leaf cover")
+        plant.growth_index = next_growth_index_plus_1 - 1
+
+    def within_radius(self, grid_pos, plant):
+        dist = self.step ** 0.5 * np.linalg.norm((grid_pos[0] - plant.row, grid_pos[1] - plant.col))
+        return dist <= plant.radius
+
+    def compute_growth_map(self):
+        growth_map = []
+        for i in range(max(self.M, self.N) // 2 + 1):
+            for j in range(i + 1):
+                points = set()
+                points.update(((i, j), (i, -j), (-i, j), (-i, -j), (j, i), (j, -i), (-j, i), (-j, -i)))
+                growth_map.append((self.step ** 0.5 * np.linalg.norm((i, j)), points))
+        growth_map.sort(key = lambda x: x[0])
+        return growth_map
 
     def get_state(self):
         water = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, water))
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, water))

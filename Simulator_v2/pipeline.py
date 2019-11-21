@@ -98,7 +98,7 @@ class Pipeline:
     def plot_average_reward(self, folder_prefix, model_name, reward, days, y_range):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days + 5, 5))
-        plt.yticks(np.arange(0.0, y_range, 1))
+        plt.yticks(np.arange(0.0, y_range, 5))
         plt.title('Average Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
@@ -110,7 +110,7 @@ class Pipeline:
     def plot_stddev_reward(self, folder_prefix, model_name, reward, reward_stddev, days, y_range):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days, 10))
-        plt.yticks(np.arange(0, y_range, 1))
+        plt.yticks(np.arange(0, y_range, 5))
         plt.title('Std Dev of Reward Over ' + str(days) + ' Days', fontsize=18)
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
@@ -192,7 +192,7 @@ class Pipeline:
         garden_x = config.getint('garden', 'X')
         garden_y = config.getint('garden', 'Y')
         # Z axis contains a matrix for every plant type plus one for water levels.
-        garden_z = config.getint('garden', 'num_plant_types') + 1
+        garden_z = 2 * config.getint('garden', 'num_plant_types') + 2
         action_low = config.getfloat('action', 'low')
         action_high = config.getfloat('action', 'high')
         obs_low = config.getint('obs', 'low')
@@ -297,7 +297,7 @@ if __name__ == '__main__':
             "OUTPUT_X": 10,
             "OUTPUT_Y": 10,
             "NUM_HIDDEN_LAYERS": 1,
-            "NUM_FILTERS": 3, # k+1 for old state representation
+            "NUM_FILTERS": 5, # 2k+1 for new state representation
             "NUM_CONVS": 1,
             "FILTER_SIZE": 3,
             "STRIDE": 1

@@ -3,9 +3,10 @@ import numpy as np
 def baseline_policy(state, step, threshold, amount, irr_threshold):
     state = np.copy(state[0])
     action = np.zeros(state.shape[0:2])
+    k = (state.shape[2] - 2) // 2
     for i in range(state.shape[0]):
         for j in range(state.shape[1]):
-            radius = np.amax(state[i,j,0:-1])
+            radius = state[i,j,2*k]
             if radius > 0:
                 lower_x, upper_x = int(max(0, i - (radius // step))), int(min(state.shape[0], i + (radius // step)))
                 lower_y, upper_y = int(max(0, j - (radius // step))), int(min(state.shape[1], j + (radius // step)))

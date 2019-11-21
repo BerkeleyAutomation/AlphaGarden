@@ -8,6 +8,7 @@ from logger import Event
 from utils import export_results
 from simulator_presets import *
 import argparse
+import time
 
 # Test run of simulation
 def run_simulation(args):
@@ -34,6 +35,8 @@ def run_simulation(args):
     ax.grid(which='minor', alpha=0.2)
     ax.grid(which='major', alpha=0.5)
 
+    start_time = time.time()
+
     # creates garden, runs simulation for NUM_TIMESTEPS timesteps, creates circles to plot
     garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil'])
     frames = []
@@ -48,7 +51,14 @@ def run_simulation(args):
             circle = plt.Circle(coord * STEP, water_amt / 100, color='b', alpha=0.3)
             circleplot = ax.add_artist(circle)
             plots.append(circleplot)
+        # for grid_pt, coord in garden.enumerate_grid(coords=True):
+        #     if grid_pt['nearby']:
+        #         circle = plt.Circle(coord * STEP, 0.2, color='c', alpha=0.3)
+        #         circleplot = ax.add_artist(circle)
+        #         plots.append(circleplot)
         frames.append(plots)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
 
     if args.display == 'p':
         for event_type in Event:

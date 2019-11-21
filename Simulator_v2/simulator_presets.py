@@ -57,8 +57,10 @@ def _make_sequential_irrigator(grid_step, amount, shift):
         timestep = (timestep + shift) % (row_max * col_max)
         row = timestep // col_max
         col = timestep % col_max
-        midpt = (row * grid_step + grid_step // 2, col * grid_step + grid_step // 2)
-        return [(midpt, amount)]
+        i, j = row * grid_step + grid_step // 2, col * grid_step + grid_step // 2
+        irrigations = [0] * (NUM_X_STEPS * NUM_TIMESTEPS)
+        irrigations[i * NUM_X_STEPS + j] = amount
+        return irrigations
     return get_sequential_irrigation
 
 
