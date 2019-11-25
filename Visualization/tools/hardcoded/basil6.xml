@@ -30,7 +30,7 @@
      <nRotate> 140 140 140 140 </nRotate> <!-- spiraling angle -->
      <nRotateV> 5 5 10 25 </nRotateV> <!-- spiraling angle -->
      <nBranches> 0 40 20 0 </nBranches> <!-- number of branches -->
-     <Leaves> 20 </Leaves> <!-- number of leaves per parent -->
+     <Leaves> 5 </Leaves> <!-- number of leaves per parent -->
      <LeafFile> ../../images/BasilLeaf.png </LeafFile> <!-- path to leaf image PNG, relative to build -->
      <LeafScale> 0.15 </LeafScale> <!-- leaf length -->
      <LeafScaleX> 0.5 </LeafScaleX> <!-- leaf length, relative x scale -->
