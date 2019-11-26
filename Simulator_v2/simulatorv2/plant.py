@@ -3,7 +3,7 @@ from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStag
 class Plant:
 
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color='g', plant_type='basil',
-                        germination_time=3, start_height=1, start_radius=1):
+                        germination_time=3, start_height=1, start_radius=0.2):
         self.id = None
 
         # coordinates of plant
@@ -30,6 +30,7 @@ class Plant:
         # resources accumulated per timestep
         self.num_sunlight_points = 0
         self.water_amt = 0
+        self.water_available = 0
 
         # color of plant when plotted
         self.color = color
@@ -40,14 +41,13 @@ class Plant:
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
         self.stages = [
-            GerminationStage(self, germination_time, 1, 0.2),
+            GerminationStage(self, germination_time, start_height, start_radius),
             GrowthStage(self, growth_time),
             WaitingStage(self, 10),
             WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
-        self.stage_index = -1
-        self.switch_stage()
+        self.switch_stage(0)
 
     def add_sunlight_point(self):
         self.num_sunlight_points += 1
@@ -57,8 +57,8 @@ class Plant:
     def current_stage(self):
         return self.stages[self.stage_index]
 
-    def switch_stage(self):
-        self.stage_index += 1
+    def switch_stage(self, next_stage_index):
+        self.stage_index = next_stage_index
         self.current_stage().start_stage()
         # print(f"Plant {self.id} moving to new stage!")
         # print(self.current_stage())
@@ -66,10 +66,11 @@ class Plant:
     def reset(self):
         self.num_sunlight_points = 0
         self.water_amt = 0
+        self.water_available = 0
 
-        should_transition = self.current_stage().step()
-        if should_transition and self.stage_index + 1 < len(self.stages):
-            self.switch_stage()
+        next_stage_index = self.current_stage().step()
+        if self.stage_index != next_stage_index:
+            self.switch_stage(next_stage_index)
 
     def desired_water_amt(self):
         return self.current_stage().desired_water_amt()

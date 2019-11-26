@@ -146,6 +146,10 @@ class Garden:
             if point['nearby']:
                 plant_ids = list(point['nearby'])
 
+                for plant_id in plant_ids:
+                    plant = self.plants[plant_id]
+                    plant.water_available += point['water']
+
                 while point['water'] > 0 and plant_ids:
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plant_ids)))
@@ -258,16 +262,16 @@ class Garden:
                 points = set()
                 points.update(((i, j), (i, -j), (-i, j), (-i, -j), (j, i), (j, -i), (-j, i), (-j, -i)))
                 growth_map.append((self.step ** 0.5 * np.linalg.norm((i, j)), points))
-        growth_map.sort(key = lambda x: x[0])
+        growth_map.sort(key=lambda x: x[0])
         return growth_map
 
     def get_garden_state(self):
-        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid))
+        water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, water_grid))
 
     def get_radius_grid(self):
         return self.radius_grid
 
     def get_state(self):
-        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))
+        water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, water_grid))

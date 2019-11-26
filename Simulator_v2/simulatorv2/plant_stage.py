@@ -1,7 +1,8 @@
 class PlantStage:
-    def __init__(self, plant, duration):
+    def __init__(self, plant, duration, index):
         self.plant = plant
         self.duration = duration
+        self.index = index
 
     def start_stage(self):
         self.current_time = 0
@@ -18,7 +19,9 @@ class PlantStage:
     def step(self):
         """Optionally override this to specify when to move on to the next stage"""
         self.current_time += 1
-        return self.current_time >= self.duration
+        if self.current_time >= self.duration:
+            return self.index + 1
+        return self.index
 
     def skip_to_end(self):
         # Skip to last time step of current stage
@@ -29,7 +32,7 @@ class PlantStage:
 
 class GerminationStage(PlantStage):
     def __init__(self, plant, duration, start_height, start_radius):
-        super().__init__(plant, duration)
+        super().__init__(plant, duration, 0)
         self.start_height = start_height
         self.start_radius = start_radius
 
@@ -44,9 +47,46 @@ class GerminationStage(PlantStage):
 
 class GrowthStage(PlantStage):
     def __init__(self, plant, duration):
-        super().__init__(plant, duration)
+        super().__init__(plant, duration, 1)
+        self.overwatered = False
+        self.underwatered = False
+        self.stress_time = 0
+        self.overwatered_threshold = 1.5
+        self.underwatered_threshold = 0.1
+        self.overwatered_time_threshold = 5
+        self.underwatered_time_threshold = 5
 
     def amount_to_grow(self):
+        if self.overwatered:
+            if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
+                self.stress_time += 1
+                return 0, -self.dr
+
+            else:
+                self.overwatered = False
+                self.stress_time = 0
+
+        elif self.underwatered:
+            if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
+                self.stress_time += 1
+                return 0, -self.dr
+
+            else:
+                self.underwatered = False
+                self.stress_time = 0
+        else:
+            if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
+                self.overwatered = True
+                self.stress_time += 1
+                self.dr = 0.8 * self.plant.radius / self.overwatered_time_threshold
+                return 0, -self.dr
+
+            elif self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
+                self.underwatered = True
+                self.stress_time += 1
+                self.dr = 0.8 * self.plant.radius / self.underwatered_time_threshold
+                return 0, -self.dr
+
         G = self.plant.c1 * self.plant.water_amt
         unocc_ratio = self.plant.num_sunlight_points / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
@@ -54,16 +94,70 @@ class GrowthStage(PlantStage):
 
         return upward, outward
 
+    def step(self):
+        """Optionally override this to specify when to move on to the next stage"""
+        self.current_time += 1
+        if self.overwatered and self.stress_time >= self.overwatered_time_threshold:
+            return 4
+        elif self.underwatered and self.stress_time >= self.underwatered_time_threshold:
+            return 4
+        elif self.current_time >= self.duration:
+            return self.index + 1
+        return self.index
+
     def __str__(self):
         return f"{super().__str__()}: c1={self.plant.c1}, c2={self.plant.c2}, k1={self.plant.k1}, k2={self.plant.k2}"
 
 class WaitingStage(PlantStage):
+    def __init__(self, plant, duration):
+        super().__init__(plant, duration, 2)
+        self.overwatered = False
+        self.underwatered = False
+        self.stress_time = 0
+        self.overwatered_threshold = 2
+        self.underwatered_threshold = 0.1
+        self.overwatered_time_threshold = 5
+        self.underwatered_time_threshold = 5
+
     def amount_to_grow(self):
+        if self.overwatered:
+            if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
+                self.stress_time += 1
+                return 0, 0
+            else:
+                self.overwatered = False
+                self.stress_time = 0
+        elif self.underwatered:
+            if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
+                self.stress_time += 1
+                return 0, 0
+            else:
+                self.underwatered = False
+                self.stress_time = 0
+        else:
+            if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
+                self.overwatered = True
+                self.stress_time += 1
+            elif self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
+                self.underwatered = True
+                self.stress_time += 1
+
         return 0, 0
+
+    def step(self):
+        """Optionally override this to specify when to move on to the next stage"""
+        self.current_time += 1
+        if self.overwatered and self.stress_time >= self.overwatered_time_threshold:
+            return 4
+        elif self.underwatered and self.stress_time >= self.underwatered_time_threshold:
+            return 4
+        elif self.current_time >= self.duration:
+            return self.index + 1
+        return self.index
 
 class WiltingStage(PlantStage):
     def __init__(self, plant, duration, final_radius):
-        super().__init__(plant, duration)
+        super().__init__(plant, duration, 3)
         self.max_final_radius = final_radius
 
     def start_stage(self):
@@ -83,7 +177,7 @@ class WiltingStage(PlantStage):
 
 class DeathStage(PlantStage):
     def __init__(self, plant):
-        super().__init__(plant, -1)
+        super().__init__(plant, -1, 4)
 
     def desired_water_amt(self):
         return 0
@@ -92,7 +186,7 @@ class DeathStage(PlantStage):
         return 0, 0
 
     def step(self):
-        return False
+        return self.index
 
     def __str__(self):
         return f"DeathStage (plant will no longer change)"
