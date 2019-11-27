@@ -1,6 +1,7 @@
 import numpy as np
 from logger import Logger, Event
 from plant import Plant
+from heapq import nlargest
 
 class Garden:
     def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True):
@@ -59,6 +60,12 @@ class Garden:
 
         # growth map for circular plant growth
         self.growth_map = self.compute_growth_map()
+
+        # number of plants deep to consider assigning light to
+        self.num_plants_to_assign = 3
+
+        # percentage of light passing through each plant layer
+        self.light_decay = 0.5
 
         self.logger = Logger()
 
@@ -134,8 +141,9 @@ class Garden:
     def distribute_light(self):
         for point in self.enumerate_grid():
             if point['nearby']:
-                tallest_id = max(point['nearby'], key=lambda id: self.plants[id].height)
-                self.plants[tallest_id].add_sunlight_point()
+                for i, plant_id in enumerate(nlargest(self.num_plants_to_assign, point['nearby'],
+                                                      key=lambda x: self.plants[x].height)):
+                    self.plants[plant_id].add_sunlight(self.light_decay ** i)
 
     def distribute_water(self):
         # Log desired water levels of each plant before distributing
@@ -157,7 +165,7 @@ class Garden:
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
-                    if plant.num_sunlight_points > 0:
+                    if plant.amount_sunlight > 0:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
                         point['water'] -= water_to_absorb

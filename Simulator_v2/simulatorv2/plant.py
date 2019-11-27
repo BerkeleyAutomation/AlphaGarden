@@ -21,14 +21,14 @@ class Plant:
         self.c1 = c1
         self.c2 = c2
 
-        self.k1 = k1 # minimum proportion plant will allocate to upward growth
-        self.k2 = k2 # maximum proportion plant will allocate to upward growth
+        self.k1 = k1  # minimum proportion plant will allocate to upward growth
+        self.k2 = k2  # maximum proportion plant will allocate to upward growth
 
         # number of grid points the plant can absorb light/water from
         self.num_grid_points = 1
 
         # resources accumulated per timestep
-        self.num_sunlight_points = 0
+        self.amount_sunlight = 0
         self.water_amt = 0
         self.water_available = 0
 
@@ -49,9 +49,9 @@ class Plant:
         ]
         self.switch_stage(0)
 
-    def add_sunlight_point(self):
-        self.num_sunlight_points += 1
-        if self.num_sunlight_points > self.num_grid_points:
+    def add_sunlight(self, amount):
+        self.amount_sunlight += amount
+        if self.amount_sunlight > self.num_grid_points:
             raise Exception("Plant received more sunlight points than total grid points!")
 
     def current_stage(self):
@@ -64,7 +64,7 @@ class Plant:
         # print(self.current_stage())
 
     def reset(self):
-        self.num_sunlight_points = 0
+        self.amount_sunlight = 0
         self.water_amt = 0
         self.water_available = 0
 

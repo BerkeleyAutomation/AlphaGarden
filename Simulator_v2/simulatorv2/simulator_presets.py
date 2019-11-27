@@ -1,7 +1,7 @@
 from plant import Plant
 import numpy as np
 
-NUM_TIMESTEPS = 30
+NUM_TIMESTEPS = 40
 NUM_X_STEPS = 50
 NUM_Y_STEPS = 50
 STEP = 1
@@ -66,7 +66,7 @@ def _make_sequential_irrigator(grid_step, amount, shift):
 
 # Creates different color plants in random locations
 def _get_random_plants():
-    PLANTS_PER_COLOR = 6
+    PLANTS_PER_COLOR = 10
     #PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((.13, .55, .13), (0.11, 25), 'oregano'), ((0, .39, 0), (0.13, 15), 'thyme')]
     PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((0, .39, 0), (0.13, 15), 'thyme')]
 
