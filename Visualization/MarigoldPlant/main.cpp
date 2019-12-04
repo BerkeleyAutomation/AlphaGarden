@@ -233,51 +233,32 @@ std::vector<uint> addBasilPlant( helios::vec3 base, float height, helios::Contex
 
   float azimuth_plant = 2.f*M_PI*unif_distribution(generator);
   
-  std::vector<uint> UUID_leaf1, UUID_leaf2;
+  std::vector<uint> UUID_leaf1;
   for( int i=0; i<node_count+1; i++ ){
 
-    //make 2 leaf copies - we'll have two opposing leaves per node offset by 180degrees
     UUID_leaf1 = context->copyPrimitive( leaf_prototype );
-//    UUID_leaf2 = context->copyPrimitive( leaf_prototype );
 
     if( i<node_count ){
       context->scalePrimitive( UUID_leaf1, make_vec3(leaf_size.x,leaf_size.y,leaf_size.x)*(1.f-0.5*unif_distribution(generator)*leafsize_var) );
-//      context->scalePrimitive( UUID_leaf2, make_vec3(leaf_size.x,leaf_size.y,leaf_size.x)*(1.f-0.5*unif_distribution(generator)*leafsize_var) );
+
     }else{
       float mscale = (h_plant-node_count*internode_spacing)/internode_spacing;
       context->scalePrimitive( UUID_leaf1, mscale*make_vec3(leaf_size.x,leaf_size.y,leaf_size.x)*(1.f-0.5*unif_distribution(generator)*leafsize_var) );
-//      context->scalePrimitive( UUID_leaf2, mscale*make_vec3(leaf_size.x,leaf_size.y,leaf_size.x)*(1.f-0.5*unif_distribution(generator)*leafsize_var) );
+
     }
 
     float jitterx = -0.5*context->randu()*leafangle_jitter;
     float jittery = -0.5*context->randu()*leafangle_jitter;
     context->rotatePrimitive( UUID_leaf1, jitterx-0.5*unif_distribution(generator)*leafangle_var, "x" );
-//    context->rotatePrimitive( UUID_leaf2, jitterx-0.5*unif_distribution(generator)*leafangle_var, "x" );
     context->rotatePrimitive( UUID_leaf1, jittery-0.5*unif_distribution(generator)*leafangle_var, "y" );
-//    context->rotatePrimitive( UUID_leaf2, jittery-0.5*unif_distribution(generator)*leafangle_var, "y" );
-//    if( i%2==0 ){
-//      context->rotatePrimitive( UUID_leaf1, azimuth_plant+0.5*M_PI-0.5*unif_distribution(generator)*azimuth_var, "z" );
-////      context->rotatePrimitive( UUID_leaf2, azimuth_plant+1.5*M_PI-0.5*unif_distribution(generator)*azimuth_var, "z" );
-//    }else{
-//      context->rotatePrimitive( UUID_leaf1, azimuth_plant-0.5*unif_distribution(generator)*azimuth_var, "z" );
-////      context->rotatePrimitive( UUID_leaf2, azimuth_plant+M_PI-0.5*unif_distribution(generator)*azimuth_var, "z" );
-//    }
-      
-      
-          context->rotatePrimitive( UUID_leaf1, azimuth_plant+(0.76389*M_PI*i)-0.5*unif_distribution(generator)*azimuth_var, "z" );
-          //      context->rotatePrimitive( UUID_leaf2, azimuth_plant+1.5*M_PI-0.5*unif_distribution(generator)*azimuth_var, "z" );
 
-//          context->rotatePrimitive( UUID_leaf1, azimuth_plant-0.5*unif_distribution(generator)*azimuth_var, "z" );
-//          //      context->rotatePrimitive( UUID_leaf2, azimuth_plant+M_PI-0.5*unif_distribution(generator)*azimuth_var, "z" );
-
+    context->rotatePrimitive( UUID_leaf1, azimuth_plant+(0.76389*M_PI*i)-0.5*unif_distribution(generator)*azimuth_var, "z" );
 
     float z_rand = -0.5*unif_distribution(generator)*internode_var;
     if( i<node_count ){
       context->translatePrimitive( UUID_leaf1, base+make_vec3(0,0,(i+1)*internode_spacing+z_rand) );
-//      context->translatePrimitive( UUID_leaf2, base+make_vec3(0,0,(i+1)*internode_spacing+z_rand) );
     }else{
       context->translatePrimitive( UUID_leaf1, base+make_vec3(0,0,h_plant+z_rand) );
-//      context->translatePrimitive( UUID_leaf2, base+make_vec3(0,0,h_plant+z_rand) );
     }
 
   }
