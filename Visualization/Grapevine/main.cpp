@@ -1,18 +1,12 @@
 #include "Context.h"
-#include "WeberPennTree.h"
 #include "Visualizer.h"
-#include "potato.h"
+#include "grapevine.h"
 
 using namespace helios;
 
 int main(void)
 {
     Context context; //declare the context
-
-    //create an instance of the WeberPennTree class, which we will call "weberpenntree"
-    WeberPennTree weberpenntree(&context);
-
-    // WeberPennTreeParameters params = weberpenntree.getTreeParameters("Orange");
 
     int Nframes = 100;
 
@@ -21,16 +15,8 @@ int main(void)
 
         context.addPatch(make_vec3(0, 0, 0), make_vec2(40, 40), make_SphericalCoord(0, 0), RGB::forestgreen);
 
-        // params.Scale = 8.f * float(i + 1) / float(Nframes);
-        // params.Leaves = 20 * float(i + 1) / float(Nframes);
-        // params.LeafScale = 0.2 * float(i + 1) / float(Nframes);
-
-        // weberpenntree.setTreeParameters("Orange", params);
-
-        // uint ID = weberpenntree.buildTree("Orange", make_vec3(0, 0, 0));
-
         float height = 2.f * float(i + 1) / float(Nframes);
-        potato(make_vec3(5, 0, 0), height, &context);
+        grapevine(make_vec3(5, 0, 0), height, 1, 0 ,&context);
 
         Visualizer vis(1200); //Opens a graphics window of width 1200 pixels with default aspect ratio
 
