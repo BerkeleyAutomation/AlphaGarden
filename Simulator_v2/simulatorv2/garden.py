@@ -1,6 +1,6 @@
 import numpy as np
-from logger import Logger, Event
-from plant import Plant
+from simulatorv2.logger import Logger, Event
+from simulatorv2.plant import Plant
 
 class Garden:
     def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True):

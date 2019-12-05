@@ -40,7 +40,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         entropy = -np.sum(prob*np.log(prob))
         water_coef = self.config.getfloat('cnn', 'water_coef')
         cc_coef = self.config.getfloat('cnn', 'cc_coef')
-        return (cc_coef * total_cc) + (0 * entropy) - (water_coef * np.sum(self.curr_action))
+        action_sum = self.N * self.M 
+        return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * self.curr_action/action_sum + 1)
         
     '''
     Method called by the gym environment to execute an action.
