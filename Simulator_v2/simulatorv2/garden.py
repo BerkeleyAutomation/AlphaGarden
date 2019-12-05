@@ -1,9 +1,10 @@
 import numpy as np
 from logger import Logger, Event
 from plant import Plant
+from visualization import setup_animation
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True):
+    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -62,6 +63,10 @@ class Garden:
 
         self.logger = Logger()
 
+        self.animate = animate
+        if animate:
+            self.anim_step, self.anim_show = setup_animation(self)
+
     def add_plant(self, plant):
         if (plant.row, plant.col) in self.plant_locations:
             print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
@@ -89,6 +94,9 @@ class Garden:
         self.distribute_water()
         self.grow_plants()
         # self.grow_control_plant()
+
+        if self.animate:
+            self.anim_step()
 
         return self.plants.values()
 
@@ -271,3 +279,9 @@ class Garden:
     def get_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))
+
+    def show_animation(self):
+        if self.animate:
+           self.anim_show() 
+        else:
+            print("[Garden] No animation to show. Set animate=True when initializing to allow animating history of garden!")
