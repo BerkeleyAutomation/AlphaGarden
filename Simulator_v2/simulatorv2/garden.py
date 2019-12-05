@@ -2,9 +2,10 @@ import numpy as np
 from logger import Logger, Event
 from plant import Plant
 from visualization import setup_animation
+from sim_globals import MAX_WATER_LEVEL
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):
+    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -84,11 +85,15 @@ class Garden:
     def perform_timestep(self, water_amt=0, irrigations=None):
         if irrigations is None:
             # Default to uniform irrigation
-            self.reset_water(water_amt)
+            water_level = min(water_amt, MAX_WATER_LEVEL)
+            self.irrigation_points = {coord: water_level - self.grid['water'][coord] for _, coord in self.enumerate_grid(coords=True)}
+            self.reset_water(water_level)
         else:
+            self.irrigation_points = {}
             for i in np.nonzero(irrigations)[0]:
                 location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
+                self.irrigation_points[location] = irrigations[i]
 
         self.distribute_light()
         self.distribute_water()
@@ -121,6 +126,7 @@ class Garden:
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
         self.grid[lower_x:upper_x,lower_y:upper_y]['water'] += amount
+        self.grid[lower_x:upper_x,lower_y:upper_y]['water'] = np.minimum(self.grid[lower_x:upper_x,lower_y:upper_y]['water'], MAX_WATER_LEVEL)
 
     def get_water_amounts(self, step=5):
         amounts = []

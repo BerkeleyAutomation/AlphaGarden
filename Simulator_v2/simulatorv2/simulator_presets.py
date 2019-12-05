@@ -1,7 +1,11 @@
 from plant import Plant
 import numpy as np
 
-NUM_TIMESTEPS = 30
+"""
+Test run presets (used in run_simulation.py).
+Does not affect actual RL settings.
+"""
+NUM_TIMESTEPS = 50
 NUM_X_STEPS = 50
 NUM_Y_STEPS = 50
 STEP = 1
@@ -46,10 +50,10 @@ PLANT_PRESETS = {
 
 IRRIGATION_POLICIES = {
     "sequential": {
-        "policy": lambda: _make_sequential_irrigator(10, 10, 30)
+        "policy": lambda: _make_sequential_irrigator(10, 4, 30)
     },
     "random": {
-        "policy": lambda: _make_random_irrigator(20)
+        "policy": lambda: _make_random_irrigator(4)
     }
 }
 

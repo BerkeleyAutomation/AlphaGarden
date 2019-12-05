@@ -69,7 +69,7 @@ def _setup_plot(garden):
     plt.ylim((0, garden.M * garden.step))
     ax.set_aspect('equal')
 
-    major_ticks = np.arange(0, garden.N * garden.step + 1, garden.N // 5)
+    major_ticks = np.arange(0, garden.N * garden.step + 1, max(garden.N // 5, 1))
     minor_ticks = np.arange(0, garden.N * garden.step + 1, garden.step)
     ax.set_xticks(major_ticks)
     ax.set_xticks(minor_ticks, minor=True)
@@ -88,18 +88,29 @@ def _add_plots(garden, ax):
     Returns a list of all shapes that were added to the plot.
     """
     shapes = []
+
+    # Plants
     for plant in sorted(garden.plants.values(), key=lambda plant: plant.height, reverse=True):
         circle = plt.Circle((plant.row, plant.col) * garden.step, plant.radius, color=plant.color)
         circleplot = ax.add_artist(circle)
         shapes.append(circleplot)
-    for coord, water_amt in garden.get_water_amounts():
-        circle = plt.Circle(coord * garden.step, water_amt / 100, color='b', alpha=0.3)
-        circleplot = ax.add_artist(circle)
-        shapes.append(circleplot)
+
+    # Heatmap of soil water levels
+    c = plt.imshow(garden.grid['water'].T, cmap='Blues', origin='lower', alpha=0.5)
+    cp = ax.add_artist(c)
+    shapes.append(cp)
+
+    # Sunlight points
     for grid_pt, coord in garden.enumerate_grid(coords=True):
         if grid_pt['nearby']:
             circle = plt.Circle(coord * garden.step, 0.2, color='c', alpha=0.3)
             circleplot = ax.add_artist(circle)
             shapes.append(circleplot)
+
+    # Irrigation points
+    for (row, col), amount in garden.irrigation_points.items():
+        square = plt.Rectangle((row - 0.5, col - 0.5), 1, 1, fc='red', ec='red')
+        squareplot = ax.add_artist(square)
+        shapes.append(squareplot)
 
     return shapes
