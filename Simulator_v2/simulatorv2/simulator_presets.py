@@ -1,7 +1,11 @@
 from plant import Plant
 import numpy as np
 
-NUM_TIMESTEPS = 30
+"""
+Test run presets (used in run_simulation.py).
+Does not affect actual RL settings.
+"""
+NUM_TIMESTEPS = 50
 NUM_X_STEPS = 50
 NUM_Y_STEPS = 50
 STEP = 1
@@ -46,7 +50,10 @@ PLANT_PRESETS = {
 
 IRRIGATION_POLICIES = {
     "sequential": {
-        "policy": lambda: _make_sequential_irrigator(10, 10, 30)
+        "policy": lambda: _make_sequential_irrigator(10, 4, 30)
+    },
+    "random": {
+        "policy": lambda: _make_random_irrigator(4)
     }
 }
 
@@ -58,11 +65,18 @@ def _make_sequential_irrigator(grid_step, amount, shift):
         row = timestep // col_max
         col = timestep % col_max
         i, j = row * grid_step + grid_step // 2, col * grid_step + grid_step // 2
-        irrigations = [0] * (NUM_X_STEPS * NUM_TIMESTEPS)
+        irrigations = [0] * (NUM_X_STEPS * NUM_Y_STEPS)
         irrigations[i * NUM_X_STEPS + j] = amount
         return irrigations
     return get_sequential_irrigation
 
+def _make_random_irrigator(amount):
+    def get_irrigation(_):
+        grid_size = NUM_X_STEPS * NUM_Y_STEPS
+        irrigations = [0] * grid_size
+        irrigations[np.random.randint(grid_size)] = amount
+        return irrigations
+    return get_irrigation
 
 # Creates different color plants in random locations
 def _get_random_plants():

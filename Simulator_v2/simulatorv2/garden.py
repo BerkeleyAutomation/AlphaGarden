@@ -1,9 +1,11 @@
 import numpy as np
 from simulatorv2.logger import Logger, Event
 from simulatorv2.plant import Plant
+from visualization import setup_animation
+from sim_globals import MAX_WATER_LEVEL
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True):
+    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -62,6 +64,10 @@ class Garden:
 
         self.logger = Logger()
 
+        self.animate = animate
+        if animate:
+            self.anim_step, self.anim_show = setup_animation(self)
+
     def add_plant(self, plant):
         if (plant.row, plant.col) in self.plant_locations:
             print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
@@ -77,18 +83,25 @@ class Garden:
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, water_amt=0, irrigations=None):
+        self.irrigation_points = {}
         if irrigations is None:
             # Default to uniform irrigation
-            self.reset_water(water_amt)
+            water_level = min(water_amt, MAX_WATER_LEVEL)
+            # self.irrigation_points = {coord: water_level - self.grid['water'][coord] for _, coord in self.enumerate_grid(coords=True)}
+            self.reset_water(water_level)
         else:
             for i in np.nonzero(irrigations)[0]:
                 location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
+                self.irrigation_points[location] = irrigations[i]
 
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
         # self.grow_control_plant()
+
+        if self.animate:
+            self.anim_step()
 
         return self.plants.values()
 
@@ -113,6 +126,7 @@ class Garden:
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
         self.grid[lower_x:upper_x,lower_y:upper_y]['water'] += amount
+        self.grid[lower_x:upper_x,lower_y:upper_y]['water'] = np.minimum(self.grid[lower_x:upper_x,lower_y:upper_y]['water'], MAX_WATER_LEVEL)
 
     def get_water_amounts(self, step=5):
         amounts = []
@@ -271,3 +285,9 @@ class Garden:
     def get_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))
+
+    def show_animation(self):
+        if self.animate:
+           self.anim_show() 
+        else:
+            print("[Garden] No animation to show. Set animate=True when initializing to allow animating history of garden!")
