@@ -10,7 +10,7 @@ def plot_garden(garden):
     - Soil water levels
     """
     fig, ax = _setup_plot(garden)
-    _add_plots(garden, ax)
+    _add_plots(garden, ax, reverse=True)
     plt.show()
 
 def plot_data(garden, num_timesteps):
@@ -114,7 +114,7 @@ def _setup_plot(garden):
 
     return fig, ax
 
-def _add_plots(garden, ax):
+def _add_plots(garden, ax, reverse=False):
     """
     Helper function to record the current state of the garden (plants, sunlight points and water levels)
     on the given set of axes.
@@ -129,7 +129,7 @@ def _add_plots(garden, ax):
     shapes.append(cp)
 
     # Plants
-    for plant in sorted(garden.plants.values(), key=lambda plant: plant.height, reverse=True):
+    for plant in sorted(garden.plants.values(), key=lambda plant: plant.height, reverse=reverse):
         circle = plt.Circle((plant.row, plant.col) * garden.step, plant.radius, color=plant.color)
         circleplot = ax.add_artist(circle)
         shapes.append(circleplot)
