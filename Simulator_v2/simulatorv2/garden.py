@@ -1,8 +1,13 @@
 import numpy as np
 from simulatorv2.logger import Logger, Event
 from simulatorv2.plant import Plant
+<<<<<<< HEAD
 from simulatorv2.visualization import setup_animation
 from simulatorv2.sim_globals import MAX_WATER_LEVEL
+=======
+from visualization import setup_animation
+from sim_globals import MAX_WATER_LEVEL
+>>>>>>> 7ad33658520da88f64bf99fb211839a1ef43230e
 
 class Garden:
     def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):

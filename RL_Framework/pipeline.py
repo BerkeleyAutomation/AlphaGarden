@@ -184,7 +184,7 @@ class Pipeline:
             pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)
             filename = folder_path + '/Returns' + '/predict_' + str(i) + '.json'
             f = open(filename, 'w')
-            f.write(json.dumps(e))
+            f.write(json.dumps(e, indent=4))
             f.close()
 
     def single_run(self, folder_path, num_evals, policy_kwargs=None, is_baseline=False, baseline_policy=None):
@@ -240,7 +240,7 @@ class Pipeline:
             # Instantiate the agent
 #            model = PPO2(CustomCnnPolicy, env, policy_kwargs=policy_kwargs, ent_coef=ent_coef, n_steps=n_steps, nminibatches=nminibatches, noptepochs=noptepochs, learning_rate=learning_rate, verbose=1, tensorboard_log=folder_path + '/ppo_v2_tensorboard/')
 
-            model = PPO2(MlpPolicy, env, verbose=1, tensorboard_log=folder_path + '/ppo_v2_tensorboard/')
+            model = PPO2(MlpPolicy, env, ent_coef=ent_coef, n_steps=n_steps, nminibatches=nminibatches, noptepochs=noptepochs, learning_rate=learning_rate, verbose=1, tensorboard_log=folder_path + '/ppo_v2_tensorboard/')
             # Train the agent
             model.learn(total_timesteps=rl_time_steps)  # this will crash explaining that the invalid value originated from the env
 
@@ -336,7 +336,7 @@ if __name__ == '__main__':
     rl_config = [
         {
             'rl_algorithm': 'MLP', 
-            'time_steps': 100000,
+            'time_steps': 7000000,
             'ent_coef': 0.0,
             'n_steps': 40000,
             'nminibatches': 4,
@@ -360,8 +360,8 @@ if __name__ == '__main__':
             "NUM_CONVS": 1,
             "FILTER_SIZE": 1,
             "STRIDE": 1,
-            'CC_COEF': 0.6,
-            'WATER_COEF': 0.4
+            'CC_COEF': 10,
+            'WATER_COEF': 100
         }
     ]
     num_evals = 50
