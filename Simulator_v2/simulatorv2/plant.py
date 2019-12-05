@@ -10,26 +10,12 @@ class Plant:
         self.row = row
         self.col = col
 
-        # growth state of plant
-        self.radius = 0
-        self.height = 0
-
-        # current index of progression in circular growth map
-        self.growth_index = 0
-
         # parameters for how water and light affect growth
         self.c1 = c1
         self.c2 = c2
 
         self.k1 = k1 # minimum proportion plant will allocate to upward growth
         self.k2 = k2 # maximum proportion plant will allocate to upward growth
-
-        # number of grid points the plant can absorb light/water from
-        self.num_grid_points = 1
-
-        # resources accumulated per timestep
-        self.num_sunlight_points = 0
-        self.water_amt = 0
 
         # color of plant when plotted
         self.color = color
@@ -46,6 +32,24 @@ class Plant:
             WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
+
+        self.start_from_beginning()
+
+    def start_from_beginning(self):
+        # growth state of plant
+        self.radius = 0
+        self.height = 0
+
+        # current index of progression in circular growth map
+        self.growth_index = 0
+
+        # number of grid points the plant can absorb light/water from
+        self.num_grid_points = 1
+
+        # resources accumulated per timestep
+        self.num_sunlight_points = 0
+        self.water_amt = 0
+
         self.stage_index = -1
         self.switch_stage()
 
@@ -70,6 +74,14 @@ class Plant:
         should_transition = self.current_stage().step()
         if should_transition and self.stage_index + 1 < len(self.stages):
             self.switch_stage()
+
+    def start_over(self):
+        self.growth_index = 0
+        self.num_grid_points = 1
+        self.num_sunlight_points = 0
+        self.water_amt = 0
+        self.stage_index = -1
+        self.switch_stage()
 
     def desired_water_amt(self):
         return self.current_stage().desired_water_amt()

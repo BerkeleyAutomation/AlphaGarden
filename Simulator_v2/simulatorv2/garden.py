@@ -83,13 +83,13 @@ class Garden:
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, water_amt=0, irrigations=None):
+        self.irrigation_points = {}
         if irrigations is None:
             # Default to uniform irrigation
             water_level = min(water_amt, MAX_WATER_LEVEL)
-            self.irrigation_points = {coord: water_level - self.grid['water'][coord] for _, coord in self.enumerate_grid(coords=True)}
+            # self.irrigation_points = {coord: water_level - self.grid['water'][coord] for _, coord in self.enumerate_grid(coords=True)}
             self.reset_water(water_level)
         else:
-            self.irrigation_points = {}
             for i in np.nonzero(irrigations)[0]:
                 location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
