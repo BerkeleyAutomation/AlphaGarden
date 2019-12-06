@@ -28,6 +28,9 @@ class SimAlphaGardenEnv(gym.Env):
     def _take_action(self, action):
         return self.wrapper_env.take_action(action)
 
+    def get_current_step(self):
+        return self.current_step
+
     def step(self, action):
         state = self._take_action(action)
         self.current_step += 1

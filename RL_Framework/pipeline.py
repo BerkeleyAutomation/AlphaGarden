@@ -154,7 +154,7 @@ class Pipeline:
         self.plot_average_reward(folder_path, r, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
         self.plot_stddev_reward(folder_path, garden_time_steps, rewards, rewards_stddev, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
 
-    def evaluate_policy(self, folder_path, num_evals, env, is_baseline=False, baseline_policy=None, step=1):
+    def evaluate_policy(self, folder_path, num_evals, env, garden_x, garden_y, is_baseline=False, baseline_policy=None, step=1):
         model = None
         if not is_baseline:
             model = PPO2.load('./' + folder_path + '/model')
@@ -162,7 +162,15 @@ class Pipeline:
         for i in range(num_evals):
             obs = env.reset()
             garden_obs = env.env_method('get_garden_state')
-            e = {'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
+            e = {'obs_avg_action': [], 'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
+
+            obs_avg_action = {}
+            for x in range(garden_x):
+                for y in range(garden_y):
+                    obs_avg_action[x, y] = 0
+
+            step_counter = 0
+
             while not done:
                 action = None
                 if is_baseline:
@@ -172,15 +180,31 @@ class Pipeline:
                 obs, rewards, done, _ = env.step(action)
                 garden_obs = env.env_method('get_garden_state')
                 radius_grid = env.env_method('get_radius_grid')
-                #print([garden_obs[0][i] for i in range()])
-                #print('\t'.join([str(r) for r in radius_grid[0].tolist()] + [str(a) for a in action[0].tolist()] + [str(rewards.item())]))
-                e['obs_action'].append((radius_grid[0].tolist(), action[0].tolist()))
-                e['obs'].append(garden_obs[0].tolist())
-                e['rewards'].append(rewards.item())
-                e['action'].append(action[0].tolist())
-                env.render()
+                
+                if not done:
+                    step_counter = env.env_method('get_current_step')[0]
+
+                    rg_list = radius_grid[0].tolist()
+                    obs_action_pairs = []
+                    for x in range(garden_x):
+                        for y in range(garden_y):
+                            cell = (x, y)
+                            cell_action = action[0][x * garden_x + y]
+                            obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
+                            obs_avg_action[cell] += cell_action
+                    e['obs_action'].append({step_counter : obs_action_pairs})
+
+                    e['obs'].append(garden_obs[0].tolist())
+                    e['rewards'].append(rewards.item())
+                    e['action'].append(action[0].tolist())
+                    env.render()
             done = False
 
+            for x in range(garden_x):
+                for y in range(garden_y):
+                    obs_avg_action[(x, y)] /= step_counter
+                    e['obs_avg_action'].append({str((x, y)) : obs_avg_action[(x, y)], 'final': rg_list[x][y][0]})
+            
             # env.env_method('show_animation')
 
             pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)
@@ -234,7 +258,7 @@ class Pipeline:
             copyfile('gym_config/config.ini', folder_path + '/config.ini')
 
             # Evaluate baseline on 50 random environments of same parameters.
-            self.evaluate_policy(folder_path=folder_path, num_evals=num_evals, env=env, is_baseline=True, baseline_policy=baseline_policy, step=1)
+            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=True, baseline_policy=baseline_policy, step=1)
 
             # Graph evaluations
             self.graph_evaluations(folder_path, garden_time_steps, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
@@ -252,7 +276,7 @@ class Pipeline:
             copyfile('gym_config/config.ini', folder_path + '/config.ini')
 
             # Evaluate model on 50 random environments of same parameters.
-            self.evaluate_policy(folder_path=folder_path, num_evals=num_evals, env=env, is_baseline=False)
+            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=False)
 
             # Graph evaluations
             self.graph_evaluations(folder_path, garden_time_steps, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)

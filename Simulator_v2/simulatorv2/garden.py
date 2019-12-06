@@ -93,6 +93,7 @@ class Garden:
             for i in np.nonzero(irrigations)[0]:
                 location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
+                # print('IRRIGATION:', location, irrigations[i])
                 self.irrigation_points[location] = irrigations[i]
 
         self.distribute_light()
@@ -102,6 +103,7 @@ class Garden:
 
         if self.animate:
             self.anim_step()
+        # print('RADIUS GRID', self.radius_grid.tolist())
 
         return self.plants.values()
 

@@ -54,6 +54,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     '''
     def take_action(self, action):
         self.curr_action = action
+        # print('ACTION', action)
         self.garden.perform_timestep(irrigations=action)
         return self.garden.get_state()
 
