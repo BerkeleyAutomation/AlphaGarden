@@ -1,4 +1,5 @@
 from plant import Plant
+from baselines.baseline_policy import baseline_policy
 import numpy as np
 
 NUM_TIMESTEPS = 40
@@ -47,11 +48,15 @@ PLANT_PRESETS = {
 IRRIGATION_POLICIES = {
     "sequential": {
         "policy": lambda: _make_sequential_irrigator(10, 10, 30)
+    },
+    "baseline": {
+        "policy": lambda: _make_baseline_irrigator(1, 1, 5)
     }
 }
 
+
 def _make_sequential_irrigator(grid_step, amount, shift):
-    def get_sequential_irrigation(timestep):
+    def get_sequential_irrigation(state, step, timestep):
         row_max = NUM_Y_STEPS // grid_step
         col_max = NUM_X_STEPS // grid_step
         timestep = (timestep + shift) % (row_max * col_max)
@@ -62,6 +67,12 @@ def _make_sequential_irrigator(grid_step, amount, shift):
         irrigations[i * NUM_X_STEPS + j] = amount
         return irrigations
     return get_sequential_irrigation
+
+
+def _make_baseline_irrigator(threshold, amount, irr_threshold):
+    def get_baseline_irrigation(state, step, timestep):
+        return baseline_policy(state, step, threshold, amount, irr_threshold)
+    return get_baseline_irrigation
 
 
 # Creates different color plants in random locations
