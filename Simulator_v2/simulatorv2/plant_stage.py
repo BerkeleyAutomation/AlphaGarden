@@ -30,6 +30,7 @@ class PlantStage:
     def __str__(self):
         return f"{self.__class__.__name__} (current={self.current_time}, max={self.duration})"
 
+
 class GerminationStage(PlantStage):
     def __init__(self, plant, duration, start_height, start_radius):
         super().__init__(plant, duration, 0)
@@ -44,6 +45,7 @@ class GerminationStage(PlantStage):
 
     def __str__(self):
         return f"{super().__str__()}: will start at height={self.start_height}, radius={self.start_radius}"
+
 
 class GrowthStage(PlantStage):
     def __init__(self, plant, duration):
@@ -108,6 +110,7 @@ class GrowthStage(PlantStage):
     def __str__(self):
         return f"{super().__str__()}: c1={self.plant.c1}, c2={self.plant.c2}, k1={self.plant.k1}, k2={self.plant.k2}"
 
+
 class WaitingStage(PlantStage):
     def __init__(self, plant, duration):
         super().__init__(plant, duration, 2)
@@ -154,6 +157,7 @@ class WaitingStage(PlantStage):
         elif self.current_time >= self.duration:
             return self.index + 1
         return self.index
+
 
 class WiltingStage(PlantStage):
     def __init__(self, plant, duration, final_radius):

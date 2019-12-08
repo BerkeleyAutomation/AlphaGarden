@@ -1,9 +1,10 @@
 from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 
+
 class Plant:
 
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color='g', plant_type='basil',
-                        germination_time=3, start_height=1, start_radius=0.2):
+                 germination_time=3, start_height=1, start_radius=0.2):
         self.id = None
 
         # coordinates of plant
@@ -51,8 +52,8 @@ class Plant:
 
     def add_sunlight(self, amount):
         self.amount_sunlight += amount
-        if self.amount_sunlight > self.num_grid_points:
-            raise Exception("Plant received more sunlight points than total grid points!")
+        # if self.amount_sunlight > self.num_grid_points:
+        #     raise Exception("Plant received more sunlight points than total grid points!")
 
     def current_stage(self):
         return self.stages[self.stage_index]

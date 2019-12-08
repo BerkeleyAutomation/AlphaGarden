@@ -1,10 +1,11 @@
 import numpy as np
 from logger import Logger, Event
-from plant import Plant
 from heapq import nlargest
 
+
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[], skip_initial_germination=True):
+    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=2, irr_threshold=5, plant_types=[],
+                 skip_initial_germination=True):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -32,7 +33,7 @@ class Garden:
         # initializes empty lists in grid
         for i in range(N):
             for j in range(M):
-                self.grid[i,j]['nearby'] = set()
+                self.grid[i, j]['nearby'] = set()
 
         self.plant_locations = {}
 
@@ -71,7 +72,8 @@ class Garden:
 
     def add_plant(self, plant):
         if (plant.row, plant.col) in self.plant_locations:
-            print(f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
+            print(f"[Warning] A plant already exists in position ({plant.row, plant.col})."
+                  f"The new one was not planted.")
         else:
             plant.id = self.curr_id
             self.plants[plant.id] = plant
@@ -99,15 +101,15 @@ class Garden:
 
         return self.plants.values()
 
-    def grow_control_plant(self):
-        cp = self.control_plant
-        cp.num_sunlight_points = cp.num_grid_points
-        cp.water_amt = cp.desired_water_amt()
-        self.logger.log(Event.WATER_REQUIRED, "Control", cp.water_amt)
-
-        next_step = self.grow_plant(cp)
-        if next_step:
-            cp.num_grid_points += next_step * 8
+    # def grow_control_plant(self):
+    #     cp = self.control_plant
+    #     cp.amount_sunlight = cp.num_grid_points
+    #     cp.water_amt = cp.desired_water_amt()
+    #     self.logger.log(Event.WATER_REQUIRED, "Control", cp.water_amt)
+    #
+    #     next_step = self.grow_plant(cp)
+    #     if next_step:
+    #         cp.num_grid_points += next_step * 8
 
     # Resets all water resource levels to the same amount
     def reset_water(self, water_amt):
@@ -119,7 +121,7 @@ class Garden:
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        self.grid[lower_x:upper_x,lower_y:upper_y]['water'] += amount
+        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount
 
     def get_water_amounts(self, step=5):
         amounts = []
@@ -143,7 +145,7 @@ class Garden:
             if point['nearby']:
                 for i, plant_id in enumerate(nlargest(self.num_plants_to_assign, point['nearby'],
                                                       key=lambda x: self.plants[x].height)):
-                    self.plants[plant_id].add_sunlight(self.light_decay ** i)
+                    self.plants[plant_id].add_sunlight((self.light_decay ** i) * (self.step ** 2))
 
     def distribute_water(self):
         # Log desired water levels of each plant before distributing
@@ -182,10 +184,10 @@ class Garden:
             self.update_plant_coverage(plant)
 
     def grow_plant(self, plant):
-        #next_step = plant.radius // self.step + 1
-        #next_line_dist = next_step * self.step
+        # next_step = plant.radius // self.step + 1
+        # next_line_dist = next_step * self.step
 
-        #prev_radius = plant.radius
+        # prev_radius = plant.radius
         upward, outward = plant.amount_to_grow()
         plant.height += upward
         plant.radius += outward
@@ -197,8 +199,8 @@ class Garden:
 
         plant.reset()
 
-        #if prev_radius < next_line_dist and plant.radius >= next_line_dist:
-        #    return next_step
+        # if prev_radius < next_line_dist and plant.radius >= next_line_dist:
+        #     return next_step
 
     def update_plant_coverage(self, plant):
         # expected = next_step * 8
@@ -226,20 +228,20 @@ class Garden:
                 points = self.growth_map[i][1]
                 for p in points:
                     point = p[0] + plant.row, p[1] + plant.col
-                    if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
+                    if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
                         plant.num_grid_points += 1
                         self.grid[point]['nearby'].add(plant.id)
-                        self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] += 1
+                        self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] += 1
         else:
             for i in range(next_growth_index_plus_1, plant.growth_index + 1):
                 points = self.growth_map[i][1]
                 for p in points:
                     point = p[0] + plant.row, p[1] + plant.col
-                    if point[0] >= 0 and point[0] < self.grid.shape[0] and point[1] >= 0 and point[1] < self.grid.shape[1]:
+                    if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove(plant.id)
-                        self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] -= 1
-                        if self.leaf_grid[point[0],point[1],self.plant_types.index(plant.type)] < 0:
+                        self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] -= 1
+                        if self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] < 0:
                             raise Exception("Cannot have negative leaf cover")
         plant.growth_index = next_growth_index_plus_1 - 1
 
@@ -249,15 +251,15 @@ class Garden:
         start_col, end_col = max(0, plant.col - rad_step), min(self.grid.shape[1] - 1, plant.col + rad_step)
 
         for col in range(start_col, end_col + 1):
-            yield (start_row, col)
-            yield (start_row + 1, col)
-            yield (end_row - 1, col)
-            yield (end_row, col)
+            yield start_row, col
+            yield start_row + 1, col
+            yield end_row - 1, col
+            yield end_row, col
         for row in range(start_row, end_row + 1):
-            yield (row, start_col)
-            yield (row, start_col + 1)
-            yield (row, end_col - 1)
-            yield (row, end_col)
+            yield row, start_col
+            yield row, start_col + 1
+            yield row, end_col - 1
+            yield row, end_col
 
     def within_radius(self, grid_pos, plant):
         dist = self.step ** 0.5 * np.linalg.norm((grid_pos[0] - plant.row, grid_pos[1] - plant.col))
