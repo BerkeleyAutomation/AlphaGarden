@@ -3,20 +3,13 @@ from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStag
 
 class Plant:
 
-    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color='g', plant_type='basil',
+    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=30, color='g', plant_type='basil',
                  germination_time=3, start_height=1, start_radius=0.2):
         self.id = None
 
         # coordinates of plant
         self.row = row
         self.col = col
-
-        # growth state of plant
-        self.radius = 0
-        self.height = 0
-
-        # current index of progression in circular growth map
-        self.growth_index = 0
 
         # parameters for how water and light affect growth
         self.c1 = c1
@@ -48,6 +41,24 @@ class Plant:
             WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
+        self.start_from_beginning()
+
+    def start_from_beginning(self):
+        # growth state of plant
+        self.radius = 0
+        self.height = 0
+
+        # current index of progression in circular growth map
+        self.growth_index = 0
+
+        # number of grid points the plant can absorb light/water from
+        self.num_grid_points = 1
+
+        # resources accumulated per timestep
+        self.num_sunlight_points = 0
+        self.water_amt = 0
+
+        self.stage_index = -1
         self.switch_stage(0)
 
     def add_sunlight(self, amount):
@@ -72,6 +83,14 @@ class Plant:
         next_stage_index = self.current_stage().step()
         if self.stage_index != next_stage_index:
             self.switch_stage(next_stage_index)
+
+    def start_over(self):
+        self.growth_index = 0
+        self.num_grid_points = 1
+        self.num_sunlight_points = 0
+        self.water_amt = 0
+        self.stage_index = -1
+        self.switch_stage()
 
     def desired_water_amt(self):
         return self.current_stage().desired_water_amt()

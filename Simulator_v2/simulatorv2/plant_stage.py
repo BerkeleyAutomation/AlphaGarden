@@ -53,25 +53,30 @@ class GrowthStage(PlantStage):
         self.overwatered = False
         self.underwatered = False
         self.stress_time = 0
-        self.overwatered_threshold = 1.5
+        self.overwatered_threshold = 2
         self.underwatered_threshold = 0.1
         self.overwatered_time_threshold = 5
         self.underwatered_time_threshold = 5
 
+        # percentage of original radius after fulling wilting
+        self.percentage_to_wilt_to = 0.8
+
     def amount_to_grow(self):
         if self.overwatered:
+            print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                return 0, -self.dr
+                return 0, (self.wilting_factor - 1) * self.plant.radius
 
             else:
                 self.overwatered = False
                 self.stress_time = 0
 
         elif self.underwatered:
+            print("Plant underwatered!")
             if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                return 0, -self.dr
+                return 0, (self.wilting_factor - 1) * self.plant.radius
 
             else:
                 self.underwatered = False
@@ -80,14 +85,14 @@ class GrowthStage(PlantStage):
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.overwatered = True
                 self.stress_time += 1
-                self.dr = 0.8 * self.plant.radius / self.overwatered_time_threshold
-                return 0, -self.dr
+                self.wilting_factor = self.percentage_to_wilt_to ** (1 / self.overwatered_time_threshold)
+                return 0, (self.wilting_factor - 1) * self.plant.radius
 
             elif self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.underwatered = True
                 self.stress_time += 1
-                self.dr = 0.8 * self.plant.radius / self.underwatered_time_threshold
-                return 0, -self.dr
+                self.wilting_factor = self.percentage_to_wilt_to ** (1 / self.underwatered_time_threshold)
+                return 0, (self.wilting_factor - 1) * self.plant.radius
 
         G = self.plant.c1 * self.plant.water_amt
         unocc_ratio = self.plant.amount_sunlight / self.plant.num_grid_points
@@ -122,18 +127,21 @@ class WaitingStage(PlantStage):
         self.overwatered_time_threshold = 5
         self.underwatered_time_threshold = 5
 
+        # percentage of original radius after fulling wilting
+        self.percentage_to_wilt_to = 0.8
+
     def amount_to_grow(self):
         if self.overwatered:
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                return 0, 0
+                return 0, (self.wilting_factor - 1) * self.plant.radius
             else:
                 self.overwatered = False
                 self.stress_time = 0
         elif self.underwatered:
             if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                return 0, 0
+                return 0, (self.wilting_factor - 1) * self.plant.radius
             else:
                 self.underwatered = False
                 self.stress_time = 0
@@ -141,14 +149,17 @@ class WaitingStage(PlantStage):
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.overwatered = True
                 self.stress_time += 1
+                self.wilting_factor = self.percentage_to_wilt_to ** (1 / self.overwatered_time_threshold)
+                return 0, (self.wilting_factor - 1) * self.plant.radius
             elif self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.underwatered = True
                 self.stress_time += 1
+                self.wilting_factor = self.percentage_to_wilt_to ** (1 / self.underwatered_time_threshold)
+                return 0, (self.wilting_factor - 1) * self.plant.radius
 
         return 0, 0
 
     def step(self):
-        """Optionally override this to specify when to move on to the next stage"""
         self.current_time += 1
         if self.overwatered and self.stress_time >= self.overwatered_time_threshold:
             return 4
@@ -167,14 +178,14 @@ class WiltingStage(PlantStage):
     def start_stage(self):
         super().start_stage()
         self.final_radius = min(self.plant.radius / 2, self.max_final_radius)
-        self.dr = (self.plant.radius - self.final_radius) / self.duration
+        self.wilting_factor = (self.final_radius / self.plant.radius) ** (1 / self.duration)
 
     def desired_water_amt(self):
         healthy_amt = super().desired_water_amt()
         return (1 - self.current_time / self.duration) * healthy_amt
 
     def amount_to_grow(self):
-        return 0, -self.dr
+        return 0, (self.wilting_factor - 1) * self.plant.radius
 
     def __str__(self):
         return f"{super().__str__()}: currently at radius={self.plant.radius}, will wilt to radius={self.final_radius}"

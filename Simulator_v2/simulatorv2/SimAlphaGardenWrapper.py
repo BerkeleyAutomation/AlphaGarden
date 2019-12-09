@@ -1,8 +1,9 @@
 from wrapperenv import WrapperEnv
-from simulatorv2.garden import Garden
-from simulatorv2.plant_type import PlantType
+from garden import Garden
+from plant_type import PlantType
 import numpy as np
 import configparser
+
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, N, M, num_plant_types, num_plants_per_type, step=1):
@@ -40,7 +41,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         entropy = -np.sum(prob*np.log(prob))
         water_coef = self.config.getfloat('cnn', 'water_coef')
         cc_coef = self.config.getfloat('cnn', 'cc_coef')
-        return (cc_coef * total_cc) + (0 * entropy) - (water_coef * np.sum(self.curr_action))
+        action_sum = self.N * self.M 
+        return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * self.curr_action/action_sum + 1)
         
     '''
     Method called by the gym environment to execute an action.
@@ -53,6 +55,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     '''
     def take_action(self, action):
         self.curr_action = action
+        # print('ACTION', action)
         self.garden.perform_timestep(irrigations=action)
         return self.garden.get_state()
 
@@ -66,4 +69,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 N=self.N,
                 M=self.M,
                 step=self.step,
-                plant_types=self.PlantType.get_n_names(self.num_plant_types))
+                plant_types=self.PlantType.get_n_names(self.num_plant_types),
+                animate=True)
+
+    '''
+    Method called by the environment to display animations.
+    '''
+    def show_animation(self):
+        self.garden.show_animation()

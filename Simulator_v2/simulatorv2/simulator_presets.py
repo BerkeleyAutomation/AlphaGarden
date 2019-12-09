@@ -2,9 +2,13 @@ from plant import Plant
 from baselines.baseline_policy import baseline_policy
 import numpy as np
 
-NUM_TIMESTEPS = 40
-NUM_X_STEPS = 50
-NUM_Y_STEPS = 50
+"""
+Test run presets (used in run_simulation.py).
+Does not affect actual RL settings.
+"""
+NUM_TIMESTEPS = 30
+NUM_X_STEPS = 5
+NUM_Y_STEPS = 5
 STEP = 1
 DAILY_WATER = 1
 
@@ -20,11 +24,12 @@ and a dictionary of setup params as the value. Setup params must at minimum incl
 PLANT_PRESETS = {
     "single-plant": {
         "seed": 12345,
-        "plants": lambda: [Plant(20, 20, color='g')]
+        "plants": lambda: [Plant(2, 2, color='g')]
     },
     "control-and-3": {
         "seed": 38572912,
-        "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'), Plant(40, 40, color='c')]
+        "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'),
+                           Plant(40, 40, color='c')]
     },
     "greedy-plant-limited": {
         "seed": 6937103,
@@ -37,7 +42,8 @@ PLANT_PRESETS = {
     },
     "faster-plant": {
         "seed": 76721,
-        "plants": lambda: [Plant(25, 25, color='g'), Plant(26, 26, color='tab:orange', c1=0.15, growth_time=15), Plant(25, 29, color='c')]
+        "plants": lambda: [Plant(25, 25, color='g'), Plant(26, 26, color='tab:orange', c1=0.15, growth_time=15),
+                           Plant(25, 29, color='c')]
     },
     "random": {
         "seed": None,
@@ -47,39 +53,73 @@ PLANT_PRESETS = {
 
 IRRIGATION_POLICIES = {
     "sequential": {
-        "policy": lambda: _make_sequential_irrigator(10, 10, 30)
+        "policy": lambda: _make_sequential_irrigator(10, 4, 30)
     },
     "baseline": {
-        "policy": lambda: _make_baseline_irrigator(1, 1, 5)
+        "policy": lambda: _make_baseline_irrigator(0.5, 0.5)
+    },
+    "random": {
+        "policy": lambda: _make_random_irrigator(4)
+    },
+    "baseline-then-stop": {
+        "policy": lambda: _make_baseline_then_stop_irrigator(1, 0.4, 20)
+    },
+    "baseline-then-overwater": {
+        "policy": lambda: _make_baseline_then_overwater_irrigator(1, 0.4, 20)
     }
-}
+ }
 
 
 def _make_sequential_irrigator(grid_step, amount, shift):
-    def get_sequential_irrigation(state, step, timestep):
+    def get_sequential_irrigation(state, step, irr_threshold, timestep):
         row_max = NUM_Y_STEPS // grid_step
         col_max = NUM_X_STEPS // grid_step
         timestep = (timestep + shift) % (row_max * col_max)
         row = timestep // col_max
         col = timestep % col_max
         i, j = row * grid_step + grid_step // 2, col * grid_step + grid_step // 2
-        irrigations = [0] * (NUM_X_STEPS * NUM_TIMESTEPS)
+        irrigations = [0] * (NUM_X_STEPS * NUM_Y_STEPS)
         irrigations[i * NUM_X_STEPS + j] = amount
         return irrigations
     return get_sequential_irrigation
 
 
-def _make_baseline_irrigator(threshold, amount, irr_threshold):
-    def get_baseline_irrigation(state, step, timestep):
+def _make_random_irrigator(amount):
+    def get_irrigation(state, step, irr_threshold, timestep):
+        grid_size = NUM_X_STEPS * NUM_Y_STEPS
+        irrigations = [0] * grid_size
+        irrigations[np.random.randint(grid_size)] = amount
+        return irrigations
+    return get_irrigation
+
+
+def _make_baseline_irrigator(threshold, amount):
+    def get_baseline_irrigation(state, step, irr_threshold, timestep):
         return baseline_policy(state, step, threshold, amount, irr_threshold)
+    return get_baseline_irrigation
+
+def _make_baseline_then_stop_irrigator(threshold, amount, ending_time):
+    def get_baseline_irrigation(state, step, irr_threshold, timestep):
+        if timestep < ending_time:
+            return baseline_policy(state, step, threshold, amount, irr_threshold)
+        else:
+            return np.zeros((state.shape[0] * state.shape[1], 1))
+    return get_baseline_irrigation
+
+def _make_baseline_then_overwater_irrigator(threshold, amount, ending_time):
+    def get_baseline_irrigation(state, step, irr_threshold, timestep):
+        if timestep < ending_time:
+            return baseline_policy(state, step, threshold, amount, irr_threshold)
+        else:
+            return 2 * np.ones((state.shape[0] * state.shape[1], 1))
     return get_baseline_irrigation
 
 
 # Creates different color plants in random locations
 def _get_random_plants():
     PLANTS_PER_COLOR = 10
-    #PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((.13, .55, .13), (0.11, 25), 'oregano'), ((0, .39, 0), (0.13, 15), 'thyme')]
-    PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((0, .39, 0), (0.13, 15), 'thyme')]
+    PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((.13, .55, .13), (0.11, 25), 'oregano'),
+                   ((0, .39, 0), (0.13, 15), 'thyme')]
 
     np.random.seed(285631)
     plants = []
@@ -87,5 +127,6 @@ def _get_random_plants():
         x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
         y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
         locations = np.hstack((x_locations, y_locations))
-        plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color, plant_type=type) for row, col in locations])
+        plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color, plant_type=type)
+                       for row, col in locations])
     return plants

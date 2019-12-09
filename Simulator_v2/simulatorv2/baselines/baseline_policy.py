@@ -11,8 +11,10 @@ def baseline_policy(state, step, threshold, amount, irr_threshold):
                 lower_x, upper_x = int(max(0, i - (radius // step))), int(min(state.shape[0], i + (radius // step)))
                 lower_y, upper_y = int(max(0, j - (radius // step))), int(min(state.shape[1], j + (radius // step)))
                 water_available = np.sum(state[lower_x:upper_x+1, lower_y:upper_y+1, -1])
+                # print("Water available: " + str(water_available))
                 if water_available < threshold:
-                    action[j, i] = amount
+                    # print("Irrigated at coordinate (" + str(i) + ", " + str(j) + ")")
+                    action[i, j] = amount
                     for z in range(max(0, i - irr_threshold), min(state.shape[0], i + irr_threshold + 1)):
                         for k in range(max(0, j - irr_threshold), min(state.shape[1], j + irr_threshold + 1)):
                             state[z, k, -1] += amount

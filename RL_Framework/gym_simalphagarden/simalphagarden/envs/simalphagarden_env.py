@@ -28,6 +28,9 @@ class SimAlphaGardenEnv(gym.Env):
     def _take_action(self, action):
         return self.wrapper_env.take_action(action)
 
+    def get_current_step(self):
+        return self.current_step
+
     def step(self, action):
         state = self._take_action(action)
         self.current_step += 1
@@ -48,6 +51,9 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_radius_grid(self):
        return self.wrapper_env.get_radius_grid()
+
+    def show_animation(self):
+        return self.wrapper_env.show_animation()
 
     def render(self, mode='human', close=False):
         print(f'Step: {self.current_step}')
