@@ -21,7 +21,7 @@ class Pipeline:
     def __init__(self):
         pass
 
-    def create_config(self, rl_time_steps=3000000, garden_time_steps=40, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=2, action_low=0.0, action_high=1.0, obs_low=0, obs_high=1000, ent_coef=0.01, n_steps=40000, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
+    def create_config(self, rl_time_steps=3000000, garden_time_steps=50, garden_x=10, garden_y=10, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=1.0, obs_low=0, obs_high=1000, ent_coef=0.01, n_steps=40000, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
         config = configparser.ConfigParser()
         config.add_section('rl')
         config['rl']['time_steps'] = str(rl_time_steps)
@@ -113,7 +113,7 @@ class Pipeline:
         pathlib.Path(folder_path + '/Graphs').mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_path + '/Graphs/avg_reward.png')
 
-    def plot_stddev_reward(self, folder_path, reward, reward_stddev, days, x_range, y_range, ticks):
+    def plot_stddev_reward(self, folder_path, garden_time_steps, reward, reward_stddev, days, x_range, y_range, ticks):
         fig = plt.figure(figsize=(28, 10))
         plt.xticks(np.arange(0, days, 10))
         plt.yticks(np.arange(x_range, y_range, ticks))
@@ -121,11 +121,11 @@ class Pipeline:
         plt.xlabel('Day', fontsize=16)
         plt.ylabel('Reward', fontsize=16)
 
-        plt.errorbar([i for i in range(40)], reward, reward_stddev, linestyle='None', marker='o', color='g')
+        plt.errorbar([i for i in range(garden_time_steps)], reward, reward_stddev, linestyle='None', marker='o', color='g')
         pathlib.Path(folder_path + '/Graphs').mkdir(parents=True, exist_ok=True)
         plt.savefig('./' + folder_path + '/Graphs/std_reward.png')
 
-    def graph_evaluations(self, folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types):
+    def graph_evaluations(self, folder_path, garden_time_steps, garden_x, garden_y, time_steps, step, num_evals, num_plant_types):
         obs = [0] * time_steps
         r = [0] * time_steps
         for i in range(num_evals):
@@ -152,9 +152,9 @@ class Pipeline:
         min_r = min(r) - 10
         max_r = max(r) + 10
         self.plot_average_reward(folder_path, r, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
-        self.plot_stddev_reward(folder_path, rewards, rewards_stddev, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
+        self.plot_stddev_reward(folder_path, garden_time_steps, rewards, rewards_stddev, time_steps, min_r, max_r, abs(min_r - max_r) / 10)
 
-    def evaluate_policy(self, folder_path, num_evals, env, is_baseline=False, baseline_policy=None, step=1):
+    def evaluate_policy(self, folder_path, num_evals, env, garden_x, garden_y, is_baseline=False, baseline_policy=None, step=1):
         model = None
         if not is_baseline:
             model = PPO2.load('./' + folder_path + '/model')
@@ -162,7 +162,15 @@ class Pipeline:
         for i in range(num_evals):
             obs = env.reset()
             garden_obs = env.env_method('get_garden_state')
-            e = {'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
+            e = {'obs_avg_action': [], 'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
+
+            obs_avg_action = {}
+            for x in range(garden_x):
+                for y in range(garden_y):
+                    obs_avg_action[x, y] = 0
+
+            step_counter = 0
+
             while not done:
                 action = None
                 if is_baseline:
@@ -172,19 +180,37 @@ class Pipeline:
                 obs, rewards, done, _ = env.step(action)
                 garden_obs = env.env_method('get_garden_state')
                 radius_grid = env.env_method('get_radius_grid')
-                #print([garden_obs[0][i] for i in range()])
-                #print('\t'.join([str(r) for r in radius_grid[0].tolist()] + [str(a) for a in action[0].tolist()] + [str(rewards.item())]))
-                e['obs_action'].append((radius_grid[0].tolist(), action[0].tolist()))
-                e['obs'].append(garden_obs[0].tolist())
-                e['rewards'].append(rewards.item())
-                e['action'].append(action[0].tolist())
-                env.render()
+                
+                if not done:
+                    step_counter = env.env_method('get_current_step')[0]
+
+                    rg_list = radius_grid[0].tolist()
+                    obs_action_pairs = []
+                    for x in range(garden_x):
+                        for y in range(garden_y):
+                            cell = (x, y)
+                            cell_action = action[0][x * garden_x + y]
+                            obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
+                            obs_avg_action[cell] += cell_action
+                    e['obs_action'].append({step_counter : obs_action_pairs})
+
+                    e['obs'].append(garden_obs[0].tolist())
+                    e['rewards'].append(rewards.item())
+                    e['action'].append(action[0].tolist())
+                    env.render()
             done = False
+
+            for x in range(garden_x):
+                for y in range(garden_y):
+                    obs_avg_action[(x, y)] /= step_counter
+                    e['obs_avg_action'].append({str((x, y)) : obs_avg_action[(x, y)], 'final': rg_list[x][y][0]})
+            
+            # env.env_method('show_animation')
 
             pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)
             filename = folder_path + '/Returns' + '/predict_' + str(i) + '.json'
             f = open(filename, 'w')
-            f.write(json.dumps(e))
+            f.write(json.dumps(e, indent=4))
             f.close()
 
     def single_run(self, folder_path, num_evals, policy_kwargs=None, is_baseline=False, baseline_policy=None):
@@ -205,6 +231,7 @@ class Pipeline:
         step = config.getint('garden', 'step')
         num_plants_per_type = config.getint('garden', 'num_plants_per_type')
         num_plant_types = config.getint('garden', 'num_plant_types')
+        garden_time_steps = config.getint('garden', 'time_steps')
         garden_x = config.getint('garden', 'X')
         garden_y = config.getint('garden', 'Y')
         # Z axis contains a matrix for every plant type plus one for water levels.
@@ -231,16 +258,16 @@ class Pipeline:
             copyfile('gym_config/config.ini', folder_path + '/config.ini')
 
             # Evaluate baseline on 50 random environments of same parameters.
-            self.evaluate_policy(folder_path=folder_path, num_evals=num_evals, env=env, is_baseline=True, baseline_policy=baseline_policy, step=1)
+            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=True, baseline_policy=baseline_policy, step=1)
 
             # Graph evaluations
-            self.graph_evaluations(folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
+            self.graph_evaluations(folder_path, garden_time_steps, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
         else:
             pathlib.Path(folder_path + '/ppo_v2_tensorboard').mkdir(parents=True, exist_ok=True)
             # Instantiate the agent
 #            model = PPO2(CustomCnnPolicy, env, policy_kwargs=policy_kwargs, ent_coef=ent_coef, n_steps=n_steps, nminibatches=nminibatches, noptepochs=noptepochs, learning_rate=learning_rate, verbose=1, tensorboard_log=folder_path + '/ppo_v2_tensorboard/')
 
-            model = PPO2(MlpPolicy, env, verbose=1, tensorboard_log=folder_path + '/ppo_v2_tensorboard/')
+            model = PPO2(MlpPolicy, env, ent_coef=ent_coef, n_steps=n_steps, nminibatches=nminibatches, noptepochs=noptepochs, learning_rate=learning_rate, verbose=1, tensorboard_log=folder_path + '/ppo_v2_tensorboard/')
             # Train the agent
             model.learn(total_timesteps=rl_time_steps)  # this will crash explaining that the invalid value originated from the env
 
@@ -249,10 +276,10 @@ class Pipeline:
             copyfile('gym_config/config.ini', folder_path + '/config.ini')
 
             # Evaluate model on 50 random environments of same parameters.
-            self.evaluate_policy(folder_path=folder_path, num_evals=num_evals, env=env, is_baseline=False)
+            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=False)
 
             # Graph evaluations
-            self.graph_evaluations(folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
+            self.graph_evaluations(folder_path, garden_time_steps, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
 
         profiler_object.disable()
 
@@ -296,7 +323,7 @@ class Pipeline:
         filename_time = str(filename_time)
 
 
-    def batch_run(self, n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=[], num_evals=50, is_baseline=[], baseline_policy=None):
+    def batch_run(self, n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, policy_kwargs=[], num_evals=1, is_baseline=[], baseline_policy=None):
         assert(len(rl_config) == n)
         assert(len(garden_x) == n)
         assert(len(garden_y) == n)
@@ -336,7 +363,7 @@ if __name__ == '__main__':
     rl_config = [
         {
             'rl_algorithm': 'MLP', 
-            'time_steps': 100000,
+            'time_steps': 200,
             'ent_coef': 0.0,
             'n_steps': 40000,
             'nminibatches': 4,
@@ -360,8 +387,8 @@ if __name__ == '__main__':
             "NUM_CONVS": 1,
             "FILTER_SIZE": 1,
             "STRIDE": 1,
-            'CC_COEF': 0.6,
-            'WATER_COEF': 0.4
+            'CC_COEF': 10,
+            'WATER_COEF': 100
         }
     ]
     num_evals = 50

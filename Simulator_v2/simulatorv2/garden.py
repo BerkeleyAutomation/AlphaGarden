@@ -1,8 +1,8 @@
 import numpy as np
-from logger import Logger, Event
-from plant import Plant
-from visualization import setup_animation
-from sim_globals import MAX_WATER_LEVEL
+from simulatorv2.logger import Logger, Event
+from simulatorv2.plant import Plant
+from simulatorv2.visualization import setup_animation
+from simulatorv2.sim_globals import MAX_WATER_LEVEL
 
 class Garden:
     def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):
@@ -93,6 +93,7 @@ class Garden:
             for i in np.nonzero(irrigations)[0]:
                 location = (i // self.N, i % self.M)
                 self.irrigate(location, irrigations[i])
+                # print('IRRIGATION:', location, irrigations[i])
                 self.irrigation_points[location] = irrigations[i]
 
         self.distribute_light()
@@ -102,6 +103,7 @@ class Garden:
 
         if self.animate:
             self.anim_step()
+        # print('RADIUS GRID', self.radius_grid.tolist())
 
         return self.plants.values()
 
