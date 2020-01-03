@@ -24,7 +24,7 @@ def run_simulation(args):
     irrigation_policy = IRRIGATION_POLICIES[args.irrigator]["policy"]() if args.irrigator in IRRIGATION_POLICIES else lambda _: None
 
     # Initialize the garden
-    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil', 'thyme', 'oregano'], animate=(args.display == 'a'))
+    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil', 'thyme', 'oregano'], animate=(args.display != 'p'))
 
     # Run the simulation for NUM_TIMESTEPS steps
     for i in range(NUM_TIMESTEPS):
