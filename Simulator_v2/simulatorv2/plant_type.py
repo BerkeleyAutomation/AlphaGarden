@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from simulatorv2.plant import Plant
+from plant import Plant
 from datetime import datetime
 
 class PlantType:

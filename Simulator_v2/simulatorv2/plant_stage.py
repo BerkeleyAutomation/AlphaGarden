@@ -5,6 +5,7 @@ class PlantStage:
 
     def start_stage(self):
         self.current_time = 0
+        print(self)
 
     def desired_water_amt(self):
         """Optionally override this to specify how much water the plant wants at this stage"""
@@ -51,6 +52,7 @@ class GrowthStage(PlantStage):
         unocc_ratio = self.plant.num_sunlight_points / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
         upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
+        print(upward, outward)
 
         return upward, outward
 
@@ -79,7 +81,7 @@ class WiltingStage(PlantStage):
         return 0, -self.dr
 
     def __str__(self):
-        return f"{super().__str__()}: currently at radius={self.plant.radius}, will wilt to radius={self.final_radius}"
+        return f"{super().__str__()}: currently at radius={self.plant.radius}, will wilt to radius={self.max_final_radius}"
 
 class DeathStage(PlantStage):
     def __init__(self, plant):

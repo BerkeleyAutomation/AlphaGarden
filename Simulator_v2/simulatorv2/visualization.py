@@ -1,4 +1,4 @@
-from simulatorv2.logger import Event
+from logger import Event
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
@@ -87,9 +87,10 @@ def setup_animation(garden):
         frames.append(_add_plots(garden, ax))
 
     def anim_show():
-        growth_animation = animation.ArtistAnimation(fig, frames, interval=300, blit=True, repeat_delay=1000)
+        growth_animation = animation.ArtistAnimation(fig, frames, interval=25, blit=True, repeat=True, repeat_delay=1000)
+        fig.set_size_inches(10, 5, True)
         plt.show()
-        growth_animation.save('simulation.mp4')
+        growth_animation.save('simulation.mp4', dpi=300)
 
     return anim_step, anim_show
 
@@ -103,14 +104,18 @@ def _setup_plot(garden):
     plt.ylim((0, garden.M * garden.step))
     ax.set_aspect('equal')
 
-    major_ticks = np.arange(0, garden.N * garden.step + 1, max(garden.N // 5, 1))
-    minor_ticks = np.arange(0, garden.N * garden.step + 1, garden.step)
-    ax.set_xticks(major_ticks)
-    ax.set_xticks(minor_ticks, minor=True)
-    ax.set_yticks(major_ticks)
-    ax.set_yticks(minor_ticks, minor=True)
-    ax.grid(which='minor', alpha=0.2)
-    ax.grid(which='major', alpha=0.5)
+    # ax.set_xticks(np.arange(0, garden.N * garden.step + 1, max(garden.N // 5, 1)))
+    # ax.set_xticks(np.arange(0, garden.N * garden.step + 1, garden.step), minor=True)
+    # ax.set_yticks(np.arange(0, garden.M * garden.step + 1, max(garden.N // 5, 1)))
+    # ax.set_yticks(np.arange(0, garden.M * garden.step + 1, garden.step), minor=True)
+    # ax.grid(which='minor', alpha=0.2)
+    # ax.grid(which='major', alpha=0.5)
+
+    # TEMPORARY, FOR DEMO ONLY
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
+    ax.set_yticks([])
+    ax.set_xticks([])
 
     return fig, ax
 
@@ -124,9 +129,9 @@ def _add_plots(garden, ax, reverse=False):
     shapes = []
 
     # Heatmap of soil water levels
-    c = plt.imshow(garden.grid['water'].T, cmap='Blues', origin='lower', alpha=0.5)
-    cp = ax.add_artist(c)
-    shapes.append(cp)
+    # c = plt.imshow(garden.grid['water'].T, cmap='Blues', origin='lower', alpha=0.5)
+    # cp = ax.add_artist(c)
+    # shapes.append(cp)
 
     # Plants
     for plant in sorted(garden.plants.values(), key=lambda plant: plant.height, reverse=reverse):
@@ -135,11 +140,11 @@ def _add_plots(garden, ax, reverse=False):
         shapes.append(circleplot)
 
     # Sunlight points
-    for grid_pt, coord in garden.enumerate_grid(coords=True):
-        if grid_pt['nearby']:
-            circle = plt.Circle(coord * garden.step, 0.2, color='c', alpha=0.3)
-            circleplot = ax.add_artist(circle)
-            shapes.append(circleplot)
+    # for grid_pt, coord in garden.enumerate_grid(coords=True):
+    #     if grid_pt['nearby']:
+    #         circle = plt.Circle(coord * garden.step, 0.2, color='c', alpha=0.3)
+    #         circleplot = ax.add_artist(circle)
+    #         shapes.append(circleplot)
 
     # Irrigation points
     for (row, col), amount in garden.irrigation_points.items():

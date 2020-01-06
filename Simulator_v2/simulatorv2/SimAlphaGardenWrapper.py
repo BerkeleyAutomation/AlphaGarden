@@ -1,6 +1,6 @@
 from wrapperenv import WrapperEnv
-from simulatorv2.garden import Garden
-from simulatorv2.plant_type import PlantType
+from garden import Garden
+from plant_type import PlantType
 import numpy as np
 import configparser
 

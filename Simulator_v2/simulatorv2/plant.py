@@ -1,4 +1,6 @@
-from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
+from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
+from plant_presets import PLANT_TYPES
+import numpy as np
 
 class Plant:
 
@@ -26,14 +28,24 @@ class Plant:
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
         self.stages = [
-            GerminationStage(self, germination_time, 1, 0.2),
+            GerminationStage(self, germination_time, start_height, start_radius),
             GrowthStage(self, growth_time),
             WaitingStage(self, 10),
-            WiltingStage(self, 20, 2),
+            # WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
 
         self.start_from_beginning()
+    
+    @staticmethod
+    def from_preset(name, row, col):
+        if name in PLANT_TYPES:
+            p = PLANT_TYPES[name]
+            g_min, g_max = p["germination_time"]
+            germination_time = np.random.randint(g_min, g_max + 1)
+            return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"], color=p["color"], plant_type=p["plant_type"], germination_time=germination_time, start_height=p["start_height"], start_radius=p["start_radius"])
+        else:
+            raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
     def start_from_beginning(self):
         # growth state of plant

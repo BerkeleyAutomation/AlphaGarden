@@ -1,11 +1,11 @@
 import numpy as np
-from simulatorv2.logger import Logger, Event
-from simulatorv2.plant import Plant
-from simulatorv2.visualization import setup_animation
-from simulatorv2.sim_globals import MAX_WATER_LEVEL
+from logger import Logger, Event
+from plant import Plant
+from visualization import setup_animation
+from sim_globals import MAX_WATER_LEVEL
 
 class Garden:
-    def __init__(self, plants=[], N=50, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=True, animate=False):
+    def __init__(self, plants=[], N=100, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=False, animate=False):
         # dictionary with plant ids as keys, plant objects as values
         self.plants = {}
 
@@ -15,6 +15,7 @@ class Garden:
         # list of plant types the garden will support
         # TODO: Set this list to be constant
         self.plant_types = plant_types
+        print(self.plant_types)
 
         # Structured array of gridpoints. Each point contains its water levels
         # and set of coordinates of plants that can get water/light from that location.
@@ -290,6 +291,8 @@ class Garden:
 
     def show_animation(self):
         if self.animate:
-           self.anim_show() 
+            for _ in range(1000//25):
+                self.anim_step()
+            self.anim_show() 
         else:
             print("[Garden] No animation to show. Set animate=True when initializing to allow animating history of garden!")

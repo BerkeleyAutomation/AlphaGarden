@@ -5,8 +5,8 @@ import numpy as np
 Test run presets (used in run_simulation.py).
 Does not affect actual RL settings.
 """
-NUM_TIMESTEPS = 50
-NUM_X_STEPS = 50
+NUM_TIMESTEPS = 180
+NUM_X_STEPS = 100
 NUM_Y_STEPS = 50
 STEP = 1
 DAILY_WATER = 1
@@ -45,6 +45,20 @@ PLANT_PRESETS = {
     "random": {
         "seed": None,
         "plants": lambda: _get_random_plants()
+    },
+    "real-garden": {
+        # "seed": 10239210,
+        "seed": 1000001,
+        "plants": lambda: _get_random_plants_of_type([("bok-choy", 25), ("basil", 25), ("lavender", 30), ("parsley", 25), ("sage", 25), ("rosemary", 30), ("thyme", 20)])
+    },
+    "real-grid": {
+        "seed": 109225,
+        # "seed": 1000001,
+        "plants": lambda: _get_grid_of_plants([("bok-choy", 9), ("basil", 9), ("lavender", 9), ("parsley", 9), ("rosemary", 9), ("thyme", 9)])
+    },
+    "spaced-garden": {
+        "seed": 501293,
+        "plants": lambda: _get_rows_of_plants([(6, 7, "bok-choy"), (15, 12, "basil"), (30, 23, "lavender"), (45, 12, "parsley")])
     }
 }
 
@@ -91,4 +105,36 @@ def _get_random_plants():
         y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
         locations = np.hstack((x_locations, y_locations))
         plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color, plant_type=type) for row, col in locations])
+    return plants
+
+def _get_random_plants_of_type(types):
+    plants = []
+    for plant_type, num in types:
+        x_locations = np.random.randint(3, NUM_X_STEPS - 3, (num, 1))
+        y_locations = np.random.randint(3, NUM_Y_STEPS - 3, (num, 1))
+        locations = np.hstack((x_locations, y_locations))
+        plants.extend([Plant.from_preset(plant_type, row, col) for row, col in locations])
+    return plants
+
+def _get_grid_of_plants(types):
+    count = 0
+    plants = []
+    for row in range(0, NUM_Y_STEPS - 1, 10):
+        for col in range(0, NUM_X_STEPS - 1, 10):
+            plants.append(Plant.from_preset(types[0][0], col, row))
+
+            count += 1
+            if count >= types[0][1]:
+                types.pop(0)
+                count = 0
+    return plants
+
+def _get_rows_of_plants(types):
+    """
+    Types is array of (row, spacing, plant) tuples
+    """
+    plants = []
+    for row, spacing, plant_type in types:
+        for col in range(spacing // 2 + 2, NUM_X_STEPS - spacing // 2, spacing):
+            plants.append(Plant.from_preset(plant_type, col, row))
     return plants
