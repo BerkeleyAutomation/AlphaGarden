@@ -1,4 +1,6 @@
 from logger import Event
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np

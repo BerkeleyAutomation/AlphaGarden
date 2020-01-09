@@ -5,7 +5,7 @@ import numpy as np
 Test run presets (used in run_simulation.py).
 Does not affect actual RL settings.
 """
-NUM_TIMESTEPS = 180
+NUM_TIMESTEPS = 100
 NUM_X_STEPS = 100
 NUM_Y_STEPS = 50
 STEP = 1
@@ -59,6 +59,14 @@ PLANT_PRESETS = {
     "spaced-garden": {
         "seed": 501293,
         "plants": lambda: _get_rows_of_plants([(6, 7, "bok-choy"), (15, 12, "basil"), (30, 23, "lavender"), (45, 12, "parsley")])
+    },
+    "spaced-garden-2": {
+        "seed": 501293,
+        "plants": lambda: _get_rows_of_plants([(6, 8, "chives"), (13, 5, "cilantro"), (23, 14, "dill"), (40, 20, "tarragon")])
+    },
+    "spaced-garden-3": {
+        "seed": 501293,
+        "plants": lambda: _get_rows_of_plants([(6, 8, "chives"), (15, 10, "majoram"), (27, 13, "oregano"), (40, 12, "fennel")])
     }
 }
 
@@ -94,17 +102,17 @@ def _make_random_irrigator(amount):
 
 # Creates different color plants in random locations
 def _get_random_plants():
-    PLANTS_PER_COLOR = 6
-    #PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((.13, .55, .13), (0.11, 25), 'oregano'), ((0, .39, 0), (0.13, 15), 'thyme')]
-    PLANT_TYPES = [((.49, .99, 0), (0.1, 25), 'basil'), ((0, .39, 0), (0.13, 15), 'thyme')]
+    PLANTS_PER_COLOR = 21
+    PLANT_TYPES = ['bok-choy', 'basil', 'lavender', 'parsley', 'sage', 'rosemary', 'thyme', 'chives', 'cilantro',
+                   'dill', 'fennel', 'majoram', 'oregano', 'tarragon']
 
     np.random.seed(285631)
     plants = []
-    for color, (c1, growth_time), type in PLANT_TYPES:
+    for name in PLANT_TYPES:
         x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
         y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
         locations = np.hstack((x_locations, y_locations))
-        plants.extend([Plant(row, col, c1=c1, growth_time=growth_time, color=color, plant_type=type) for row, col in locations])
+        plants.extend([Plant.from_preset(name, row, col) for row, col in locations])
     return plants
 
 def _get_random_plants_of_type(types):

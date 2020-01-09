@@ -52,8 +52,6 @@ class GrowthStage(PlantStage):
         unocc_ratio = self.plant.num_sunlight_points / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
         upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
-        print(upward, outward)
-
         return upward, outward
 
     def __str__(self):
