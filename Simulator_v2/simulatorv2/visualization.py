@@ -136,7 +136,8 @@ def _add_plots(garden, ax, reverse=False):
     # shapes.append(cp)
 
     # Plants
-    for plant in sorted(garden.plants.values(), key=lambda plant: plant.height, reverse=reverse):
+    for plant in sorted([plant for plant_type in garden.plants for plant in plant_type.values()],
+                        key=lambda x: x.height, reverse=reverse):
         circle = plt.Circle((plant.row, plant.col) * garden.step, plant.radius, color=plant.color)
         circleplot = ax.add_artist(circle)
         shapes.append(circleplot)

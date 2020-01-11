@@ -9,7 +9,7 @@ class PlantStage:
 
     def desired_water_amt(self):
         """Optionally override this to specify how much water the plant wants at this stage"""
-        max_water = self.plant.c2 * (self.plant.num_sunlight_points ** 0.5)
+        max_water = self.plant.c2 * (self.plant.amount_sunlight ** 0.5)
         return max_water
 
     def amount_to_grow(self):
@@ -49,7 +49,7 @@ class GrowthStage(PlantStage):
 
     def amount_to_grow(self):
         G = self.plant.c1 * self.plant.water_amt
-        unocc_ratio = self.plant.num_sunlight_points / self.plant.num_grid_points
+        unocc_ratio = self.plant.amount_sunlight / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
         upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
         return upward, outward

@@ -66,5 +66,4 @@ PLANT_TYPES = {
                                           seed_spacing=13.5, maturation_time=87.5),
     "tarragon": _compute_from_table_values(name="tarragon", color=(117/255, 128/255, 81/255), germination_time=(7, 14),
                                            seed_spacing=21, maturation_time=60)
-
 }

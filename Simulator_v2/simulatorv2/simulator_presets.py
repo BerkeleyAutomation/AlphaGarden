@@ -102,9 +102,10 @@ def _make_random_irrigator(amount):
 
 # Creates different color plants in random locations
 def _get_random_plants():
-    PLANTS_PER_COLOR = 21
-    PLANT_TYPES = ['bok-choy', 'basil', 'lavender', 'parsley', 'sage', 'rosemary', 'thyme', 'chives', 'cilantro',
-                   'dill', 'fennel', 'majoram', 'oregano', 'tarragon']
+    PLANTS_PER_COLOR = 10
+    #PLANT_TYPES = ['bok-choy', 'basil', 'lavender', 'parsley', 'sage', 'rosemary', 'thyme', 'chives', 'cilantro',
+    #               'dill', 'fennel', 'majoram', 'oregano', 'tarragon']
+    PLANT_TYPES = ['basil', 'thyme', 'oregano']
 
     np.random.seed(285631)
     plants = []

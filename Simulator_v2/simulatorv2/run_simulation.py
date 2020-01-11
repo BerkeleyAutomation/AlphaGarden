@@ -19,16 +19,17 @@ def run_simulation(args):
     irrigation_policy = IRRIGATION_POLICIES[args.irrigator][
         "policy"]() if args.irrigator in IRRIGATION_POLICIES else lambda _: None
 
+    plant_types = ['basil', 'thyme', 'oregano']
+    if args.all_plants:
+        plant_types += ['lavender', 'bok-choy', "parsley", "sage", "rosemary", "thyme", "chives", "cilantro", "dill",
+                        "fennel", "majoram", "tarragon"]
+
     # Initialize the garden
-    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=['basil', 'thyme', 'oregano'] +
-                                                                        ['lavender', 'bok-choy', "parsley", "sage",
-                                                                         "rosemary", "thyme", "chives", "cilantro",
-                                                                         "dill", "fennel", "majoram", "oregano",
-                                                                         "tarragon"], animate=(args.display != 'p'))
+    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=plant_types, animate=(args.display != 'p'))
 
     # Run the simulation for NUM_TIMESTEPS steps
     for i in range(NUM_TIMESTEPS):
-        plants = garden.perform_timestep(water_amt=daily_water, irrigations=irrigation_policy(i))
+        plants = garden.perform_timestep(water_amt=daily_water, irrigations=irrigation_policy(i), prune=args.prune)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -52,6 +53,8 @@ def get_parsed_args():
                         help='[a|p] Whether to show full animation [a] or just plots of plant behaviors [p]')
     parser.add_argument('--irrigator', type=str, help='[uniform|sequential] The irrigation policy to use')
     parser.add_argument('--export', type=str, help='Name of file to save results to (if "none", will not save results)')
+    parser.add_argument('--prune', dest='prune', action='store_true', help='To enable baseline pruning policy')
+    parser.add_argument('--all_plants', dest='all_plants', action='store_true', help='Whether to use all plants')
     return parser.parse_args()
 
 
