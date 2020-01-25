@@ -1,3 +1,6 @@
 [submodule "Website"]
 	path = Website
 	url = https://github.com/kevintli/alphagarden-web.git
+[submodule "AlphaGardenWebApp"]
+	path = AlphaGardenWebApp
+	url = https://github.com/MarkSelden/AlphaGardenWebApp.git
