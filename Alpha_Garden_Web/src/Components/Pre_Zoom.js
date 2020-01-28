@@ -5,7 +5,7 @@ import React from 'react';
 	
 
 	 return (
-	 	<h1> Pre_Zoom Overlay </h1>
+	 	<button id="button" onClick={props.endFunc}> Move On </button>
 	)
 
 	    

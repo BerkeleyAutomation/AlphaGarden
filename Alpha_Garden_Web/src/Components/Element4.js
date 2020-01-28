@@ -80,7 +80,7 @@ class Element4 extends React.Component{
 			setTimeout(
 
             	() => {this.setState({
-            		overlay: <Pre_Zoom />
+            		overlay: <Pre_Zoom endFunc={this.props.endFunc}/>
             	})}
             , 3000);
 
@@ -91,7 +91,7 @@ class Element4 extends React.Component{
 
     	this.state = {
 
-    		overlay: <Pre_Zoom className="Overlay"/>,
+    		overlay: <Pre_Zoom endFunc={this.props.endFunc}/>,
 
     		zoom: "no_zoom",
 

@@ -22,7 +22,12 @@ class App extends React.Component {
 
             page: <TextOverlay 
 
-                    endFunc= {() => {this.setState({page:<Element4/>})}}/>
+                    endFunc= {() => {this.setState({page:<Element4 
+
+
+                      endFunc= {() => {this.setState({page:<BackVideo vidName={require("./Media/8x8_Simulation.mp4")} />})}}/>
+
+                      })}}/>
           
 
 
@@ -36,14 +41,14 @@ class App extends React.Component {
 
     return (
 
-      <div>
+      <body>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Roboto+Mono"/>
         
         {this.state.page}
         
-      </div>
+      </body>
       )
   }
 }
