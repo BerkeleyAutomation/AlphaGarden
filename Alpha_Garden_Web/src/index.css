@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.2EM;
 }
 
 
@@ -23,35 +24,37 @@ body {
   color: rgba(255, 255, 255, 0.9);
   font-family: 'Roboto Mono';
   text-shadow: 0px 0px 18.9253px rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.2em;
+}
+
+.LOADING svg{
+  position: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+.LOADING img{
+  position: fixed;
+  top: 0px;
+  z-index: -3;
 }
 
 .Overlay {
   position: fixed;
   z-index: 5;
-  top: 35%;
+  bottom: 40%;
   width: 100%;
   padding: 20px;
   text-align: center;
+  letter-spacing: 0.2em;
 }
-
 
 .top{
-  position: fixed;
+  position: relative;
   z-index: 5;
   font-size: 36px;
-  padding: 20px;
-  top: 0.1%;
-  font-family: 'Roboto Mono';
-}
-
-
-.Data p{
-  position: fixed;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  font-size: 20px;
-  width: 100%;
-  padding: 20px;
+  font-weight: bold;
+  bottom: -5px;
 }
 
 #button {
@@ -60,7 +63,18 @@ body {
   background-color: inherit;
   font-size: 96px;
   font-weight: lighter;
+  letter-spacing: 0.2em;
 }
+
+.Data p{
+  position: absolute;
+  bottom: 8.5%;
+  left: 8.5%;
+  font-size: 20px;
+  width: 100%;
+}
+
+
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
@@ -97,106 +111,106 @@ code {
 
 
 #Zoom1{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(37.5%, 37.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(37.5%, 37.5%); 
 }
 
 
 #Zoom2{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(12.5%, 37.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(12.5%, 37.5%); 
 
 }
 
 #Zoom3{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-12.5%, 37.5%);
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-12.5%, 37.5%);
 
 }
 
 
 #Zoom4{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-37.5%, 37.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-37.5%, 37.5%);  
 }
 
 
 #Zoom5{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(37.5%, 12.5%);
-	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(37.5%, 12.5%);
+  
 }
 
 
 #Zoom6{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(12.5%, 12.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(12.5%, 12.5%); 
 }
 
 #Zoom7{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-12.5%, 12.5%);
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-12.5%, 12.5%);
 
 }
 
 
 #Zoom8{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-37.5%, 12.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-37.5%, 12.5%);  
 }
 
 #Zoom9{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(37.5%, -12.5%);
-	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(37.5%, -12.5%);
+  
 }
 
 
 #Zoom10{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(12.5%, -12.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(12.5%, -12.5%);  
 }
 
 #Zoom11{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-12.5%, -12.5%);
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-12.5%, -12.5%);
 
 }
 
 
 #Zoom12{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-37.5%, -12.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-37.5%, -12.5%); 
 }
 
 #Zoom13{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(37.5%, -37.5%);
+  transition: transform 3s;
+  transform: scale(4, 4) translate(37.5%, -37.5%);
 
 }
 
 
 #Zoom14{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(12.5%, -37.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(12.5%, -37.5%);  
 }
 
 #Zoom15{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-12.5%, -37.5%);
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-12.5%, -37.5%);
 
 }
 
 
 #Zoom16{
-	transition: transform 3s;
-	transform: scale(4, 4) translate(-37.5%, -37.5%);	
+  transition: transform 3s;
+  transform: scale(4, 4) translate(-37.5%, -37.5%); 
 }
 
 
 
 #ZoomOut{
-	transition: transform 3s;
-	transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0%);	
+  transition: transform 3s;
+  transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0%);  
 }
 
