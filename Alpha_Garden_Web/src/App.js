@@ -9,31 +9,49 @@ import Element4 from './Components/Element4.js'
 class App extends React.Component {
 
   constructor(props) {
+    const nuc = true;
 
     super(props);
+    const endEl1 = () =>{
+        activateEl2();
+        this.setState({el1:null});
+    }
 
+    const endEl2 = () =>{
+        activateEl3();
+        this.setState({el2:null})
+    }
+
+    const endEl3 = () =>{
+        activateEl4();
+        this.setState({el3:null})
+    }
+
+    const activateEl2 = () =>{
+      this.setState({el2:<TextOverlay endFunc={endEl2} nuc={nuc}/>})
+    }
+
+    const activateEl3 = () => {
+      this.setState({el3:<Element4 endFunc = {endEl3} nuc={nuc}/>})
+    }
+
+    const activateEl4 = () => {
+      this.setState({el4:<BackVideo vidName={require("./Media/8x8_Simulation.mp4")} />})
+    }
+  
     this.state = {
+      el1: <BackVideo
+                  vidName={require("./Media/time_lapse.mp4")}
+                  endFunc={endEl1} />,
+      el2: null,
 
-      page: <BackVideo 
+      el3: null,
 
-          vidName={require("./Media/time_lapse.mp4")}
-
-          endFunc={() => { this.setState({
-
-            page: <TextOverlay 
-
-                    endFunc= {() => {this.setState({page:<Element4 
-
-
-                      endFunc= {() => {this.setState({page:<BackVideo vidName={require("./Media/8x8_Simulation.mp4")} />})}}/>
-
-                      })}}/>
-          
-
-
-
-          })}}/>
+      el4: null
     };
+
+
+   
   }
   
 
@@ -46,7 +64,10 @@ class App extends React.Component {
         <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Roboto+Mono"/>
         
-        {this.state.page}
+        {this.state.el1}
+        {this.state.el2}
+        {this.state.el3}
+        {this.state.el4}
         
       </body>
       )

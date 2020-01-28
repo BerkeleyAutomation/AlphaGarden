@@ -7,40 +7,49 @@ import $ from 'jquery'
 
 class Element4 extends React.Component{
 
-	 
+	
 
 	constructor(props) {
 		//Func to trigger the proper transformations to zoom into a square of the garden
-		const zoomIn = () => {
-			
-			//calculate which square to zoom into
-			let square = 0;
-			if(this.state.x < 0.25){
-				square = 1;
-			}
-			else if( this.state.x < 0.5){
-				square = 2;
-			}else if(this.state.x < 0.75){
-				square = 3;
-			}else{
-				square = 4;
-			}
+		
 
-			if(this.state.y < 0.25){
-				square += 0;
-			}else if(this.state.y < 0.5){
-				square += 4;
-			}else if(this.state.y < 0.75){
-				square += 8;
-			}else if(this.state.y > 0.75){
-				square += 12;
-			};
+		const zoomIn = (square=Math.floor(Math.random() * 16) + 1) => {
+			//calculate which square to zoom into
+			if(!this.props.nuc){
+				if(this.state.x < 0.25){
+					square = 1;
+				}
+				else if( this.state.x < 0.5){
+					square = 2;
+				}else if(this.state.x < 0.75){
+					square = 3;
+				}else{
+					square = 4;
+				}
+
+				if(this.state.y < 0.25){
+					square += 0;
+				}else if(this.state.y < 0.5){
+					square += 4;
+				}else if(this.state.y < 0.75){
+					square += 8;
+				}else if(this.state.y > 0.75){
+					square += 12;
+				};
+		}
 
 
 			removeOverlay();
 			triggerZoom(square);
 			setOverlay(square);	
+
+			if(this.props.nuc){
+				setTimeout(zoomOut, 6000);
+			}
 		}
+
+
+
 
 		const removeOverlay = () => {
 			this.setState({
@@ -84,6 +93,10 @@ class Element4 extends React.Component{
             	})}
             , 3000);
 
+           	if(this.props.nuc){
+           		setTimeout(zoomIn, 4000);
+           	}
+
 
 		}
 
@@ -102,8 +115,24 @@ class Element4 extends React.Component{
     		y:0
 
     	}
+
+
+
+
+    	
     }
 
+
+  
+   	componentDidMount(){
+   		const timer = () => {
+    		this.state.handleClick();
+   		}
+
+    	if(this.props.nuc){
+   			setTimeout(timer, 2000);
+   		}
+    }
 
 
 
@@ -115,8 +144,6 @@ class Element4 extends React.Component{
     _onMouseMove(e) {
     	this.setState({ x: (e.clientX / $( window ).width()), y: (e.clientY / $( window ).height())  });
   	}	
-    
-
 
 	render(){
 

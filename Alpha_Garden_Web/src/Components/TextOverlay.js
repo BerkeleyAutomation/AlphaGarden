@@ -8,6 +8,8 @@ import GlowingMarks from './GlowingMarks'
  //component for the text that goes over the background video
  const TextOverLay = (props) => {
 
+ 	if(props.nuc){setTimeout(props.endFunc, 6000)}
+
 	let today = new Date();
 	 return(
  	 	<div className = "LOADING">
