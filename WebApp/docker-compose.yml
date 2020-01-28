@@ -1,0 +1,26 @@
+version: '3.5'
+services:
+  web_dev:
+    build: .
+    ports:
+      - "4000:4000"
+    volumes:
+     - .:/app
+    environment:
+     - ENV=development
+     - PORT=4000
+     - DB=mongodb://mongodb:27017/alphagarden
+  mongodb:
+    image: mongo:4.0
+    container_name: "mongodb"
+    environment:
+      - MONGO_DATA_DIR=/usr/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db:/usr/data/db
+    ports:
+      - 27017:27017
+    command: mongod --smallfiles --logpath=/dev/null # --quiet
+networks:
+  default:
+    name: web_dev
