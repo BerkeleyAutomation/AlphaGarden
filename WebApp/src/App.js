@@ -23,6 +23,8 @@ class App extends React.Component {
 
       el4: false,
 
+      el5: false,
+
       nuc: true
     };
 
@@ -75,10 +77,21 @@ class App extends React.Component {
         timeout={300}
         unmountOnExit
         onEnter={() => this.setState({el3:false})}
-        onExited={() => this.setState({el1:true})}
+        onExited={() => this.setState({el5:true})}
       >
 
         <BackVideo vidName={require("./Media/8x8_Simulation.mp4")} endFunc={() => {this.setState({el4:false})}}/>
+
+      </CSSTransition>
+            <CSSTransition
+        in={this.state.el5}
+        timeout={300}
+        unmountOnExit
+        onEnter={() => this.setState({el4:false})}
+        onExited={() => this.setState({el1:true})}
+      >
+
+        <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el4:false})}}/>
 
       </CSSTransition>
         
