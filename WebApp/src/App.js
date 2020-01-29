@@ -91,7 +91,7 @@ class App extends React.Component {
         onExited={() => this.setState({el1:true})}
       >
 
-        <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el4:false})}}/>
+        <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el5:false})}}/>
 
       </CSSTransition>
         
