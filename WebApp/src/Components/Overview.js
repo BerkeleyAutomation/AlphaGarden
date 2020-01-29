@@ -6,15 +6,15 @@ import GlowingMarks from './GlowingMarks'
 	let plants = ["Lavendar", "Basil", "Turnips", "Rosemary", "Cacti"];
 	const plantMap = (x) => {return x + ", "}
  //component for the text that goes over the background video
- const TextOverLay = (props) => {
+ const Overview = (props) => {
 
  	if(props.nuc){setTimeout(props.endFunc, 6000)}
 
 	let today = new Date();
 	 return(
  	 	<div className = "LOADING">
- 	 		{/* <GlowingMarks /> */}
-	 		<img src={require("./Garden-Overview.png")} alt="Zaaa GARDEN" height="100%" width="100%" />
+ 	 		{ <GlowingMarks /> }
+	 		<img src={require("./Garden-Overview2.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" />
 
 	    	<div className="Overlay1">
 	    		<p className="top"> ALPHA GARDEN</p>
@@ -27,4 +27,4 @@ import GlowingMarks from './GlowingMarks'
 		)    
 }
 
-export default TextOverLay;
+export default Overview;

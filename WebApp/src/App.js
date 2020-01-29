@@ -2,52 +2,28 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import BackVideo from './Components/BackVideo.js'
-import TextOverlay from './Components/TextOverlay.js'
-import Element4 from './Components/Element4.js'
+import Overview from './Components/Overview.js'
+import Element3 from './Components/Element3.js'
+import { CSSTransition } from 'react-transition-group'
 
 
 class App extends React.Component {
 
   constructor(props) {
-    const nuc = true;
 
     super(props);
-    const endEl1 = () =>{
-        activateEl2();
-        this.setState({el1:null});
-    }
 
-    const endEl2 = () =>{
-        activateEl3();
-        this.setState({el2:null})
-    }
-
-    const endEl3 = () =>{
-        activateEl4();
-        this.setState({el3:null})
-    }
-
-    const activateEl2 = () =>{
-      this.setState({el2:<TextOverlay endFunc={endEl2} nuc={nuc}/>})
-    }
-
-    const activateEl3 = () => {
-      this.setState({el3:<Element4 endFunc = {endEl3} nuc={nuc}/>})
-    }
-
-    const activateEl4 = () => {
-      this.setState({el4:<BackVideo vidName={require("./Media/8x8_Simulation.mp4")} />})
-    }
   
     this.state = {
-      el1: <BackVideo
-                  vidName={require("./Media/time_lapse.mp4")}
-                  endFunc={endEl1} />,
-      el2: null,
+      el1: true,
 
-      el3: null,
+      el2: false,
 
-      el4: null
+      el3: false,
+
+      el4: false,
+
+      nuc: true
     };
 
 
@@ -64,10 +40,47 @@ class App extends React.Component {
         <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Roboto+Mono"/>
         
-        {this.state.el1}
-        {this.state.el2}
-        {this.state.el3}
-        {this.state.el4}
+        {this.state.el1 && (<BackVideo
+                  vidName={require("./Media/time_lapse.mp4")}
+                   endFunc={() => {(this.setState({el2:true}))}}/>)}
+
+      <CSSTransition
+        in={this.state.el2}
+        timeout={300}
+        unmountOnExit
+        onEnter={() => this.setState({el1:false})}
+        onExited={() => this.setState({el3:true})}
+      >
+        <Overview nuc={this.state.nuc} endFunc={() => {this.setState({el2:false})}}/>
+
+      </CSSTransition>
+
+
+
+      <CSSTransition
+        in={this.state.el3}
+        timeout={300}
+        unmountOnExit
+        onEnter={() => this.setState({el2:false})}
+        onExited={() => this.setState({el4:true})}
+      >
+
+        <Element3 endFunc={() => {this.setState({el3:false})}} nuc={this.state.nuc}/>
+
+      </CSSTransition>
+
+
+      <CSSTransition
+        in={this.state.el4}
+        timeout={300}
+        unmountOnExit
+        onEnter={() => this.setState({el3:false})}
+        onExited={() => this.setState({el1:true})}
+      >
+
+        <BackVideo vidName={require("./Media/8x8_Simulation.mp4")} endFunc={() => {this.setState({el4:false})}}/>
+
+      </CSSTransition>
         
       </body>
       )

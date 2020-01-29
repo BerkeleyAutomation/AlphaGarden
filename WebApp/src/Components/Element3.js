@@ -6,7 +6,7 @@ import PlantData from '../Media/plant-data';
 // Component for dynamic zoom data display
 
 
-class Element4 extends React.Component{
+class Element3 extends React.Component{
 
 	
 
@@ -204,4 +204,4 @@ class Element4 extends React.Component{
 	}
 }
 
-export default Element4;
+export default Element3;
