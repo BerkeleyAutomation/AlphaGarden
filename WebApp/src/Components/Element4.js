@@ -11,10 +11,10 @@ class Element4 extends React.Component{
 	
 
 	constructor(props) {
-		//Func to trigger the proper transformations to zoom into a square of the garden
+		//Func to trigger the proper transformations to zoom into a square of the garden  square=Math.floor(Math.random() * 16) + 1
 		
 
-		const zoomIn = (square=Math.floor(Math.random() * 16) + 1) => {
+		const zoomIn = (square=4) => {
 			//calculate which square to zoom into
 			if(!this.props.nuc){
 				if(this.state.x < 0.25){
@@ -123,6 +123,12 @@ class Element4 extends React.Component{
 
            	if(this.props.nuc){
            		setTimeout(zoomIn, 4000);
+           		this.setState((state) => ({
+ 				 		counter: state.counter + 1
+				}));
+				if(this.state.counter > 3){
+					this.props.endFunc()
+				}
            	}
 
 
@@ -140,7 +146,9 @@ class Element4 extends React.Component{
 
     		x:0,
 
-    		y:0
+    		y:0,
+
+    		counter: 0
 
     	}
 

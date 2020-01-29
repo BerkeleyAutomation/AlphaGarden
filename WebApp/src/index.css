@@ -116,105 +116,106 @@ code {
 
 #Zoom1{
   transition: transform 3s;
-  transform: scale(4, 4) translate(37.5%, 37.5%); 
+  transform: scale(4, 4) translate3d(37.5%, 37.5%, 0px); 
 }
 
 
 #Zoom2{
   transition: transform 3s;
-  transform: scale(4, 4) translate(12.5%, 37.5%); 
+  transform: scale(4, 4) translate3d(12.5%, 37.5%, 0px); 
 
 }
 
 #Zoom3{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-12.5%, 37.5%);
+  transform: scale(4, 4) translate3d(-12.5%, 37.5%, 0px);
 
 }
 
 
 #Zoom4{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-37.5%, 37.5%);  
+  transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px) ; 
+   
 }
 
 
 #Zoom5{
   transition: transform 3s;
-  transform: scale(4, 4) translate(37.5%, 12.5%);
+  transform: scale(4, 4) translate3d(37.5%, 12.5%, 0px);
   
 }
 
 
 #Zoom6{
   transition: transform 3s;
-  transform: scale(4, 4) translate(12.5%, 12.5%); 
+  transform: scale(4, 4) translate3d(12.5%, 12.5%, 0px); 
 }
 
 #Zoom7{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-12.5%, 12.5%);
+  transform: scale(4, 4) translate3d(-12.5%, 12.5%, 0px);
 
 }
 
 
 #Zoom8{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-37.5%, 12.5%);  
+  transform: scale(4, 4) translate3d(-37.5%, 12.5%, 0px);  
 }
 
 #Zoom9{
   transition: transform 3s;
-  transform: scale(4, 4) translate(37.5%, -12.5%);
+  transform: scale(4, 4) translate3d(37.5%, -12.5%, 0px);
   
 }
 
 
 #Zoom10{
   transition: transform 3s;
-  transform: scale(4, 4) translate(12.5%, -12.5%);  
+  transform: scale(4, 4) translate3d(12.5%, -12.5%, 0px);  
 }
 
 #Zoom11{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-12.5%, -12.5%);
+  transform: scale(4, 4) translate3d(-12.5%, -12.5%, 0px);
 
 }
 
 
 #Zoom12{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-37.5%, -12.5%); 
+  transform: scale(4, 4) translate3d(-37.5%, -12.5%, 0px); 
 }
 
 #Zoom13{
   transition: transform 3s;
-  transform: scale(4, 4) translate(37.5%, -37.5%);
+  transform: scale(4, 4) translate3d(37.5%, -37.5%, 0px);
 
 }
 
 
 #Zoom14{
   transition: transform 3s;
-  transform: scale(4, 4) translate(12.5%, -37.5%);  
+  transform: scale(4, 4) translate3d(12.5%, -37.5%, 0px);  
 }
 
 #Zoom15{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-12.5%, -37.5%);
+  transform: scale(4, 4) translate3d(-12.5%, -37.5%, 0px);
 
 }
 
 
 #Zoom16{
   transition: transform 3s;
-  transform: scale(4, 4) translate(-37.5%, -37.5%); 
+  transform: scale(4, 4) translate3d(-37.5%, -37.5%, 0px); 
 }
 
 
 
 #ZoomOut{
   transition: transform 3s;
-  transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0%);  
+  transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0px);  
 }
 
