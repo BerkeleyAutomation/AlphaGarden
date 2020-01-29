@@ -39,6 +39,17 @@ body {
   z-index: 5;
   color: #f1f1f1;
 }
+
+.Overlay1 {
+  position: fixed;
+  z-index: 5;
+  bottom: 40%;
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  letter-spacing: 0.2em;
+
+}
   /* width: 100%; */
   /* height: 100%; */
 .LOADING svg{
@@ -135,8 +146,8 @@ code {
 
 #Zoom4{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px) ; 
-   
+  transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px); 
+
 }
 
 

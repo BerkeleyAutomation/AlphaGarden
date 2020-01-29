@@ -16,7 +16,7 @@ import GlowingMarks from './GlowingMarks'
  	 		{/* <GlowingMarks /> */}
 	 		<img src={require("./Garden-Overview.png")} alt="Zaaa GARDEN" height="100%" width="100%" />
 
-	    	<div className="Overlay">
+	    	<div className="Overlay1">
 	    		<p className="top"> ALPHA GARDEN</p>
 		 		<button id="button" onClick={props.endFunc}> Day  {today.getDate() + today.getMonth()} </button>
 		 	</div>
