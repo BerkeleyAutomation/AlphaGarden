@@ -1,5 +1,6 @@
 import React, { useLayoutEffect } from 'react';
 import circle from '../Media/plant-circle.png';
+import dotted from '../Media/dotted.svg'
 import plus from '../Media/plant-plus.png';
 
 const PlantCircle = ({label, x, y, radius}) => {
@@ -9,6 +10,14 @@ const PlantCircle = ({label, x, y, radius}) => {
     top: y - radius,
     width: radius * 2,
     height: radius * 2
+  };
+
+  const dottedStyle = {
+    position: 'absolute',
+    left: x - (radius * 2.4 / 2),
+    top: y - (radius * 2.4 / 2),
+    width: radius * 2.4,
+    height: radius * 2.4
   };
 
   const plusStyle = {
@@ -24,15 +33,17 @@ const PlantCircle = ({label, x, y, radius}) => {
     width: 'max-content',
     fontFamily: 'Roboto Mono',
     textTransform: 'uppercase',
-    fontWeight: 'bold',
     letterSpacing: '6px',
     fontSize: '25px',
-    left: x + radius * 0.9,
-    top: y - radius * 0.9,
-    margin: 0
+    left: x + radius * 0.2,
+    top: y + radius * 0.7,
+    margin: 0,
+    padding: '10px',
+    border: '2px solid white'
   }
 
   return (<div style={{transition: 'all 0.2s ease-in-out'}}>
+    <img src={dotted} style={dottedStyle} />
     <img src={circle} style={plantStyle} />
     <img src={plus} style={plusStyle} />
     <p style={labelStyle}>{label}</p>
