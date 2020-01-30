@@ -1,6 +1,7 @@
 import React from 'react';
 import PlantCircle from './PlantCircle';
 import $ from 'jquery';
+import DateBox from './DateBox';
 
 class Post_Zoom extends React.Component {
   constructor(props) {
@@ -55,11 +56,17 @@ class Post_Zoom extends React.Component {
     })
   }
 
+  getDateBox() {
+    const windowHeight = $(window).height();
+    return <DateBox x={40} y={windowHeight - 80}/>
+  }
+
   render() {
     return (
       <div className="Overlay">
         {/* <h1> {props.box} </h1> */}
         {this.getPlantCircles()}
+        {this.getDateBox()}
       </div>);
   }
 }
