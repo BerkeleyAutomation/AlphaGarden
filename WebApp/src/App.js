@@ -80,7 +80,7 @@ class App extends React.Component {
       </CSSTransition>
 
 
-      {/* <CSSTransition
+      <CSSTransition
         in={this.state.el4}
         timeout={300}
         unmountOnExit
@@ -103,7 +103,7 @@ class App extends React.Component {
 
         <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el5:false})}}/>
 
-      </CSSTransition> */}
+      </CSSTransition>
         
       </body>
       )
