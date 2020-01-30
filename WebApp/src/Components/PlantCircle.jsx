@@ -21,7 +21,7 @@ const PlantCircle = ({label, x, y, radius}) => {
     top: y - (radius * 2.4 / 2),
     width: radius * 2.4,
     height: radius * 2.4,
-    animation: 'spin 4s linear infinite'
+    animation: 'spin 4s linear forwards'
   };
 
   const plusStyle = {
@@ -37,8 +37,13 @@ const PlantCircle = ({label, x, y, radius}) => {
       <style>{`
               @keyframes spin {
                   0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
+                  100% { transform: rotate(180deg); }
               }
+
+              .spinning {
+                animation-iteration-count: 1;
+              }
+
               .fade-in {
                 opacity: 1;
                 animation-name: fadeInOpacity;
