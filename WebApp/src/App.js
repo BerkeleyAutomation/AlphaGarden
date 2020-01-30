@@ -89,7 +89,7 @@ class App extends React.Component {
         classNames="fade"
       >
 
-        <BackVideo vidName={require("./Media/8x8_Simulation.mp4")} endFunc={() => {this.setState({el4:false})}}/>
+        <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el4:false})}}/>
 
       </CSSTransition>
             <CSSTransition
