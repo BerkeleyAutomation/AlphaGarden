@@ -42,16 +42,28 @@ class App extends React.Component {
         <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Roboto+Mono"/>
         
-        {this.state.el1 && (<BackVideo
-                  vidName={require("./Media/time_lapse.mp4")}
-                   endFunc={() => {(this.setState({el2:true}))}}/>)}
+
+        <CSSTransition
+        in={this.state.el1}
+        timeout={300}
+        unmountOnExit
+        onEnter={() => this.setState({el5:false})}
+        onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
+        classNames="fade"
+            >
+
+        <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {this.setState({el1:false})}}/>
+
+      </CSSTransition>
+        
 
       <CSSTransition
         in={this.state.el2}
         timeout={300}
         unmountOnExit
         onEnter={() => this.setState({el1:false})}
-        onExited={() => this.setState({el3:true})}
+        onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
+        classNames="fade"
       >
         <Overview nuc={this.state.nuc} endFunc={() => {this.setState({el2:false})}}/>
 
@@ -64,7 +76,8 @@ class App extends React.Component {
         timeout={300}
         unmountOnExit
         onEnter={() => this.setState({el2:false})}
-        onExited={() => this.setState({el4:true})}
+        onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
+        classNames="fade"
       >
 
         <Element3 endFunc={() => {this.setState({el3:false})}} nuc={this.state.nuc}/>
@@ -77,7 +90,8 @@ class App extends React.Component {
         timeout={300}
         unmountOnExit
         onEnter={() => this.setState({el3:false})}
-        onExited={() => this.setState({el5:true})}
+        onExited={() => {setTimeout(() => this.setState({el5:true}), 1000)}}
+        classNames="fade"
       >
 
         <BackVideo vidName={require("./Media/8x8_Simulation.mp4")} endFunc={() => {this.setState({el4:false})}}/>
@@ -88,7 +102,8 @@ class App extends React.Component {
         timeout={300}
         unmountOnExit
         onEnter={() => this.setState({el4:false})}
-        onExited={() => this.setState({el1:true})}
+        onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
+        classNames="fade"
       >
 
         <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el5:false})}}/>
