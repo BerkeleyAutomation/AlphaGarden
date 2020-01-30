@@ -68,8 +68,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 N=self.N,
                 M=self.M,
                 step=self.step,
-                plant_types=self.PlantType.get_n_names(self.num_plant_types),
-                animate=True)
+                animate=True,
+                plant_types=self.PlantType.get_n_names(self.num_plant_types))
 
     '''
     Method called by the environment to display animations.

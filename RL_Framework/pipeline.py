@@ -205,7 +205,7 @@ class Pipeline:
                     obs_avg_action[(x, y)] /= step_counter
                     e['obs_avg_action'].append({str((x, y)) : obs_avg_action[(x, y)], 'final': rg_list[x][y][0]})
             
-            # env.env_method('show_animation')
+            env.env_method('show_animation')
 
             pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)
             filename = folder_path + '/Returns' + '/predict_' + str(i) + '.json'
@@ -363,7 +363,7 @@ if __name__ == '__main__':
     rl_config = [
         {
             'rl_algorithm': 'MLP', 
-            'time_steps': 200,
+            'time_steps': 40,
             'ent_coef': 0.0,
             'n_steps': 40000,
             'nminibatches': 4,
@@ -371,8 +371,8 @@ if __name__ == '__main__':
             'learning_rate': 1e-2
         }
     ]
-    garden_x = [2]
-    garden_y = [2]
+    garden_x = [50]
+    garden_y = [50]
     num_plant_types = [1]
     num_plants_per_type = [1]
     is_baseline = [False]
@@ -391,5 +391,5 @@ if __name__ == '__main__':
             'WATER_COEF': 100
         }
     ]
-    num_evals = 50
+    num_evals = 1
     Pipeline().batch_run(n, rl_config, garden_x, garden_y, num_plant_types, num_plants_per_type, num_evals=num_evals, policy_kwargs=policy_kwargs, baseline_policy=baseline_policy, is_baseline=is_baseline)

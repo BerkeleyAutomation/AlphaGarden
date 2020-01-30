@@ -2,6 +2,8 @@ import React, { useLayoutEffect } from 'react';
 import circle from '../Media/plant-circle.svg';
 import openCircle from '../Media/open-circle.svg'
 import plus from '../Media/plant-plus.png';
+import Typing from './Typing';
+import Delayed from './Delayed';
 
 const PlantCircle = ({label, x, y, radius}) => {
 
@@ -30,30 +32,36 @@ const PlantCircle = ({label, x, y, radius}) => {
     height: 20
   };
 
-  const labelStyle = {
-    position: 'absolute',
-    width: 'max-content',
-    fontFamily: 'Roboto Mono',
-    textTransform: 'uppercase',
-    letterSpacing: '6px',
-    fontSize: '25px',
-    fontWeight: '800',
-    left: x + radius * 0.7,
-    top: y + radius * 0.7,
-    margin: 0
-  };
-
-  return (<div style={{transition: 'all 0.2s ease-in-out'}}>
-    <style>{`
-            @keyframes spin {
-                 0% { transform: rotate(0deg); }
-                 100% { transform: rotate(360deg); }
-            }
-        `}</style>
-    <img src={openCircle} style={openCircleStyle} />
-    <img src={circle} style={plantStyle} />
-    <img src={plus} style={plusStyle} />
-    <p style={labelStyle}>{label}</p>
+  return (
+    <div>
+      <style>{`
+              @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+              }
+              .fade-in {
+                opacity: 1;
+                animation-name: fadeInOpacity;
+                animation-iteration-count: 1;
+                animation-timing-function: ease-in;
+                animation-duration: 2s;
+              }
+              
+              @keyframes fadeInOpacity {
+                0% {
+                  opacity: 0;
+                }
+                100% {
+                  opacity: 1;
+                }
+              }
+          `}</style>
+      <div class="fade-in">
+        <img src={openCircle} style={openCircleStyle} />
+        <img src={circle} style={plantStyle} />
+        <img src={plus} style={plusStyle} />
+    </div>
+    <Delayed waitBeforeShow={1800}><Typing dataText={[label]} x={x} y={y} radius={radius} /></Delayed>
   </div>);
 }
 
