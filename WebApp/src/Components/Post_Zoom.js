@@ -1,6 +1,8 @@
 import React from 'react';
+import Delayed from './Delayed';
 import PlantCircle from './PlantCircle';
 import $ from 'jquery';
+import DateBox from './DateBox';
 
 class Post_Zoom extends React.Component {
   constructor(props) {
@@ -51,8 +53,13 @@ class Post_Zoom extends React.Component {
       console.log(plant)
       const [x, y, radius] = this.getPlantCoords(plant);
       console.log("scaled values:", x, y, radius)
-      return <PlantCircle key={i} label={plant.type} x={x} y={y} radius={radius} />
+      return <Delayed waitBeforeShow={1000 * (i + 1)}><PlantCircle key={i} label={plant.type} x={x} y={y} radius={radius}/></Delayed>
     })
+  }
+
+  getDateBox() {
+    const windowHeight = $(window).height();
+    return <DateBox x={40} y={windowHeight - 80}/>
   }
 
   render() {
@@ -60,6 +67,7 @@ class Post_Zoom extends React.Component {
       <div className="Overlay">
         {/* <h1> {props.box} </h1> */}
         {this.getPlantCircles()}
+        {this.getDateBox()}
       </div>);
   }
 }

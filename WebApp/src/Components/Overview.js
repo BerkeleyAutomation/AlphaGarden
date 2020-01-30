@@ -1,5 +1,6 @@
 import React from 'react';
-import GlowingMarks from './GlowingMarks'
+import GlowingMarks from './GlowingMarks';
+import Typing from './Typing';
 	
 	let diversity = "36%";
 	let growth = "50%";

@@ -5,14 +5,15 @@ import $ from 'jquery'
 import PlantData from '../Media/plant-data';
 // Component for dynamic zoom data display
 
-
 class Element3 extends React.Component{
 
-	
-
 	constructor(props) {
+
 		//Func to trigger the proper transformations to zoom into a square of the garden  Math.floor(Math.random() * 16) + 1
 		
+
+		//Func to trigger the proper transformations to zoom into a square of the garden  square=Math.floor(Math.random() * 16) + 1
+
 
 		const zoomIn = (square=Math.floor(Math.random() * 16) + 1) => {
 			//calculate which square to zoom into
@@ -38,14 +39,13 @@ class Element3 extends React.Component{
 					square += 12;
 				};
 		}
-
-
 			removeOverlay();
 			triggerZoom(square);
 			setOverlay(square);	
 
 			if(this.props.nuc){
 				setTimeout(zoomOut, 10000);
+
 			}
 		}
 
@@ -81,8 +81,6 @@ class Element3 extends React.Component{
 				zoom: "Zoom" + box,
 				handleClick: zoomOut
 			})
-		
-
 		}
 
 		const setOverlay = (box) => {
@@ -90,21 +88,18 @@ class Element3 extends React.Component{
 			const y = Math.floor((box - 1) / GRID_WIDTH);
 
             setTimeout(
-
             	() => {this.setState({
-								overlay: <Post_Zoom box={box} 
-																		plants={gridPlants[box]} 
-																		startX={x * (GARDEN_WIDTH / GRID_WIDTH)}
-																		startY={y * (GARDEN_HEIGHT / GRID_HEIGHT)}
-																		gridWidth={(GARDEN_WIDTH / GRID_WIDTH)}
-																		gridHeight={(GARDEN_HEIGHT / GRID_HEIGHT)}
-													/>
+					overlay: <Post_Zoom box={box} 
+								plants={gridPlants[box]} 
+								startX={x * (GARDEN_WIDTH / GRID_WIDTH)}
+								startY={y * (GARDEN_HEIGHT / GRID_HEIGHT)}
+								gridWidth={(GARDEN_WIDTH / GRID_WIDTH)}
+								gridHeight={(GARDEN_HEIGHT / GRID_HEIGHT)}
+							/>
             	})}
             , 3000);
         }
 		
-
-
 		//Func to dynamically zoom back out to the overhead of the garden
 		const zoomOut = () => {
 			removeOverlay();
@@ -115,7 +110,6 @@ class Element3 extends React.Component{
 			})
 
 			setTimeout(
-
             	() => {this.setState({
             		overlay: <Pre_Zoom endFunc={this.props.endFunc}/>
             	})}
@@ -129,37 +123,21 @@ class Element3 extends React.Component{
 				if(this.state.counter > 3){
 					this.props.endFunc()
 				}
-           	}
-
-
+			}
 		}
 
     	super(props);
 
     	this.state = {
-
     		overlay: <Pre_Zoom endFunc={this.props.endFunc}/>,
-
     		zoom: "no_zoom",
-
     		handleClick: zoomIn,
-
     		x:0,
-
     		y:0,
-
     		counter: 0
-
     	}
-
-
-
-
-    	
-    }
-
-
-  
+	}
+	
    	componentDidMount(){
    		const timer = () => {
     		this.state.handleClick();
@@ -170,33 +148,21 @@ class Element3 extends React.Component{
    		}
     }
 
-
-
-
-
-
-
     //constantly updates the position of
     _onMouseMove(e) {
     	this.setState({ x: (e.clientX / $( window ).width()), y: (e.clientY / $( window ).height())  });
   	}	
 
 	render(){
-
-
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
-		  	<div id="Zoom_Container">
+				<div id="Zoom_Container">
+					<img src={require("./Garden-Overview2.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
+				</div>
 
-		    	<img src={require("./Garden-Overview2.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
-
-		    	
-		    </div>
-
-		    <div className="Overlay">
-		    	{this.state.overlay}
-		    </div>
-
+				<div className="Overlay">
+					{this.state.overlay}
+				</div>
 		    </div>
 
 	    

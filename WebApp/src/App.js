@@ -6,13 +6,11 @@ import Overview from './Components/Overview.js'
 import Element3 from './Components/Element3.js'
 import { CSSTransition } from 'react-transition-group'
 
-
 class App extends React.Component {
 
   constructor(props) {
 
     super(props);
-
   
     this.state = {
       el1: true,
@@ -27,9 +25,6 @@ class App extends React.Component {
 
       nuc: true
     };
-
-
-   
   }
   
 
