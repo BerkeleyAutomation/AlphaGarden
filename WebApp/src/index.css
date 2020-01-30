@@ -174,7 +174,7 @@ code {
 
 #Zoom4{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-12.5%, 37.5%, 0px);
+  transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px);
   /*animation-duration: 2s;
   animation-timing-function: ease;
   animation-name: Zoom4;

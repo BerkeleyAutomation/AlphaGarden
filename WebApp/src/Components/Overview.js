@@ -19,10 +19,10 @@ import Typing from './Typing';
 
 	    	<div className="Overlay1">
 	    		<p className="top"> ALPHA GARDEN</p>
-		 		<button id="button" onClick={props.endFunc}> Day  {today.getDate() + today.getMonth()} </button>
+		 		<button id="button" onClick={props.endFunc}> DAY  {today.getDate() + today.getMonth()} </button>
 		 	</div>
 		 	<div className = "Data">
-		 			<p> Growth: +{growth} <br/> Diversity: +{diversity} </p>
+		 			<p> GROWTH: +{growth} <br/> DIVERSITY: +{diversity} </p>
 		 	</div>
 		</div>
 		)    
