@@ -51,7 +51,7 @@ class Element3 extends React.Component{
 
 		// Initialize plant data from JSON
 		const GARDEN_WIDTH = 1920;
-		const GARDEN_HEIGHT = 1020;
+		const GARDEN_HEIGHT = 1080;
 		const GRID_WIDTH = 4;
 		const GRID_HEIGHT = 4;
 
