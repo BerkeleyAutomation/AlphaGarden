@@ -15,7 +15,7 @@ import Typing from './Typing';
 	 return(
  	 	<div className = "LOADING">
  	 		{ <GlowingMarks /> }
-	 		<img src={require("./Garden-Overview2.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" />
+	 		<img src={require("./Garden-Overview.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" />
 
 	    	<div className="Overlay1">
 	    		<p className="top"> ALPHA GARDEN</p>

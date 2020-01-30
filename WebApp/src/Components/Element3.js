@@ -157,7 +157,7 @@ class Element3 extends React.Component{
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
 				<div id="Zoom_Container">
-					<img src={require("./Garden-Overview2.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
+					<img src={require("./Garden-Overview.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
 				</div>
 
 				<div className="Overlay">
