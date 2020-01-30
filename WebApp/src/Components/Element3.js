@@ -44,7 +44,7 @@ class Element3 extends React.Component{
 			setOverlay(square);	
 
 			if(this.props.nuc){
-				setTimeout(zoomOut, 10000);
+				setTimeout(zoomOut, 14000);
 
 			}
 		}
