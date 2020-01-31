@@ -35,11 +35,10 @@ class Typing extends React.Component {
         const labelStyle = {
             position: 'absolute',
             width: 'max-content',
-            fontFamily: 'Roboto Mono',
             textTransform: 'uppercase',
-            letterSpacing: '6px',
-            fontSize: '25px',
-            fontWeight: 'regular',
+            letterSpacing: '3px',
+            fontSize: '30px',
+            fontWeight: '200',
             left: this.props.x + this.props.radius * 0.7,
             top: this.props.y + this.props.radius * 0.7,
             margin: 0
