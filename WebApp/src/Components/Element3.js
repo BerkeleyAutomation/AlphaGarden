@@ -2,7 +2,9 @@ import React from 'react';
 import Pre_Zoom from './Pre_Zoom'
 import Post_Zoom from './Post_Zoom'
 import $ from 'jquery'
-import PlantData from '../Media/plant-data';
+import PlantData from '../Media/plant-data'
+import Overview from './Overview.js'
+import { CSSTransition } from 'react-transition-group'
 // Component for dynamic zoom data display
 
 class Element3 extends React.Component{
@@ -111,16 +113,16 @@ class Element3 extends React.Component{
 
 			setTimeout(
             	() => {this.setState({
-            		overlay: <Pre_Zoom endFunc={this.props.endFunc}/>
+            		overlay: null
             	})}
             , 3000);
 
            	if(this.props.nuc){
-           		setTimeout(zoomIn, 4000);
+           		setTimeout(zoomIn, 7000);
            		this.setState((state) => ({
  				 		counter: state.counter + 1
 				}));
-				if(this.state.counter > 3){
+				if(this.state.counter >= 2){
 					this.props.endFunc()
 				}
 			}
@@ -129,12 +131,14 @@ class Element3 extends React.Component{
     	super(props);
 
     	this.state = {
-    		overlay: <Pre_Zoom endFunc={this.props.endFunc}/>,
+    		overlay: null,
     		zoom: "no_zoom",
     		handleClick: zoomIn,
     		x:0,
     		y:0,
-    		counter: 0
+    		counter: 0,
+
+    		overview: true
     	}
 	}
 	
@@ -143,9 +147,6 @@ class Element3 extends React.Component{
     		this.state.handleClick();
    		}
 
-    	if(this.props.nuc){
-   			setTimeout(timer, 2000);
-   		}
     }
 
     //constantly updates the position of
@@ -159,6 +160,20 @@ class Element3 extends React.Component{
 				<div id="Zoom_Container">
 					<img src={require("./Garden-Overview.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
 				</div>
+				<CSSTransition
+		        	in={this.state.overview}
+		        	timeout={800}
+		        	onEnter={setTimeout(() => this.setState({overview:false}), 5000)}
+		        	onExited={() => {
+		    		this.state.handleClick();
+		   			}}
+		        	unmountOnExit
+		        	classNames="over"
+		        	>
+		        	<div>	
+       			 <Overview />
+       			 </div>
+      		</CSSTransition>
 
 				<div className="Overlay">
 					{this.state.overlay}

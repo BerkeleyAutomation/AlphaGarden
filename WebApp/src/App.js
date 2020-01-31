@@ -40,10 +40,10 @@ class App extends React.Component {
 
         <CSSTransition
         in={this.state.el1}
-        timeout={300}
+        timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
-        onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
+        onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
         classNames="fade"
             >
 
@@ -54,7 +54,7 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el2}
-        timeout={300}
+        timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el1:false})}
         onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
@@ -68,7 +68,7 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el3}
-        timeout={300}
+        timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el2:false})}
         onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
@@ -82,7 +82,7 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el4}
-        timeout={300}
+        timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el3:false})}
         onExited={() => {setTimeout(() => this.setState({el5:true}), 1000)}}
@@ -94,7 +94,7 @@ class App extends React.Component {
       </CSSTransition>
             <CSSTransition
         in={this.state.el5}
-        timeout={300}
+        timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el4:false})}
         onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
