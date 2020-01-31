@@ -32,6 +32,10 @@ class Typing extends React.Component {
     };
   
     render() {   
+        let y = this.props.y + this.props.radius * 0.7;
+        if (y > this.props.startY + this.props.gridHeight) {
+          y = this.props.y - this.props.radius * 0.7;
+        }
         const labelStyle = {
             position: 'absolute',
             width: 'max-content',
@@ -40,7 +44,7 @@ class Typing extends React.Component {
             fontSize: '30px',
             fontWeight: '200',
             left: this.props.x + this.props.radius * 0.7,
-            top: this.props.y + this.props.radius * 0.7,
+            top: y,
             margin: 0
         }; 
 
