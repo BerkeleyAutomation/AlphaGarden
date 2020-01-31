@@ -163,91 +163,13 @@ code {
     position: absolute;
 }  
 
-#Zoom1{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom2{
-  transition: transform 3s;
-  transform: scale(4, 4);
-
-}
-
-#Zoom3 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-
-}
-
-#Zoom4{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom5 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom6{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom7 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom8{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom9 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom10{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom11 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom12{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom13 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom14{
-  transition: transform 3s;
-  transform: scale(4, 4);
-}
-
-#Zoom15 {
-  transition: transform 3s;
-  transform: scale(4, 4);
-
-}
-
-#Zoom16{
-  transition: transform 3s;
+#Zoom1, #Zoom2, #Zoom3, #Zoom4, #Zoom5, #Zoom6, #Zoom7, #Zoom8, #Zoom9, #Zoom10, #Zoom11, #Zoom12, #Zoom13, #Zoom14, #Zoom15, #Zoom16 {
+  transition: transform 2s;
   transform: scale(4, 4);
 }
 
 #ZoomOut{
-  transition: transform 3s;
+  transition: transform 2s;
   transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0px);  
 }
 
