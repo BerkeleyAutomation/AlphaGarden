@@ -86,6 +86,8 @@ class Element3 extends React.Component{
 		}
 
 		const setZoomPosition = (box) => {
+			console.log(box)
+			console.log(document.getElementById('no_zoom'))
 			var img = document.getElementById('no_zoom');
 			if (img == null) {
 				img = document.getElementById('ZoomOut');
@@ -126,19 +128,17 @@ class Element3 extends React.Component{
 				handleClick: zoomIn
 			})
 
-			setTimeout(
-            	() => {this.setState({
-            		overlay: null
-            	})}
-            , 3000);
+			setTimeout(() => {this.setState({overlay: null})}, 3000);
 
-           	if(this.props.nuc){
-           		setTimeout(zoomIn, 7000);
-           		this.setState((state) => ({
- 				 		counter: state.counter + 1
+			if(this.props.nuc){
+				this.setState((state) => ({
+					counter: state.counter + 1
 				}));
 				if(this.state.counter >= 2){
-					this.props.endFunc()
+					this.props.endFunc();
+				}
+				else {
+					setTimeout(zoomIn, 7000);
 				}
 			}
 		}
