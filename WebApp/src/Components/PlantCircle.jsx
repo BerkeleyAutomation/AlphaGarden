@@ -61,7 +61,7 @@ const PlantCircle = ({label, x, y, radius}) => {
                 }
               }
           `}</style>
-      <div class="fade-in">
+      <div className="fade-in">
         <img src={openCircle} style={openCircleStyle} />
         <img src={circle} style={plantStyle} />
         <img src={plus} style={plusStyle} />

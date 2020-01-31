@@ -137,160 +137,99 @@ code {
     overflow: hidden;
     border: 2px #333 solid;
     position: fixed;
-}   
+  }   
 
 #Zoom_Container img{
     background-color: #333;
-    min_height: 100%;
-    min_width: 100%;
-    max_height: 100%;
-    max-width: 100%;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     border: 2px #333 solid;
-    position: fixed;
+    position: absolute;
 }  
-
-
-
 
 #Zoom1{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(37.5%, 37.5%, 0px); 
+  transform: scale(4, 4);
 }
-
 
 #Zoom2{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(12.5%, 37.5%, 0px); 
+  transform: scale(4, 4);
 
 }
 
 #Zoom3{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-12.5%, 37.5%, 0px);
+  transform: scale(4, 4);
 
 }
-
 
 #Zoom4{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px);
-  /*animation-duration: 2s;
-  animation-timing-function: ease;
-  animation-name: Zoom4;
-  animation-fill-mode: forwards;
-*/
+  transform: scale(4, 4);
 }
-/*@keyframes Zoom4 {
-  10% {
-    transform:  translate3d(-3.75%, 3.75%, 0px); 
-  }
-  20% {
-    transform: translate3d(-7.5%, 7.5%, 0px); 
-  }
-  30% {
-    transform:  translate3d(-11.25%, 11.25%, 0px); 
-  }
-  40% {
-    transform: translate3d(-15%, 15%, 0px); 
-  }
-  50% {
-    transform: scale(2, 2) translate3d(-18.75%, 18.75%, 0px); 
-  }
-  60% {
-    transform: scale(2.0, 2.0) translate3d(-22.5%, 22.5%, 0px); 
-  }
-  70% {
-    transform: scale(2.5, 2.5) translate3d(-26.25%, 26.25%, 0px); 
-  }
-
-
-  80% {
-    transform: scale(3, 3) translate3d(-30%, 30%, 0px); 
-  }
-
-  90% {
-    transform: scale(3.5, 3.5) translate3d(-33.75%, 33.75%, 0px); 
-  }
-
-  100% {
-    transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px); 
-  }
-}*/
 
 #Zoom5{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(37.5%, 12.5%, 0px);
-  
+  transform: scale(4, 4);
 }
-
 
 #Zoom6{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(12.5%, 12.5%, 0px); 
+  transform: scale(4, 4);
 }
 
 #Zoom7{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-12.5%, 12.5%, 0px);
-
+  transform: scale(4, 4);
 }
-
 
 #Zoom8{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-37.5%, 12.5%, 0px);  
+  transform: scale(4, 4);
 }
 
 #Zoom9{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(37.5%, -12.5%, 0px);
-  
+  transform: scale(4, 4);
 }
-
 
 #Zoom10{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(12.5%, -12.5%, 0px);  
+  transform: scale(4, 4);
 }
 
 #Zoom11{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-12.5%, -12.5%, 0px);
-
+  transform: scale(4, 4);
 }
-
 
 #Zoom12{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-37.5%, -12.5%, 0px); 
+  transform: scale(4, 4);
 }
 
 #Zoom13{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(37.5%, -37.5%, 0px);
-
+  transform: scale(4, 4);
 }
-
 
 #Zoom14{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(12.5%, -37.5%, 0px);  
+  transform: scale(4, 4);
 }
 
 #Zoom15{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-12.5%, -37.5%, 0px);
+  transform: scale(4, 4);
 
 }
-
 
 #Zoom16{
   transition: transform 3s;
-  transform: scale(4, 4) translate3d(-37.5%, -37.5%, 0px); 
+  transform: scale(4, 4);
 }
-
-
 
 #ZoomOut{
   transition: transform 3s;

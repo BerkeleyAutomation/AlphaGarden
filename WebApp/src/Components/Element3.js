@@ -41,11 +41,11 @@ class Element3 extends React.Component{
 		}
 			removeOverlay();
 			triggerZoom(square);
+			setZoomPosition(square);
 			setOverlay(square);	
 
 			if(this.props.nuc){
 				setTimeout(zoomOut, 14000);
-
 			}
 		}
 
@@ -73,14 +73,21 @@ class Element3 extends React.Component{
 		const removeOverlay = () => {
 			this.setState({
 				overlay: null
-			})
+			});
 		}
 
 		const triggerZoom = (box) => {
 			this.setState({
 				zoom: "Zoom" + box,
 				handleClick: zoomOut
-			})
+			});
+		}
+
+		const setZoomPosition = (box) => {
+			var img = document.getElementById('Zoom' + box);
+			var i = box - 1;
+			img.style.transformOrigin = (i % GRID_WIDTH) * (100 / (GRID_WIDTH - 1)) + '%' + Math.floor((i / GRID_HEIGHT)) * (100 / (GRID_HEIGHT - 1))  + '%';
+			console.log((i % GRID_WIDTH) * (100 / (GRID_WIDTH - 1)) + '%' + Math.floor((i / GRID_HEIGHT)) * (100 / (GRID_HEIGHT - 1))  + '%');
 		}
 
 		const setOverlay = (box) => {
