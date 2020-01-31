@@ -3,8 +3,8 @@ import React from 'react';
  const GlowingMarks = (props) => {
 
 	 return(
- 		<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<g filter="url(#filter0_d)">
+ 		<svg width="1420" height="750"  fill="none" xmlns="http://www.w3.org/2000/svg">
+			<g filter="url(#filter0_d)" >
 			<line x1="144.107" y1="103" x2="144.107" y2="121" stroke="white" stroke-opacity="0.7" stroke-width="1.5"/>
 			<line x1="135" y1="111.893" x2="153" y2="111.893" stroke="white" stroke-opacity="0.7" stroke-width="1.5"/>
 			<line x1="144.107" y1="180" x2="144.107" y2="198" stroke="white" stroke-opacity="0.7" stroke-width="1.5"/>

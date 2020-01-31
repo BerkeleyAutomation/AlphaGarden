@@ -11,8 +11,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.2EM;
+  letter-spacing: 1EM;
   background-color: black;
+  /*overflow: hidden;*/
 
 }
 
@@ -28,12 +29,6 @@ body {
   z-index: 0;
 }
 
-.LOADING {
-  color: rgba(255, 255, 255, 0.9);
-  font-family: 'Roboto Mono';
-  text-shadow: 0px 0px 18.9253px rgba(255, 255, 255, 0.7);
-  letter-spacing: 0.2em;
-}
 
 .Overlay {
   position: fixed;
@@ -44,25 +39,38 @@ body {
 .Overlay1 {
   position: fixed;
   z-index: 5;
-  bottom: 40%;
-  width: 100%;
-  padding: 20px;
   text-align: center;
-  letter-spacing: 0.2em;
+  color: #f1f1f1;
+  text-shadow: 0px 0px 18.9253px rgba(255, 255, 255, 0.7);
+ 
 
 }
   /* width: 100%; */
   /* height: 100%; */
 .LOADING svg{
   position: fixed;
-  height: 100%;
-  width: 100%;
+  width: 95%;
+  height: auto;
 }
 
 .LOADING img{
   position: fixed;
   top: 0px;
   z-index: -3;
+}
+
+#boxed{
+  position: absolute;
+  border: 2px solid white;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Roboto Mono';
+  text-align: left;
+  z-index: 6;
+  top: 33%;
+  left: 35%;
+  background-color: rgba(0, 0, 0, 0.5);
+
 }
 
 .top{
@@ -127,6 +135,13 @@ code {
 
 
 
+.over-exit-active {
+  opacity: 0;
+  transition: opacity 3s;
+}
+
+
+
 //Zoom animations
 #Zoom_Container {
     background-color: "brown";
@@ -159,7 +174,7 @@ code {
 
 }
 
-#Zoom3{
+#Zoom3 {
   transition: transform 3s;
   transform: scale(4, 4);
 
@@ -170,7 +185,7 @@ code {
   transform: scale(4, 4);
 }
 
-#Zoom5{
+#Zoom5 {
   transition: transform 3s;
   transform: scale(4, 4);
 }
@@ -180,7 +195,7 @@ code {
   transform: scale(4, 4);
 }
 
-#Zoom7{
+#Zoom7 {
   transition: transform 3s;
   transform: scale(4, 4);
 }
@@ -190,7 +205,7 @@ code {
   transform: scale(4, 4);
 }
 
-#Zoom9{
+#Zoom9 {
   transition: transform 3s;
   transform: scale(4, 4);
 }
@@ -200,7 +215,7 @@ code {
   transform: scale(4, 4);
 }
 
-#Zoom11{
+#Zoom11 {
   transition: transform 3s;
   transform: scale(4, 4);
 }
@@ -210,7 +225,7 @@ code {
   transform: scale(4, 4);
 }
 
-#Zoom13{
+#Zoom13 {
   transition: transform 3s;
   transform: scale(4, 4);
 }
@@ -220,7 +235,7 @@ code {
   transform: scale(4, 4);
 }
 
-#Zoom15{
+#Zoom15 {
   transition: transform 3s;
   transform: scale(4, 4);
 
