@@ -73,8 +73,7 @@ class App extends React.Component {
         onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
         classNames="fade"
       >
-        <Overview nuc={this.state.nuc} endFunc={() => {this.setState({el3:false})}}/>
-
+        <Overview duration={5000} nuc={this.state.nuc} endFunc={() => {this.setState({el3:false})}}/>
       </CSSTransition>
 
 

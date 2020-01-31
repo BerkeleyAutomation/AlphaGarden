@@ -9,17 +9,15 @@ import Typing from './Typing';
  //component for the text that goes over the background video
  const Overview = (props) => {
 
- 	if(props.nuc){setTimeout(props.endFunc, 6000)}
+ 	if(props.nuc){setTimeout(props.endFunc, props.duration)}
 
 	let today = new Date();
 	 return(
  	 	<div className = "LOADING">
- 	 		 <GlowingMarks /> 
-
-	    	<div id="boxed">
-		 			<h1 id="dayCount>" > DAY: {today.getDate() + today.getMonth()}</h1>
-		 			<h1> COVERAGE: {growth} </h1> 
-		 			<h1>DIVERSITY: {diversity} </h1>
+			<div id="boxed">
+				<h1> DAY: {today.getDate() + today.getMonth()}</h1>
+				{/* <h1> COVERAGE: {growth} </h1>  */}
+				{/* <h1>DIVERSITY: {diversity} </h1> */}
 		 	</div> 
 		</div>
 		)    
