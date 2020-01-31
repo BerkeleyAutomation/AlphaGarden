@@ -18,9 +18,30 @@ class Post_Zoom extends React.Component {
     }
 
     // Pick 5 plants at random to highlight
-    for (let i = 0; i < plants.length && i < 5; i++) {
-      this.displayPlants.push(plants[i]);
+    let k = 0;
+    while (k < plants.length && k < 5) {
+      if (this.withinBounds(plants[k])) {
+        this.displayPlants.push(plants[k]);
+      }
+      k++;
     }
+  }
+
+  withinBounds(plant) {
+    const {startX, startY, gridWidth, gridHeight} = this.props;
+    const plantX1 = Math.max(plant.center_x - plant.radius, startX);
+    const plantY1 = Math.max(plant.center_y - plant.radius, startY);
+    const plantX2 = Math.min(plant.center_x + plant.radius, startX + gridWidth);
+    const plantY2 = Math.min(plant.center_y + plant.radius, startY + gridHeight);
+    
+    const visibleArea = (plantX2 - plantX1) * (plantY2 - plantY1);
+    const totalArea = plant.radius * plant.radius * 4;
+    if (visibleArea / totalArea > 0.7) {
+      console.log(visibleArea, totalArea);
+      console.log(plantX1, plantX2, plantY1, plantY2)
+      console.log("Accepting plant", plant, visibleArea / totalArea);
+    }
+    return visibleArea / totalArea > 0.7;
   }
 
   getPlantCoords(plant) {
