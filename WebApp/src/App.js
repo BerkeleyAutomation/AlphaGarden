@@ -38,33 +38,32 @@ class App extends React.Component {
           href="https://fonts.googleapis.com/css?family=Roboto+Mono"/>
         
 
-        <CSSTransition
+      <CSSTransition
         in={this.state.el1}
         timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
-        onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
+        onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
         classNames="fade"
-            >
+      >
 
-        <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {this.setState({el1:false})}}/>
+        <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el1:false})}}/>
 
       </CSSTransition>
-        
 
-      <CSSTransition
+        <CSSTransition
         in={this.state.el2}
         timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el1:false})}
         onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
         classNames="fade"
-      >
-        <Overview nuc={this.state.nuc} endFunc={() => {this.setState({el2:false})}}/>
+            >
+
+        <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {this.setState({el2:false})}}/>
 
       </CSSTransition>
-
-
+        
 
       <CSSTransition
         in={this.state.el3}
@@ -74,10 +73,10 @@ class App extends React.Component {
         onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
         classNames="fade"
       >
-
-        <Element3 endFunc={() => {this.setState({el3:false})}} nuc={this.state.nuc}/>
+        <Overview nuc={this.state.nuc} endFunc={() => {this.setState({el3:false})}}/>
 
       </CSSTransition>
+
 
 
       <CSSTransition
@@ -89,10 +88,12 @@ class App extends React.Component {
         classNames="fade"
       >
 
-        <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el4:false})}}/>
+        <Element3 endFunc={() => {this.setState({el4:false})}} nuc={this.state.nuc}/>
 
       </CSSTransition>
-            <CSSTransition
+
+
+      <CSSTransition
         in={this.state.el5}
         timeout={400}
         unmountOnExit
@@ -101,8 +102,7 @@ class App extends React.Component {
         classNames="fade"
       >
 
-        <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el5:false})}}/>
-
+        <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el5:false})}}/>
       </CSSTransition>
         
       </body>
