@@ -5,7 +5,7 @@ import plus from '../Media/plant-plus.png';
 import Typing from './Typing';
 import Delayed from './Delayed';
 
-const PlantCircle = ({label, x, y, radius}) => {
+const PlantCircle = ({label, x, y, radius, startY, gridHeight}) => {
 
   const plantStyle = {
     position: 'absolute',
@@ -66,7 +66,7 @@ const PlantCircle = ({label, x, y, radius}) => {
         <img src={circle} style={plantStyle} />
         <img src={plus} style={plusStyle} />
     </div>
-    <Delayed waitBeforeShow={1800}><Typing dataText={[label]} x={x} y={y} radius={radius} /></Delayed>
+    <Delayed waitBeforeShow={1800}><Typing dataText={[label]} x={x} y={y} radius={radius} {...[startY, gridHeight]} /></Delayed>
   </div>);
 }
 
