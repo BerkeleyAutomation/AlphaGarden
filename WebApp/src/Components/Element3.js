@@ -135,7 +135,7 @@ class Element3 extends React.Component{
            		this.setState((state) => ({
  				 		counter: state.counter + 1
 				}));
-				if(this.state.counter >= 300){
+				if(this.state.counter >= 2){
 					this.props.endFunc()
 				}
 			}
