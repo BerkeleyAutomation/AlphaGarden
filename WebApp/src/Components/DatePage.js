@@ -22,7 +22,7 @@ import React from 'react';
 	 return(
         <div className="fade-in">
           <div className="IntroDate">
-            <p id="jumbotron-date">Jan 02 2020 - {currentDate}</p>
+            <p id="jumbotron-date">Jan 01 2020 - {currentDate}</p>
           </div>
         </div> 
 		)    
