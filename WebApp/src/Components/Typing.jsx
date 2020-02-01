@@ -32,18 +32,19 @@ class Typing extends React.Component {
     };
   
     render() {   
-        let y = this.props.y + this.props.radius * 0.7;
+        let y = this.props.y + this.props.radius * 0.4;
         if (y > this.props.startY + this.props.gridHeight) {
-          y = this.props.y - this.props.radius * 0.7;
+          y = this.props.y - this.props.radius * 0.4;
         }
         const labelStyle = {
             position: 'absolute',
             width: 'max-content',
+            font: 'Roboto Mono',
             textTransform: 'uppercase',
             letterSpacing: '3px',
             fontSize: '30px',
-            fontWeight: '200',
-            left: this.props.x + this.props.radius * 0.7,
+            fontWeight: 'regular',
+            left: this.props.x + this.props.radius,
             top: y,
             margin: 0
         }; 

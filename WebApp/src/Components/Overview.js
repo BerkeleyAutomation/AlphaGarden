@@ -9,7 +9,7 @@ import Typing from './Typing';
  //component for the text that goes over the background video
  const Overview = (props) => {
 
- 	if(props.nuc){setTimeout(props.endFunc, 6000)}
+ 	if(props.nuc){setTimeout(props.endFunc, 10)}
 
 	let today = new Date();
 	 return(

@@ -17,6 +17,13 @@ body {
 
 }
 
+.videoContainer {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
 
 #backgroundVideo {
   position: fixed;
@@ -27,6 +34,97 @@ body {
   max-height:100%; 
   max-width:100%;
   z-index: 0;
+}
+
+.videoContainer .overlay {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 2;
+  background: rgba(11, 11, 20, 0.5);
+}
+
+.IntroJumbotron {
+  text-align: center;
+  width: 800px;
+  height: 100px;
+  font-size: 30px;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -400px;
+  z-index: 3;
+  opacity: 0;
+  animation: fadeInOut 10s linear;
+}
+
+.IntroJumbotron p {
+  border: 1px solid white;
+  padding: 13px;
+}
+
+#jumbotron-title {
+  color: black;
+  background-color: white;
+  margin-bottom: -30px;
+}
+
+#jumbotron-subtitle {
+  color: white;
+}
+
+#jumbotron-date {
+  color: white;
+  letter-spacing: 6px;
+}
+
+.IntroSubtitle {
+  color: white;
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 18px;
+  width: 600px;
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -300px;
+  z-index: 3;
+  opacity: 0;
+  animation: fadeInOut 10s linear;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0 }
+  25%, 75% { opacity: 1 }
+}
+
+.IntroDate {
+  text-align: center;
+  width: 800px;
+  height: 100px;
+  font-size: 30px;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -400px;
+  z-index: 3;
+  opacity: 0;
+  animation: fadeIn 5s linear;
+}
+
+.IntroDate p {
+  border: 1px solid white;
+  padding: 13px;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0 }
+  100% { opacity: 1 }
 }
 
 
@@ -161,15 +259,69 @@ code {
     overflow: hidden;
     border: 2px #333 solid;
     position: absolute;
-}  
+}
 
 #Zoom1, #Zoom2, #Zoom3, #Zoom4, #Zoom5, #Zoom6, #Zoom7, #Zoom8, #Zoom9, #Zoom10, #Zoom11, #Zoom12, #Zoom13, #Zoom14, #Zoom15, #Zoom16 {
   transition: transform 2s;
   transform: scale(4, 4);
 }
 
+.ZoomBox {
+  position: absolute;
+  width: 20%;
+  height: 20%;
+  opacity: 1;
+}
+
+.ZoomBox img {
+  width: 20%;
+  height: 20%;
+}
+
+#zoombox1 {
+  /* animation: blink-animation 0.5s steps(5, start) infinite;
+  -webkit-animation: blink-animation 0.5s steps(5, start) infinite; */
+  transition: transform 1s ease;
+  transform: scale(10, 10) translate(-500%, -1000%);
+}
+#zoombox2 {
+  transition: transform 1s ease;
+  transform: scale(10, 10) translate(500%, -1000%);
+}
+#zoombox3 {
+  transition: transform 1s ease;
+  transform: scale(10, 10) translate(-500%, 1000%);
+}
+#zoombox4 {
+  transition: transform 1s ease;
+  transform: scale(10, 10) translate(500%, 1000%);
+}
+
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+
+#zoomboxshrink {
+  top: -100px;
+  left: -100px;
+}
+
 #ZoomOut{
   transition: transform 2s;
-  transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0px);  
+  transform: scale(1, 1);
+}
+
+.GridOverlay {
+  position: fixed;
+  width: 95%;
+  height: auto;
+  opacity: 0.6;
 }
 
