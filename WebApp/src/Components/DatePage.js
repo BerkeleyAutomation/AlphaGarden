@@ -6,10 +6,10 @@ import React from 'react';
      
     const formatDate = (date) =>{
         var monthNames = [
-          "Jan", "Feb", "Mar",
-          "Apr", "May", "June", "July",
-          "Aug", "Sept", "Oct",
-          "Nov", "Dec"
+          "January", "February", "March",
+          "April", "May", "June", "July",
+          "August", "September", "October",
+          "November", "December"
         ];
         var d = date.getDate();
         var m = date.getMonth() + 1;
@@ -22,7 +22,7 @@ import React from 'react';
 	 return(
         <div className="fade-in">
           <div className="IntroDate">
-            <p id="jumbotron-date">Jan 01 2020 - {currentDate}</p>
+            <p id="jumbotron-date">January 01 2020 - {currentDate}</p>
           </div>
         </div> 
 		)    
