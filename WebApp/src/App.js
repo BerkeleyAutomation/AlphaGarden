@@ -146,7 +146,7 @@ class App extends React.Component {
         timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el6:false})}
-        onExited={() => {setTimeout(() => this.setState({el:true}), 1000)}}
+        onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
         classNames="fade"
       >
         <div>

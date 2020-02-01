@@ -333,5 +333,10 @@ code {
   opacity: 0.6;
   position: fixed;
   z-index: 2;
-  animation: fadeIn 4s linear;
+  animation: fadeIn60 4s linear;
+}
+
+@keyframes fadeIn60 {
+  0% { opacity: 0 }
+  100% { opacity: 0.6 }
 }
