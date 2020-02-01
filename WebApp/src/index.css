@@ -79,6 +79,7 @@ body {
 #jumbotron-date {
   color: white;
   letter-spacing: 6px;
+  animation: fadeInOut 5s linear;
 }
 
 .IntroSubtitle {
@@ -325,3 +326,12 @@ code {
   opacity: 0.6;
 }
 
+.SimOverlay {
+  height: 100%;
+  width: 95%;
+  height: auto;
+  opacity: 0.6;
+  position: fixed;
+  z-index: 2;
+  animation: fadeIn 4s linear;
+}

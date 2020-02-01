@@ -7,6 +7,8 @@ import Element3 from './Components/Element3.js'
 import { CSSTransition } from 'react-transition-group'
 import Delayed from './Components/Delayed.jsx';
 import DatePage from './Components/DatePage';
+import Title from './Components/Title';
+import Grid from './Media/grid.svg';
 
 class App extends React.Component {
 
@@ -27,6 +29,8 @@ class App extends React.Component {
 
       el6: false,
 
+      el7: false,
+
       nuc: true
     };
   }
@@ -46,7 +50,7 @@ class App extends React.Component {
         in={this.state.el1}
         timeout={400}
         unmountOnExit
-        onEnter={() => this.setState({el5:false})}
+        onEnter={() => this.setState({el7:false})}
         onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
         classNames="fade"
       >
@@ -70,7 +74,7 @@ class App extends React.Component {
 
       </CSSTransition>
 
-        <CSSTransition
+      <CSSTransition
         in={this.state.el2}
         timeout={400}
         unmountOnExit
@@ -83,7 +87,7 @@ class App extends React.Component {
 
       </CSSTransition>
 
-        <CSSTransition
+      <CSSTransition
         in={this.state.el3}
         timeout={400}
         unmountOnExit
@@ -101,7 +105,7 @@ class App extends React.Component {
         in={this.state.el4}
         timeout={400}
         unmountOnExit
-        onEnter={() => this.setState({e32:false})}
+        onEnter={() => this.setState({el3:false})}
         onExited={() => {setTimeout(() => this.setState({el5:true}), 1000)}}
         classNames="fade"
       >
@@ -124,17 +128,31 @@ class App extends React.Component {
 
       </CSSTransition>
 
-
       <CSSTransition
         in={this.state.el6}
         timeout={400}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
-        onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
+        onExited={() => {setTimeout(() => this.setState({el7:true}), 1000)}}
+        classNames="fade"
+            >
+
+        <Title nuc={this.state.nuc} title={"SIMULATING POTENTIAL OUTCOMES"} endFunc={() => {this.setState({el6:false})}}/>
+
+      </CSSTransition>
+
+      <CSSTransition
+        in={this.state.el7}
+        timeout={400}
+        unmountOnExit
+        onEnter={() => this.setState({el6:false})}
+        onExited={() => {setTimeout(() => this.setState({el:true}), 1000)}}
         classNames="fade"
       >
-
-        <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el5:false})}}/>
+        <div>
+          <img src={Grid} className="SimOverlay" />
+          <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el7:false})}}/>
+        </div>
       </CSSTransition>
         
       </body>
