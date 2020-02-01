@@ -21,8 +21,14 @@ const PlantCircle = ({label, x, y, radius, startY, gridHeight}) => {
     top: y - (radius * 2.4 / 2),
     width: radius * 2.4,
     height: radius * 2.4,
-    animation: 'spin 4s linear forwards'
+    animation: 'spin 1s linear 2 forwards'
   };
+
+  const openCircleImg = {
+    width: radius * 2.4,
+    height: radius * 2.4, 
+    transform: 'rotate(' + (radius * x) % 360 + 'deg)'
+  }
 
   const plusStyle = {
     position: 'absolute',
@@ -36,12 +42,8 @@ const PlantCircle = ({label, x, y, radius, startY, gridHeight}) => {
     <div>
       <style>{`
               @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(180deg); }
-              }
-
-              .spinning {
-                animation-iteration-count: 1;
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
               }
 
               .fade-in {
@@ -62,11 +64,11 @@ const PlantCircle = ({label, x, y, radius, startY, gridHeight}) => {
               }
           `}</style>
       <div className="fade-in">
-        <img src={openCircle} style={openCircleStyle} />
+        <div className={'rotating-circle'} style={openCircleStyle}><img src={openCircle} style={openCircleImg} /></div>
         <img src={circle} style={plantStyle} />
         <img src={plus} style={plusStyle} />
     </div>
-    <Delayed waitBeforeShow={1800}><Typing dataText={[label]} x={x} y={y} radius={radius} {...[startY, gridHeight]} /></Delayed>
+    <Delayed waitBeforeShow={2000}><Typing dataText={[label]} x={x} y={y} radius={radius} {...[startY, gridHeight]} /></Delayed>
   </div>);
 }
 

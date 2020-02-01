@@ -8,18 +8,19 @@ import React from 'react';
         width: 'max-content',
         textTransform: 'uppercase',
         letterSpacing: '3px',
+        font: 'Roboto Mono',
         fontSize: '36px',
-        fontWeight: 'lighter',
+        fontWeight: 'regular',
         top: y,
         left: x,
-        border: '1px solid white',
+        border: '2px solid white',
         color: 'white',
         padding: '5px'
     }
 
     const dayStyle = {
         display: 'inline',
-        borderRight: '1px solid white',
+        borderRight: '2px solid white',
         padding: '5px',
     }
 
