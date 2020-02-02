@@ -11,6 +11,9 @@ import ZoomBox4 from '../Media/bottom-right-border.svg';
 import Grid from '../Media/grid.svg';
 import BackVideo from './BackVideo.js'
 import RobotCameraOverlay from './RobotCameraOverlay';
+import GlowingMarks from './GlowingMarks';
+import DateBox from './DateBox';
+
 // Component for dynamic zoom data display
 
 class Element3 extends React.Component{
@@ -221,7 +224,9 @@ class Element3 extends React.Component{
 			prevZoomId: null,
 			overview: false,
 			waitToStart: true,
-			grid: null
+			grid: null,
+			robotCameraOverlay: false,
+			glowingMarks: false
     	}
 	}
 	
@@ -240,9 +245,8 @@ class Element3 extends React.Component{
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
 
-				<RobotCameraOverlay />
-
 				<div id="Zoom_Container">
+					<RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/>
 					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
 				</div>
 
@@ -251,7 +255,7 @@ class Element3 extends React.Component{
 					timeout={0}
 					unmountOnExit
 					onEnter={() => this.setState({waitToStart:false})}
-					onExited={() => {setTimeout(() => this.setState({overview:true}), 1000)}}
+					onExited={() => {setTimeout(() => this.setState({overview:true}), 0)}}
 					classNames="over"
 						>
 						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {this.setState({waitToStart:false})}} nuc={this.state.nuc}/>
@@ -262,7 +266,7 @@ class Element3 extends React.Component{
 		        	timeout={0}
 		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4000)}}
 		        	onExited={() => {
-						this.setState({grid: Grid});
+						this.setState({grid: Grid, robotCameraOverlay: true, glowingMarks: true});
 						this.state.handleClick();
 		   			}}
 		        	unmountOnExit
@@ -290,8 +294,8 @@ class Element3 extends React.Component{
 					<img src={ZoomBox4} id={this.state.zoombox4}/>
 				</div>
 
-				<img src={this.state.grid} className="GridOverlay" />
-
+				<GlowingMarks shouldDisplay={this.state.glowingMarks} />
+				<DateBox shouldDisplay={this.state.robotCameraOverlay} />
 		    </div>
 
 	    

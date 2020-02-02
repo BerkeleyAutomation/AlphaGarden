@@ -295,7 +295,7 @@ code {
   width: 95%;
   height: auto;
   opacity: 0.6;
-  animation: fadeIn60 5s linear;
+  animation: fadeIn60 1s linear;
 }
 
 .SimOverlay {
@@ -324,10 +324,8 @@ code {
   font-family: Roboto Mono;
   letter-spacing: 3px;
   font-weight: lighter;
-  position: absolute;
-  top: 0%;
-  left: 5%;
   z-index: 3;
+  margin-top: -50px;
 }
 
 .OverviewDate p {
@@ -410,4 +408,48 @@ code {
 
 #backgroundVideo{
   object-fit: fill;
+}
+
+.robot-stats {
+  animation: fadeInRobotStats 2s linear; 
+}
+
+@keyframes fadeInRobotStats {
+  0% {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+
+.date-box-row {
+  transition: opacity 1s ease-in-out;
+
+  position: absolute;
+  z-index: 10;
+  top: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  padding: 40px 40px 40px 40px;
+  animation: fadeInRobotStats 1s linear;
+}
+
+.date-box-row-item {
+  flex-basis: 30%;
+  color: white;
+  letter-spacing: 25px;
+  text-transform: uppercase;
+  font-size: 45px;
+  font-family: 'Roboto Mono';
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.date-box {
+  border: 1px solid white;
+  padding: 5px;
+  font-weight: lighter;
 }

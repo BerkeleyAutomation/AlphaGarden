@@ -29,9 +29,13 @@ import Delayed from './Delayed';
 				<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" />
 			</div>
 			
-			<Delayed waitBeforeShow={1000} c>
-				<div className="OverviewDate">
-					<p id="jumbotron-date">{currentDate}</p>
+			<Delayed waitBeforeShow={1000}>
+            	<div className="date-box-row">
+					<div className="date-box-row-item">
+						<div className="OverviewDate">
+							<p id="jumbotron-date">{currentDate}</p>
+						</div>
+					</div>
 				</div>
 			</Delayed>
 		</div>
