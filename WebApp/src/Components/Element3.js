@@ -10,6 +10,7 @@ import ZoomBox3 from '../Media/bottom-left-border.svg';
 import ZoomBox4 from '../Media/bottom-right-border.svg';
 import Grid from '../Media/grid.svg';
 import BackVideo from './BackVideo.js'
+import RobotCameraOverlay from './RobotCameraOverlay';
 // Component for dynamic zoom data display
 
 class Element3 extends React.Component{
@@ -238,6 +239,9 @@ class Element3 extends React.Component{
 	render(){
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
+
+				<RobotCameraOverlay />
+
 				<div id="Zoom_Container">
 					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
 				</div>
