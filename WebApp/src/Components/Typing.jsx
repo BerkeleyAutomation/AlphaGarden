@@ -39,7 +39,7 @@ class Typing extends React.Component {
         const labelStyle = {
             position: 'absolute',
             width: 'max-content',
-            font: 'Roboto Mono',
+            font: 'Roboto Thin',
             textTransform: 'uppercase',
             letterSpacing: '3px',
             fontSize: '30px',

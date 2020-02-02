@@ -244,7 +244,7 @@ class Element3 extends React.Component{
 					onExited={() => {setTimeout(() => this.setState({overview:true}), 0)}}
 					classNames="over"
 						>
-						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse_short.mp4")} endFunc={() => {this.setState({waitToStart:false})}} nuc={this.state.nuc}/>
+						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {this.setState({waitToStart:false})}} nuc={this.state.nuc}/>
 				</CSSTransition>
 
 				<CSSTransition
