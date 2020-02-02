@@ -8,3 +8,8 @@ sudo apt install -y nodejs npm
 npm install
 
 npm start
+
+
+## To Update Assets like mp4's
+
+Update them inside of `src/Media/`
