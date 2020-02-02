@@ -299,7 +299,7 @@ code {
   opacity: 0.6;
   position: fixed;
   z-index: 2;
-  animation: fadeIn60 4s linear;
+  animation: fadeIn60Earlier 4s linear;
 }
 
 .OverviewGrid {
@@ -330,6 +330,11 @@ code {
 }
 
 @keyframes fadeIn60 {
+  0%, 80% { opacity: 0 }
+  100% { opacity: 0.6 }
+}
+
+@keyframes fadeIn60Earlier {
   0% { opacity: 0 }
   100% { opacity: 0.6 }
 }

@@ -135,11 +135,11 @@ class App extends React.Component {
         timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el6:false})}
-        onExited={() => {setTimeout(() => this.setState({el1:true}), 2000)}}
+        onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
         classNames="fade"
       >
 
-          <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el7:false})}}/>
+        <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el7:false})}}/>
       
       </CSSTransition>
         
