@@ -225,6 +225,12 @@ code {
     overflow: hidden;
     position: absolute;
     border: none;
+    animation: fadeInZoomContainer 5s linear; 
+}
+
+@keyframes fadeInZoomContainer {
+  0%, 90% {opacity: 0}
+  100% {opacity: 1}
 }
 
 #Zoom1, #Zoom2, #Zoom3, #Zoom4, #Zoom5, #Zoom6, #Zoom7, #Zoom8, #Zoom9, #Zoom10, #Zoom11, #Zoom12, #Zoom13, #Zoom14, #Zoom15, #Zoom16 {
@@ -236,31 +242,41 @@ code {
   position: absolute;
   width: 20%;
   height: 20%;
-  opacity: 0;
 }
 
 .ZoomBox img {
   width: 20%;
   height: 20%;
+  z-index: 99;
+  animation: zoomboxBlink 1s linear;
+}
+
+@keyframes zoomboxBlink {
+  0%, 20% {opacity: 1;}
+  21%, 40% {opacity: 0;}
+  41%, 100% {opacity: 1;}
 }
 
 #zoombox1 {
-  /* animation: blink-animation 0.5s steps(5, start) infinite;
-  -webkit-animation: blink-animation 0.5s steps(5, start) infinite; */
   transition: transform 1s ease;
-  transform: scale(10, 10) translate(-500%, -1000%);
+  transform: scale(10, 10) translate(-800%, -1000%);
 }
 #zoombox2 {
   transition: transform 1s ease;
-  transform: scale(10, 10) translate(500%, -1000%);
+  transform: scale(10, 10) translate(800%, -1000%);
 }
 #zoombox3 {
   transition: transform 1s ease;
-  transform: scale(10, 10) translate(-500%, 1000%);
+  transform: scale(10, 10) translate(-800%, 1000%);
 }
 #zoombox4 {
   transition: transform 1s ease;
-  transform: scale(10, 10) translate(500%, 1000%);
+  transform: scale(10, 10) translate(800%, 1000%);
+}
+
+#zoomboxshrink {
+  top: -100px;
+  left: -100px;
 }
 
 @keyframes blink-animation {
@@ -274,11 +290,6 @@ code {
   }
 }
 
-#zoomboxshrink {
-  top: -100px;
-  left: -100px;
-}
-
 #ZoomOut{
   transition: transform 2s;
   transform: scale(1, 1);
@@ -289,7 +300,7 @@ code {
   width: 95%;
   height: auto;
   opacity: 0.6;
-  animation: fadeIn60 5s linear;
+  animation: fadeIn60 0.5s linear;
 }
 
 .SimOverlay {
@@ -318,10 +329,8 @@ code {
   font-family: Roboto Mono;
   letter-spacing: 3px;
   font-weight: lighter;
-  position: absolute;
-  top: 0%;
-  left: 5%;
   z-index: 3;
+  margin-top: -50px;
 }
 
 .OverviewDate p {
@@ -329,8 +338,42 @@ code {
   padding: 13px;
 }
 
+.robot-stats {
+  transition: opacity 1s ease-in-out;
+
+  position: absolute;
+  z-index: 10;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 40px 40px 40px;
+}
+
+.robot-stats__item {
+  flex-basis: 30%;
+  color: white;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+  font-size: 15px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.7);
+  height: 35px;
+  font-family: 'Roboto Mono';
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.robot-stats__item__label {
+  padding-left: 5px;
+  margin: 0;
+}
+
 @keyframes fadeIn60 {
-  0%, 80% { opacity: 0 }
+  0% { opacity: 0 }
   100% { opacity: 0.6 }
 }
 
@@ -368,52 +411,50 @@ code {
   animation-duration: 1s;
 }
 
-.fadeInDissolveOut-enter{
-  opacity: 0;
-}
-/* This is where we can add the transition*/
-.fadeInDissolveOut-enter-active{
-  opacity: 1;
-  transition: opacity 1s;
-}
-/* This fires as soon as the this.state.showList is false */
-.fadeInDissolveOut-exit{
-  opacity: 1;
-}
-/* fires as element leaves the DOM*/
-.fadeInDissolveOut-exit-active{
-  opacity: 1;
+#backgroundVideo{
+  object-fit: fill;
 }
 
-.fadeInDissolveOut-in {
-  opacity: 1;
-  animation-name: fadeInOpacity;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 1s;
+.robot-stats {
+  animation: fadeInRobotStats 2s linear; 
 }
 
-.dissolveInFadeOut-enter{
-  opacity: 1;
-}
-/* This is where we can add the transition*/
-.dissolveInFadeOut-enter-active{
-  opacity: 1;
-}
-/* This fires as soon as the this.state.showList is false */
-.dissolveInFadeOut-exit{
-  opacity: 1;
-}
-/* fires as element leaves the DOM*/
-.dissolveInFadeOut-exit-active{
-  opacity: 0;
-  transition: opacity 1s;
+@keyframes fadeInRobotStats {
+  0% {opacity: 0;}
+  100% {opacity: 1;}
 }
 
-.dissolveInFadeOut-in {
-  opacity: 1;
-  animation-name: fadeInOpacity;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 1s;
+
+.date-box-row {
+  transition: opacity 1s ease-in-out;
+
+  position: absolute;
+  z-index: 10;
+  top: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  padding: 40px 40px 40px 40px;
+  animation: fadeInRobotStats 1s linear;
+}
+
+.date-box-row-item {
+  flex-basis: 30%;
+  color: white;
+  letter-spacing: 25px;
+  text-transform: uppercase;
+  font-size: 45px;
+  font-family: 'Roboto Mono';
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.date-box {
+  border: 1px solid white;
+  padding: 5px;
+  font-weight: lighter;
 }

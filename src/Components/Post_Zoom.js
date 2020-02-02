@@ -90,7 +90,7 @@ class Post_Zoom extends React.Component {
       <div className="Overlay">
         {/* <h1> {props.box} </h1> */}
         {this.getPlantCircles()}
-        {this.getDateBox()}
+        {/* {this.getDateBox()} */}
       </div>);
   }
 }

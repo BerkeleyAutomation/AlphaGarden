@@ -1,40 +1,34 @@
 import React from 'react';
 	
- const DateBox = ({x, y}) => {
-    let today = new Date();
-
-    const boxStyle = {
-        position: 'absolute',
-        width: 'max-content',
-        textTransform: 'uppercase',
-        letterSpacing: '3px',
-        font: 'Roboto Mono',
-        fontSize: '36px',
-        fontWeight: 'regular',
-        top: y,
-        left: x,
-        border: '2px solid white',
-        color: 'white',
-        padding: '5px'
-    }
-
+ const DateBox = (props) => {
     const dayStyle = {
         display: 'inline',
-        borderRight: '2px solid white',
+        borderRight: '1px solid white',
         padding: '5px',
+        paddingLeft: '25px'
     }
 
     const dateStyle = {
         display: 'inline',
-        paddingLeft: 12
+        paddingLeft: '25px'
     }
 
+    var date1 = new Date("1/1/2020");
+    var date2 = new Date();
+    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
 
-    return(
-        <div className="DateBox" style={boxStyle}>
-            <div><p style={dayStyle}>Day</p><p style={dateStyle}>{today.getDate() + today.getMonth()}</p></div>
-        </div>
-    )    
+    if (props.shouldDisplay == true) {
+        return(
+            <div className="date-box-row">
+                <div className="date-box-row-item">
+                    <div className="date-box"><p style={dayStyle}>Day</p><p style={dateStyle}>{diffDays}</p></div>
+                </div>
+            </div>
+        )    
+    } else {
+        return null;
+    }
 }
 
 export default DateBox;
