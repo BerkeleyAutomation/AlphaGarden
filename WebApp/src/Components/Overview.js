@@ -1,24 +1,40 @@
 import React from 'react';
 import GlowingMarks from './GlowingMarks';
 import Typing from './Typing';
+import Delayed from './Delayed';
 	
-	let diversity = "36%";
-	let growth = "50%";
-	let plants = ["Lavendar", "Basil", "Turnips", "Rosemary", "Cacti"];
-	const plantMap = (x) => {return x + ", "}
  //component for the text that goes over the background video
  const Overview = (props) => {
 
- 	if(props.nuc){setTimeout(props.endFunc, props.duration)}
+ 	if(props.nuc){setTimeout(props.endFunc, 3000)}
+     
+	 const formatDate = (date) =>{
+		 var monthNames = [
+		   "January", "February", "March",
+		   "April", "May", "June", "July",
+		   "August", "September", "October",
+		   "November", "December"
+		 ];
+		 var d = date.getDate();
+		 var m = date.getMonth() + 1;
+		 var y = date.getFullYear();
+		 return monthNames[m - 1] + ' ' + (d <= 9 ? '0' + d : d) + ' ' + y ;
+	 }
+ 
+	 var currentDate = formatDate(new Date());
 
 	let today = new Date();
 	 return(
- 	 	<div className = "LOADING">
-			<div id="boxed">
-				<h1> DAY: {today.getDate() + today.getMonth()}</h1>
-				{/* <h1> COVERAGE: {growth} </h1>  */}
-				{/* <h1>DIVERSITY: {diversity} </h1> */}
-		 	</div> 
+ 	 	<div className="LOADING">
+			<div id="Overview_Container">
+				<img src={require("./Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" />
+			</div>
+			
+			<Delayed waitBeforeShow={1000} c>
+				<div className="OverviewDate">
+					<p id="jumbotron-date">{currentDate}</p>
+				</div>
+			</Delayed>
 		</div>
 		)    
 }
