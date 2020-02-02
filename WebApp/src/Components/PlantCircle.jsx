@@ -17,16 +17,16 @@ const PlantCircle = ({label, x, y, radius, startY, gridHeight}) => {
 
   const openCircleStyle = {
     position: 'absolute',
-    left: x - (radius * 2.4 / 2),
-    top: y - (radius * 2.4 / 2),
-    width: radius * 2.4,
-    height: radius * 2.4,
+    left: x - (radius * 3.7 / 2),
+    top: y - (radius * 3.7 / 2),
+    width: radius * 3.7,
+    height: radius * 3.7,
     animation: 'spin 1s linear 2 forwards'
   };
 
   const openCircleImg = {
-    width: radius * 2.4,
-    height: radius * 2.4, 
+    width: radius * 3.7,
+    height: radius * 3.7, 
     transform: 'rotate(' + (radius * x) % 360 + 'deg)'
   }
 

@@ -7,7 +7,7 @@ import { CSSTransition } from 'react-transition-group'
 import Delayed from './Components/Delayed.jsx';
 import DatePage from './Components/DatePage';
 import Title from './Components/Title';
-import Grid from './Media/grid.svg';
+import Grid from './Media/zoom_grid.svg';
 
 class App extends React.Component {
 
@@ -47,7 +47,6 @@ class App extends React.Component {
       >
         <div>
           <div class="videoContainer">
-            {/* <div class="overlay"></div> */}
             <BackVideo vidName={require("./Media/robot_full.mp4")} endFunc={() => {this.setState({el1:false})}}/>
           </div>
           <Delayed waitBeforeShow={1000} className="IntroText">

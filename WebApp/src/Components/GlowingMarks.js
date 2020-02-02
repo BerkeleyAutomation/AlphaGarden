@@ -1,5 +1,5 @@
 import React from 'react';
-import Grid from '../Media/grid.svg'
+import Grid from '../Media/zoom_grid.svg'
 	
  const GlowingMarks = (props) => {
 	if (props.shouldDisplay == true) {

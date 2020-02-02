@@ -10,7 +10,8 @@ import React from 'react';
 
     const dateStyle = {
         display: 'inline',
-        paddingLeft: '25px'
+        paddingLeft: '25px',
+        fontFamily: 'Roboto Thin',
     }
 
     var date1 = new Date("1/1/2020");
@@ -21,8 +22,12 @@ import React from 'react';
     if (props.shouldDisplay == true) {
         return(
             <div className="date-box-row">
-                <div className="date-box-row-item">
+                <div className="date-box-row-item" id="date-box-div">
                     <div className="date-box"><p style={dayStyle}>Day</p><p style={dateStyle}>{diffDays}</p></div>
+                </div>
+                <div className="date-box-row-item">
+                </div>
+                <div className="date-box-row-item">
                 </div>
             </div>
         )    
