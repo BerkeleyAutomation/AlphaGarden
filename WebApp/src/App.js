@@ -48,7 +48,7 @@ class App extends React.Component {
         <div>
           <div class="videoContainer">
             <div class="overlay"></div>
-            <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el1:false})}}/>
+            <BackVideo vidName={require("./Media/robot_full.mp4")} endFunc={() => {this.setState({el1:false})}}/>
           </div>
           <Delayed waitBeforeShow={1000} className="IntroText">
             <div className="IntroJumbotron">

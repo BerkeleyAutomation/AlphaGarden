@@ -18,7 +18,7 @@ import Delayed from './Delayed';
 		 var d = date.getDate();
 		 var m = date.getMonth() + 1;
 		 var y = date.getFullYear();
-		 return monthNames[m - 1] + ' ' + (d <= 9 ? '0' + d : d) + ' ' + y ;
+		 return monthNames[m - 1] + ' ' + (d <= 9 ? '0' + d : d) + ', ' + y ;
 	 }
  
 	 var currentDate = formatDate(new Date());

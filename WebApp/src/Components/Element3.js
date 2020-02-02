@@ -13,6 +13,7 @@ import BackVideo from './BackVideo.js'
 import RobotCameraOverlay from './RobotCameraOverlay';
 import GlowingMarks from './GlowingMarks';
 import DateBox from './DateBox';
+import ZoomBox from './ZoomBox';
 
 // Component for dynamic zoom data display
 
@@ -26,15 +27,11 @@ class Element3 extends React.Component{
 		//Func to trigger the proper transformations to zoom into a square of the garden  square=Math.floor(Math.random() * 16) + 1
 
 		const zoomIn = () => {
-			if (this.state.prevZoomId == null) {
-				var square = Math.floor(Math.random() * 16) + 1;
-			} else if (this.state.prevZoomId != null) {
-				var square = Math.floor(Math.random() * 16) + 1;
-				while (square == this.state.prevZoomId) {
-					square = Math.floor(Math.random() * 16) + 1;
-				}
-				this.state.prevZoomId = square;
+			var square = Math.floor(Math.random() * 16) + 1;
+			while (square == this.state.prevZoomId) {
+				square = Math.floor(Math.random() * 16) + 1;
 			}
+			this.state.prevZoomId = square;
 
 			//calculate which square to zoom into
 			if(!this.props.nuc){
@@ -106,51 +103,34 @@ class Element3 extends React.Component{
 				zoombox1: "zoombox1",
 				zoombox2: "zoombox2",
 				zoombox3: "zoombox3",
-				zoombox4: "zoombox4"
+				zoombox4: "zoombox4",
 			});
 		}
 
 		const showBorders = (box) => {
+			setTimeout(() => {
+				this.setState({
+					zoomboximg: true,
+				})
+			}, 3000);
+
 			var i = box - 1;
 			var topLeft = document.getElementById('top-left');
 			var topRight = document.getElementById('top-right');
 			var bottomLeft = document.getElementById('bottom-left');
 			var bottomRight = document.getElementById('bottom-right');
 			
-			topLeft.style.opacity = 0;
-			topRight.style.opacity = 0;
-			bottomLeft.style.opacity = 0;
-			bottomRight.style.opacity = 0;
-			// topLeft.style.animation = 'blink-animation 0.5s steps(5, start) infinite';
-
-			// setTimeout(() => {
-			// 	topLeft.style.animation =topLeft.style.animation = '';
-			// }, 1000)
-			// setTimeout(() => {
-			// 	topLeft.style.visibility = 'visible';
-			// 	topRight.style.visibility = 'visible';
-			// 	bottomLeft.style.visibility = 'visible';
-			// 	bottomRight.style.visibility = 'visible';
-			// }, 1000);
-
-			// setTimeout(() => {
-			// 	topLeft.style.visibility = 'hidden';
-			// 	topRight.style.visibility = 'hidden';
-			// 	bottomLeft.style.visibility = 'hidden';
-			// 	bottomRight.style.visibility = 'hidden';
-			// }, 1000);
-
 			topLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
 			topLeft.style.top = Math.floor((i / GRID_HEIGHT)) * (100 / GRID_HEIGHT) + '%';
 
 			bottomLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
-			bottomLeft.style.top = Math.floor((i / GRID_HEIGHT)) * (100 / GRID_HEIGHT) + (90 / GRID_HEIGHT) + '%';
+			bottomLeft.style.top = Math.min(Math.floor((i / GRID_HEIGHT)) * (100 / GRID_HEIGHT) + (100 / GRID_HEIGHT), 96) + '%';
 
-			topRight.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + (90 / GRID_WIDTH) + '%';
+			topRight.style.left = Math.min((i % GRID_WIDTH) * (100 / GRID_WIDTH) + (100 / GRID_WIDTH), 96) + '%';
 			topRight.style.top = Math.floor((i / GRID_HEIGHT)) * (100 / GRID_HEIGHT) + '%';
 
-			bottomRight.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + (90 / GRID_WIDTH) + '%';
-			bottomRight.style.top = Math.floor((i / GRID_HEIGHT)) * (100 / GRID_HEIGHT) + (90 / GRID_HEIGHT) + '%';
+			bottomRight.style.left = Math.min((i % GRID_WIDTH) * (100 / GRID_WIDTH) + (100 / GRID_WIDTH), 96) + '%';
+			bottomRight.style.top = Math.min(Math.floor((i / GRID_HEIGHT)) * (100 / GRID_HEIGHT) + (100 / GRID_HEIGHT), 96) + '%';
 		}
 
 		const setZoomPosition = (box) => {
@@ -191,10 +171,11 @@ class Element3 extends React.Component{
 			this.setState({
 				zoom: "ZoomOut",
 				handleClick: zoomIn,
+				zoomboximg: false,
 				zoombox1: "zoomboxshrink", 
 				zoombox2: "zoomboxshrink", 
 				zoombox3: "zoomboxshrink",
-				zoombox4: "zoomboxshrink" 
+				zoombox4: "zoomboxshrink"
 			})
 
 			setTimeout(() => {this.setState({overlay: null})}, 3000);
@@ -207,7 +188,7 @@ class Element3 extends React.Component{
 					setTimeout(this.props.endFunc, 4000);
 				}
 				else {
-					setTimeout(zoomIn, 4000);
+					setTimeout(zoomIn, 2000);
 				}
 			}
 		}
@@ -220,13 +201,18 @@ class Element3 extends React.Component{
     		handleClick: zoomIn,
     		x:0,
     		y:0,
-    		counter: 0,
-			prevZoomId: null,
+			counter: 0,
+			
+			prevZoomId: -1,
+
 			overview: false,
 			waitToStart: true,
+
 			grid: null,
 			robotCameraOverlay: false,
-			glowingMarks: false
+			glowingMarks: false,
+
+			zoomboximg: false 
     	}
 	}
 	
@@ -264,7 +250,7 @@ class Element3 extends React.Component{
 				<CSSTransition
 		        	in={this.state.overview}
 		        	timeout={0}
-		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4000)}}
+		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4500)}}
 		        	onExited={() => {
 						this.setState({grid: Grid, robotCameraOverlay: true, glowingMarks: true});
 						this.state.handleClick();
@@ -282,16 +268,16 @@ class Element3 extends React.Component{
 				</div>
 
 				<div className="ZoomBox" id="top-left">
-					<img src={ZoomBox1} id={this.state.zoombox1}/>
+					<ZoomBox shouldDisplay={this.state.zoomboximg} src={ZoomBox1} id={this.state.zoombox1}/>
 				</div>
 				<div className="ZoomBox" id="top-right">
-					<img src={ZoomBox2} id={this.state.zoombox2}/>
+					<ZoomBox shouldDisplay={this.state.zoomboximg} src={ZoomBox2} id={this.state.zoombox2}/>
 				</div>
 				<div className="ZoomBox" id="bottom-left">
-					<img src={ZoomBox3} id={this.state.zoombox3}/>
+					<ZoomBox shouldDisplay={this.state.zoomboximg} src={ZoomBox3} id={this.state.zoombox3}/>
 				</div>
 				<div className="ZoomBox" id="bottom-right">
-					<img src={ZoomBox4} id={this.state.zoombox4}/>
+					<ZoomBox shouldDisplay={this.state.zoomboximg} src={ZoomBox4} id={this.state.zoombox4}/>
 				</div>
 
 				<GlowingMarks shouldDisplay={this.state.glowingMarks} />
