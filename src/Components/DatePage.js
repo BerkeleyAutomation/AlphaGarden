@@ -14,7 +14,7 @@ import React from 'react';
         var d = date.getDate();
         var m = date.getMonth() + 1;
         var y = date.getFullYear();
-        return monthNames[m - 1] + ' ' + (d <= 9 ? '0' + d : d) + ' ' + y ;
+        return monthNames[m - 1] + ' ' + (d <= 9 ? '0' + d : d) + ', ' + y ;
     }
 
     var currentDate = formatDate(new Date());
@@ -22,7 +22,7 @@ import React from 'react';
 	 return(
         <div className="fade-in">
           <div className="IntroDate">
-            <p id="jumbotron-date">January 01 2020 - {currentDate}</p>
+            <p id="jumbotron-date">January 01, 2020 - {currentDate}</p>
           </div>
         </div> 
 		)    
