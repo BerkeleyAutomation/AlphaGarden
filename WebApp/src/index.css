@@ -225,6 +225,12 @@ code {
     overflow: hidden;
     position: absolute;
     border: none;
+    animation: fadeInZoomContainer 5s linear; 
+}
+
+@keyframes fadeInZoomContainer {
+  0%, 90% {opacity: 0}
+  100% {opacity: 1}
 }
 
 #Zoom1, #Zoom2, #Zoom3, #Zoom4, #Zoom5, #Zoom6, #Zoom7, #Zoom8, #Zoom9, #Zoom10, #Zoom11, #Zoom12, #Zoom13, #Zoom14, #Zoom15, #Zoom16 {
@@ -368,52 +374,6 @@ code {
   animation-duration: 1s;
 }
 
-.fadeInDissolveOut-enter{
-  opacity: 0;
-}
-/* This is where we can add the transition*/
-.fadeInDissolveOut-enter-active{
-  opacity: 1;
-  transition: opacity 1s;
-}
-/* This fires as soon as the this.state.showList is false */
-.fadeInDissolveOut-exit{
-  opacity: 1;
-}
-/* fires as element leaves the DOM*/
-.fadeInDissolveOut-exit-active{
-  opacity: 1;
-}
-
-.fadeInDissolveOut-in {
-  opacity: 1;
-  animation-name: fadeInOpacity;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 1s;
-}
-
-.dissolveInFadeOut-enter{
-  opacity: 1;
-}
-/* This is where we can add the transition*/
-.dissolveInFadeOut-enter-active{
-  opacity: 1;
-}
-/* This fires as soon as the this.state.showList is false */
-.dissolveInFadeOut-exit{
-  opacity: 1;
-}
-/* fires as element leaves the DOM*/
-.dissolveInFadeOut-exit-active{
-  opacity: 0;
-  transition: opacity 1s;
-}
-
-.dissolveInFadeOut-in {
-  opacity: 1;
-  animation-name: fadeInOpacity;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 1s;
+#backgroundVideo{
+  object-fit: fill;
 }

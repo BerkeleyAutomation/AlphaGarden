@@ -9,6 +9,7 @@ import ZoomBox2 from '../Media/top-right-border.svg';
 import ZoomBox3 from '../Media/bottom-left-border.svg';
 import ZoomBox4 from '../Media/bottom-right-border.svg';
 import Grid from '../Media/grid.svg';
+import BackVideo from './BackVideo.js'
 // Component for dynamic zoom data display
 
 class Element3 extends React.Component{
@@ -217,7 +218,9 @@ class Element3 extends React.Component{
     		y:0,
     		counter: 0,
 			prevZoomId: null,
-    		overview: true
+			overview: false,
+			waitToStart: true,
+			grid: null
     	}
 	}
 	
@@ -236,22 +239,35 @@ class Element3 extends React.Component{
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
 				<div id="Zoom_Container">
-					<img src={require("./Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
+					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
 				</div>
+
+				<CSSTransition
+					in={this.state.waitToStart}
+					timeout={0}
+					unmountOnExit
+					onEnter={() => this.setState({waitToStart:false})}
+					onExited={() => {setTimeout(() => this.setState({overview:true}), 1000)}}
+					classNames="over"
+						>
+						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {this.setState({waitToStart:false})}} nuc={this.state.nuc}/>
+				</CSSTransition>
+
 				<CSSTransition
 		        	in={this.state.overview}
 		        	timeout={0}
-		        	onEnter={setTimeout(() => this.setState({overview:false}), 4000)}
+		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4000)}}
 		        	onExited={() => {
-					this.state.handleClick();
+						this.setState({grid: Grid});
+						this.state.handleClick();
 		   			}}
 		        	unmountOnExit
 		        	classNames="over"
 		        	>
 		        	<div>	
-       			 <Overview />
-       			 </div>
-      		</CSSTransition>
+						<Overview id="overview"/>
+					</div>
+      			</CSSTransition>
 
 				<div className="Overlay">
 					{this.state.overlay}
@@ -270,7 +286,7 @@ class Element3 extends React.Component{
 					<img src={ZoomBox4} id={this.state.zoombox4}/>
 				</div>
 
-				<img src={Grid} className="GridOverlay" />
+				<img src={this.state.grid} className="GridOverlay" />
 
 		    </div>
 

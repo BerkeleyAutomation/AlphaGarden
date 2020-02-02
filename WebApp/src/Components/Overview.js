@@ -23,11 +23,10 @@ import Delayed from './Delayed';
  
 	 var currentDate = formatDate(new Date());
 
-	let today = new Date();
 	 return(
  	 	<div className="LOADING">
 			<div id="Overview_Container">
-				<img src={require("./Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" />
+				<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" />
 			</div>
 			
 			<Delayed waitBeforeShow={1000} c>
