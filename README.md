@@ -2,6 +2,9 @@
 
 
 ## Installing on Linux (tested with Ubuntu WSL)
+
 sudo apt install -y nodejs npm
+
 npm install
+
 npm start
