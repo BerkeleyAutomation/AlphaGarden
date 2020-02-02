@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: 'Roboto Thin';
-  src: local('Roboto Thin'), url(./Fonts/Roboto/Roboto-Thin.ttf) format('truetype');
+  src: local('Roboto Thin'), url(./Fonts/Roboto_Mono/RobotoMono-Thin.ttf) format('truetype');
 }
 
 * {
