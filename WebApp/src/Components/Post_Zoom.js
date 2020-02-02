@@ -17,9 +17,9 @@ class Post_Zoom extends React.Component {
         [plants[i], plants[j]] = [plants[j], plants[i]];
     }
 
-    // Pick 5 plants at random to highlight
+    // Pick 3 plants at random to highlight
     let k = 0;
-    while (k < plants.length && k < 5) {
+    while (k < plants.length && k < 3) {
       if (this.withinBounds(plants[k])) {
         this.displayPlants.push(plants[k]);
       }
@@ -75,7 +75,7 @@ class Post_Zoom extends React.Component {
       console.log(plant)
       const [x, y, radius] = this.getPlantCoords(plant);
       console.log("scaled values:", x, y, radius)
-      return <Delayed waitBeforeShow={1000 * (i + 1)}><PlantCircle key={i} label={plant.type} x={x} y={y} radius={radius} 
+      return <Delayed waitBeforeShow={2000 * (i + 1)}><PlantCircle key={i} label={plant.type} x={x} y={y} radius={radius} 
         {...[startX, startY, gridWidth, gridHeight]}/></Delayed>
     })
   }

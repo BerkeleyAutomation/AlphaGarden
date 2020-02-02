@@ -18,23 +18,15 @@ class App extends React.Component {
   
     this.state = {
       el1: true,
-
       el2: false,
-
       el3: false,
-
       el4: false,
-
       el5: false,
-
       el6: false,
-
       el7: false,
-
       nuc: true
     };
   }
-  
 
   render(){
 
@@ -48,7 +40,7 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el1}
-        timeout={400}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el7:false})}
         onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
@@ -59,15 +51,13 @@ class App extends React.Component {
             <div class="overlay"></div>
             <BackVideo vidName={require("./Media/robot.mp4")} endFunc={() => {this.setState({el1:false})}}/>
           </div>
-          <Delayed waitBeforeShow={2000} className="IntroText">
-           <div className="fade">
-              <div className="IntroJumbotron">
-                <p id="jumbotron-title">ALPHAGARDEN</p>
-                <p id="jumbotron-subtitle">A LIVING PREVIEW</p>
-              </div>
-              <div className="IntroSubtitle">
-                <p>UPDATED DAILY FROM BERKELEY, CALIFORNIA</p>
-              </div>
+          <Delayed waitBeforeShow={1000} className="IntroText">
+            <div className="IntroJumbotron">
+              <p id="jumbotron-title">ALPHAGARDEN</p>
+              <p id="jumbotron-subtitle">A LIVING PREVIEW</p>
+            </div>
+            <div className="IntroSubtitle">
+              <p>UPDATED DAILY FROM BERKELEY, CALIFORNIA</p>
             </div>
           </Delayed>
         </div>
@@ -76,7 +66,7 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el2}
-        timeout={400}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el1:false})}
         onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
@@ -89,70 +79,68 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el3}
-        timeout={400}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el2:false})}
-        onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
-        classNames="fade"
+        onExited={() => {setTimeout(() => this.setState({el4:true}), 0)}}
+        classNames="fadeInDissolveOut"
             >
 
         <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {this.setState({el3:false})}}/>
 
       </CSSTransition>
-        
 
       <CSSTransition
         in={this.state.el4}
-        timeout={400}
+        timeout={0}
         unmountOnExit
         onEnter={() => this.setState({el3:false})}
         onExited={() => {setTimeout(() => this.setState({el5:true}), 1000)}}
-        classNames="fade"
+        classNames="dissolveInFadeOut"
       >
-        <Overview nuc={this.state.nuc} endFunc={() => {this.setState({el4:false})}}/>
+
+        <Element3 endFunc={() => {this.setState({el4:false})}} nuc={this.state.nuc}/>
 
       </CSSTransition>
 
-
-
       <CSSTransition
         in={this.state.el5}
-        timeout={400}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el4:false})}
         onExited={() => {setTimeout(() => this.setState({el6:true}), 1000)}}
         classNames="fade"
-      >
+            >
 
-        <Element3 endFunc={() => {this.setState({el5:false})}} nuc={this.state.nuc}/>
+        <Title nuc={this.state.nuc} title={"SIMULATING POTENTIAL OUTCOMES"} endFunc={() => {this.setState({el5:false})}}/>
 
       </CSSTransition>
 
       <CSSTransition
         in={this.state.el6}
-        timeout={400}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
         onExited={() => {setTimeout(() => this.setState({el7:true}), 1000)}}
         classNames="fade"
-            >
-
-        <Title nuc={this.state.nuc} title={"SIMULATING POTENTIAL OUTCOMES"} endFunc={() => {this.setState({el6:false})}}/>
-
+      >
+        <div>
+          <img src={Grid} className="SimOverlay" />
+          <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el6:false})}}/>
+        </div>
       </CSSTransition>
 
       <CSSTransition
         in={this.state.el7}
-        timeout={400}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el6:false})}
-        onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
+        onExited={() => {setTimeout(() => this.setState({el1:true}), 2000)}}
         classNames="fade"
       >
-        <div>
-          <img src={Grid} className="SimOverlay" />
-          <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el7:false})}}/>
-        </div>
+
+          <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el7:false})}}/>
+      
       </CSSTransition>
         
       </body>

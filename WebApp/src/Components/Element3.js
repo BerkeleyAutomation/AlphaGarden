@@ -62,9 +62,9 @@ class Element3 extends React.Component{
 				setOverlay(square);
 	
 				if(this.props.nuc){
-					setTimeout(zoomOut, 12000);
+					setTimeout(zoomOut, 10000);
 				}
-			}, 5000)
+			}, 4000)
 		}
 
 		// Initialize plant data from JSON
@@ -112,10 +112,10 @@ class Element3 extends React.Component{
 			var bottomLeft = document.getElementById('bottom-left');
 			var bottomRight = document.getElementById('bottom-right');
 			
-			topLeft.style.opacity = 1;
-			topRight.style.opacity = 1;
-			bottomLeft.style.opacity = 1;
-			bottomRight.style.opacity = 1;
+			topLeft.style.opacity = 0;
+			topRight.style.opacity = 0;
+			bottomLeft.style.opacity = 0;
+			bottomRight.style.opacity = 0;
 			// topLeft.style.animation = 'blink-animation 0.5s steps(5, start) infinite';
 
 			// setTimeout(() => {
@@ -176,7 +176,7 @@ class Element3 extends React.Component{
 								gridHeight={(GARDEN_HEIGHT / GRID_HEIGHT)}
 							/>
             	})}
-            , 3000);
+            , 500);
         }
 		
 		//Func to dynamically zoom back out to the overhead of the garden
@@ -198,11 +198,11 @@ class Element3 extends React.Component{
 				this.setState((state) => ({
 					counter: state.counter + 1
 				}));
-				if(this.state.counter >= 2){
-					this.props.endFunc();
+				if(this.state.counter >= 2) {
+					setTimeout(this.props.endFunc, 4000);
 				}
 				else {
-					setTimeout(zoomIn, 7000);
+					setTimeout(zoomIn, 4000);
 				}
 			}
 		}
@@ -216,7 +216,7 @@ class Element3 extends React.Component{
     		x:0,
     		y:0,
     		counter: 0,
-
+			prevZoomId: null,
     		overview: true
     	}
 	}
@@ -225,7 +225,6 @@ class Element3 extends React.Component{
    		const timer = () => {
     		this.state.handleClick();
 		}
-		this.state.prevZoomId = null;
     }
 
     //constantly updates the position of
@@ -237,14 +236,14 @@ class Element3 extends React.Component{
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
 				<div id="Zoom_Container">
-					<img src={require("./Garden-Overview.bmp")} alt="Zaaa GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
+					<img src={require("./Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
 				</div>
 				<CSSTransition
 		        	in={this.state.overview}
-		        	timeout={50}
-		        	onEnter={setTimeout(() => this.setState({overview:false}), 50)}
+		        	timeout={0}
+		        	onEnter={setTimeout(() => this.setState({overview:false}), 4000)}
 		        	onExited={() => {
-		    		this.state.handleClick();
+					this.state.handleClick();
 		   			}}
 		        	unmountOnExit
 		        	classNames="over"

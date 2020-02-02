@@ -2,7 +2,7 @@ import React from 'react';
 
  const DatePage = (props) => {
 
-    if(props.nuc){setTimeout(props.endFunc, 5000)}
+    if(props.nuc){setTimeout(props.endFunc, 2500)}
      
     const formatDate = (date) =>{
         var monthNames = [
