@@ -43,6 +43,7 @@ class Typing extends React.Component {
             textTransform: 'uppercase',
             letterSpacing: '3px',
             fontSize: '30px',
+            letterSpacing: '10px',
             left: this.props.x + this.props.radius,
             top: y,
             margin: 0
