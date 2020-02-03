@@ -14,6 +14,7 @@ import RobotCameraOverlay from './RobotCameraOverlay';
 import GlowingMarks from './GlowingMarks';
 import DateBox from './DateBox';
 import ZoomBox from './ZoomBox';
+import Overlay from './Overlay';
 
 // Component for dynamic zoom data display
 
@@ -196,7 +197,7 @@ class Element3 extends React.Component{
     	super(props);
 
     	this.state = {
-    		overlay: null,
+			overlay: null,
     		zoom: "no_zoom",
     		handleClick: zoomIn,
     		x:0,
@@ -211,6 +212,7 @@ class Element3 extends React.Component{
 			grid: null,
 			robotCameraOverlay: false,
 			glowingMarks: false,
+			filter: false,
 
 			zoomboximg: false 
     	}
@@ -252,7 +254,12 @@ class Element3 extends React.Component{
 		        	timeout={0}
 		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4500)}}
 		        	onExited={() => {
-						this.setState({grid: Grid, robotCameraOverlay: true, glowingMarks: true});
+						this.setState({
+							grid: Grid,
+							robotCameraOverlay: true,
+							glowingMarks: true,
+							filter: true,
+						});
 						this.state.handleClick();
 		   			}}
 		        	unmountOnExit
@@ -266,6 +273,8 @@ class Element3 extends React.Component{
 				<div className="Overlay">
 					{this.state.overlay}
 				</div>
+
+				<Overlay shouldDisplay={this.state.filter} />
 
 				<div className="ZoomBox" id="top-left">
 					<ZoomBox shouldDisplay={this.state.zoomboximg} src={ZoomBox1} id={this.state.zoombox1}/>

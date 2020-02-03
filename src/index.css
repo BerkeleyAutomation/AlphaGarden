@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono&display=swap');
+@font-face {
+  font-family: 'Roboto Mono';
+  src: local('Roboto Mono'), url(./Fonts/Roboto_Mono/RobotoMono-Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto Thin';
+  src: local('Roboto Thin'), url(./Fonts/Roboto_Mono/RobotoMono-Light.ttf) format('truetype');
+}
 
 * {
   box-sizing: border-box;
@@ -35,14 +43,15 @@ body {
   z-index: 0;
 }
 
-.videoContainer .overlay {
+.overlay {
   height: 100%;
   width: 100%;
   position: absolute;
   top: 0px;
   left: 0px;
-  z-index: 2;
-  background: rgba(11, 11, 20, 0.5);
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s linear;
 }
 
 .IntroJumbotron {
@@ -61,6 +70,7 @@ body {
 }
 
 .IntroJumbotron p {
+  font-family: 'Roboto Mono';
   border: 1px solid white;
   padding: 13px;
 }
@@ -96,6 +106,7 @@ body {
   z-index: 3;
   opacity: 0;
   animation: fadeInOut 5s linear;
+  font-family: 'Roboto Mono';
 }
 
 @keyframes fadeInOut {
@@ -105,20 +116,22 @@ body {
 
 .IntroDate {
   text-align: center;
-  width: 800px;
+  width: 900px;
   height: 100px;
   font-size: 30px;
   position: absolute;
   top: 45%;
   left: 50%;
   margin-top: -50px;
-  margin-left: -400px;
+  margin-left: -450px;
   z-index: 3;
 }
 
 .IntroDate p {
   border: 1px solid white;
   padding: 13px;
+  font-family: 'Roboto Mono';
+  text-transform: uppercase;
 }
 
 @keyframes fadeIn {
@@ -298,20 +311,19 @@ code {
 
 .GridOverlay {
   position: fixed;
-  width: 95%;
-  height: auto;
-  opacity: 0.6;
-  animation: fadeIn60 0.5s linear;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+  animation: fadeIn80 0.5s linear;
 }
 
 .SimOverlay {
   height: 100%;
-  width: 95%;
-  height: auto;
-  opacity: 0.6;
+  width: 100%;
+  opacity: 0.8;
   position: fixed;
   z-index: 2;
-  animation: fadeIn60Earlier 4s linear;
+  animation: fadeIn80Earlier 4s linear;
 }
 
 .OverviewGrid {
@@ -324,9 +336,9 @@ code {
 
 .OverviewDate {
   text-align: center;
-  width: 600px;
+  width: 800px;
   height: 100px;
-  font-size: 40px;
+  font-size: 60px;
   font-family: Roboto Mono;
   letter-spacing: 3px;
   font-weight: lighter;
@@ -335,6 +347,7 @@ code {
 }
 
 .OverviewDate p {
+  font-family: 'Roboto Thin';
   border: 1px solid white;
   padding: 13px;
 }
@@ -358,7 +371,7 @@ code {
   color: white;
   letter-spacing: 7px;
   text-transform: uppercase;
-  font-size: 15px;
+  font-size: 20px;
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.7);
   height: 35px;
   font-family: 'Roboto Mono';
@@ -373,14 +386,14 @@ code {
   margin: 0;
 }
 
-@keyframes fadeIn60 {
+@keyframes fadeIn80 {
   0% { opacity: 0 }
-  100% { opacity: 0.6 }
+  100% { opacity: 0.8 }
 }
 
-@keyframes fadeIn60Earlier {
+@keyframes fadeIn80Earlier {
   0% { opacity: 0 }
-  100% { opacity: 0.6 }
+  100% { opacity: 0.8 }
 }
 
 /* CSSTRANSITION ANIMATIONS */
@@ -446,12 +459,18 @@ code {
   color: white;
   letter-spacing: 25px;
   text-transform: uppercase;
-  font-size: 45px;
-  font-family: 'Roboto Mono';
+  font-size: 60px;
+  font-family: 'Roboto Thin';
+
+  border-top: 0.5px solid rgba(255, 255, 255, 0.7);
 
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+#date-box-div {
+  border: none;
 }
 
 .date-box {

@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono&display=swap');
+@font-face {
+  font-family: 'Roboto Mono';
+  src: local('Roboto Mono'), url(./Fonts/Roboto_Mono/RobotoMono-Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto Thin';
+  src: local('Roboto Thin'), url(./Fonts/Roboto_Mono/RobotoMono-Light.ttf) format('truetype');
+}
 
 * {
   box-sizing: border-box;
@@ -13,8 +21,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 1EM;
   background-color: black;
-  /*overflow: hidden;*/
-
+  cursor: none;
 }
 
 

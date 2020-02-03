@@ -7,7 +7,7 @@ import { CSSTransition } from 'react-transition-group'
 import Delayed from './Components/Delayed.jsx';
 import DatePage from './Components/DatePage';
 import Title from './Components/Title';
-import Grid from './Media/grid.svg';
+import Grid from './Media/zoom_grid.svg';
 
 class App extends React.Component {
 
@@ -47,7 +47,6 @@ class App extends React.Component {
       >
         <div>
           <div class="videoContainer">
-            {/* <div class="overlay"></div> */}
             <BackVideo vidName={require("./Media/robot_full.mp4")} endFunc={() => {this.setState({el1:false})}}/>
           </div>
           <Delayed waitBeforeShow={1000} className="IntroText">
@@ -122,11 +121,24 @@ class App extends React.Component {
         timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
+        onExited={() => {setTimeout(() => this.setState({el7:true}), 1000)}}
+        classNames="fade"
+            >
+
+        <Title nuc={this.state.nuc} title={"OBSERVING REALITY"} endFunc={() => {this.setState({el6:false})}}/>
+
+      </CSSTransition>
+
+      <CSSTransition
+        in={this.state.el7}
+        timeout={500}
+        unmountOnExit
+        onEnter={() => this.setState({el6:false})}
         onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
         classNames="fade"
       >
 
-        <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el6:false})}}/>
+        <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el7:false})}}/>
       
       </CSSTransition>
         
