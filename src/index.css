@@ -13,6 +13,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 1EM;
   background-color: black;
+  cursor: none;
 }
 
 .videoContainer {
