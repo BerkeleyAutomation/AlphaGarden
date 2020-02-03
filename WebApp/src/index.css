@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: 'Roboto Thin';
-  src: local('Roboto Thin'), url(./Fonts/Roboto_Mono/RobotoMono-Thin.ttf) format('truetype');
+  src: local('Roboto Thin'), url(./Fonts/Roboto_Mono/RobotoMono-Light.ttf) format('truetype');
 }
 
 * {
@@ -50,6 +50,7 @@ body {
   left: 0px;
   z-index: 20;
   background: rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s linear;
 }
 
 .IntroJumbotron {

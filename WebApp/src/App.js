@@ -121,11 +121,24 @@ class App extends React.Component {
         timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
+        onExited={() => {setTimeout(() => this.setState({el7:true}), 1000)}}
+        classNames="fade"
+            >
+
+        <Title nuc={this.state.nuc} title={"OBSERVING REALITY"} endFunc={() => {this.setState({el6:false})}}/>
+
+      </CSSTransition>
+
+      <CSSTransition
+        in={this.state.el7}
+        timeout={500}
+        unmountOnExit
+        onEnter={() => this.setState({el6:false})}
         onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
         classNames="fade"
       >
 
-        <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el6:false})}}/>
+        <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el7:false})}}/>
       
       </CSSTransition>
         
