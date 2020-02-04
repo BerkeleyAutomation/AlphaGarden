@@ -22,6 +22,7 @@ body {
   letter-spacing: 1EM;
   background-color: black;
   cursor: none;
+  overflow: hidden;
 }
 
 .videoContainer {
@@ -315,6 +316,7 @@ code {
   height: 100%;
   opacity: 0.8;
   animation: fadeIn80 0.5s linear;
+  overflow: hidden;
 }
 
 .SimOverlay {
@@ -427,6 +429,7 @@ code {
 
 #backgroundVideo{
   object-fit: fill;
+  overflow: hidden;
 }
 
 .robot-stats {
