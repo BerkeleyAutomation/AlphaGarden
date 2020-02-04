@@ -1,15 +1,8 @@
 from plant import Plant
 import numpy as np
-
-"""
-Test run presets (used in run_simulation.py).
-Does not affect actual RL settings.
-"""
-NUM_TIMESTEPS = 100
-NUM_X_STEPS = 100
-NUM_Y_STEPS = 50
-STEP = 1
-DAILY_WATER = 1
+import csv
+from ast import literal_eval
+from simulator_params import *
 
 """
 Preset values for plant parameters and locations, for convenience when testing.
@@ -27,7 +20,8 @@ PLANT_PRESETS = {
     },
     "control-and-3": {
         "seed": 38572912,
-        "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'), Plant(40, 40, color='c')]
+        "plants": lambda: [Plant(20, 20, color='g'), Plant(23, 23, color='b'), Plant(22, 22, color='k'),
+                           Plant(40, 40, color='c')]
     },
     "greedy-plant-limited": {
         "seed": 6937103,
@@ -40,33 +34,50 @@ PLANT_PRESETS = {
     },
     "faster-plant": {
         "seed": 76721,
-        "plants": lambda: [Plant(25, 25, color='g'), Plant(26, 26, color='tab:orange', c1=0.15, growth_time=15), Plant(25, 29, color='c')]
+        "plants": lambda: [Plant(25, 25, color='g'), Plant(26, 26, color='tab:orange', c1=0.15, growth_time=15),
+                           Plant(25, 29, color='c')]
     },
     "random": {
         "seed": None,
-        "plants": lambda: _get_random_plants()
+        "plants": lambda: _get_random_plants(['basil', 'thyme', 'oregano', 'lavender', 'bok-choy', 'parsley', 'sage',
+                                              'rosemary', 'chives', 'cilantro', 'dill', 'fennel', 'marjoram',
+                                              'tarragon'],
+                                             21)
+    },
+    "random-seeded": {
+        "seed": None,
+        "plants": lambda: _get_random_plants(285631)
     },
     "real-garden": {
         # "seed": 10239210,
         "seed": 1000001,
-        "plants": lambda: _get_random_plants_of_type([("bok-choy", 25), ("basil", 25), ("lavender", 30), ("parsley", 25), ("sage", 25), ("rosemary", 30), ("thyme", 20)])
+        "plants": lambda: _get_random_plants_of_type([("bok-choy", 25), ("basil", 25), ("lavender", 30),
+                                                      ("parsley", 25), ("sage", 25), ("rosemary", 30), ("thyme", 20)])
     },
     "real-grid": {
         "seed": 109225,
         # "seed": 1000001,
-        "plants": lambda: _get_grid_of_plants([("bok-choy", 9), ("basil", 9), ("lavender", 9), ("parsley", 9), ("rosemary", 9), ("thyme", 9)])
+        "plants": lambda: _get_grid_of_plants([("bok-choy", 9), ("basil", 9), ("lavender", 9), ("parsley", 9),
+                                               ("rosemary", 9), ("thyme", 9)])
     },
     "spaced-garden": {
         "seed": 501293,
-        "plants": lambda: _get_rows_of_plants([(6, 7, "bok-choy"), (15, 12, "basil"), (30, 23, "lavender"), (45, 12, "parsley")])
+        "plants": lambda: _get_rows_of_plants([(6, 7, "bok-choy"), (15, 12, "basil"), (30, 23, "lavender"),
+                                               (45, 12, "parsley")])
     },
     "spaced-garden-2": {
         "seed": 501293,
-        "plants": lambda: _get_rows_of_plants([(6, 8, "chives"), (13, 5, "cilantro"), (23, 14, "dill"), (40, 20, "tarragon")])
+        "plants": lambda: _get_rows_of_plants([(6, 8, "chives"), (13, 5, "cilantro"), (23, 14, "dill"),
+                                               (40, 20, "tarragon")])
     },
     "spaced-garden-3": {
         "seed": 501293,
-        "plants": lambda: _get_rows_of_plants([(6, 8, "chives"), (15, 10, "majoram"), (27, 13, "oregano"), (40, 12, "fennel")])
+        "plants": lambda: _get_rows_of_plants([(6, 8, "chives"), (15, 10, "marjoram"), (27, 13, "oregano"),
+                                               (40, 12, "fennel")])
+    },
+    "csv": {
+        "seed": None,
+        "plants": lambda path: _read_plants_from_csv(path)
     }
 }
 
@@ -78,6 +89,7 @@ IRRIGATION_POLICIES = {
         "policy": lambda: _make_random_irrigator(4)
     }
 }
+
 
 def _make_sequential_irrigator(grid_step, amount, shift):
     def get_sequential_irrigation(timestep):
@@ -92,6 +104,7 @@ def _make_sequential_irrigator(grid_step, amount, shift):
         return irrigations
     return get_sequential_irrigation
 
+
 def _make_random_irrigator(amount):
     def get_irrigation(_):
         grid_size = NUM_X_STEPS * NUM_Y_STEPS
@@ -100,21 +113,19 @@ def _make_random_irrigator(amount):
         return irrigations
     return get_irrigation
 
-# Creates different color plants in random locations
-def _get_random_plants():
-    PLANTS_PER_COLOR = 10
-    #PLANT_TYPES = ['bok-choy', 'basil', 'lavender', 'parsley', 'sage', 'rosemary', 'thyme', 'chives', 'cilantro',
-    #               'dill', 'fennel', 'majoram', 'oregano', 'tarragon']
-    PLANT_TYPES = ['basil', 'thyme', 'oregano']
 
-    np.random.seed(285631)
+# Creates different color plants in random locations
+def _get_random_plants(plant_types, plants_per_color, seed=None):
+    if seed is not None:
+        np.random.seed(seed)
     plants = []
-    for name in PLANT_TYPES:
-        x_locations = np.random.randint(1, NUM_X_STEPS - 1, (PLANTS_PER_COLOR, 1))
-        y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (PLANTS_PER_COLOR, 1))
+    for name in plant_types:
+        x_locations = np.random.randint(1, NUM_X_STEPS - 1, (plants_per_color, 1))
+        y_locations = np.random.randint(1, NUM_Y_STEPS - 1, (plants_per_color, 1))
         locations = np.hstack((x_locations, y_locations))
         plants.extend([Plant.from_preset(name, row, col) for row, col in locations])
     return plants
+
 
 def _get_random_plants_of_type(types):
     plants = []
@@ -124,6 +135,7 @@ def _get_random_plants_of_type(types):
         locations = np.hstack((x_locations, y_locations))
         plants.extend([Plant.from_preset(plant_type, row, col) for row, col in locations])
     return plants
+
 
 def _get_grid_of_plants(types):
     count = 0
@@ -138,6 +150,7 @@ def _get_grid_of_plants(types):
                 count = 0
     return plants
 
+
 def _get_rows_of_plants(types):
     """
     Types is array of (row, spacing, plant) tuples
@@ -146,4 +159,21 @@ def _get_rows_of_plants(types):
     for row, spacing, plant_type in types:
         for col in range(spacing // 2 + 2, NUM_X_STEPS - spacing // 2, spacing):
             plants.append(Plant.from_preset(plant_type, col, row))
+    return plants
+
+
+def _read_plants_from_csv(path):
+    plants = []
+    with open(path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                coord = literal_eval(row[2])
+                x = round(coord[0] * NUM_X_STEPS / 1920)
+                y = round(NUM_Y_STEPS - coord[1] * NUM_Y_STEPS / 1080)
+                plants.append(Plant.from_preset(row[1], x, y))
+                line_count += 1
     return plants

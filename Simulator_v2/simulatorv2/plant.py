@@ -2,10 +2,11 @@ from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStag
 from plant_presets import PLANT_TYPES
 import numpy as np
 
+
 class Plant:
 
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color='g', plant_type='basil',
-                        germination_time=3, start_height=1, start_radius=1):
+                 germination_time=3, start_height=1, start_radius=1):
         self.id = None
 
         # coordinates of plant
@@ -16,8 +17,8 @@ class Plant:
         self.c1 = c1
         self.c2 = c2
 
-        self.k1 = k1 # minimum proportion plant will allocate to upward growth
-        self.k2 = k2 # maximum proportion plant will allocate to upward growth
+        self.k1 = k1  # minimum proportion plant will allocate to upward growth
+        self.k2 = k2  # maximum proportion plant will allocate to upward growth
 
         # color of plant when plotted
         self.color = color
@@ -43,7 +44,9 @@ class Plant:
             p = PLANT_TYPES[name]
             g_min, g_max = p["germination_time"]
             germination_time = np.random.randint(g_min, g_max + 1)
-            return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"], color=p["color"], plant_type=p["plant_type"], germination_time=germination_time, start_height=p["start_height"], start_radius=p["start_radius"])
+            return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"],
+                         color=p["color"], plant_type=p["plant_type"], germination_time=germination_time,
+                         start_height=p["start_height"], start_radius=p["start_radius"])
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
@@ -61,6 +64,9 @@ class Plant:
         # resources accumulated per timestep
         self.amount_sunlight = 0
         self.water_amt = 0
+
+        # whether plant was pruned
+        self.pruned = False
 
         self.stage_index = -1
         self.switch_stage()
@@ -82,6 +88,7 @@ class Plant:
     def reset(self):
         self.amount_sunlight = 0
         self.water_amt = 0
+        self.pruned = False
 
         should_transition = self.current_stage().step()
         if should_transition and self.stage_index + 1 < len(self.stages):

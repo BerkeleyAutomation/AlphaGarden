@@ -1,9 +1,10 @@
 from logger import Event
 import matplotlib
-matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
+matplotlib.use('Qt5Agg')  # Only keep when running on Mac
+
 
 def plot_garden(garden):
     """
@@ -12,8 +13,9 @@ def plot_garden(garden):
     - Soil water levels
     """
     fig, ax = _setup_plot(garden)
-    _add_plots(garden, ax, reverse=True)
+    _add_frames(garden, ax, reverse=True)
     plt.show()
+
 
 def plot_data(garden, num_timesteps):
     """
@@ -27,6 +29,7 @@ def plot_data(garden, num_timesteps):
         # plt.plot(range(NUM_TIMESTEPS), garden.logger.get_data(event_type, "Control"), color='0.5', linestyle='--')
         plt.title(event_type.value)
     plt.show()
+
 
 def plot_calibration_curve(plant, garden_width, garden_height, num_timesteps, min_water=0, max_water=1, step_size=0.1):
     """
@@ -86,15 +89,46 @@ def setup_animation(garden):
     fig, ax = _setup_plot(garden)
 
     def anim_step():
-        frames.append(_add_plots(garden, ax))
+        frames.append(_add_frames(garden, ax))
 
     def anim_show():
-        growth_animation = animation.ArtistAnimation(fig, frames, interval=25, blit=True, repeat=True, repeat_delay=1000)
+        growth_animation = animation.ArtistAnimation(fig, frames, interval=25, blit=True, repeat=True,
+                                                     repeat_delay=1000)
         fig.set_size_inches(10, 5, True)
         plt.show()
         growth_animation.save('simulation.mp4', dpi=300)
 
     return anim_step, anim_show
+
+
+"""
+    NO NEED TO CALL THIS DIRECTLY! This is used by the Garden class to support saving data for animations.
+    
+    --------
+    Performs necessary setup to allow saving data for animating the garden's history.
+
+    Returns three functions:
+    (1) save_step should be called at each step of the garden; it records all information
+        that will appear in the animation, e.g. plant locations/radii
+    (2) save_final_step should be called ONCE after the simulation is complete; it will save the final state of the
+        garden without any indicators of pruning action
+    (3) get_plots returns all of the saved information, for plotting when creating the animation
+    """
+
+def setup_saving(garden):
+    plots = []
+
+    def save_step():
+        plots.append(_add_plots(garden))
+
+    def save_final_step():
+        plots.append(_add_plots(garden, final=True))
+
+    def get_plots():
+        return plots
+
+    return save_step, save_final_step, get_plots
+
 
 def _setup_plot(garden):
     """
@@ -121,7 +155,8 @@ def _setup_plot(garden):
 
     return fig, ax
 
-def _add_plots(garden, ax, reverse=False):
+
+def _add_frames(garden, ax, reverse=False):
     """
     Helper function to record the current state of the garden (plants, sunlight points and water levels)
     on the given set of axes.
@@ -138,9 +173,14 @@ def _add_plots(garden, ax, reverse=False):
     # Plants
     for plant in sorted([plant for plant_type in garden.plants for plant in plant_type.values()],
                         key=lambda x: x.height, reverse=reverse):
-        circle = plt.Circle((plant.row, plant.col) * garden.step, plant.radius, color=plant.color)
-        circleplot = ax.add_artist(circle)
-        shapes.append(circleplot)
+        if plant.pruned:
+            shape = plt.Rectangle((plant.row * garden.step - plant.radius,
+                                  plant.col * garden.step - plant.radius), plant.radius * 2, plant.radius * 2,
+                                  fc='red', ec='red')
+        else:
+            shape = plt.Circle((plant.row, plant.col) * garden.step, plant.radius, color=plant.color)
+        shape_plot = ax.add_artist(shape)
+        shapes.append(shape_plot)
 
     # Sunlight points
     # for grid_pt, coord in garden.enumerate_grid(coords=True):
@@ -154,5 +194,21 @@ def _add_plots(garden, ax, reverse=False):
         square = plt.Rectangle((row - 0.5, col - 0.5), 1, 1, fc='red', ec='red')
         squareplot = ax.add_artist(square)
         shapes.append(squareplot)
+
+    return shapes
+
+
+def _add_plots(garden, reverse=False, final=False):
+    shapes = []
+
+    for plant in sorted([plant for plant_type in garden.plants for plant in plant_type.values()],
+                        key=lambda x: x.height, reverse=reverse):
+        if not final and plant.pruned:
+            shape = plt.Rectangle((plant.row * garden.step - plant.radius,
+                                  plant.col * garden.step - plant.radius), plant.radius * 2, plant.radius * 2,
+                                  fc='red', ec='red')
+        else:
+            shape = plt.Circle((plant.row, plant.col) * garden.step, plant.radius, color=plant.color)
+        shapes.append(shape)
 
     return shapes

@@ -1,13 +1,14 @@
 import numpy as np
 from heapq import nlargest
 from logger import Logger, Event
-from visualization import setup_animation
+from visualization import setup_animation, setup_saving
 from sim_globals import MAX_WATER_LEVEL
+import pickle
 
 
 class Garden:
-    def __init__(self, plants=[], N=100, M=50, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
-                 skip_initial_germination=False, animate=False):
+    def __init__(self, plants=[], N=96, M=54, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
+                 prune_threshold=2, skip_initial_germination=False, animate=False, save=False):
         # list of dictionaries, one for each plant type, with plant ids as keys, plant objects as values
         self.plants = [{} for _ in range(len(plant_types))]
 
@@ -30,9 +31,7 @@ class Garden:
         self.leaf_grid = np.zeros((N, M, len(plant_types)))
 
         # Grid for plant radius representation
-        # self.radius_grid = np.zeros((N, M, 1))
-        # TODO: resolve radius grid representation, changed to have dimension for each plant type, RL representation has single dimension for all plant types
-        self.radius_grid = np.zeros((N, M, len(plant_types)))
+        self.radius_grid = np.zeros((N, M, 1))
 
         # initializes empty lists in grid
         for i in range(N):
@@ -56,6 +55,10 @@ class Garden:
         # proportion of plant radius to decrease by after pruning action
         self.prune_rate = 0.2
 
+        # determines max amount of coverage of one plant type in the garden before that plant is pruned
+        # percentage calculated as self.prune_threshold / number of plant types in the garden
+        self.prune_threshold = prune_threshold
+
         # timestep of simulation
         self.timestep = 0
 
@@ -65,12 +68,6 @@ class Garden:
             if skip_initial_germination:
                 plant.current_stage().skip_to_end()
             self.add_plant(plant)
-
-        # Control plant
-        # self.control_plant = Plant(0, 0, color='gray')
-        # self.control_plant.id = "Control"
-        # if skip_initial_germination:
-        #     self.control_plant.current_stage().skip_to_end()
 
         # growth map for circular plant growth
         self.growth_map = self.compute_growth_map()
@@ -84,8 +81,15 @@ class Garden:
         self.logger = Logger()
 
         self.animate = animate
+        self.save = save
+
         if animate:
-            self.anim_step, self.anim_show = setup_animation(self)
+            self.anim_step, self.anim_show, = setup_animation(self)
+
+        if save:
+            self.coverage = []
+            self.diversity = []
+            self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
 
     def add_plant(self, plant):
         if (plant.row, plant.col) in self.plant_locations:
@@ -107,7 +111,8 @@ class Garden:
         if irrigations is None:
             # Default to uniform irrigation
             water_level = min(water_amt, MAX_WATER_LEVEL)
-            # self.irrigation_points = {coord: water_level - self.grid['water'][coord] for _, coord in self.enumerate_grid(coords=True)}
+            # self.irrigation_points = {coord: water_level - self.grid['water'][coord]
+            # for _, coord in self.enumerate_grid(coords=True)}
             self.reset_water(water_level)
         else:
             for i in np.nonzero(irrigations)[0]:
@@ -119,26 +124,18 @@ class Garden:
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        # self.grow_control_plant()
         if prune and self.timestep >= self.prune_delay:
             self.prune_plants()
 
         if self.animate:
             self.anim_step()
-        # print('RADIUS GRID', self.radius_grid.tolist())
+
+        elif self.save:
+            self.save_step()
+            self.save_coverage_and_diversity()
 
         self.timestep += 1
         return [plant for plant_type in self.plants for plant in plant_type.values()]
-
-    def grow_control_plant(self):
-        cp = self.control_plant
-        cp.amount_sunlight = cp.num_grid_points
-        cp.water_amt = cp.desired_water_amt()
-        self.logger.log(Event.WATER_REQUIRED, "Control", cp.water_amt)
-
-        next_step = self.grow_plant(cp)
-        if next_step:
-            cp.num_grid_points += next_step * 8
 
     # Resets all water resource levels to the same amount
     def reset_water(self, water_amt):
@@ -233,17 +230,20 @@ class Garden:
             plant.height += upward
         if outward:
             plant.radius += outward
-        self.radius_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = plant.radius
+        self.radius_grid[plant.row, plant.col, 0] = plant.radius
 
-    def update_plant_coverage(self, plant):
+    def update_plant_coverage(self, plant, record_coords_updated=False):
         distances = np.array(list(zip(*self.growth_map))[0])
         next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
+        coords_updated = []
         if next_growth_index_plus_1 > plant.growth_index:
             for i in range(plant.growth_index + 1, next_growth_index_plus_1):
                 points = self.growth_map[i][1]
                 for p in points:
                     point = p[0] + plant.row, p[1] + plant.col
                     if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
+                        if record_coords_updated:
+                            coords_updated.append(point)
                         plant.num_grid_points += 1
                         self.grid[point]['nearby'].add((self.plant_types.index(plant.type), plant.id))
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] += 1
@@ -253,31 +253,55 @@ class Garden:
                 for p in points:
                     point = p[0] + plant.row, p[1] + plant.col
                     if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
+                        if record_coords_updated:
+                            coords_updated.append(point)
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove((self.plant_types.index(plant.type), plant.id))
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] -= 1
                         if self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] < 0:
                             raise Exception("Cannot have negative leaf cover")
         plant.growth_index = next_growth_index_plus_1 - 1
+        return coords_updated
 
     def prune_plants(self):
-        total_cc = np.sum(np.pi * self.radius_grid ** 2)
-        cc_per_plant = [np.sum(np.pi * self.radius_grid[:, :, i] ** 2) for i in range(len(self.plant_types))]
-        prob = cc_per_plant / total_cc
+        cc_per_plant_type = self.compute_plant_cc_dist()
+        prob = cc_per_plant_type / np.sum(cc_per_plant_type)
+
         for i in range(len(self.plant_types)):
-            while prob[i] > 1.7 / len(self.plant_types):
-                amount_pruned = np.pi * self.prune_plant_type(i) ** 2
-                total_cc -= amount_pruned
-                cc_per_plant[i] -= amount_pruned
-                prob = cc_per_plant / total_cc
+            while prob[i] > self.prune_threshold / len(self.plant_types):
+                coords_updated = self.prune_plant_type(i)
+                for coord in coords_updated:
+                    point = self.grid[coord]
+                    if point['nearby']:
+                        tallest_type_id = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+                        cc_per_plant_type[tallest_type_id] += 1
+                    cc_per_plant_type[i] -= 1
+                prob = cc_per_plant_type / np.sum(cc_per_plant_type)
+
+    def compute_plant_cc_dist(self):
+        cc_per_plant_type = np.zeros(len(self.plant_types))
+        for point in self.enumerate_grid():
+            if point['nearby']:
+                tallest_type_id = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+                cc_per_plant_type[tallest_type_id] += 1
+        return cc_per_plant_type
 
     def prune_plant_type(self, plant_type_id):
         largest_plant = max(self.plants[plant_type_id].values(), key=lambda x: x.radius)
+        largest_plant.pruned = True
         amount_to_prune = self.prune_rate * largest_plant.radius
         self.update_plant_size(largest_plant, outward=-amount_to_prune)
-        self.update_plant_coverage(largest_plant)
-        print("PRUNED PLANT")
-        return amount_to_prune
+        return self.update_plant_coverage(largest_plant, record_coords_updated=True)
+
+    def save_coverage_and_diversity(self):
+        cc_per_plant_type = self.compute_plant_cc_dist()
+        total_cc = np.sum(cc_per_plant_type)
+        coverage = total_cc / (self.N * self.M)
+        prob = cc_per_plant_type[np.nonzero(cc_per_plant_type)] / total_cc
+        entropy = np.sum(-prob * np.log(prob))
+        diversity = entropy / np.log(len(self.plant_types))  # normalized entropy
+        self.coverage.append(coverage)
+        self.diversity.append(diversity)
 
     def _get_new_points(self, plant):
         rad_step = int(plant.radius // self.step)
@@ -285,15 +309,15 @@ class Garden:
         start_col, end_col = max(0, plant.col - rad_step), min(self.grid.shape[1] - 1, plant.col + rad_step)
 
         for col in range(start_col, end_col + 1):
-            yield (start_row, col)
-            yield (start_row + 1, col)
-            yield (end_row - 1, col)
-            yield (end_row, col)
+            yield start_row, col
+            yield start_row + 1, col
+            yield end_row - 1, col
+            yield end_row, col
         for row in range(start_row, end_row + 1):
-            yield (row, start_col)
-            yield (row, start_col + 1)
-            yield (row, end_col - 1)
-            yield (row, end_col)
+            yield row, start_col
+            yield row, start_col + 1
+            yield row, end_col - 1
+            yield row, end_col
 
     def within_radius(self, grid_pos, plant):
         dist = self.step ** 0.5 * np.linalg.norm((grid_pos[0] - plant.row, grid_pos[1] - plant.col))
@@ -327,4 +351,18 @@ class Garden:
             self.anim_show()
         else:
             print(
-                "[Garden] No animation to show. Set animate=True when initializing to allow animating history of garden!")
+                "[Garden] No animation to show. Set animate=True when initializing to allow animating history"
+                "of garden!")
+
+    def save_plots(self, path):
+        if self.save:
+            plots = self.get_plots()
+            self.coverage.append(self.coverage[-1])
+            self.diversity.append(self.diversity[-1])
+            pickle.dump({'plots': plots, "x_dim": self.N * self.step, "y_dim": self.M * self.step,
+                         'coverage': self.coverage, 'diversity': self.diversity},
+                        open(path, 'wb'))
+
+        else:
+            print(
+                "[Garden] Nothing to save. Set save=True when initializing to allow saving info of garden!")
