@@ -2,14 +2,11 @@ import React from 'react';
 import POST_ZOOM from './Post_Zoom';
 import $ from 'jquery';
 import PlantData from '../Media/plant-data';
-import Overview from './Overview.js';
-import { CSSTransition } from 'react-transition-group';
 import ZoomBox1 from '../Media/top-left-border.svg'
 import ZoomBox2 from '../Media/top-right-border.svg';
 import ZoomBox3 from '../Media/bottom-left-border.svg';
 import ZoomBox4 from '../Media/bottom-right-border.svg';
 import Grid from '../Media/grid.svg';
-import BackVideo from './BackVideo.js'
 import RobotCameraOverlay from './RobotCameraOverlay';
 import GlowingMarks from './GlowingMarks';
 import DateBox from './DateBox';
@@ -28,35 +25,31 @@ class Element3 extends React.Component{
 		//Func to trigger the proper transformations to zoom into a square of the garden  square=Math.floor(Math.random() * 16) + 1
 
 		const zoomIn = () => {
-			var square = Math.floor(Math.random() * 16) + 1;
-			while (square === this.state.prevZoomId) {
-				square = Math.floor(Math.random() * 16) + 1;
+			this.setState({
+				handleClick: () => {},
+			})
+			var square;
+			if(this.state.x < 0.25){
+				square = 1;
 			}
-			this.state.prevZoomId = square;
-
-			//calculate which square to zoom into
-			if(!this.props.nuc){
-				if(this.state.x < 0.25){
-					square = 1;
-				}
-				else if( this.state.x < 0.5){
-					square = 2;
-				}else if(this.state.x < 0.75){
-					square = 3;
-				}else{
-					square = 4;
-				}
-
-				if(this.state.y < 0.25){
-					square += 0;
-				}else if(this.state.y < 0.5){
-					square += 4;
-				}else if(this.state.y < 0.75){
-					square += 8;
-				}else if(this.state.y > 0.75){
-					square += 12;
-				};
+			else if( this.state.x < 0.5){
+				square = 2;
+			}else if(this.state.x < 0.75){
+				square = 3;
+			}else{
+				square = 4;
 			}
+
+			if(this.state.y < 0.25){
+				square += 0;
+			}else if(this.state.y < 0.5){
+				square += 4;
+			}else if(this.state.y < 0.75){
+				square += 8;
+			}else if(this.state.y > 0.75){
+				square += 12;
+			};
+			
 			showBorders(square);
 			setTimeout(() => {
 				removeOverlay();
@@ -67,7 +60,7 @@ class Element3 extends React.Component{
 				if(this.props.nuc){
 					setTimeout(zoomOut, 10000);
 				}
-			}, 4000)
+			}, 1000)
 		}
 
 		// Initialize plant data from JSON
@@ -100,7 +93,7 @@ class Element3 extends React.Component{
 		const triggerZoom = (box) => {
 			this.setState({
 				zoom: "Zoom" + box,
-				handleClick: zoomOut,
+				handleClick: () => {},
 				zoombox1: "zoombox1",
 				zoombox2: "zoombox2",
 				zoombox3: "zoombox3",
@@ -113,7 +106,7 @@ class Element3 extends React.Component{
 				this.setState({
 					zoomboximg: true,
 				})
-			}, 3000);
+			}, 0);
 
 			var i = box - 1;
 			var topLeft = document.getElementById('top-left');
@@ -145,6 +138,7 @@ class Element3 extends React.Component{
 			if (img != null) {
 				var i = box - 1;
 				img.style.transformOrigin = (i % GRID_WIDTH) * (100 / (GRID_WIDTH - 1)) + '%' + Math.floor((i / GRID_HEIGHT)) * (100 / (GRID_HEIGHT - 1))  + '%';
+				console.log(img.style.transformOrigin)
 			}
 		}
 
@@ -171,7 +165,6 @@ class Element3 extends React.Component{
 
 			this.setState({
 				zoom: "ZoomOut",
-				handleClick: zoomIn,
 				zoomboximg: false,
 				zoombox1: "zoomboxshrink", 
 				zoombox2: "zoomboxshrink", 
@@ -179,7 +172,7 @@ class Element3 extends React.Component{
 				zoombox4: "zoomboxshrink"
 			})
 
-			setTimeout(() => {this.setState({overlay: null})}, 3000);
+			setTimeout(() => {this.setState({overlay: null, handleClick: zoomIn})}, 3000);
 
 			if(this.props.nuc){
 				this.setState((state) => ({
@@ -200,8 +193,8 @@ class Element3 extends React.Component{
 			overlay: null,
     		zoom: "no_zoom",
     		handleClick: zoomIn,
-    		x:0,
-    		y:0,
+    		x: 0,
+    		y: 0,
 			counter: 0,
 			
 			prevZoomId: -1,
@@ -209,13 +202,13 @@ class Element3 extends React.Component{
 			overview: false,
 			waitToStart: true,
 
-			grid: null,
-			robotCameraOverlay: false,
-			glowingMarks: false,
-			filter: false,
+			grid: Grid,
+			robotCameraOverlay: true,
+			glowingMarks: true,
+			filter: true,
 
 			zoomboximg: false 
-    	}
+		}
 	}
 	
    	componentDidMount(){
@@ -223,49 +216,16 @@ class Element3 extends React.Component{
 
     //constantly updates the position of
     _onMouseMove(e) {
-    	this.setState({ x: (e.clientX / $( window ).width()), y: (e.clientY / $( window ).height())  });
+		this.setState({ x: (e.clientX / $( window ).width()), y: (e.clientY / $( window ).height())  });
+		console.log(e.clientX / $( window ).width() + ", " + e.clientY / $( window ).height());
   	}	
 
 	render(){
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
-
 				<div id="Zoom_Container">
-					<RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/>
-					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
+					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" id={this.state.zoom}/>
 				</div>
-
-				<CSSTransition
-					in={this.state.waitToStart}
-					timeout={0}
-					unmountOnExit
-					onEnter={() => this.setState({waitToStart:false})}
-					onExited={() => {setTimeout(() => this.setState({overview:true}), 0)}}
-					classNames="over"
-						>
-						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {setTimeout(() => this.setState({waitToStart:false}), 200)}} nuc={this.state.nuc}/>
-				</CSSTransition>
-
-				<CSSTransition
-		        	in={this.state.overview}
-		        	timeout={0}
-		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4500)}}
-		        	onExited={() => {
-						this.setState({
-							grid: Grid,
-							robotCameraOverlay: true,
-							glowingMarks: true,
-							filter: true,
-						});
-						this.state.handleClick();
-		   			}}
-		        	unmountOnExit
-		        	classNames="over"
-		        	>
-		        	<div>	
-						<Overview id="overview"/>
-					</div>
-      			</CSSTransition>
 
 				<div className="Overlay">
 					{this.state.overlay}
@@ -288,6 +248,8 @@ class Element3 extends React.Component{
 
 				<GlowingMarks shouldDisplay={this.state.glowingMarks} />
 				<DateBox shouldDisplay={this.state.robotCameraOverlay} />
+				<RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/>
+				<div id="click" onClick={(e) => {console.log("clicked"); this.state.handleClick(e)}}></div>
 		    </div>
 
 	    
