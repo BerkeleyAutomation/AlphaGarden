@@ -4,6 +4,7 @@ import BackVideo from './Components/BackVideo.js';
 import Element3 from './Components/Element3.js';
 import Grid from './Media/zoom_grid.svg';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import Sidebar from './Components/Sidebar';
 
 class App extends React.Component {
 
@@ -27,34 +28,8 @@ class App extends React.Component {
     return (
       <Router>
         <div>
-          <nav>
-            <ul>
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              <li>
-                <Link to="/about">About</Link>
-              </li>
-              <li>
-                <Link to="/growth">Growth</Link>
-              </li>
-              <li>
-                <Link to="/analysis">Analysis</Link>
-              </li>
-              <li>
-                <Link to="/simulation">Simulation</Link>
-              </li>
-              <li>
-                <Link to="/robot">Robot</Link>
-              </li>
-              <li>
-                <Link to="/credits">Credits</Link>
-              </li>
-            </ul>
-          </nav>
-  
-          {/* A <Switch> looks through its children <Route>s and
-              renders the first one that matches the current URL. */}
+          <Sidebar pageWrapId={"page-wrap"} outerContainerId={"App"} />
+
           <Switch>
             <Route path="/about">
             </Route>
