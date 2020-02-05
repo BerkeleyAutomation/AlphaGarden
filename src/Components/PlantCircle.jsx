@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React from 'react';
 import circle from '../Media/plant-circle.svg';
 import openCircle from '../Media/open-circle.svg'
 import plus from '../Media/plant-plus.png';
@@ -64,9 +64,9 @@ const PlantCircle = ({label, x, y, radius, startY, gridHeight}) => {
               }
           `}</style>
       <div className="fade-in">
-        <div className={'rotating-circle'} style={openCircleStyle}><img src={openCircle} style={openCircleImg} /></div>
-        <img src={circle} style={plantStyle} />
-        <img src={plus} style={plusStyle} />
+        <div className={'rotating-circle'} style={openCircleStyle}><img src={openCircle} style={openCircleImg} alt="spinning_plant_border" /></div>
+        <img src={circle} style={plantStyle} alt="plant_radius" />
+        <img src={plus} style={plusStyle} alt="plant_center"/>
     </div>
     <Delayed waitBeforeShow={2000}><Typing dataText={[label]} x={x} y={y} radius={radius} {...[startY, gridHeight]} /></Delayed>
   </div>);

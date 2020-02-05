@@ -1,5 +1,5 @@
 import React from 'react';
-import Post_Zoom from './Post_Zoom';
+import POST_ZOOM from './Post_Zoom';
 import $ from 'jquery';
 import PlantData from '../Media/plant-data';
 import Overview from './Overview.js';
@@ -29,7 +29,7 @@ class Element3 extends React.Component{
 
 		const zoomIn = () => {
 			var square = Math.floor(Math.random() * 16) + 1;
-			while (square == this.state.prevZoomId) {
+			while (square === this.state.prevZoomId) {
 				square = Math.floor(Math.random() * 16) + 1;
 			}
 			this.state.prevZoomId = square;
@@ -154,7 +154,7 @@ class Element3 extends React.Component{
 
             setTimeout(
             	() => {this.setState({
-					overlay: <Post_Zoom box={box} 
+					overlay: <POST_ZOOM box={box} 
 								plants={gridPlants[box]} 
 								startX={x * (GARDEN_WIDTH / GRID_WIDTH)}
 								startY={y * (GARDEN_HEIGHT / GRID_HEIGHT)}
@@ -219,9 +219,6 @@ class Element3 extends React.Component{
 	}
 	
    	componentDidMount(){
-   		const timer = () => {
-    		this.state.handleClick();
-		}
     }
 
     //constantly updates the position of
@@ -246,7 +243,7 @@ class Element3 extends React.Component{
 					onExited={() => {setTimeout(() => this.setState({overview:true}), 0)}}
 					classNames="over"
 						>
-						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {this.setState({waitToStart:false})}} nuc={this.state.nuc}/>
+						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {setTimeout(() => this.setState({waitToStart:false}), 200)}} nuc={this.state.nuc}/>
 				</CSSTransition>
 
 				<CSSTransition

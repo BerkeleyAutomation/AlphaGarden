@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import BackVideo from './Components/BackVideo.js'
 import Element3 from './Components/Element3.js'
@@ -31,7 +30,7 @@ class App extends React.Component {
 
     return (
 
-      <body>
+      <div>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Roboto+Mono"/>
@@ -39,14 +38,14 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el1}
-        timeout={500}
+        timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el7:false})}
         onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
         classNames="fade"
       >
         <div>
-          <div class="videoContainer">
+          <div className="videoContainer">
             <BackVideo vidName={require("./Media/robot_full.mp4")} endFunc={() => {this.setState({el1:false})}}/>
           </div>
           <Delayed waitBeforeShow={1000} className="IntroText">
@@ -69,7 +68,7 @@ class App extends React.Component {
         onEnter={() => this.setState({el1:false})}
         onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
         classNames="fade"
-            >
+      >
 
         <DatePage nuc={this.state.nuc} endFunc={() => {this.setState({el2:false})}}/>
 
@@ -78,7 +77,7 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el3}
-        timeout={0}
+        timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el2:false})}
         onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
@@ -91,10 +90,10 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el4}
-        timeout={500}
+        timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el3:false})}
-        onExited={() => {setTimeout(() => this.setState({el5:true}), 1000)}}
+        onExited={() => {setTimeout(() => this.setState({el5:true}), 500)}}
         classNames="fade"
             >
 
@@ -111,14 +110,14 @@ class App extends React.Component {
         classNames="fade"
       >
         <div>
-          <img src={Grid} className="SimOverlay" />
+          <img src={Grid} className="SimOverlay" alt="grid overlay"/>
           <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {this.setState({el5:false})}}/>
         </div>
       </CSSTransition>
 
       <CSSTransition
         in={this.state.el6}
-        timeout={500}
+        timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
         onExited={() => {setTimeout(() => this.setState({el7:true}), 1000)}}
@@ -131,18 +130,18 @@ class App extends React.Component {
 
       <CSSTransition
         in={this.state.el7}
-        timeout={500}
+        timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el6:false})}
-        onExited={() => {setTimeout(() => this.setState({el1:true}), 1000)}}
-        classNames="fade"
+        onExited={() => {setTimeout(() => this.setState({el1:true}), 2000)}}
+        classNames="fadelonger"
       >
 
         <BackVideo vidName={require("./Media/closeup_side.mp4")} endFunc={() => {this.setState({el7:false})}}/>
       
       </CSSTransition>
         
-      </body>
+      </div>
       )
   }
 }

@@ -51,7 +51,7 @@ body {
   top: 0px;
   left: 0px;
   z-index: 20;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.0);
   animation: fadeIn 0.5s linear;
 }
 
@@ -402,29 +402,65 @@ code {
 
 /* This fires as soon as the element enters the DOM */
 .fade-enter{
-  opacity: 0;
+  /* opacity: 0; */
+  animation: fadeIn 1s ease;
 }
 /* This is where we can add the transition*/
 .fade-enter-active{
-  opacity: 1;
-  transition: opacity 1s;
+  /* opacity: 1; */
+  animation: fadeIn 1s ease;
 }
 /* This fires as soon as the this.state.showList is false */
 .fade-exit{
-  opacity: 1;
+  /* opacity: 1; */
+  animation: fadeOut 1s ease;
 }
 /* fires as element leaves the DOM*/
 .fade-exit-active{
-  opacity: 0;
-  transition: opacity 1s;
+  /* opacity: 0; */
+  animation: fadeOut 1s ease;
 }
 
 .fade-in {
   opacity: 1;
-  animation-name: fadeInOpacity;
-  animation-iteration-count: 1;
+  animation-name: fadeIn;
+  /* animation-iteration-count: 1; */
   animation-timing-function: ease-in;
   animation-duration: 1s;
+}
+
+/* This fires as soon as the element enters the DOM */
+.fadelonger-enter{
+  /* opacity: 0; */
+  animation: fadeIn 1s ease;
+}
+/* This is where we can add the transition*/
+.fadelonger-enter-active{
+  /* opacity: 1; */
+  animation: fadeIn 1s ease;
+}
+/* This fires as soon as the this.state.showList is false */
+.fadelonger-exit{
+  /* opacity: 1; */
+  animation: fadeOut 2s ease;
+}
+/* fires as element leaves the DOM*/
+.fadelonger-exit-active{
+  /* opacity: 0; */
+  animation: fadeOut 2s ease;
+}
+
+.fadelonger-in {
+  opacity: 1;
+  animation-name: fadeIn;
+  /* animation-iteration-count: 1; */
+  animation-timing-function: ease-in;
+  animation-duration: 2s;
+}
+
+@keyframes fadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
 }
 
 #backgroundVideo{

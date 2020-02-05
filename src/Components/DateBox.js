@@ -19,7 +19,7 @@ import React from 'react';
     var timeDiff = Math.abs(date2.getTime() - date1.getTime());
     var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
 
-    if (props.shouldDisplay == true) {
+    if (props.shouldDisplay === true) {
         return(
             <div className="date-box-row">
                 <div className="date-box-row-item" id="date-box-div">
