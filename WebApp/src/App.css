@@ -21,8 +21,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 1EM;
   background-color: black;
-  /*overflow: hidden;*/
-
+  cursor: none;
 }
 
 
@@ -124,12 +123,18 @@ code {
 }
 /* This fires as soon as the this.state.showList is false */
 .fade-exit{
-  opacity: 1;
+  animation: fadeOut 2s ease;
 }
 /* fires as element leaves the DOM*/
 .fade-exit-active{
-  opacity: 0;
-  transition: opacity 2s;
+  /* opacity: 0;
+  transition: opacity 2s ease; */
+  animation: fadeOut 2s ease;
+}
+
+@keyframes fadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
 }
 
 .fade-in {

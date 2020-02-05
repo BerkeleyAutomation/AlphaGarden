@@ -1,6 +1,4 @@
 import React from 'react';
-import GlowingMarks from './GlowingMarks';
-import Typing from './Typing';
 import Delayed from './Delayed';
 	
  //component for the text that goes over the background video

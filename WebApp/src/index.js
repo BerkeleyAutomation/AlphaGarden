@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
-import Element3 from './Components/Element3'
-import Overview from './Components/Overview'
 
 
 ReactDOM.render(<App />, document.getElementById('root'));

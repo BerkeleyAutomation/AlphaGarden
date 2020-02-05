@@ -1,7 +1,7 @@
 import React from 'react';
 
 const RobotCameraOverlay = (props) => {
-  if (props.shouldDisplay == true) {
+  if (props.shouldDisplay === true) {
     return (
       <div>
         <div class='robot-stats'>
