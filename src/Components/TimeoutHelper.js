@@ -10,10 +10,10 @@ class TimeoutHelper {
   }
 
   setTimeout(callback, delay) {
-    const id = window.setTimeout((() => {
+    const id = window.setTimeout(() => {
       callback();
       this.timerFinished(id);
-    }).bind(this), delay)
+    }, delay)
     this.timers[id] = true;
   }
 

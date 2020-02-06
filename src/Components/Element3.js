@@ -93,8 +93,6 @@ class Element3 extends React.Component{
 			gridPlants[square].push(plant);
 		}
 
-		console.log(gridPlants);
-
 		const removeOverlay = () => {
 			this.setState({
 				overlay: null
@@ -238,7 +236,7 @@ class Element3 extends React.Component{
 
 				<div id="Zoom_Container">
 					<RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/>
-					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={(e) => {console.log("???"); this.state.handleClick(e)}}  id={this.state.zoom}/>
+					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" onClick={this.state.handleClick}  id={this.state.zoom}/>
 				</div>
 
 				<CSSTransition
