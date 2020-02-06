@@ -1,17 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import TimeoutHelper from './TimeoutHelper';
 
 class Delayed extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {hidden : true};
+        this.timer = new TimeoutHelper();
     }
 
     componentDidMount() {
-        setTimeout(() => {
+        this.timer.setTimeout(() => {
             this.setState({hidden: false});
         }, this.props.waitBeforeShow);
+    }
+
+    componentWillUnmount() {
+        this.timer.clearAllTimeouts();
     }
 
     render() {

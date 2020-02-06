@@ -1,4 +1,5 @@
 import React from 'react';
+import TimeoutHelper from './TimeoutHelper';
 
 class Typing extends React.Component {
 
@@ -13,6 +14,8 @@ class Typing extends React.Component {
         text: '',
         typingSpeed: 30
       }
+
+      this.timer = new TimeoutHelper();
     }
   
     componentDidMount() {
@@ -28,7 +31,7 @@ class Typing extends React.Component {
         typingSpeed: 80 
       });
   
-      setTimeout(this.handleType, typingSpeed);
+      this.timer.setTimeout(this.handleType, typingSpeed);
     };
   
     render() {   
@@ -50,6 +53,10 @@ class Typing extends React.Component {
 
         return (
             <p style={labelStyle}>{ this.state.text }</p>);
+    }
+
+    componentWillUnmount() {
+      this.timer.clearAllTimeouts();
     }
   }
 

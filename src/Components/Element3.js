@@ -15,12 +15,16 @@ import GlowingMarks from './GlowingMarks';
 import DateBox from './DateBox';
 import ZoomBox from './ZoomBox';
 import Overlay from './Overlay';
+import TimeoutHelper from './TimeoutHelper';
 
 // Component for dynamic zoom data display
 
 class Element3 extends React.Component{
 
 	constructor(props) {
+		super(props);
+
+		this.timer = new TimeoutHelper();
 
 		//Func to trigger the proper transformations to zoom into a square of the garden  Math.floor(Math.random() * 16) + 1
 		
@@ -58,14 +62,14 @@ class Element3 extends React.Component{
 				};
 			}
 			showBorders(square);
-			setTimeout(() => {
+			this.timer.setTimeout(() => {
 				removeOverlay();
 				triggerZoom(square);
 				setZoomPosition(square);
 				setOverlay(square);
 	
 				if(this.props.nuc){
-					setTimeout(zoomOut, 10000);
+					this.timer.setTimeout(zoomOut, 10000);
 				}
 			}, 4000)
 		}
@@ -109,7 +113,7 @@ class Element3 extends React.Component{
 		}
 
 		const showBorders = (box) => {
-			setTimeout(() => {
+			this.timer.setTimeout(() => {
 				this.setState({
 					zoomboximg: true,
 				})
@@ -152,7 +156,7 @@ class Element3 extends React.Component{
 			const x = (box - 1) % GRID_WIDTH;
 			const y = Math.floor((box - 1) / GRID_WIDTH);
 
-            setTimeout(
+            this.timer.setTimeout(
             	() => {this.setState({
 					overlay: <POST_ZOOM box={box} 
 								plants={gridPlants[box]} 
@@ -179,22 +183,20 @@ class Element3 extends React.Component{
 				zoombox4: "zoomboxshrink"
 			})
 
-			setTimeout(() => {this.setState({overlay: null})}, 3000);
+			this.timer.setTimeout(() => {this.setState({overlay: null})}, 3000);
 
 			if(this.props.nuc){
 				this.setState((state) => ({
 					counter: state.counter + 1
 				}));
 				if(this.state.counter >= 2) {
-					setTimeout(this.props.endFunc, 4000);
+					this.timer.setTimeout(this.props.endFunc, 4000);
 				}
 				else {
-					setTimeout(zoomIn, 2000);
+					this.timer.setTimeout(zoomIn, 2000);
 				}
 			}
 		}
-
-    	super(props);
 
     	this.state = {
 			overlay: null,
@@ -224,7 +226,11 @@ class Element3 extends React.Component{
     //constantly updates the position of
     _onMouseMove(e) {
     	this.setState({ x: (e.clientX / $( window ).width()), y: (e.clientY / $( window ).height())  });
-  	}	
+		}	
+		
+	componentWillUnmount() {
+		this.timer.clearAllTimeouts();
+	}
 
 	render(){
 	  return (
@@ -240,16 +246,16 @@ class Element3 extends React.Component{
 					timeout={0}
 					unmountOnExit
 					onEnter={() => this.setState({waitToStart:false})}
-					onExited={() => {setTimeout(() => this.setState({overview:true}), 0)}}
+					onExited={() => {this.timer.setTimeout(() => this.setState({overview:true}), 0)}}
 					classNames="over"
 						>
-						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {setTimeout(() => this.setState({waitToStart:false}), 200)}} nuc={this.state.nuc}/>
+						<BackVideo id="timelapse-video" vidName={require("../Media/time_lapse.mp4")} endFunc={() => {this.timer.setTimeout(() => this.setState({waitToStart:false}), 200)}} nuc={this.state.nuc}/>
 				</CSSTransition>
 
 				<CSSTransition
 		        	in={this.state.overview}
 		        	timeout={0}
-		        	onEnter={() => {setTimeout(() => this.setState({overview:false}), 4500)}}
+		        	onEnter={() => {this.timer.setTimeout(() => this.setState({overview:false}), 4500)}}
 		        	onExited={() => {
 						this.setState({
 							grid: Grid,

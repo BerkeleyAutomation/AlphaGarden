@@ -7,6 +7,7 @@ import Delayed from './Components/Delayed.jsx';
 import DatePage from './Components/DatePage';
 import Title from './Components/Title';
 import Grid from './Media/zoom_grid.svg';
+import TimeoutHelper from './Components/TimeoutHelper';
 
 class App extends React.Component {
 
@@ -24,6 +25,8 @@ class App extends React.Component {
       el7: false,
       nuc: true
     };
+
+    this.timer = new TimeoutHelper();
   }
 
   render(){
@@ -41,7 +44,7 @@ class App extends React.Component {
         timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el7:false})}
-        onExited={() => {setTimeout(() => this.setState({el2:true}), 1000)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el2:true}), 1000)}}
         classNames="fade"
       >
         <div>
@@ -66,7 +69,7 @@ class App extends React.Component {
         timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el1:false})}
-        onExited={() => {setTimeout(() => this.setState({el3:true}), 1000)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el3:true}), 1000)}}
         classNames="fade"
       >
 
@@ -80,7 +83,7 @@ class App extends React.Component {
         timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el2:false})}
-        onExited={() => {setTimeout(() => this.setState({el4:true}), 1000)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el4:true}), 1000)}}
         classNames="fade"
       >
 
@@ -93,7 +96,7 @@ class App extends React.Component {
         timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el3:false})}
-        onExited={() => {setTimeout(() => this.setState({el5:true}), 500)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el5:true}), 500)}}
         classNames="fade"
             >
 
@@ -106,7 +109,7 @@ class App extends React.Component {
         timeout={500}
         unmountOnExit
         onEnter={() => this.setState({el4:false})}
-        onExited={() => {setTimeout(() => this.setState({el6:true}), 1000)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el6:true}), 1000)}}
         classNames="fade"
       >
         <div>
@@ -120,7 +123,7 @@ class App extends React.Component {
         timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el5:false})}
-        onExited={() => {setTimeout(() => this.setState({el7:true}), 1000)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el7:true}), 1000)}}
         classNames="fade"
             >
 
@@ -133,7 +136,7 @@ class App extends React.Component {
         timeout={1000}
         unmountOnExit
         onEnter={() => this.setState({el6:false})}
-        onExited={() => {setTimeout(() => this.setState({el1:true}), 2000)}}
+        onExited={() => {this.timer.setTimeout(() => this.setState({el1:true}), 2000)}}
         classNames="fadelonger"
       >
 
@@ -143,6 +146,10 @@ class App extends React.Component {
         
       </div>
       )
+  }
+
+  componentWillUnmount() {
+    this.timer.clearAllTimeouts();
   }
 }
 
