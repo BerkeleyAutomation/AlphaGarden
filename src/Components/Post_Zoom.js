@@ -61,7 +61,7 @@ class Post_Zoom extends React.Component {
     const {startX, startY, gridWidth, gridHeight} = this.props;
     return this.displayPlants.map((plant, i) => {
       const [x, y, radius] = this.getPlantCoords(plant);
-      return <Delayed waitBeforeShow={2000 * (i + 1)}><PlantCircle key={i} label={plant.type} x={x} y={y} radius={radius} 
+      return <Delayed key={i} waitBeforeShow={2000 * (i + 1)}><PlantCircle label={plant.type} x={x} y={y} radius={radius} 
         {...[startX, startY, gridWidth, gridHeight]}/></Delayed>
     })
   }
