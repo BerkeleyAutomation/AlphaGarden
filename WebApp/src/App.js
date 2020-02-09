@@ -5,6 +5,11 @@ import Element3 from './Components/Element3.js';
 import Grid from './Media/zoom_grid.svg';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Sidebar from './Components/Sidebar';
+import Home from './Pages/Home';
+import About from './Pages/About';
+import RobotVideoPage from './Pages/RobotVideoPage';
+import Credits from './Pages/Credits';
+import PageHeading from './Pages/PageHeading';
 
 class App extends React.Component {
 
@@ -27,38 +32,41 @@ class App extends React.Component {
   render() {
     return (
       <Router>
-        <div>
+        <div className="body">
           <Sidebar pageWrapId={"page-wrap"} outerContainerId={"App"} />
 
-          <Switch>
-            <Route path="/about">
-            </Route>
-            <Route path="/growth">
-              <div>
-                <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {}}/>
-              </div>
-            </Route>
-            <Route path="/analysis">
-              <Element3 endFunc={() => {}} nuc={this.state.nuc}/>
-            </Route>
-            <Route path="/simulation">
-              <div>
-                <img src={Grid} className="SimOverlay" alt="grid overlay"/>
-                <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {}}/>
-              </div>
-            </Route>
-            <Route path="/robot">
-              <div>
-                <div className="videoContainer">
-                  <BackVideo vidName={require("./Media/robot_full.mp4")} endFunc={() => {}}/>
+          <div className="main-content">
+            <Switch>
+              <Route path="/about">
+                <About />
+              </Route>
+              <Route path="/growth">
+                <div>
+                  <PageHeading title="Alphagarden" subtitle="Growth" />
+                  <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {}}/>
                 </div>
-              </div> 
-            </Route>
-            <Route path="/credits">
-            </Route>
-            <Route path="/">
-            </Route>
-          </Switch>
+              </Route>
+              <Route path="/analysis">
+                <Element3 endFunc={() => {}} nuc={this.state.nuc}/>
+              </Route>
+              <Route path="/simulation">
+                <div>
+                  <PageHeading title="Alphagarden" subtitle="Simulation" />
+                  <img src={Grid} className="SimOverlay" alt="grid overlay"/>
+                  <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {}}/>
+                </div>
+              </Route>
+              <Route path="/robot">
+                <RobotVideoPage />
+              </Route>
+              <Route path="/credits">
+                <Credits />
+              </Route>
+              <Route exact path="/">
+                <Home />
+              </Route>
+            </Switch>
+          </div>
         </div>
       </Router>
     )

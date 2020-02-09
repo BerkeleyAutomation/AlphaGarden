@@ -20,15 +20,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 1EM;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .videoContainer {
-  height: 100%;
   width: 100%;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  margin: 60px auto 0 auto;
 }
 
 #backgroundVideo {

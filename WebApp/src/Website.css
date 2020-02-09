@@ -1,0 +1,85 @@
+.main-content {
+  max-width: 1000px;
+  margin: 100px auto 100px auto;
+  text-align: center;
+}
+
+.about-content {
+  max-width: 75%;
+  margin: 50px auto;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.page-heading {
+  margin: 0px auto 50px auto;
+  max-width: 80%;
+  text-align: center;
+}
+
+.page-heading__title {
+  text-transform: uppercase;
+  font-family: 'Roboto Mono';
+  font-weight: lighter;
+  font-size: 36px;
+  letter-spacing: 15px;
+  margin: 0;
+}
+
+.page-heading__subtitle {
+  text-transform: uppercase;
+  font-family: 'Roboto Mono';
+  font-weight: lighter;
+  font-size: 20px;
+  letter-spacing: 10px;
+  margin-top: 20px;
+}
+
+.section-heading {
+  text-transform: uppercase;
+  font-family: 'Roboto Mono';
+  font-weight: bold;
+  font-size: 15px;
+  letter-spacing: 10px;
+  margin: 50px auto 20px auto;
+}
+
+.watercolor {
+  margin-top: 50px;
+  display: inline-block;
+  max-width: 90%;
+}
+
+.watercolor--small {
+  margin-top: 10px;
+  max-width: 60%;
+}
+
+.compact-text > p {
+  margin: 0 auto 0 auto;
+}
+
+p {
+  font-family: 'Roboto Mono';
+  letter-spacing: normal;
+  font-weight: lighter;
+  font-size: 15px;
+  margin-top: 20px;
+}
+
+.body {
+  margin: auto;
+}
+
+.credits {
+  width: 100%;
+}
+
+td:first-child {
+  padding-right: 30px;
+  width: 45%;
+}
+
+td > p {
+  margin: 4px 0;
+}
