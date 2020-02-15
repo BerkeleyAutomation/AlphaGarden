@@ -5,7 +5,7 @@ import Watercolor from './Watercolor';
 const Home = (props) => {
   return (<div>
     <PageHeading title="Alphagarden" subtitle="Updated daily from Berkeley, CA" />
-    <Watercolor />
+    <Watercolor type="small" />
   </div>)
 }
 

@@ -335,7 +335,7 @@ code {
   width: 100%;
   opacity: 0.8;
   position: fixed;
-  top: 0px;
+  top: 35px;
   left: 0px;
   z-index: 2;
   animation: fadeIn80Earlier 4s linear;
@@ -556,7 +556,7 @@ code {
   width: 36px;
   height: 20px;
   left: 36px;
-  top: 36px;
+  top: 20px;
 }
 
 /* Color/shape of burger icon bars */

@@ -1,6 +1,6 @@
 .main-content {
-  max-width: 1000px;
-  margin: 100px auto 100px auto;
+  max-width: 85%;
+  margin: 10px auto 0px auto;
   text-align: center;
 }
 
@@ -32,7 +32,7 @@
   font-weight: lighter;
   font-size: 20px;
   letter-spacing: 10px;
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 .section-heading {
@@ -45,13 +45,13 @@
 }
 
 .watercolor {
-  margin-top: 50px;
+  margin-top: 0px;
   display: inline-block;
   max-width: 90%;
 }
 
 .watercolor--small {
-  margin-top: 10px;
+  margin-top: -30px;
   max-width: 60%;
 }
 
@@ -82,4 +82,8 @@ td:first-child {
 
 td > p {
   margin: 4px 0;
+}
+
+.back-video {
+  margin-top: -40px;
 }
