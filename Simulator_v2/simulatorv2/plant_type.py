@@ -33,11 +33,13 @@ class PlantType:
         random.seed(datetime.now())
         np.random.seed(random.randint(0, 99999999))
         plants = []
-        for x in range(num_x_steps):
-            for y in range(num_y_steps):
-                if np.random.rand(1, 1)[0] > 0.5:
-                    color, (c1, growth_time), name = plant_types[np.random.randint(0, len(plant_types))]
-                    plants.extend([Plant(x, y, c1=c1, growth_time=growth_time, color=color, plant_type=name)])
+        color, (c1, growth_time), name = plant_types[np.random.randint(0, len(plant_types))]
+        plants.extend([Plant(1, 1, c1=c1, growth_time=growth_time, color=color, plant_type=name)])
+        # for x in range(num_x_steps):
+        #     for y in range(num_y_steps):
+        #         if np.random.rand(1, 1)[0] > 0.5:
+        #             color, (c1, growth_time), name = plant_types[np.random.randint(0, len(plant_types))]
+        #             plants.extend([Plant(x, y, c1=c1, growth_time=growth_time, color=color, plant_type=name)])
 
         # for plant in plants:
             # print("PLANT: ", plant.type, plant.row, plant.col)

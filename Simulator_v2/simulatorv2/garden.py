@@ -106,7 +106,7 @@ class Garden:
 
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
-    def perform_timestep(self, water_amt=0, irrigations=None, prune=False):
+    def perform_timestep(self, water_amt=0, sector=-1, irrigations=None, prune=False):
         self.irrigation_points = {}
         if irrigations is None:
             # Default to uniform irrigation
@@ -148,8 +148,10 @@ class Garden:
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
         self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount
-        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] = np.minimum(
-            self.grid[lower_x:upper_x, lower_y:upper_y]['water'], MAX_WATER_LEVEL)
+        np.minimum(
+            self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
+            MAX_WATER_LEVEL,
+            out=self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
 
     def get_water_amounts(self, step=5):
         amounts = []

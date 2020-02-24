@@ -5,10 +5,13 @@ import numpy as np
 import configparser
 
 class SimAlphaGardenWrapper(WrapperEnv):
-    def __init__(self, max_time_steps, N, M, num_plant_types, num_plants_per_type, step=1):
+    def __init__(self, max_time_steps, N, M, sector_width, sector_height, num_plant_types, num_plants_per_type, step=1):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.N = N
         self.M = M
+        self.num_sectors = (M * N) / (sector_width * sector_height)
+        self.sector_width = sector_width
+        self.sector_height = sector_height
         self.step = step
         self.num_plant_types = num_plant_types
         self.num_plants_per_type = num_plants_per_type
@@ -22,6 +25,21 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def get_state(self):
         return self.garden.get_state()
+    
+    def get_sector_x(self, sector):
+        return (sector % (self.N // self.sector_width)) * self.sector_width
+    
+    def get_sector_y(self, sector):
+        return (sector // (self.M // self.sector_height)) * self.sector_height
+
+    ''' Returns sector number and state associated with the sector. '''
+    def get_random_sector(self):
+        # TODO: Need to seed numpy?
+        sector = np.random.randint(low=0, high=self.num_sectors, size=1)[0]
+        full_state = self.garden.get_state()
+        x = self.get_sector_x(sector)
+        y = self.get_sector_y(sector)
+        return sector, full_state[x:x+self.sector_width,y:y+self.sector_height,:]
 
     def get_garden_state(self):
         return self.garden.get_garden_state()
@@ -52,10 +70,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
     Returns:
         state - state of the environment after irrigation
     '''
-    def take_action(self, action):
+    def take_action(self, sector, action):
         self.curr_action = action
         #print('ACTION', action)
-        self.garden.perform_timestep(irrigations=action)
+        self.garden.perform_timestep(sector=sector, irrigations=action)
         return self.garden.get_state()
 
     '''
