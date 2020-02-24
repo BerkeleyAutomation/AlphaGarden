@@ -1,6 +1,6 @@
 from wrapperenv import WrapperEnv
-from garden import Garden
-from plant_type import PlantType
+from simulatorv2.garden import Garden
+from simulatorv2.plant_type import PlantType
 import numpy as np
 import configparser
 
@@ -29,7 +29,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_radius_grid(self):
         return self.garden.get_radius_grid()
 
-    def get_cumulative_action(self):
+    def get_curr_action(self):
         return self.curr_action
 
     def reward(self, state):
@@ -54,7 +54,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     '''
     def take_action(self, action):
         self.curr_action = action
-        # print('ACTION', action)
+        #print('ACTION', action)
         self.garden.perform_timestep(irrigations=action)
         return self.garden.get_state()
 
@@ -67,9 +67,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 plants=self.PlantType.get_random_plants(self.PlantType.get_n_types(self.num_plant_types), self.M, self.N, self.num_plants_per_type),
                 N=self.N,
                 M=self.M,
+                irr_threshold=0,
                 step=self.step,
                 plant_types=self.PlantType.get_n_names(self.num_plant_types),
-                animate=True)
+                animate=False)
 
     '''
     Method called by the environment to display animations.

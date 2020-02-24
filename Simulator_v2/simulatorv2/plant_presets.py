@@ -1,5 +1,5 @@
 import numpy as np
-from simulator_params import NUM_X_STEPS, STEP
+from simulatorv2.simulator_params import NUM_X_STEPS, STEP
 
 REAL_GARDEN_WIDTH = 118.11  # garden width in inches
 

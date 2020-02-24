@@ -1,4 +1,4 @@
-from logger import Event
+from simulatorv2.logger import Event
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation

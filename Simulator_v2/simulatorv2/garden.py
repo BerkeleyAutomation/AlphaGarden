@@ -1,8 +1,8 @@
 import numpy as np
 from heapq import nlargest
-from logger import Logger, Event
-from visualization import setup_animation, setup_saving
-from sim_globals import MAX_WATER_LEVEL
+from simulatorv2.logger import Logger, Event
+from simulatorv2.visualization import setup_animation, setup_saving
+from simulatorv2.sim_globals import MAX_WATER_LEVEL
 import pickle
 
 

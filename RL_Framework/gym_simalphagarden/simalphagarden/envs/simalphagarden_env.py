@@ -31,12 +31,14 @@ class SimAlphaGardenEnv(gym.Env):
     def get_current_step(self):
         return self.current_step
 
+    def get_curr_action(self):
+        return self.wrapper_env.get_curr_action()
+
     def step(self, action):
         state = self._take_action(action)
-        self.current_step += 1
-
         self.reward = self.wrapper_env.reward(state)
         done = self.current_step == self.max_time_steps
+        self.current_step += 1
         obs = self._next_observation()
         # print(self.current_step, reward, action, obs)
         return obs, self.reward, done, {}

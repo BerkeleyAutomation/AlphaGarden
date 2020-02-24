@@ -1,5 +1,5 @@
-from plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
-from plant_presets import PLANT_TYPES
+from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
+from simulatorv2.plant_presets import PLANT_TYPES
 import numpy as np
 
 
@@ -32,7 +32,7 @@ class Plant:
             GerminationStage(self, germination_time, start_height, start_radius),
             GrowthStage(self, growth_time),
             WaitingStage(self, 10),
-            # WiltingStage(self, 20, 2),
+            WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
 
