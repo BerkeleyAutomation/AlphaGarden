@@ -3,6 +3,19 @@ from simulatorv2.garden import Garden
 from simulatorv2.plant_type import PlantType
 import numpy as np
 import configparser
+import matplotlib.pyplot as plt
+
+
+def fig2data(fig):
+    """
+    @brief Convert a Matplotlib figure to a 4D numpy array with RGBA channels and return it
+    @param fig a matplotlib figure
+    @return a numpy 3D array of RGBA values
+    """
+    # draw the renderer
+    fig.canvas.draw()
+    buf = np.array(fig.canvas.renderer.buffer_rgba())
+    return buf
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, N, M, sector_width, sector_height, num_plant_types, num_plants_per_type, step=1):
@@ -40,6 +53,34 @@ class SimAlphaGardenWrapper(WrapperEnv):
         x = self.get_sector_x(sector)
         y = self.get_sector_y(sector)
         return sector, full_state[x:x+self.sector_width,y:y+self.sector_height,:]
+
+    def get_canopy_image(self, sector):
+        x_low, y_low = self.get_sector_x(sector), self.get_sector_y(sector)
+        x_high, y_high = x_low + self.sector_width, y_low + self.sector_height
+        fig, ax = plt.subplots()
+        plt.xlim((0, self.sector_width * self.garden.step))
+        plt.ylim((0, self.sector_height * self.garden.step))
+        ax.set_aspect('equal')
+        ax.set_yticklabels([])
+        ax.set_xticklabels([])
+        ax.set_yticks([])
+        ax.set_xticks([])
+        shapes = []
+        for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
+                            key=lambda x: x.height, reverse=True):
+            if x_low <= plant.row <= x_high and y_low <= plant.height <= y_high:
+                if plant.pruned:
+                    shape = plt.Rectangle((plant.row * self.garden.step - plant.radius,
+                                           plant.col * self.garden.step - plant.radius), plant.radius * 2, plant.radius * 2,
+                                          fc='red', ec='red')
+                else:
+                    shape = plt.Circle((plant.row, plant.col) * self.garden.step, plant.radius, color=plant.color)
+                shape_plot = ax.add_artist(shape)
+                shapes.append(shape_plot)
+        plt.tight_layout()
+        plt.show()
+        # img_as_nparray = fig2data(fig)
+        # return img_as_nparray
 
     def get_garden_state(self):
         return self.garden.get_garden_state()
