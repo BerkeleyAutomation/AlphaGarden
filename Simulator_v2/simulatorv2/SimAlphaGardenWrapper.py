@@ -18,7 +18,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.PlantType = PlantType()
         self.reset()
         self.state = self.garden.get_state()
-        self.curr_action = np.zeros((N*M,))
+        self.curr_action = 0 
          
         self.config = configparser.ConfigParser()
         self.config.read('gym_config/config.ini')
@@ -36,7 +36,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return self.garden.get_state()
 
     ''' Returns sector number and state associated with the sector. '''
-    def get_random_sector(self):
+    def get_random_sector_and_global_cc(self):
         # TODO: Need to seed numpy?
         sector = np.random.randint(low=0, high=self.num_sectors, size=1)[0]
         full_state = self.garden.get_state()
@@ -52,6 +52,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def get_curr_action(self):
         return self.curr_action
+    
+    def get_irr_action(self):
+        return self.irr_action
 
     def reward(self, state):
         total_cc = np.sum(self.garden.leaf_grid)
@@ -61,8 +64,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
         entropy = -np.sum(prob*np.log(prob))
         water_coef = self.config.getfloat('cnn', 'water_coef')
         cc_coef = self.config.getfloat('cnn', 'cc_coef')
-        action_sum = self.N * self.M 
-        return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * self.curr_action/action_sum + 1)
+        action_sum = self.sector_width * self.sector_height
+        water_used = self.irr_action * action_sum
+        return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * water_used/action_sum + 1)
         
     '''
     Method called by the gym environment to execute an action.
@@ -75,8 +79,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
     '''
     def take_action(self, sector, action):
         self.curr_action = action
+        self.irr_action = self.irrigation_amounts[action]
         # print('ACTION', action)
-        self.garden.perform_timestep(sector=sector, irrigation=self.irrigation_amounts[self.curr_action])
+        self.garden.perform_timestep(sector=sector, irrigation=self.irr_action)
         return self.garden.get_state()
 
     '''

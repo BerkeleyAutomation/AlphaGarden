@@ -18,70 +18,83 @@ import io
 from graph_utils import GraphUtils
 from file_utils import FileUtils
 
+    
+def get_sector_x(sector, garden_x, sector_width):
+    return (sector % (garden_x // sector_width)) * sector_width
+
+def get_sector_y(sector, garden_y, sector_height):
+    return (sector // (garden_y // sector_height)) * sector_height
+
 class Pipeline:
     def __init__(self):
         self.graph_utils = GraphUtils()
         self.file_utils = FileUtils()
 
-    def evaluate_policy(self, folder_path, num_evals, env, garden_x, garden_y, is_baseline=False, baseline_policy=None, step=1):
+    def evaluate_policy(self, folder_path, num_evals, env, garden_x, garden_y, sector_width, sector_height, is_baseline=False, baseline_policy=None, step=1):
         model = None
         if not is_baseline:
             model = PPO2.load('./' + folder_path + '/model')
         done = False
-        for i in range(num_evals):
+        for _ in range(num_evals):
             obs = env.reset()
             garden_obs = env.env_method('get_garden_state')
-            e = {'obs_avg_action': [], 'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
+            e = {'cell_avg_action': [], 'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
 
-            obs_avg_action = {}
+            cell_avg_action = {}
             for x in range(garden_x):
                 for y in range(garden_y):
-                    obs_avg_action[x, y] = 0
+                    cell_avg_action[x, y] = 0
 
             step_counter = 0
 
             while not done:
                 action = None
                 if is_baseline:
-                    action = baseline_policy(garden_obs, step, 0.5, 0.5, 5)
+                    action = baseline_policy(obs, step, threshold=0.5, amount=1, irr_threshold=0)
                 else:
                     action, _states = model.predict(obs)
                 obs, rewards, done, _ = env.step(action)
                 action = env.env_method('get_curr_action')
                 garden_obs = env.env_method('get_garden_state')
                 radius_grid = env.env_method('get_radius_grid')
-                
+
                 if not done:
-                    # step_counter = env.env_method('get_current_step')[0]
+                    step_counter = env.env_method('get_current_step')[0]
 
-                    # rg_list = radius_grid[0].tolist()
-                    # obs_action_pairs = []
-                    # for x in range(garden_x):
-                    #     for y in range(garden_y):
-                    #         cell = (x, y)
-                    #         cell_action = action[0][x * sector_width + y]
-                    #         obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
-                    #         obs_avg_action[cell] += cell_action
-                    # e['obs_action'].append({step_counter : obs_action_pairs})
+                    rg_list = radius_grid[0].tolist()
+                    obs_action_pairs = []
+                    
+                    sector = env.env_method('get_prev_sector')[0]
+                    sector_x = get_sector_x(sector, garden_x, sector_width)
+                    sector_y = get_sector_y(sector, garden_y, sector_height)
+                    for x in range(garden_x):
+                        for y in range(garden_y):
+                            cell = (x, y)
+                            if cell[0] >= sector_x and cell[0] < sector_x + sector_width and cell[1] >= sector_y and cell[1] < sector_y + sector_height:
+                                cell_action = env.env_method('get_irr_action')[0]
+                            else:
+                                cell_action = 0
+                            obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
+                            cell_avg_action[cell] += cell_action
+                    e['full_state_action'].append({step_counter : obs_action_pairs})
 
-                    e['obs'].append(garden_obs[0].tolist())
+                    e['full_state'].append(garden_obs[0].tolist())
                     e['rewards'].append(rewards.item())
                     e['action'].append(action[0].tolist())
                     env.render()
             done = False
 
-            # for x in range(garden_x):
-            #     for y in range(garden_y):
-            #         obs_avg_action[(x, y)] /= step_counter
-            #         e['obs_avg_action'].append({str((x, y)) : obs_avg_action[(x, y)], 'final': rg_list[x][y][0]})
+            for x in range(garden_x):
+                for y in range(garden_y):
+                    cell_avg_action[(x, y)] /= step_counter
+                    e['cell_avg_action'].append({str((x, y)) : cell_avg_action[(x, y)], 'final_radius': rg_list[x][y][0]})
             
-            # env.env_method('show_animation')
-
-            pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)
-            filename = folder_path + '/Returns' + '/predict_' + str(i) + '.json'
-            f = open(filename, 'w')
-            f.write(json.dumps(e, indent=4))
-            f.close()
+            ''' UNCOMMENT IF YOU WANT TO WRITE OUTPUTS TO A FILE.  WILL TAKE AWHILE FOR LARGE GARDENS. '''
+            # pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)
+            # filename = folder_path + '/Returns' + '/predict_' + str(i) + '.json'
+            # f = open(filename, 'w')
+            # f.write(json.dumps(e, indent=4))
+            # f.close()
 
     def single_run(self, folder_path, num_evals, policy_kwargs=None, is_baseline=False, baseline_policy=None):
         # initialize cProfile
@@ -131,7 +144,7 @@ class Pipeline:
             copyfile('gym_config/config.ini', folder_path + '/config.ini')
 
             # Evaluate baseline on 50 random environments of same parameters.
-            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=True, baseline_policy=baseline_policy, step=1)
+            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, sector_width, sector_height, is_baseline=True, baseline_policy=baseline_policy, step=1)
 
             # Graph evaluations
             self.graph_utils.graph_evaluations(folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
@@ -159,7 +172,7 @@ class Pipeline:
             copyfile('gym_config/config.ini', folder_path + '/config.ini')
 
             # Evaluate model on 50 random environments of same parameters.
-            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=False)
+            self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, sector_width, sector_height, is_baseline=False)
 
             # Graph evaluations
             # self.graph_utils.graph_evaluations(folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
@@ -295,7 +308,7 @@ if __name__ == '__main__':
             "NUM_CONVS": 1,
             "FILTER_SIZE": 1,
             "STRIDE": 1,
-            'CC_COEF': 10,
+            'CC_COEF': 0,
             'WATER_COEF': 1
         }
     ]
