@@ -5,17 +5,18 @@ from gym import spaces
 class SimAlphaGardenEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, wrapper_env, garden_x, garden_y, garden_z, sector_width, sector_height, action_low, action_high, obs_low, obs_high):
+    def __init__(self, wrapper_env, garden_x, garden_y, garden_z, sector_width, sector_height, action_low, action_high, obs_low, obs_high, num_plants):
         super(SimAlphaGardenEnv, self).__init__()
         self.wrapper_env = wrapper_env
         self.max_time_steps = self.wrapper_env.max_time_steps
-
+        self.num_plants = num_plants
+        
         # Reward ranges from 0 to garden area.
-        self.reward_range = (0, garden_x * garden_y)
+        self.reward_range = (0, sector_width * sector_height)
 
         # There is one action for every cell in the garden.
-        num_actions = sector_width * sector_height
-        self.action_space = spaces.Box(low=np.array([action_low for i in range(num_actions)]), high=np.array([action_high for i in range(num_actions)]), dtype=np.float16)
+        # self.action_space = spaces.Box(low=np.array([action_low for i in range(num_actions)]), high=np.array([action_high for i in range(num_actions)]), dtype=np.float16)
+        self.action_space = spaces.Discrete(5) 
         
         # Observations include canopy cover for each plant in the garden
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=(sector_width, sector_height, garden_z), dtype=np.float16)

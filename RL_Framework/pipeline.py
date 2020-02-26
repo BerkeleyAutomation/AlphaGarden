@@ -52,18 +52,17 @@ class Pipeline:
                 radius_grid = env.env_method('get_radius_grid')
                 
                 if not done:
-                    step_counter = env.env_method('get_current_step')[0]
+                    # step_counter = env.env_method('get_current_step')[0]
 
-                    rg_list = radius_grid[0].tolist()
-                    obs_action_pairs = []
-                    for x in range(garden_x):
-                        for y in range(garden_y):
-                            cell = (x, y)
-                            print('ACTION', len(action[0]))
-                            cell_action = action[0][x * sector_width + y]
-                            obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
-                            obs_avg_action[cell] += cell_action
-                    e['obs_action'].append({step_counter : obs_action_pairs})
+                    # rg_list = radius_grid[0].tolist()
+                    # obs_action_pairs = []
+                    # for x in range(garden_x):
+                    #     for y in range(garden_y):
+                    #         cell = (x, y)
+                    #         cell_action = action[0][x * sector_width + y]
+                    #         obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
+                    #         obs_avg_action[cell] += cell_action
+                    # e['obs_action'].append({step_counter : obs_action_pairs})
 
                     e['obs'].append(garden_obs[0].tolist())
                     e['rewards'].append(rewards.item())
@@ -71,10 +70,10 @@ class Pipeline:
                     env.render()
             done = False
 
-            for x in range(garden_x):
-                for y in range(garden_y):
-                    obs_avg_action[(x, y)] /= step_counter
-                    e['obs_avg_action'].append({str((x, y)) : obs_avg_action[(x, y)], 'final': rg_list[x][y][0]})
+            # for x in range(garden_x):
+            #     for y in range(garden_y):
+            #         obs_avg_action[(x, y)] /= step_counter
+            #         e['obs_avg_action'].append({str((x, y)) : obs_avg_action[(x, y)], 'final': rg_list[x][y][0]})
             
             # env.env_method('show_animation')
 
@@ -123,7 +122,8 @@ class Pipeline:
                     action_low=action_low,
                     action_high=action_high,
                     obs_low=obs_low,
-                    obs_high=obs_high)
+                    obs_high=obs_high,
+                    num_plants = 5)
         env = DummyVecEnv([lambda: env])
         env = VecCheckNan(env, raise_exception=False)
 
@@ -162,7 +162,7 @@ class Pipeline:
             self.evaluate_policy(folder_path, num_evals, env, garden_x, garden_y, is_baseline=False)
 
             # Graph evaluations
-            self.graph_utils.graph_evaluations(folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
+            # self.graph_utils.graph_evaluations(folder_path, garden_x, garden_y, time_steps, step, num_evals, num_plant_types)
 
         profiler_object.disable()
 
@@ -277,8 +277,8 @@ if __name__ == '__main__':
             'learning_rate': 1e-4
         }    
     ]
-    garden_x = [300]
-    garden_y = [150]
+    garden_x = [150]
+    garden_y = [300]
     sector_width = [30]
     sector_height = [15]
     num_plant_types = [1]

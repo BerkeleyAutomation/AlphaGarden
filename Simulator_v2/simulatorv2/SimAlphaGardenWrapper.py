@@ -22,23 +22,26 @@ class SimAlphaGardenWrapper(WrapperEnv):
          
         self.config = configparser.ConfigParser()
         self.config.read('gym_config/config.ini')
+        
+        # Amount to water every square in a sector by.
+        self.irrigation_amounts = {
+            0: 0.0,
+            1: 0.25,
+            2: 0.5,
+            3: 0.75,
+            4: 1.0,
+        }
 
     def get_state(self):
         return self.garden.get_state()
-    
-    def get_sector_x(self, sector):
-        return (sector % (self.N // self.sector_width)) * self.sector_width
-    
-    def get_sector_y(self, sector):
-        return (sector // (self.M // self.sector_height)) * self.sector_height
 
     ''' Returns sector number and state associated with the sector. '''
     def get_random_sector(self):
         # TODO: Need to seed numpy?
         sector = np.random.randint(low=0, high=self.num_sectors, size=1)[0]
         full_state = self.garden.get_state()
-        x = self.get_sector_x(sector)
-        y = self.get_sector_y(sector)
+        x = self.garden.get_sector_x(sector)
+        y = self.garden.get_sector_y(sector)
         return sector, full_state[x:x+self.sector_width,y:y+self.sector_height,:]
 
     def get_garden_state(self):
@@ -72,8 +75,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
     '''
     def take_action(self, sector, action):
         self.curr_action = action
-        #print('ACTION', action)
-        self.garden.perform_timestep(sector=sector, irrigations=action)
+        # print('ACTION', action)
+        self.garden.perform_timestep(sector=sector, irrigation=self.irrigation_amounts[self.curr_action])
         return self.garden.get_state()
 
     '''
@@ -85,6 +88,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 plants=self.PlantType.get_random_plants(self.PlantType.get_n_types(self.num_plant_types), self.M, self.N, self.num_plants_per_type),
                 N=self.N,
                 M=self.M,
+                sector_width=self.sector_width,
+                sector_height=self.sector_height,
                 irr_threshold=0,
                 step=self.step,
                 plant_types=self.PlantType.get_n_names(self.num_plant_types),

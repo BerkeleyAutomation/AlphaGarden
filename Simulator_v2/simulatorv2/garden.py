@@ -7,13 +7,16 @@ import pickle
 
 
 class Garden:
-    def __init__(self, plants=[], N=96, M=54, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
+    def __init__(self, plants=[], N=96, M=54, sector_width=1, sector_height=1, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
                  prune_threshold=2, skip_initial_germination=False, animate=False, save=False):
         # list of dictionaries, one for each plant type, with plant ids as keys, plant objects as values
         self.plants = [{} for _ in range(len(plant_types))]
 
         self.N = N
         self.M = M
+        
+        self.sector_width = sector_width
+        self.sector_height = sector_height
 
         # list of plant types the garden will support
         # TODO: Set this list to be constant
@@ -104,22 +107,31 @@ class Garden:
             self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = 1
             self.leaf_grid[plant.row, plant.col, self.plant_types.index(plant.type)] += 1
 
+    
+    def get_sector_x(self, sector):
+        return (sector % (self.N // self.sector_width)) * self.sector_width
+    
+    def get_sector_y(self, sector):
+        return (sector // (self.M // self.sector_height)) * self.sector_height
+    
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
-    def perform_timestep(self, water_amt=0, sector=-1, irrigations=None, prune=False):
+    def perform_timestep(self, water_amt=0, sector=-1, irrigation=-1, prune=False):
         self.irrigation_points = {}
-        if irrigations is None:
+        if irrigation == -1:
             # Default to uniform irrigation
             water_level = min(water_amt, MAX_WATER_LEVEL)
             # self.irrigation_points = {coord: water_level - self.grid['water'][coord]
             # for _, coord in self.enumerate_grid(coords=True)}
             self.reset_water(water_level)
-        else:
-            for i in np.nonzero(irrigations)[0]:
-                location = (i // self.N, i % self.M)
-                self.irrigate(location, irrigations[i])
-                # print('IRRIGATION:', location, irrigations[i])
-                self.irrigation_points[location] = irrigations[i]
+        elif irrigation > 0:
+            x = self.get_sector_x(sector)
+            y = self.get_sector_y(sector)
+            for i in range(x, x + self.sector_width):
+                for j in range(y, y + self.sector_height):
+                    location = (i, j)
+                    self.irrigate(location, irrigation)
+                    self.irrigation_points[location] = irrigation
 
         self.distribute_light()
         self.distribute_water()
