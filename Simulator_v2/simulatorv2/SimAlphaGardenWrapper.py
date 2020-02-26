@@ -58,9 +58,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return sector, full_state[x:x+self.sector_width,y:y+self.sector_height,:]
 
     def get_canopy_image(self, sector):
-        x_low, y_low = self.get_sector_x(sector), self.get_sector_y(sector)
+        x_low, y_low = self.garden.get_sector_x(sector), self.garden.get_sector_y(sector)
         x_high, y_high = x_low + self.sector_width, y_low + self.sector_height
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         plt.xlim((0, self.sector_width * self.garden.step))
         plt.ylim((0, self.sector_height * self.garden.step))
         ax.set_aspect('equal')
