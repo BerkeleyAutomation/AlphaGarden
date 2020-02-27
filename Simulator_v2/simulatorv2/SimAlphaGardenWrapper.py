@@ -52,6 +52,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_random_sector_and_global_cc(self):
         # TODO: Need to seed numpy?
         sector = np.random.randint(low=0, high=self.num_sectors, size=1)[0]
+        self.get_canopy_image(sector)
         full_state = self.garden.get_state()
         x = self.garden.get_sector_x(sector)
         y = self.garden.get_sector_y(sector)
@@ -71,13 +72,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
         shapes = []
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=True):
-            if x_low <= plant.row <= x_high and y_low <= plant.height <= y_high:
+            if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
                 if plant.pruned:
                     shape = plt.Rectangle((plant.row * self.garden.step - plant.radius,
                                            plant.col * self.garden.step - plant.radius), plant.radius * 2, plant.radius * 2,
                                           fc='red', ec='red')
                 else:
-                    shape = plt.Circle((plant.row, plant.col) * self.garden.step, plant.radius, color=plant.color)
+                    shape = plt.Circle((plant.row - x_low, plant.col - y_low) * self.garden.step, plant.radius, color=plant.color)
                 shape_plot = ax.add_artist(shape)
                 shapes.append(shape_plot)
         plt.tight_layout()

@@ -38,7 +38,7 @@ class Pipeline:
         for _ in range(num_evals):
             obs = env.reset()
             garden_obs = env.env_method('get_garden_state')
-            e = {'cell_avg_action': [], 'obs_action': [], 'obs': [], 'rewards': [], 'action': []}
+            e = {'cell_avg_action': [], 'full_state_action': [], 'full_state': [], 'rewards': [], 'action': []}
 
             cell_avg_action = {}
             for x in range(garden_x):
@@ -58,36 +58,36 @@ class Pipeline:
                 garden_obs = env.env_method('get_garden_state')
                 radius_grid = env.env_method('get_radius_grid')
 
-                if not done:
-                    step_counter = env.env_method('get_current_step')[0]
+                # if not done:
+                #     step_counter = env.env_method('get_current_step')[0]
 
-                    rg_list = radius_grid[0].tolist()
-                    obs_action_pairs = []
+                #     rg_list = radius_grid[0].tolist()
+                #     obs_action_pairs = []
                     
-                    sector = env.env_method('get_prev_sector')[0]
-                    sector_x = get_sector_x(sector, garden_x, sector_width)
-                    sector_y = get_sector_y(sector, garden_y, sector_height)
-                    for x in range(garden_x):
-                        for y in range(garden_y):
-                            cell = (x, y)
-                            if cell[0] >= sector_x and cell[0] < sector_x + sector_width and cell[1] >= sector_y and cell[1] < sector_y + sector_height:
-                                cell_action = env.env_method('get_irr_action')[0]
-                            else:
-                                cell_action = 0
-                            obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
-                            cell_avg_action[cell] += cell_action
-                    e['full_state_action'].append({step_counter : obs_action_pairs})
+                #     sector = env.env_method('get_sector')[0]
+                #     sector_x = get_sector_x(sector, garden_x, sector_width)
+                #     sector_y = get_sector_y(sector, garden_y, sector_height)
+                #     for x in range(garden_x):
+                #         for y in range(garden_y):
+                #             cell = (x, y)
+                #             if cell[0] >= sector_x and cell[0] < sector_x + sector_width and cell[1] >= sector_y and cell[1] < sector_y + sector_height:
+                #                 cell_action = env.env_method('get_irr_action')[0]
+                #             else:
+                #                 cell_action = 0
+                #             obs_action_pairs.append({str(cell) : (str(rg_list[x][y][0]), str(cell_action))})
+                #             cell_avg_action[cell] += cell_action
+                #     e['full_state_action'].append({step_counter : obs_action_pairs})
 
-                    e['full_state'].append(garden_obs[0].tolist())
-                    e['rewards'].append(rewards.item())
-                    e['action'].append(action[0].tolist())
-                    env.render()
+                #     e['full_state'].append(garden_obs[0].tolist())
+                #     e['rewards'].append(rewards.item())
+                #     e['action'].append(action[0].tolist())
+                #     env.render()
             done = False
 
-            for x in range(garden_x):
-                for y in range(garden_y):
-                    cell_avg_action[(x, y)] /= step_counter
-                    e['cell_avg_action'].append({str((x, y)) : cell_avg_action[(x, y)], 'final_radius': rg_list[x][y][0]})
+            # for x in range(garden_x):
+            #     for y in range(garden_y):
+            #         cell_avg_action[(x, y)] /= step_counter
+            #         e['cell_avg_action'].append({str((x, y)) : cell_avg_action[(x, y)], 'final_radius': rg_list[x][y][0]})
             
             ''' UNCOMMENT IF YOU WANT TO WRITE OUTPUTS TO A FILE.  WILL TAKE AWHILE FOR LARGE GARDENS. '''
             # pathlib.Path(folder_path + '/Returns').mkdir(parents=True, exist_ok=True)

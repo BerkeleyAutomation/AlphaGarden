@@ -24,8 +24,7 @@ class SimAlphaGardenEnv(gym.Env):
         self.reset()
 
     def _next_observation(self):
-        sector, obs = self.wrapper_env.get_random_sector_and_global_cc()
-        self.prev_sector = sector
+        self.sector, obs = self.wrapper_env.get_random_sector_and_global_cc()
         return obs
 
     def _take_action(self, sector, action):
@@ -40,8 +39,8 @@ class SimAlphaGardenEnv(gym.Env):
     def get_irr_action(self):
         return self.wrapper_env.get_irr_action()
 
-    def get_prev_sector(self):
-        return self.prev_sector
+    def get_sector(self):
+        return self.sector
     
     def step(self, action):
         state = self._take_action(self.sector, action)
