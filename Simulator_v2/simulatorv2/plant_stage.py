@@ -5,7 +5,7 @@ class PlantStage:
 
     def start_stage(self):
         self.current_time = 0
-        print(self)
+        # print(self)
 
     def desired_water_amt(self):
         """Optionally override this to specify how much water the plant wants at this stage"""

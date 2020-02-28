@@ -4,6 +4,8 @@ from simulatorv2.plant_type import PlantType
 import numpy as np
 import configparser
 import matplotlib.pyplot as plt
+from datetime import datetime
+import os
 
 
 def fig2data(fig):
@@ -52,37 +54,45 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_random_sector_and_global_cc(self):
         # TODO: Need to seed numpy?
         sector = np.random.randint(low=0, high=self.num_sectors, size=1)[0]
-        self.get_canopy_image(sector)
+        path = self.get_canopy_image(sector)
         full_state = self.garden.get_state()
         x = self.garden.get_sector_x(sector)
         y = self.garden.get_sector_y(sector)
+        ## TODO: can save data here
         return sector, full_state[x:x+self.sector_width,y:y+self.sector_height,:]
 
     def get_canopy_image(self, sector):
+        dir_path = aaaaaaa # TODO: get a dir path from config or whatever
+        self.garden.step = 1
         x_low, y_low = self.garden.get_sector_x(sector), self.garden.get_sector_y(sector)
         x_high, y_high = x_low + self.sector_width, y_low + self.sector_height
-        _, ax = plt.subplots()
-        plt.xlim((0, self.sector_width * self.garden.step))
-        plt.ylim((0, self.sector_height * self.garden.step))
-        ax.set_aspect('equal')
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_yticks([])
-        ax.set_xticks([])
+        _, ax1 = plt.subplots()
+        ax1.set_xlim(x_low, x_high)
+        ax1.set_ylim(y_low, y_high)
+        ax1.set_aspect('equal')
+        ax1.set_yticklabels([])
+        ax1.set_xticklabels([])
+        ax1.set_yticks([])
+        ax1.set_xticks([])
         shapes = []
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=True):
-            if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
+            if x_low <= plant.col <= x_high and y_low <= plant.row <= y_high:
                 if plant.pruned:
                     shape = plt.Rectangle((plant.row * self.garden.step - plant.radius,
                                            plant.col * self.garden.step - plant.radius), plant.radius * 2, plant.radius * 2,
                                           fc='red', ec='red')
                 else:
-                    shape = plt.Circle((plant.row - x_low, plant.col - y_low) * self.garden.step, plant.radius, color=plant.color)
-                shape_plot = ax.add_artist(shape)
+                    shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
+                shape_plot = ax1.add_artist(shape)
                 shapes.append(shape_plot)
         plt.tight_layout()
-        plt.show()
+        r = os.urandom(16)
+        file_path = ''.join('%02x' % ord(chr(x)) for x in r)
+        plt.savefig(dir_path + file_path + "_cc" + '.png')
+        plt.close()
+        return file_path
+        # plt.show()
         # img_as_nparray = fig2data(fig)
         # return img_as_nparray
 

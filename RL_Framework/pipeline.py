@@ -46,14 +46,16 @@ class Pipeline:
                     cell_avg_action[x, y] = 0
 
             step_counter = 0
-
+            idx = 0
             while not done:
+                print("ITERATION ", idx)
                 action = None
                 if is_baseline:
                     action = baseline_policy(obs, step, threshold=0.5, amount=1, irr_threshold=0)
                 else:
                     action, _states = model.predict(obs)
                 obs, rewards, done, _ = env.step(action)
+                idx += 1
                 action = env.env_method('get_curr_action')
                 garden_obs = env.env_method('get_garden_state')
                 radius_grid = env.env_method('get_radius_grid')
@@ -290,8 +292,8 @@ if __name__ == '__main__':
             'learning_rate': 1e-4
         }    
     ]
-    garden_x = [150]
-    garden_y = [300]
+    garden_x = [300]
+    garden_y = [150]
     sector_width = [30]
     sector_height = [15]
     num_plant_types = [1]
