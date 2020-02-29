@@ -223,8 +223,9 @@ class Element3 extends React.Component{
 	render(){
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
-				<div id="Zoom_Container">
-					<img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" id={this.state.zoom}/>
+			  	<div id="Zoom_Container">
+				  <img src={require("../Media/Garden-Overview.bmp")} alt="GARDEN" height="100%" width="100%" id={this.state.zoom} />
+				  <RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay} />
 				</div>
 
 				<div className="Overlay">
@@ -248,7 +249,7 @@ class Element3 extends React.Component{
 
 				<GlowingMarks shouldDisplay={this.state.glowingMarks} />
 				<DateBox shouldDisplay={this.state.robotCameraOverlay} />
-				<RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/>
+				{/* <RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/> */}
 				<div id="click" onClick={(e) => {console.log("clicked"); this.state.handleClick(e)}}></div>
 		    </div>
 
