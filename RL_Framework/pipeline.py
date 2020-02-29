@@ -18,7 +18,6 @@ import io
 from graph_utils import GraphUtils
 from file_utils import FileUtils
 
-    
 def get_sector_x(sector, garden_x, sector_width):
     return (sector % (garden_x // sector_width)) * sector_width
 
@@ -138,7 +137,7 @@ class Pipeline:
                     action_high=action_high,
                     obs_low=obs_low,
                     obs_high=obs_high,
-                    num_plants = 5)
+                    )
         env = DummyVecEnv([lambda: env])
         env = VecCheckNan(env, raise_exception=False)
 

@@ -1,19 +1,29 @@
 import numpy as np
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD
 
-def baseline_policy(state, step, threshold, amount, irr_threshold):
-    state = np.copy(state[0])
-    action = np.zeros(state.shape[0:2])
-    k = (state.shape[2] - 2) // 2
-    for i in range(state.shape[0]):
-        for j in range(state.shape[1]):
-            radius = state[i,j,2*k]
-            if radius > 0:
-                lower_x, upper_x = int(max(0, i - (radius // step))), int(min(state.shape[0], i + (radius // step)))
-                lower_y, upper_y = int(max(0, j - (radius // step))), int(min(state.shape[1], j + (radius // step)))
-                water_available = np.sum(state[lower_x:upper_x+1,lower_y:upper_y+1,-1])
-                if water_available < threshold:
-                    action[j,i] = amount
-                    for z in range(max(0, i - irr_threshold), min(state.shape[0], i + irr_threshold + 1)):
-                        for l in range(max(0, j - irr_threshold), min(state.shape[1], j + irr_threshold + 1)):
-                            state[i,j,-1] += amount
-    return np.expand_dims(action.flatten(),axis=0)
+def get_sector_x(sector, garden_rows, sector_rows):
+    return (sector % (garden_rows // sector_rows)) * sector_rows
+
+def get_sector_y(sector, garden_cols, sector_cols):
+    return (sector // (garden_cols // sector_cols)) * sector_cols
+    
+def policy(timestep, state, global_cc_vec, garden_rows, garden_cols, sector, sector_rows,
+           sector_cols, step, water_threshold):
+    water_grid = state[-1]
+    if np.sum(water_grid) < garden_rows * garden_cols * step * water_threshold:
+        x_low, y_low = get_sector_x(sector, garden_rows, sector_rows), get_sector_y(sector, garden_cols, sector_cols)
+        x_high, y_high = x_low + sector_rows, y_low + sector_cols
+        sector_water = np.sum(water_grid[x_low:x_high][y_low:y_high])
+        irr_policy = 0
+        while sector_water < MAX_WATER_LEVEL:
+             irr_policy += 1
+             sector_water += MAX_WATER_LEVEL / 4
+        return [irr_policy]
+    else:
+        if timestep > PRUNE_DELAY:
+            prob = global_cc_vec / np.sum(global_cc_vec)
+            for i in range(len(global_cc_vec)):
+                if prob[i] > PRUNE_THRESHOLD / len(global_cc_vec):
+                    return [i + 5]
+        return [0]
+            

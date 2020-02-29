@@ -6,7 +6,11 @@ class FileUtils:
     def __init__(self):
         pass
 
-    def create_config(self, rl_time_steps=3000000, garden_time_steps=40, garden_x=10, garden_y=10, sector_width=2, sector_height=2, num_plant_types=2, num_plants_per_type=1, step=1, action_low=0.0, action_high=sim_globals.MAX_WATER_LEVEL, obs_low=0, obs_high=1000, ent_coef=0.01, n_steps=40000, nminibatches=4, noptepochs=4, learning_rate=1e-8, cnn_args=None):
+    def create_config(self, rl_time_steps=3000000, garden_time_steps=40, garden_x=10, garden_y=10,
+                      sector_width=2, sector_height=2, num_plant_types=2, num_plants_per_type=1,
+                      step=1, action_low=0.0, action_high=sim_globals.MAX_WATER_LEVEL, obs_low=0,
+                      obs_high=1000, ent_coef=0.01, n_steps=40000, nminibatches=4, noptepochs=4,
+                      learning_rate=1e-8, cc_coef=0, water_coef=0, cnn_args=None, dir_path=""):
         config = configparser.ConfigParser()
         config.add_section('rl')
         config['rl']['time_steps'] = str(rl_time_steps)
@@ -24,8 +28,6 @@ class FileUtils:
             config['cnn']['num_convs'] = str(cnn_args["NUM_CONVS"])
             config['cnn']['filter_size'] = str(cnn_args["FILTER_SIZE"])
             config['cnn']['stride'] = str(cnn_args["STRIDE"])
-            config['cnn']['cc_coef'] = str(cnn_args['CC_COEF'])
-            config['cnn']['water_coef'] = str(cnn_args['WATER_COEF'])
         config.add_section('garden')
         config['garden']['time_steps'] = str(garden_time_steps)
         config['garden']['X'] = str(garden_x)
@@ -41,6 +43,11 @@ class FileUtils:
         config.add_section('obs')
         config['obs']['low'] = str(obs_low)
         config['obs']['high'] = str(obs_high)
+        config.add_section('reward')
+        config['reward']['cc_coef'] = str(cc_coef)
+        config['reward']['water_coef'] = str(water_coef)
+        config.add_section('data_collection')
+        config['data_collection']['dir_path'] = dir_path
 
         pathlib.Path('gym_config').mkdir(parents=True, exist_ok=True)
         with open('gym_config/config.ini', 'w') as configfile:

@@ -2,21 +2,22 @@ import numpy as np
 from heapq import nlargest
 from simulatorv2.logger import Logger, Event
 from simulatorv2.visualization import setup_animation, setup_saving
-from simulatorv2.sim_globals import MAX_WATER_LEVEL
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD
 import pickle
 
 
 class Garden:
-    def __init__(self, plants=[], N=96, M=54, sector_width=1, sector_height=1, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
-                 prune_threshold=2, skip_initial_germination=False, animate=False, save=False):
+    def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, step=1,
+                 drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=False,
+                 animate=False, save=False):
         # list of dictionaries, one for each plant type, with plant ids as keys, plant objects as values
         self.plants = [{} for _ in range(len(plant_types))]
 
         self.N = N
         self.M = M
         
-        self.sector_width = sector_width
-        self.sector_height = sector_height
+        self.sector_rows = sector_rows
+        self.sector_cols = sector_cols
 
         # list of plant types the garden will support
         # TODO: Set this list to be constant
@@ -53,14 +54,14 @@ class Garden:
         self.irr_threshold = irr_threshold
 
         # amount of days to wait after simulation start before pruning
-        self.prune_delay = 20
+        self.prune_delay = PRUNE_DELAY
 
         # proportion of plant radius to decrease by after pruning action
         self.prune_rate = 0.2
 
         # determines max amount of coverage of one plant type in the garden before that plant is pruned
         # percentage calculated as self.prune_threshold / number of plant types in the garden
-        self.prune_threshold = prune_threshold
+        self.prune_threshold = PRUNE_THRESHOLD
 
         # timestep of simulation
         self.timestep = 0
@@ -109,35 +110,31 @@ class Garden:
 
     
     def get_sector_x(self, sector):
-        return (sector % (self.N // self.sector_width)) * self.sector_width
+        return (sector % (self.N // self.sector_rows)) * self.sector_rows
     
     def get_sector_y(self, sector):
-        return (sector // (self.M // self.sector_height)) * self.sector_height
+        return (sector // (self.M // self.sector_cols)) * self.sector_cols
     
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
-    def perform_timestep(self, water_amt=0, sector=-1, irrigation=-1, prune=False):
+    def perform_timestep(self, sector=None, irrigation=-1, prune=None):
         self.irrigation_points = {}
-        if irrigation == -1:
-            # Default to uniform irrigation
-            water_level = min(water_amt, MAX_WATER_LEVEL)
-            # self.irrigation_points = {coord: water_level - self.grid['water'][coord]
-            # for _, coord in self.enumerate_grid(coords=True)}
-            self.reset_water(water_level)
-        elif irrigation > 0:
+        
+        if irrigation > 0:
             x = self.get_sector_x(sector)
             y = self.get_sector_y(sector)
-            for i in range(x, x + self.sector_width):
-                for j in range(y, y + self.sector_height):
+            for i in range(x, x + self.sector_rows):
+                for j in range(y, y + self.sector_cols):
                     location = (i, j)
                     self.irrigate(location, irrigation)
                     self.irrigation_points[location] = irrigation
-
+                    
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        if prune and self.timestep >= self.prune_delay:
-            self.prune_plants()
+        
+        if prune is not None and self.timestep >= self.prune_delay:
+            self.prune_plant_type(sector, prune)
 
         if self.animate:
             self.anim_step()
@@ -283,7 +280,7 @@ class Garden:
 
         for i in range(len(self.plant_types)):
             while prob[i] > self.prune_threshold / len(self.plant_types):
-                coords_updated = self.prune_plant_type(i)
+                coords_updated = self.prune_plant_type(-1, i)
                 for coord in coords_updated:
                     point = self.grid[coord]
                     if point['nearby']:
@@ -300,8 +297,17 @@ class Garden:
                 cc_per_plant_type[tallest_type_id] += 1
         return cc_per_plant_type
 
-    def prune_plant_type(self, plant_type_id):
-        largest_plant = max(self.plants[plant_type_id].values(), key=lambda x: x.radius)
+    def prune_plant_type(self, sector, plant_type_id):
+        if sector >= 0:
+            x_low, y_low = self.get_sector_x(sector), self.get_sector_y(sector)
+            x_high, y_high = x_low + self.sector_rows, y_low + self.sector_cols
+            sector_plants = list(filter(lambda plant: x_low <= plant.row < x_high and y_low <= plant.col < y_high,
+                                        self.plants[plant_type_id].values()))
+            if not sector_plants:
+                return
+            largest_plant = max(sector_plants, key=lambda x: x.radius)
+        else:
+            largest_plant = max(self.plants[plant_type_id].values(), key=lambda x: x.radius)
         largest_plant.pruned = True
         amount_to_prune = self.prune_rate * largest_plant.radius
         self.update_plant_size(largest_plant, outward=-amount_to_prune)
@@ -353,6 +359,16 @@ class Garden:
 
     def get_radius_grid(self):
         return self.radius_grid
+
+    def get_plant_grid(self):
+        return self.plant_grid
+    
+    def get_water_grid(self):
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        return self.water_grid
+
+    def get_cc_per_plant(self):
+        return self.compute_plant_cc_dist()
 
     def get_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)

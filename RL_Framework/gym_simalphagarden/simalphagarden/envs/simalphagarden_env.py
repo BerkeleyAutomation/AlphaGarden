@@ -5,26 +5,27 @@ from gym import spaces
 class SimAlphaGardenEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, wrapper_env, garden_x, garden_y, garden_z, sector_width, sector_height, action_low, action_high, obs_low, obs_high, num_plants):
+    def __init__(self, wrapper_env, garden_x, garden_y, garden_z, sector_rows, sector_cols,
+                 action_low, action_high, obs_low, obs_high, num_plant_types):
         super(SimAlphaGardenEnv, self).__init__()
         self.wrapper_env = wrapper_env
         self.max_time_steps = self.wrapper_env.max_time_steps
-        self.num_plants = num_plants
         
-        # Reward ranges from 0 to garden area.
-        self.reward_range = (0, sector_width * sector_height)
+        # Reward ranges from 0 to garden area
+        self.reward_range = (0, sector_rows * sector_cols)
 
-        # There is one action for every cell in the garden.
-        # self.action_space = spaces.Box(low=np.array([action_low for i in range(num_actions)]), high=np.array([action_high for i in range(num_actions)]), dtype=np.float16)
-        self.action_space = spaces.Discrete(5) 
+        # No action, 4 irrigation actions, 1 action for pruning each plant type
+        self.action_space = spaces.Discrete(5 + num_plant_types) 
         
-        # Observations include canopy cover for each plant in the garden
-        self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=(sector_width, sector_height, garden_z), dtype=np.float16)
+        # Observations include the seed mask for each plant type and the garden water grid
+        self.observation_space = spaces.Box(low=obs_low, high=obs_high,
+                                            shape=(garden_x, garden_y, garden_z),
+                                            dtype=np.float16)
         
         self.reset()
 
     def _next_observation(self):
-        self.sector, obs = self.wrapper_env.get_random_sector_and_global_cc()
+        self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state()
         return obs
 
     def _take_action(self, sector, action):
@@ -41,6 +42,9 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_sector(self):
         return self.sector
+
+    def get_global_cc_vec(self):
+        return self.global_cc_vec
     
     def step(self, action):
         state = self._take_action(self.sector, action)
