@@ -227,6 +227,7 @@ code {
     overflow: hidden;
     position: fixed;
     border: none;
+    /* border: 2px #333 solid; */
     /* z-index: 100; */
   }   
 
@@ -237,9 +238,19 @@ code {
     top: 0px;
     left: 0px;
     overflow: hidden;
-    position: absolute;
     border: none;
-}
+    /* min_height: 100%;
+    min_width: 100%;
+    max_height: 100%; */
+    /* max-width: 100%; */
+    /* border: 2px #333 solid; */
+    /* position: absolute; */
+    position: fixed;
+    /* min_height: 100%;
+    min_width: 100%;
+    max_height: 100%; */
+    /* max-width: 100%; */
+}  
 
 #click {
   position: absolute;

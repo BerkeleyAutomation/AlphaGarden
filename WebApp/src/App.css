@@ -155,33 +155,6 @@ code {
 }
 
 
-
-//Zoom animations
-#Zoom_Container {
-    background-color: "brown";
-    min-width: 100%;
-    min-height:100%;
-    max-height: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    border: 2px #333 solid;
-    position: fixed;
-}   
-
-#Zoom_Container img{
-    background-color: #333;
-    min_height: 100%;
-    min_width: 100%;
-    max_height: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    border: 2px #333 solid;
-    position: fixed;
-}  
-
-
-
-
 #Zoom1 img{
   transition: transform 3s;
   transform: scale(4, 4) translate3d(37.5%, 37.5%, 0px); 
