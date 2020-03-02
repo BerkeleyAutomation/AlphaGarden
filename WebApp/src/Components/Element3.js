@@ -120,13 +120,13 @@ class Element3 extends React.Component {
         setTimeout(this.zoomOut, 10000);
       }
     }, 1000);
-  };
+  }
 
   removeOverlay() {
     this.setState({
       overlay: null
     });
-  };
+  }
 
   triggerZoom(box) {
     this.setState({
@@ -137,7 +137,7 @@ class Element3 extends React.Component {
       zoombox3: 'zoombox3',
       zoombox4: 'zoombox4'
     });
-  };
+  }
 
   showBorders(box) {
     this.setState({
@@ -157,8 +157,7 @@ class Element3 extends React.Component {
     var bottomRight = document.getElementById('bottom-right');
 
     topLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
-    topLeft.style.top =
-      Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + '%';
+    topLeft.style.top = Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + '%';
 
     bottomLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
     bottomLeft.style.top =
@@ -181,7 +180,7 @@ class Element3 extends React.Component {
         Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + 100 / GRID_HEIGHT,
         96
       ) + '%';
-  };
+  }
 
   setZoomPosition(box) {
     var img = document.getElementById('no_zoom');
@@ -200,7 +199,7 @@ class Element3 extends React.Component {
         '%';
       console.log(img.style.transformOrigin);
     }
-  };
+  }
 
   setOverlay(box) {
     const x = (box - 1) % GRID_WIDTH;
@@ -220,7 +219,7 @@ class Element3 extends React.Component {
         )
       });
     }, 500);
-  };
+  }
 
   //Func to dynamically zoom back out to the overhead of the garden
   zoomOut() {
@@ -249,7 +248,7 @@ class Element3 extends React.Component {
         setTimeout(this.zoomIn, 2000);
       }
     }
-  };
+  }
 
   //constantly updates the position of
   _onMouseMove(e) {
