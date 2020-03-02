@@ -10,7 +10,7 @@ const RobotCameraOverlay = (props) => {
           </div>
           <div className='robot-stats__item'>
             <p className='robot-stats__item__label'>Coverage:</p>
-            <p className='robot-stats__item__label'>58%</p>
+            <p className='robot-stats__item__label'>100%</p>
           </div>
           <div className='robot-stats__item'>
             <p className='robot-stats__item__label'>Diversity:</p>
