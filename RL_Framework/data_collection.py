@@ -4,10 +4,10 @@ import simalphagarden
 import os
 import pathlib
 from file_utils import FileUtils
-import simulatorv2.baselines.baseline_policy as baseline_policy 
+import simulatorv2.baselines.baseline_policy as baseline_policy
 from simulatorv2.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulatorv2.plant_type import PlantType
-from stable_baselines.common.vec_env import DummyVecEnv, VecCheckNan
+from stable_baselines.common.vec_env import DummyVecEnv
 
 class DataCollection:
     def __init__(self):
@@ -31,7 +31,7 @@ class DataCollection:
             obs_high=obs_high,
             num_plant_types=num_plant_types
         ) 
-        return VecCheckNan(DummyVecEnv([lambda: env]), raise_exception=False)
+        return DummyVecEnv([lambda: env])
     
     ''' Applies a baseline irrigation policy on an environment for one garden life cycle. '''
     def evaluate_policy(self, env, policy, garden_time_steps, rows, cols, sector_rows, sector_cols,

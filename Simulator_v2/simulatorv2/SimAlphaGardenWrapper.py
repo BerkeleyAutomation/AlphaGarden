@@ -20,7 +20,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.PlantType = PlantType()
         self.reset()
         self.state = self.garden.get_state()
-        self.curr_action = -1 
+        self.curr_action = -1
          
         self.config = configparser.ConfigParser()
         self.config.read('gym_config/config.ini')
@@ -39,17 +39,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
     ''' Returns sector number and state associated with the sector. '''
     def get_data_collection_state(self):
         # TODO: Need to seed numpy?
-        sector = np.random.randint(low=0, high=self.num_sectors, size=1)[0]
-        global_cc_vec = self.garden.get_cc_per_plant()
-        plant_grid = self.garden.get_plant_grid()
-        water_grid = self.garden.get_water_grid()
-        if self.curr_action >= 0:
-            path = self.get_canopy_image(sector)
-            action_vec = np.zeros(len(global_cc_vec))
-            action_vec[self.curr_action] = 1
-            np.savez(path + '.npz', seeds=plant_grid, water=water_grid, global_cc=global_cc_vec,
-                     action=action_vec)
-        return sector, global_cc_vec, np.dstack((plant_grid, water_grid))
+        return np.random.randint(low=0, high=self.num_sectors, size=1)[0], \
+            self.garden.get_cc_per_plant(), np.dstack((self.garden.get_plant_grid(),
+                                                       self.garden.get_water_grid()))
 
     def get_canopy_image(self, sector):
         dir_path = self.config.get('data_collection', 'dir_path')
@@ -70,10 +62,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                             key=lambda x: x.height, reverse=True):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
                 if plant.pruned:
-                    shape = plt.Rectangle((plant.row * self.garden.step,
-                                           plant.col * self.garden.step), plant.radius * 2, plant.radius * 2,
-                                          fc='red', ec='red')
-                    shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
+                    shape = plt.Rectangle(((plant.col - plant.radius, plant.row - plant.radius)) * self.garden.step, plant.radius * 2, plant.radius * 2, fc='red', ec='red')
+                    # shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
                 else:
                     shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
                 shape_plot = ax.add_artist(shape)
@@ -84,6 +74,17 @@ class SimAlphaGardenWrapper(WrapperEnv):
         plt.savefig(file_path + "_cc" + '.png', bbox_inches='tight', pad_inches=0.02)
         plt.close()
         return file_path
+    
+    def plot_water_map(self, folder_path, water_grid, plants) :
+        plt.figure(figsize=(30, 30))
+        plt.imshow(water_grid[:,:,0], cmap='Blues', interpolation='nearest')
+        for i in range(plants.shape[2]):
+            p = plants[:,:,i]
+            nonzero = np.nonzero(p)
+            for row, col in zip(nonzero[0], nonzero[1]):
+                plt.plot(col, row, marker='.', markersize=10, color="lawngreen")
+        plt.savefig(folder_path + "_water" + '.png', bbox_inches='tight', pad_inches=0.02)
+        plt.close()
 
     def get_garden_state(self):
         return self.garden.get_garden_state()
@@ -119,6 +120,21 @@ class SimAlphaGardenWrapper(WrapperEnv):
     '''
     def take_action(self, sector, action):
         self.curr_action = action
+        
+        # State and action before performing a time step.
+        global_cc_vec = self.garden.get_cc_per_plant()
+        plant_grid = self.garden.get_plant_grid()
+        water_grid = self.garden.get_water_grid()
+        action_vec = np.zeros(5 + len(global_cc_vec))
+        
+        # Save canopy image before performing a time step.
+        if self.curr_action >= 0:
+            path = self.get_canopy_image(sector)
+            # self.plot_water_map(path, water_grid, plant_grid)
+            action_vec[self.curr_action] = 1
+            np.save(path + '_action', action_vec)
+            np.savez(path + '.npz', seeds=plant_grid, water=water_grid, global_cc=global_cc_vec)
+            
         if action == 0:
             self.irr_action = 0
         elif action in range(1, 5):
@@ -129,6 +145,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             self.irr_action = 0
             plant_to_prune = action - 5 # minus 5 offset for no action and irrigation actions
             self.garden.perform_timestep(sector=sector, prune=plant_to_prune)
+            
         return self.garden.get_state()
 
     '''

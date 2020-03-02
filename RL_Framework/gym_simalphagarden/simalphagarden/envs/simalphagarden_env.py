@@ -15,18 +15,23 @@ class SimAlphaGardenEnv(gym.Env):
         self.reward_range = (0, sector_rows * sector_cols)
 
         # No action, 4 irrigation actions, 1 action for pruning each plant type
-        self.action_space = spaces.Discrete(5 + num_plant_types) 
+        self.action_space = spaces.Discrete(5 + num_plant_types)
+        
+        # Nubmer of plant types in the garden.  Used for reshaping global_cc_vec observation
+        self.num_plant_types = num_plant_types
         
         # Observations include the seed mask for each plant type and the garden water grid
-        self.observation_space = spaces.Box(low=obs_low, high=obs_high,
-                                            shape=(garden_x, garden_y, garden_z),
-                                            dtype=np.float16)
+        self.observation_space = spaces.Tuple((
+            spaces.Box(low=obs_low, high=obs_high, shape=(num_plant_types, 1), dtype=np.float16),
+            spaces.Box(low=obs_low, high=obs_high, shape=(garden_x, garden_y, garden_z),
+                       dtype=np.float16)))
         
         self.reset()
 
     def _next_observation(self):
         self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state()
-        return obs
+        self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types, 1))
+        return [self.global_cc_vec, obs]
 
     def _take_action(self, sector, action):
         return self.wrapper_env.take_action(sector, action)
