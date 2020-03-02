@@ -215,30 +215,43 @@ code {
   transition: opacity 3s;
 }
 
-
-
 /* Zoom animations */
 #Zoom_Container {
-    background-color: "brown";
-    min-width: 100%;
-    min-height: 100%;
-    max-height: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    position: fixed;
-    border: none;
-    /* z-index: 100; */
-  }   
+  background-color: "brown";
+  min-width: 100%;
+  /* min-height: 100%; */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border: none;
+  /* border: 2px #333 solid; */
+  /* z-index: 100; */
+
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+}   
 
 #Zoom_Container img{
-    background-color: #333;
-    width: 100%;
-    height: 100%;
-    top: 0px;
-    left: 0px;
-    overflow: hidden;
-    position: absolute;
-    border: none;
+  background-color: #333;
+  width: 100%;
+  height: 100%;
+  /* top: 0px;
+  left: 0px; */
+  overflow: hidden;
+  border: none;
+  /* min_height: 100%;
+  min_width: 100%;
+  max_height: 100%; */
+  /* max-width: 100%; */
+  /* border: 2px #333 solid; */
+  /* position: absolute; */
+  /* position: fixed; */
+  /* min_height: 100%;
+  min_width: 100%;
+  max_height: 100%; */
+  /* max-width: 100%; */
 }
 
 #Static_Zoom_Container {
@@ -295,6 +308,7 @@ code {
 }
 
 .ZoomBox {
+  margin: 0;
   position: absolute;
   width: 20%;
   height: 20%;
@@ -311,23 +325,6 @@ code {
   0%, 20% {opacity: 1;}
   21%, 40% {opacity: 0;}
   41%, 100% {opacity: 1;}
-}
-
-#zoombox1 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(-800%, -1000%);
-}
-#zoombox2 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(800%, -1000%);
-}
-#zoombox3 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(-800%, 1000%);
-}
-#zoombox4 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(800%, 1000%);
 }
 
 #zoomboxshrink {
@@ -536,6 +533,7 @@ code {
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
+  height: 150px;
   padding: 40px 40px 40px 40px;
   animation: fadeInRobotStats 1s linear;
 }
@@ -563,6 +561,7 @@ code {
   border: 1px solid white;
   padding: 5px;
   font-weight: lighter;
+  width: 100%;
 }
 
 /* SIDEBAR */

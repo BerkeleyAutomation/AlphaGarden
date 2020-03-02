@@ -2,16 +2,28 @@ import React from 'react';
 	
  const DateBox = (props) => {
     const dayStyle = {
-        display: 'inline',
         borderRight: '1px solid white',
         padding: '5px',
-        paddingLeft: '25px'
+        paddingLeft: '25px',
+        fontSize: '30px',
+        width: '50%',
+        margin: 0
     }
 
     const dateStyle = {
-        display: 'inline',
         paddingLeft: '25px',
         fontFamily: 'Roboto Thin',
+        fontSize: '30px',
+        margin: 0,
+        padding: '5px',
+        paddingRight: '50px'
+    }
+
+    const dateBoxStyle = {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '80%'
     }
 
     var date1 = new Date("1/1/2020");
@@ -23,9 +35,13 @@ import React from 'react';
         return(
             <div className="date-box-row">
                 <div className="date-box-row-item" id="date-box-div">
-                    <div className="date-box"><p style={dayStyle}>Day</p><p style={dateStyle}>{diffDays}</p></div>
+                    <div className="date-box" style={dateBoxStyle}>
+                        <p style={dayStyle}>Day</p>
+                        <p style={dateStyle}>{diffDays}</p>
+                    </div>
                 </div>
                 <div className="date-box-row-item">
+                    <p>Click to zoom in on any section</p>
                 </div>
                 <div className="date-box-row-item">
                 </div>
