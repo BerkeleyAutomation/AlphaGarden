@@ -212,12 +212,26 @@ class Element3 extends React.Component{
 			glowingMarks: true,
 			filter: true,
 
-			zoomboximg: false 
+      width: window.innerWidth,
+      height: window.innerHeight,
+      zoomboximg: false
 		}
 	}
 	
-   	componentDidMount(){
-    }
+  updateDimensions = () => {
+    this.setState({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+  };
+
+  componentDidMount() {
+    window.addEventListener('resize', this.updateDimensions);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateDimensions);
+  }
 
     //constantly updates the position of
     _onMouseMove(e) {
@@ -225,7 +239,28 @@ class Element3 extends React.Component{
 		console.log(e.clientX / $( window ).width() + ", " + e.clientY / $( window ).height());
   	}	
 
-	render(){
+  render() {
+    const { width, height } = this.state;
+    // if in portrait mode
+    if (height > width) {
+      return (
+        <div>
+          <div id="Static_Mobile_Text">
+            Please turn your phone to landscape mode for the optimal interactive
+            experience
+          </div>
+          <div id="Static_Zoom_Container">
+            <img
+              src={require('../Media/Garden-Overview.bmp')}
+              alt="GARDEN"
+              height="100%"
+              width="100%"
+              id={this.state.zoom}
+            />
+          </div>
+        </div>
+      );
+    }
 	  return (
 	  		<div onMouseMove={this._onMouseMove.bind(this)}>
 				<div id="Zoom_Container">
@@ -252,7 +287,7 @@ class Element3 extends React.Component{
 				</div>
 
 				<GlowingMarks shouldDisplay={this.state.glowingMarks} />
-				<DateBox shouldDisplay={this.state.robotCameraOverlay} />
+				{width > 600 ? <DateBox shouldDisplay={this.state.robotCameraOverlay} /> : null}
 				<RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay}/>
 				<div id="click" onClick={(e) => {console.log("clicked"); this.state.handleClick(e)}}></div>
 		    </div>

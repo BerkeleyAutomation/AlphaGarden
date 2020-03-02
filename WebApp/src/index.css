@@ -241,6 +241,45 @@ code {
     border: none;
 }
 
+#Static_Zoom_Container {
+  background-color: "brown";	
+  min-width: 100%;	
+  min-height:100%;	
+  max-height: 100%;	
+  max-width: 100%;	
+  overflow: hidden;	
+  border: none;
+}   
+
+#Static_Zoom_Container img{
+  background-color: #333;	
+  max-width: 100%;	
+  border: 2px #333 solid;	
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  overflow: hidden;
+  position: fixed;	
+  border: none;
+  opacity: 80%;
+  filter: brightness(80%);
+}  
+
+#Static_Mobile_Text {
+  position: absolute;
+  top: 40vh;
+  right: 8vh;
+  left: 8vh;
+  letter-spacing: 2px;
+  padding: 2vh;
+  border-radius: 4px;
+  background-color: #222;
+  color: white;
+  z-index: 100;
+}
+
 #click {
   position: absolute;
   top: 0px;
