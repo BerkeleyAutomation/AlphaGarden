@@ -62,8 +62,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                             key=lambda x: x.height, reverse=True):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
                 if plant.pruned:
-                    shape = plt.Rectangle(((plant.col - plant.radius, plant.row - plant.radius)) * self.garden.step, plant.radius * 2, plant.radius * 2, fc='red', ec='red')
-                    # shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
+                    # shape = plt.Rectangle(((plant.col - plant.radius, plant.row - plant.radius)) * self.garden.step, plant.radius * 2, plant.radius * 2, fc='red', ec='red')
+                    shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
                 else:
                     shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
                 shape_plot = ax.add_artist(shape)
