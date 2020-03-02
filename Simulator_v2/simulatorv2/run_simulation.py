@@ -31,13 +31,12 @@ def run_simulation(args, run):
                        'cilantro', 'dill', 'fennel', 'marjoram', 'tarragon']
 
     # Initialize the garden
-    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=plant_types, animate=(args.mode == 'p'),
-                    save=(args.mode == 's'), prune_threshold=2 + 0.02 * run)
+    garden = Garden(plants, NUM_X_STEPS, NUM_Y_STEPS, STEP, plant_types=plant_types, animate=(args.mode == 'a'),
+                    save=(args.mode == 's'))
 
     # Run the simulation for NUM_TIMESTEPS steps
     for i in range(NUM_TIMESTEPS):
-        plants = garden.perform_timestep(water_amt=daily_water, irrigations=irrigation_policy(i), prune=args.prune)
-
+        plants = garden.perform_timestep(prune=args.prune, sector=0)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     # Display either graphs of garden data and the final garden state, or a full animation of garden timesteps

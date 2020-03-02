@@ -35,7 +35,6 @@ class Plant:
             WiltingStage(self, 20, 2),
             DeathStage(self)
         ]
-
         self.start_from_beginning()
     
     @staticmethod
@@ -64,23 +63,25 @@ class Plant:
         # resources accumulated per timestep
         self.amount_sunlight = 0
         self.water_amt = 0
+        self.water_available = 0
 
         # whether plant was pruned
         self.pruned = False
 
         self.stage_index = -1
-        self.switch_stage()
+        self.switch_stage(0)
 
     def add_sunlight(self, amount):
         self.amount_sunlight += amount
         if self.amount_sunlight > self.num_grid_points:
             raise Exception("Plant received more sunlight points than total grid points!")
 
+
     def current_stage(self):
         return self.stages[self.stage_index]
 
-    def switch_stage(self):
-        self.stage_index += 1
+    def switch_stage(self, next_stage_index):
+        self.stage_index = next_stage_index
         self.current_stage().start_stage()
         # print(f"Plant {self.id} moving to new stage!")
         # print(self.current_stage())
@@ -89,10 +90,11 @@ class Plant:
         self.amount_sunlight = 0
         self.water_amt = 0
         self.pruned = False
+        self.water_available = 0
 
-        should_transition = self.current_stage().step()
-        if should_transition and self.stage_index + 1 < len(self.stages):
-            self.switch_stage()
+        next_stage_index = self.current_stage().step()
+        if self.stage_index != next_stage_index:
+            self.switch_stage(next_stage_index)
 
     def start_over(self):
         self.growth_index = 0

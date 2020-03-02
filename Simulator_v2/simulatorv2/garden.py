@@ -186,6 +186,7 @@ class Garden:
                                                                        key=lambda x: self.plants[x[0]][x[1]].height)):
                     self.plants[plant_type_id][plant_id].add_sunlight((self.light_decay ** i) * (self.step ** 2))
 
+
     def distribute_water(self):
         # Log desired water levels of each plant before distributing
         for plant_type in self.plants:
@@ -195,8 +196,12 @@ class Garden:
         for point in self.enumerate_grid():
             if point['nearby']:
                 plant_types_and_ids = list(point['nearby'])
+                for plant_type_and_id in plant_types_and_ids:
+                    plant = self.plants[plant_type_and_id[0]][plant_type_and_id[1]]
+                    plant.water_available += point['water']
 
                 while point['water'] > 0 and plant_types_and_ids:
+
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plant_types_and_ids)))
                     plant = self.plants[plant_types_and_ids[i][0]][plant_types_and_ids[i][1]]
@@ -257,6 +262,7 @@ class Garden:
                             coords_updated.append(point)
                         plant.num_grid_points += 1
                         self.grid[point]['nearby'].add((self.plant_types.index(plant.type), plant.id))
+
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] += 1
         else:
             for i in range(next_growth_index_plus_1, plant.growth_index + 1):

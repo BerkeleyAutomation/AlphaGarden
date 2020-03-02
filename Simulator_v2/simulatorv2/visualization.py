@@ -136,8 +136,8 @@ def _setup_plot(garden):
     to visualize the garden.
     """
     fig, ax = plt.subplots()
-    plt.xlim((0, garden.N * garden.step))
-    plt.ylim((0, garden.M * garden.step))
+    plt.xlim((0, (garden.N - 1) * garden.step))
+    plt.ylim((0, (garden.M - 1) * garden.step))
     ax.set_aspect('equal')
 
     # ax.set_xticks(np.arange(0, garden.N * garden.step + 1, max(garden.N // 5, 1)))
@@ -165,6 +165,7 @@ def _add_frames(garden, ax, reverse=False):
     """
     shapes = []
 
+    # TODO: This only works when step = 1
     # Heatmap of soil water levels
     # c = plt.imshow(garden.grid['water'].T, cmap='Blues', origin='lower', alpha=0.5)
     # cp = ax.add_artist(c)
@@ -190,10 +191,11 @@ def _add_frames(garden, ax, reverse=False):
     #         shapes.append(circleplot)
 
     # Irrigation points
-    for (row, col), amount in garden.irrigation_points.items():
-        square = plt.Rectangle((row - 0.5, col - 0.5), 1, 1, fc='red', ec='red')
-        squareplot = ax.add_artist(square)
-        shapes.append(squareplot)
+    # for (row, col), amount in garden.irrigation_points.items():
+    #     square = plt.Rectangle(((row - 0.5) * garden.step, (col - 0.5) * garden.step), garden.step, garden.step,
+    #                            fc='red', ec='red')
+    #     squareplot = ax.add_artist(square)
+    #     shapes.append(squareplot)
 
     return shapes
 

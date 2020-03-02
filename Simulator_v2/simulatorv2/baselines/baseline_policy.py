@@ -32,4 +32,3 @@ def policy(timestep, state, global_cc_vec, garden_rows, garden_cols, sector, sec
              sector_water += MAX_WATER_LEVEL / 4
         return [irr_policy]
     return [0]
-            

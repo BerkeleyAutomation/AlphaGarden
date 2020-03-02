@@ -4,6 +4,7 @@ import csv
 from ast import literal_eval
 from simulator_params import *
 
+
 """
 Preset values for plant parameters and locations, for convenience when testing.
 To do a non-deterministic simulation setup, use the `random` preset.
@@ -16,7 +17,7 @@ and a dictionary of setup params as the value. Setup params must at minimum incl
 PLANT_PRESETS = {
     "single-plant": {
         "seed": 12345,
-        "plants": lambda: [Plant(20, 20, color='g')]
+        "plants": lambda: [Plant(2, 2, color='g')]
     },
     "control-and-3": {
         "seed": 38572912,
@@ -92,7 +93,7 @@ IRRIGATION_POLICIES = {
 
 
 def _make_sequential_irrigator(grid_step, amount, shift):
-    def get_sequential_irrigation(timestep):
+    def get_sequential_irrigation(state, step, irr_threshold, timestep):
         row_max = NUM_Y_STEPS // grid_step
         col_max = NUM_X_STEPS // grid_step
         timestep = (timestep + shift) % (row_max * col_max)
@@ -106,7 +107,7 @@ def _make_sequential_irrigator(grid_step, amount, shift):
 
 
 def _make_random_irrigator(amount):
-    def get_irrigation(_):
+    def get_irrigation(state, step, irr_threshold, timestep):
         grid_size = NUM_X_STEPS * NUM_Y_STEPS
         irrigations = [0] * grid_size
         irrigations[np.random.randint(grid_size)] = amount
