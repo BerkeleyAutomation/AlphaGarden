@@ -1,9 +1,9 @@
-from garden import Garden
+from simulatorv2.garden import Garden
 import random
 import string
-from utils import export_results
-from simulator_presets import *
-from visualization import plot_data, plot_garden
+from simulatorv2.utils import export_results
+from simulatorv2.simulator_presets import *
+from simulatorv2.visualization import plot_data, plot_garden
 import argparse
 import time
 
@@ -60,7 +60,7 @@ def get_parsed_args():
     parser.add_argument('--setup', type=str, default='random',
                         help='Which plant setup to use. (`random` will place plants randomly across the garden, '
                              '`csv` will read in plant locations from the .csv file given by the --csv_path arg.)')
-    parser.add_argument('--mode', type=str,
+    parser.add_argument('--mode', type=str, default='a',
                         help='[a|s|p] Whether to show full animation [a], save data to produce animations [s], or'
                              'show plots of plant behaviors [p]')
     parser.add_argument('--irrigator', type=str, help='[uniform|sequential] The irrigation policy to use')

@@ -5,7 +5,7 @@ import numpy as np
 
 class Plant:
 
-    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color='g', plant_type='basil',
+    def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
                  germination_time=3, start_height=1, start_radius=1):
         self.id = None
 
@@ -20,7 +20,7 @@ class Plant:
         self.k1 = k1  # minimum proportion plant will allocate to upward growth
         self.k2 = k2  # maximum proportion plant will allocate to upward growth
 
-        # color of plant when plotted
+        # color of plant when plotted (must be RGB tuple)
         self.color = color
 
         # plant species (for visualization purposes)

@@ -128,7 +128,7 @@ class Garden:
                     location = (i, j)
                     self.irrigate(location, irrigation)
                     self.irrigation_points[location] = irrigation
-                    
+        self.reset_water(0.5)
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()

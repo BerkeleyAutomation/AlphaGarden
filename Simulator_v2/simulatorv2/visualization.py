@@ -1,4 +1,5 @@
 from simulatorv2.logger import Event
+from simulatorv2.plant_stage import *
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation
