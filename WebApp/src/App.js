@@ -46,9 +46,6 @@ class App extends React.Component {
                   <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {}}/>
                 </div>
               </Route>
-              <Route path="/analysis">
-                <Element3 endFunc={() => {}} nuc={this.state.nuc}/>
-              </Route>
               <Route path="/simulation">
                 <div>
                   <PageHeading title="Alphagarden" subtitle="Simulation" />
@@ -67,6 +64,12 @@ class App extends React.Component {
               </Route>
             </Switch>
           </div>
+
+          <Switch>
+            <Route path="/analysis">
+              <Element3 endFunc={() => {}} nuc={this.state.nuc}/>
+            </Route>
+          </Switch>
         </div>
       </Router>
     )

@@ -45,20 +45,19 @@ class Post_Zoom extends React.Component {
   }
 
   getPlantCoords(plant) {
-    const windowWidth = $(window).width();
-    const windowHeight = $(window).height();
+    const windowWidth = $('#Zoom_Container').width();
+    const windowHeight = $('#Zoom_Container').height();
 
     let {center_x, center_y, radius} = plant;
     const {startX, startY, gridWidth, gridHeight} = this.props;
 
     console.log("Before conversion:", center_x, center_y)
     console.log("window size:", $(window).width(), $(window).height());
+    console.log("container size:", $('#Zoom_Container').width(), $('#Zoom_Container').height());
     console.log("grid values:", startX, startY, gridWidth, gridHeight);
     // Shift x and y
     center_x -= startX;
     center_y -= startY;
-
-    console.log("shifted x, y:", center_x, center_y);
 
     // Scale x and y and radius to match screen dimensions
     // console.log(windowWidth);
@@ -72,9 +71,7 @@ class Post_Zoom extends React.Component {
   getPlantCircles() {
     const {startX, startY, gridWidth, gridHeight} = this.props;
     return this.displayPlants.map((plant, i) => {
-      console.log(plant)
       const [x, y, radius] = this.getPlantCoords(plant);
-      console.log("scaled values:", x, y, radius)
       return <Delayed waitBeforeShow={2000 * (i + 1)}><PlantCircle key={i} label={plant.type} x={x} y={y} radius={radius} 
         {...[startX, startY, gridWidth, gridHeight]}/></Delayed>
     })

@@ -308,6 +308,7 @@ code {
 }
 
 .ZoomBox {
+  margin: 0;
   position: absolute;
   width: 20%;
   height: 20%;
@@ -324,23 +325,6 @@ code {
   0%, 20% {opacity: 1;}
   21%, 40% {opacity: 0;}
   41%, 100% {opacity: 1;}
-}
-
-#zoombox1 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(-800%, -1000%);
-}
-#zoombox2 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(800%, -1000%);
-}
-#zoombox3 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(-800%, 1000%);
-}
-#zoombox4 {
-  transition: transform 1s ease;
-  transform: scale(10, 10) translate(800%, 1000%);
 }
 
 #zoomboxshrink {
@@ -549,6 +533,7 @@ code {
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
+  height: 150px;
   padding: 40px 40px 40px 40px;
   animation: fadeInRobotStats 1s linear;
 }
@@ -576,6 +561,7 @@ code {
   border: 1px solid white;
   padding: 5px;
   font-weight: lighter;
+  width: 100%;
 }
 
 /* SIDEBAR */
