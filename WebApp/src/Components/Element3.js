@@ -73,11 +73,15 @@ class Element3 extends React.Component {
   }
 
   showBorders(box) {
+    this.setState({
+      zoomboximg: true
+    });
+
     setTimeout(() => {
       this.setState({
-        zoomboximg: true
+        zoomboximg: false
       });
-    }, 0);
+    }, 1000);
 
     var i = box - 1;
     var topLeft = document.getElementById('top-left');
@@ -140,14 +144,14 @@ class Element3 extends React.Component {
     this.showBorders(square);
     setTimeout(() => {
       this.removeOverlay();
-      this.triggerZoom(square);
       this.setZoomPosition(square);
+      this.triggerZoom(square);
       this.setOverlay(square);
 
       if (this.props.nuc) {
         setTimeout(this.zoomOut, 10000);
       }
-    }, 1000);
+    }, 800);
   }
 
   removeOverlay() {
@@ -188,13 +192,17 @@ class Element3 extends React.Component {
 
   setOverlay(box) {
     const { width, height, gridPlants } = this.state;
-    // const proportion = width / GARDEN_WIDTH;
+    const proportion = width / GARDEN_WIDTH;
 
     const x = (box - 1) % GRID_WIDTH;
     const y = Math.floor((box - 1) / GRID_WIDTH);
 
-    const startX = x * (width / GRID_WIDTH);
-    const startY = y * (height / GRID_HEIGHT);
+    // const startX = x * (width / GRID_WIDTH);
+    // const startY = y * (height / GRID_HEIGHT);
+    // const startX = x * (proportion*GARDEN_WIDTH / GRID_WIDTH);
+    // const startY = y * (proportion*GARDEN_HEIGHT / GRID_HEIGHT);
+    const startX = x * (GARDEN_WIDTH / GRID_WIDTH);
+    const startY = y * (GARDEN_HEIGHT / GRID_HEIGHT);
 
     setTimeout(() => {
       this.setState({
@@ -258,13 +266,16 @@ class Element3 extends React.Component {
 
   //constantly updates the position of
   _onMouseMove(e) {
-    const { width } = this.state;
+    const { width, height } = this.state;
     const proportion = width / GARDEN_WIDTH;
     this.setState({
-      x: e.clientX / (proportion * GARDEN_WIDTH),
-      y: e.clientY / (proportion * GARDEN_HEIGHT)
-      // x: (e.clientX / $(window).width()),
-      // y: (e.clientY / $(window).height())
+      // x: e.clientX / (proportion * GARDEN_WIDTH),
+      // y: e.clientY / (proportion * GARDEN_HEIGHT)
+      x: (e.clientX / $(window).width()),
+      y: (e.clientY / $(window).height())
+      // x: e.clientX / width,
+      // y: e.clientY / height
+      
     });
     // console.log(e.clientX / $( window ).width() + ", " + e.clientY / $( window ).height());
   }
