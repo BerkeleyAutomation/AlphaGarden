@@ -102,11 +102,16 @@ class Element3 extends React.Component{
 		}
 
 		const showBorders = (box) => {
+
+      this.setState({
+        zoomboximg: true,
+      })
+      
 			setTimeout(() => {
 				this.setState({
-					zoomboximg: true,
+					zoomboximg: false
 				})
-			}, 0);
+			}, 1000);
 
 			var i = box - 1;
 			var topLeft = document.getElementById('top-left');
