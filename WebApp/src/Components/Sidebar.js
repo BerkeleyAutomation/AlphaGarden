@@ -2,8 +2,15 @@ import React from "react";
 import { slide as Menu } from "react-burger-menu";
 
 export default props => {
+
+  const styles = { 
+    bmBurgerButton: {
+      'background-color': 'white',
+    },
+  }
+
   return (
-    <Menu {...props}>
+    <Menu {...props} styles={styles}>
       <a className="menu-item" href="/">
         Home
       </a>
