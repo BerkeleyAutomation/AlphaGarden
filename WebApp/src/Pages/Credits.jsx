@@ -73,10 +73,6 @@ const Credits = () => {
           <td><p>UI Implementation</p></td>
         </tr>
         <tr>
-          <td><p>Jeff He</p></td>
-          <td><p>UI Implementation</p></td>
-        </tr>
-        <tr>
           <td><p>Jackson Chui</p></td>
           <td><p>UI Implementation</p></td>
         </tr>
