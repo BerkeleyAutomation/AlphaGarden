@@ -10,7 +10,11 @@ const RobotVideoPage = (props) => {
       subtitle="Robot"
       isPortrait={windowHeight > windowWidth}
     />
-    <BackVideo vidName={require("../Media/robot_full.mp4")} endFunc={() => {}}/>
+    <BackVideo
+      vidName={require("../Media/robot_full.mp4")}
+      endFunc={() => { }}
+      isPortrait={windowHeight > windowWidth}
+    />
   </div>)
 }
 

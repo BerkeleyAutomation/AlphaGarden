@@ -69,7 +69,11 @@ class App extends React.Component {
                     subtitle="Growth"
                     isPortrait={windowHeight > windowWidth}
                   />
-                  <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {}}/>
+                  <BackVideo
+                    vidName={require("./Media/time_lapse.mp4")}
+                    endFunc={() => { }}
+                    isPortrait={windowHeight > windowWidth}
+                  />
                 </div>
               </Route>
               <Route path="/simulation">
@@ -80,7 +84,11 @@ class App extends React.Component {
                     isPortrait={windowHeight > windowWidth}
                   />
                   <img src={Grid} className="SimOverlay" alt="grid overlay"/>
-                  <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {}}/>
+                  <BackVideo
+                    vidName={require("./Media/simulation.mp4")}
+                    endFunc={() => { }}
+                    isPortrait={windowHeight > windowWidth}
+                  />
                 </div>
               </Route>
               <Route path="/robot">

@@ -108,3 +108,38 @@ td > p {
 .back-video {
   /* margin-top: -40px; */
 }
+
+/* SPINNER */
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.loading-component__rotate {
+  width: 15vh;
+  height: 15vh;
+  margin: auto;
+  top: 50vh;
+  left: 45vw;
+  opacity: 0.6;
+  animation: rotation 2s infinite linear;
+  display: block;
+  position: absolute;
+}
+
+.loading-component__rotate--portrait {
+  width: 9vh;
+  height: 9vh;
+  margin: auto;
+  top: 45vh;
+  left: 40vw;
+  opacity: 0.6;
+  animation: rotation 2s infinite linear;
+  display: block;
+  margin-top: -140px;
+  position: absolute;
+}
