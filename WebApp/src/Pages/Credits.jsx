@@ -81,6 +81,11 @@ const Credits = (props) => {
           <td><p>Jackson Chui</p></td>
           <td><p>UI Implementation</p></td>
         </tr>
+        <tr>
+          <td><p>Fang Shuo Deng</p></td>
+          <td><p>UI Implementation</p></td>
+        </tr>
+
       </table>
 
       <h2 className="section-heading">Advisors</h2>
