@@ -3,14 +3,8 @@ import { slide as Menu } from "react-burger-menu";
 
 export default props => {
 
-  const styles = { 
-    bmBurgerButton: {
-      'background-color': 'white',
-    },
-  }
-
   return (
-    <Menu {...props} styles={styles}>
+    <Menu {...props} >
       <a className="menu-item" href="/">
         Home
       </a>
@@ -38,6 +32,8 @@ export default props => {
       <a className="menu-item" href="/credits">
         Credits
       </a>
+
+      <a className="menu-item fa fa-twitter menu-icon" href="https://twitter.com/@Alpha_Garden" />
     </Menu>
   );
 };
