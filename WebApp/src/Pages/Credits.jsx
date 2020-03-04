@@ -46,6 +46,10 @@ const Credits = (props) => {
           <td><p>Deep Learning</p></td>
         </tr>
         <tr>
+          <td><p>Paul Shao</p></td>
+          <td><p>Deep Learning and Image Processing</p></td>
+        </tr>
+        <tr>
           <td><p>Mark Presten</p></td>
           <td><p>Hardware Engineering</p></td>
         </tr>
@@ -132,6 +136,8 @@ const Credits = (props) => {
       <p>Watercolor by Chelsea Qiu and Sarah Newman</p>
       <p>UC Berkeley AUTOLAB</p>
       <p>NSF-USDA Grant: RAPID: Robot-Assisted Precision Irrigation Delivery</p>
+      <br/>
+      <p>Contact:  Prof. Ken Goldberg, UC Berkeley goldberg@berkeley.edu</p>
     </div>
   </div>)
 }

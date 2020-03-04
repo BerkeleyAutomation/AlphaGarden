@@ -76,6 +76,8 @@ const About = (props) => {
       <p>
         - Sarah Newman, Harvard metaLAB
       </p>
+      <br/>
+      <p>Contact:  Prof. Ken Goldberg, UC Berkeley goldberg@berkeley.edu</p>
     </div>
   </div>)
 }
