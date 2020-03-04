@@ -11,7 +11,6 @@ const Home = (props) => {
       isPortrait={windowHeight > windowWidth}
     />
     <Watercolor
-      type="small"
       isPortrait={windowHeight > windowWidth}
     />
   </div>)
