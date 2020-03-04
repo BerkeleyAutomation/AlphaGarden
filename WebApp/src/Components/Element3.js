@@ -37,8 +37,6 @@ class Element3 extends React.Component {
       gridPlants[square].push(plant);
     }
 
-    console.log(gridPlants);
-
     this.state = {
       overlay: null,
       zoom: 'no_zoom',
@@ -112,7 +110,6 @@ class Element3 extends React.Component {
   }
 
   triggerZoom(box) {
-		console.log("TRIGGER ZOOM")
     this.setState({
       zoom: 'Zoom' + box,
       handleClick: () => {},
@@ -132,7 +129,7 @@ class Element3 extends React.Component {
       this.setState({
         zoomboximg: false
       });
-    }, 1000);
+    }, 1200);
 
     var i = box - 1;
     var topLeft = document.getElementById('top-left');
@@ -140,30 +137,23 @@ class Element3 extends React.Component {
     var bottomLeft = document.getElementById('bottom-left');
     var bottomRight = document.getElementById('bottom-right');
 
-    // topLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
-    // topLeft.style.top = Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + '%';
+    var clientWidth = document.body.clientWidth;
+    var clientHeight = document.getElementById('Zoom_Container').clientHeight;
 
-    // bottomLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
-    // bottomLeft.style.top =
-    //   Math.min(
-    //     Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + 100 / GRID_HEIGHT,
-    //     96
-    //   ) + '%';
+    topLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
+    topLeft.style.top = Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + '%';
 
-    // topRight.style.left =
-    //   Math.min((i % GRID_WIDTH) * (100 / GRID_WIDTH) + 100 / GRID_WIDTH, 96) +
-    //   '%';
-    // topRight.style.top =
-    //   Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + '%';
+    bottomLeft.style.left = (i % GRID_WIDTH) * (100 / GRID_WIDTH) + '%';
+    bottomLeft.style.top = ((((Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + 100 / GRID_HEIGHT)) / 100) * clientHeight) - 25 + 'px';
 
-    // bottomRight.style.left =
-    //   Math.min((i % GRID_WIDTH) * (100 / GRID_WIDTH) + 100 / GRID_WIDTH, 96) +
-    //   '%';
-    // bottomRight.style.top =
-    //   Math.min(
-    //     Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + 100 / GRID_HEIGHT,
-    //     96
-		// 	) + '%';
+    topRight.style.left =
+      ((((i % GRID_WIDTH) * (100 / GRID_WIDTH) + 100 / GRID_WIDTH) / 100) * clientWidth) - 30 + 'px';
+    topRight.style.top =
+      Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + '%';
+
+    bottomRight.style.left =
+      ((((i % GRID_WIDTH) * (100 / GRID_WIDTH) + 100 / GRID_WIDTH) / 100) * clientWidth) - 30 + 'px';
+    bottomRight.style.top = ((((Math.floor(i / GRID_HEIGHT) * (100 / GRID_HEIGHT) + 100 / GRID_HEIGHT)) / 100) * clientHeight) - 25 + 'px';
   }
 
   setZoomPosition(box) {
@@ -181,7 +171,6 @@ class Element3 extends React.Component {
         '%' +
         Math.floor(i / GRID_HEIGHT) * (100 / (GRID_HEIGHT - 1)) +
         '%';
-      console.log(img.style.transformOrigin);
     }
   }
 
@@ -280,7 +269,7 @@ class Element3 extends React.Component {
 
         <Overlay shouldDisplay={this.state.filter} />
 
-        {/* <div className="ZoomBox" id="top-left">
+        <div className="ZoomBox" id="top-left">
           <ZoomBox
             shouldDisplay={this.state.zoomboximg}
             src={ZoomBox1}
@@ -307,7 +296,7 @@ class Element3 extends React.Component {
             src={ZoomBox4}
             id={this.state.zoombox4}
           />
-        </div> */}
+        </div>
 
         <GlowingMarks shouldDisplay={this.state.glowingMarks} />
         {windowWidth > 600 ? (
@@ -317,7 +306,6 @@ class Element3 extends React.Component {
         <div
           id="click"
           onClick={e => {
-            console.log('clicked');
             this.state.handleClick(e);
           }}
         ></div>
