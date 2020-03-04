@@ -15,30 +15,32 @@ class BackVideo extends React.Component {
     // console.log(params);
   };
 
-	render() {
-		const { isLoading } = this.state;
+  render() {
+    const { isLoading } = this.state;
     return (
-		<div>
-			{isLoading ? <LoadingComponent isPortrait={this.props.isPortrait} /> : null}
+      <div>
+        {isLoading ? (
+          <LoadingComponent isPortrait={this.props.isPortrait} />
+        ) : null}
         <video
           autoPlay
           muted
-          loop
+          loop={!this.props.noLoop}
           playsInline
           preload="auto"
           className="back-video"
           onEnded={this.props.endFunc}
           height="100%"
           width="100%"
-		  onProgress={evt => {
-			  console.log(evt.nativeEvent);
-		  }}
-		  onLoadedData={() => {
-				this.setState({ isLoading: false });
-			}}
+          // onProgress={evt => {
+          //   console.log(evt.nativeEvent);
+          // }}
+          onLoadedData={() => {
+            this.setState({ isLoading: false });
+          }}
         >
           <source src={this.props.vidName} type="video/mp4" />
-		</video>
+        </video>
       </div>
     );
   }

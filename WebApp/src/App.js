@@ -73,6 +73,7 @@ class App extends React.Component {
                     vidName={require("./Media/time_lapse.mp4")}
                     endFunc={() => { }}
                     isPortrait={windowHeight > windowWidth}
+                    noLoop
                   />
                 </div>
               </Route>
