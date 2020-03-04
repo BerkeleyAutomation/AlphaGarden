@@ -57,8 +57,6 @@ class Element3 extends React.Component {
       glowingMarks: true,
       filter: true,
 
-      width: window.innerWidth,
-      height: window.innerHeight,
       gridPlants: gridPlants,
       zoomboximg: false
     };
@@ -67,21 +65,6 @@ class Element3 extends React.Component {
     this.zoomOut = this.zoomOut.bind(this);
     this.setOverlay = this.setOverlay.bind(this);
   }
-
-  componentDidMount() {
-    window.addEventListener('resize', this.updateDimensions);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.updateDimensions);
-  }
-
-  updateDimensions = () => {
-    this.setState({
-      width: window.innerWidth,
-      height: window.innerHeight
-    });
-  };
 
   //Func to trigger the proper transformations to zoom into a square of the garden  square=Math.floor(Math.random() * 16) + 1
   zoomIn() {
@@ -260,9 +243,9 @@ class Element3 extends React.Component {
   }
 
   render() {
-    const { width, height } = this.state;
+    const { windowWidth, windowHeight } = this.props;
     // if in portrait mode
-    if (height > width) {
+    if (windowHeight > windowWidth) {
       return (
         <div>
           <div id="Static_Mobile_Text">
@@ -327,7 +310,7 @@ class Element3 extends React.Component {
         </div> */}
 
         <GlowingMarks shouldDisplay={this.state.glowingMarks} />
-        {width > 600 ? (
+        {windowWidth > 600 ? (
           <DateBox shouldDisplay={this.state.robotCameraOverlay} />
         ) : null}
         <RobotCameraOverlay shouldDisplay={this.state.robotCameraOverlay} />

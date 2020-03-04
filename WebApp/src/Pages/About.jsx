@@ -3,9 +3,14 @@ import PageHeading from './PageHeading';
 import Watercolor from './Watercolor';
 import ReactMarkdown from 'react-markdown';
 
-const About = () => {
+const About = (props) => {
+  const { windowWidth, windowHeight } = props;
   return (<div>
-    <PageHeading title="Alphagarden" subtitle="About" />
+    <PageHeading
+      title="Alphagarden"
+      subtitle="About"
+      isPortrait={windowHeight > windowWidth}
+    />
     <Watercolor type="small" />
     <div className="about-content">
       <div className="compact-text">

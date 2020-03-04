@@ -2,9 +2,14 @@ import React from 'react';
 import PageHeading from './PageHeading';
 import Watercolor from './Watercolor';
 
-const Credits = () => {
+const Credits = (props) => {
+  const { windowWidth, windowHeight } = props;
   return (<div>
-    <PageHeading title="Alphagarden" subtitle="Credits" />
+    <PageHeading
+      title="Alphagarden"
+      subtitle="Credits"
+      isPortrait={windowHeight > windowWidth}
+    />
     <Watercolor type="small" />
     <div className="about-content">
       <p>Can a robot learn to garden?</p>
