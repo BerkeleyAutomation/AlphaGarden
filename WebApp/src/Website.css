@@ -12,7 +12,8 @@
 }
 
 .page-heading {
-  margin: 0px auto 50px auto;
+  /* margin: 0px auto 0px auto; */
+  margin: auto;
   max-width: 80%;
   text-align: center;
 }
@@ -21,18 +22,38 @@
   text-transform: uppercase;
   font-family: 'Roboto Mono';
   font-weight: lighter;
-  font-size: 36px;
+  font-size: 4vh;
   letter-spacing: 15px;
   margin: 0;
+}
+
+.page-heading__title--portrait {
+  text-transform: uppercase;
+  font-family: 'Roboto Mono';
+  font-weight: lighter;
+  font-size: 3vh;
+  letter-spacing: 11px;
+  /* margin-top:  */
+  margin: 8vh auto 0 auto;
 }
 
 .page-heading__subtitle {
   text-transform: uppercase;
   font-family: 'Roboto Mono';
   font-weight: lighter;
-  font-size: 20px;
-  letter-spacing: 10px;
+  font-size: 2.5vh;
+  letter-spacing: 9px;
   margin-top: 0px;
+}
+
+.page-heading__subtitle--portrait {
+  text-transform: uppercase;
+  font-family: 'Roboto Mono';
+  font-weight: lighter;
+  font-size: 1.5vh;
+  letter-spacing: 7px;
+  margin-top: 0px;
+  margin-bottom: 2vh;
 }
 
 .section-heading {
@@ -45,13 +66,13 @@
 }
 
 .watercolor {
-  margin-top: 0px;
+  /* margin-top: 0px;
   display: inline-block;
-  max-width: 90%;
+  max-width: 90%; */
 }
 
 .watercolor--small {
-  margin-top: -30px;
+  /* margin-top: -30px; */
   max-width: 60%;
 }
 
@@ -85,5 +106,5 @@ td > p {
 }
 
 .back-video {
-  margin-top: -40px;
+  /* margin-top: -40px; */
 }

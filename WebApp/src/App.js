@@ -26,10 +26,29 @@ class App extends React.Component {
       el6: false,
       el7: false,
       nuc: true, 
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight
     };
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', this.updateDimensions);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateDimensions);
+  }
+
+  updateDimensions = () => {
+    this.setState({
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight
+    });
+  };
+
   render() {
+    const { windowWidth, windowHeight } = this.state;
+
     return (
       <Router>
         <div className="body">
@@ -38,36 +57,60 @@ class App extends React.Component {
           <div className="main-content">
             <Switch>
               <Route path="/about">
-                <About />
+                <About
+                  windowWidth={windowWidth}
+                  windowHeight={windowHeight}
+                />
               </Route>
               <Route path="/growth">
                 <div>
-                  <PageHeading title="Alphagarden" subtitle="Growth" />
+                  <PageHeading
+                    title="Alphagarden"
+                    subtitle="Growth"
+                    isPortrait={windowHeight > windowWidth}
+                  />
                   <BackVideo vidName={require("./Media/time_lapse.mp4")} endFunc={() => {}}/>
                 </div>
               </Route>
               <Route path="/simulation">
                 <div>
-                  <PageHeading title="Alphagarden" subtitle="Simulation" />
+                  <PageHeading
+                    title="Alphagarden"
+                    subtitle="Simulation"
+                    isPortrait={windowHeight > windowWidth}
+                  />
                   <img src={Grid} className="SimOverlay" alt="grid overlay"/>
                   <BackVideo vidName={require("./Media/simulation.mp4")} endFunc={() => {}}/>
                 </div>
               </Route>
               <Route path="/robot">
-                <RobotVideoPage />
+                <RobotVideoPage
+                  windowWidth={windowWidth}
+                  windowHeight={windowHeight}
+                />
               </Route>
               <Route path="/credits">
-                <Credits />
+                <Credits
+                  windowWidth={windowWidth}
+                  windowHeight={windowHeight}
+                />
               </Route>
               <Route exact path="/">
-                <Home />
+                <Home
+                  windowWidth={windowWidth}
+                  windowHeight={windowHeight}
+                />
               </Route>
             </Switch>
           </div>
 
           <Switch>
             <Route path="/analysis">
-              <Element3 endFunc={() => {}} nuc={this.state.nuc}/>
+              <Element3
+                endFunc={() => { }} nuc={this.state.nuc}
+                windowWidth={windowWidth}
+                windowHeight={windowHeight}
+              />
             </Route>
           </Switch>
         </div>
