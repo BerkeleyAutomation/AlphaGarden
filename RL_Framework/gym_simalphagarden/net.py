@@ -14,8 +14,9 @@ class Net(nn.Module):
         self.input_raw_mean = input_raw_mean
         self.input_raw_std = input_raw_std
 
+        # can add another conv, number of filters, max/avg pooling
         self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=16, stride=1, kernel_size=5, padding=2)
-        self.cc_bn1 = nn.BatchNorm2d(16)
+        self.cc_bn1 = nn.BatchNorm2d(16) # normalize every batch between each layer
         self.cc_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
         self.cc_bn2 = nn.BatchNorm2d(32)
         self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
@@ -44,6 +45,7 @@ class Net(nn.Module):
         cc_sector, water_and_seeds, global_cc = x
         ## TODO: normalize cc image
         cc = self.cc_conv1(cc_sector)
+        # print shape after each step
         cc = self.cc_bn1(cc)
         cc = F.relu(cc)
         cc = self.cc_conv2(cc)
@@ -61,6 +63,7 @@ class Net(nn.Module):
         raw = self.raw_pool(raw)
 
         cc_and_raw = torch.cat((cc, raw), dim=1)
+        # TODO: normalize global_cc; concatenate cnn to array pytorch
         state = torch.cat((cc_and_raw, global_cc), dim=1)
         state = F.relu(state)
         action = self.fc(state)

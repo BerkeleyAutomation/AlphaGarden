@@ -22,15 +22,15 @@ class SimAlphaGardenEnv(gym.Env):
         
         # Observations include the seed mask for each plant type and the garden water grid
         self.observation_space = spaces.Tuple((
-            spaces.Box(low=obs_low, high=obs_high, shape=(num_plant_types, 1), dtype=np.float16),
-            spaces.Box(low=obs_low, high=obs_high, shape=(garden_x, garden_y, garden_z),
+            spaces.Box(low=obs_low, high=obs_high, shape=(num_plant_types + 1, 1), dtype=np.float16),
+            spaces.Box(low=obs_low, high=obs_high, shape=(sector_rows, sector_cols, garden_z),
                        dtype=np.float16)))
         
         self.reset()
 
     def _next_observation(self):
         self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state()
-        self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types, 1))
+        self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types + 1, 1))
         return [self.global_cc_vec, obs]
 
     def _take_action(self, sector, action):
@@ -41,9 +41,6 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_curr_action(self):
         return self.wrapper_env.get_curr_action()
-
-    def get_irr_action(self):
-        return self.wrapper_env.get_irr_action()
 
     def get_sector(self):
         return self.sector

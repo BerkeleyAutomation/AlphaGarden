@@ -31,8 +31,8 @@ class Plant:
         self.stages = [
             GerminationStage(self, germination_time, start_height, start_radius),
             GrowthStage(self, growth_time),
-            WaitingStage(self, 10),
-            WiltingStage(self, 20, 2),
+            WaitingStage(self, 1000),
+            WiltingStage(self, 2000, 2),
             DeathStage(self)
         ]
         self.start_from_beginning()

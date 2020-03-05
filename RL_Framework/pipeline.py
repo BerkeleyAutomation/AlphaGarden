@@ -139,6 +139,7 @@ class Pipeline:
                     obs_high=obs_high,
                     )
         env = DummyVecEnv([lambda: env])
+        # TODO: Normalize input features? VecNormalize
         env = VecCheckNan(env, raise_exception=False)
 
         if is_baseline:

@@ -1,12 +1,13 @@
 from wrapperenv import WrapperEnv
-from garden import Garden
-from plant_type import PlantType
+from simulatorv2.garden import Garden
+from simulatorv2.plant_type import PlantType
 import numpy as np
 import configparser
 import matplotlib.pyplot as plt
 from datetime import datetime
-from simulatorv2.sim_globals import MAX_WATER_LEVEL
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, ACTIONS_PER_TIMESTEP
 import os
+import random
 
 
 class SimAlphaGardenWrapper(WrapperEnv):
@@ -28,27 +29,42 @@ class SimAlphaGardenWrapper(WrapperEnv):
         
         # Amount to water every square in a sector by
         self.irr_actions = {
-            1: MAX_WATER_LEVEL * 0.25,
-            2: MAX_WATER_LEVEL * 0.5,
-            3: MAX_WATER_LEVEL * 0.75,
-            4: MAX_WATER_LEVEL,
+            1: MAX_WATER_LEVEL,
         }
+        
+        self.plant_centers_original = []
+        self.plant_centers = []
+        self.non_plant_centers_original = []
+        self.non_plant_centers = []
+        
+        self.centers_to_execute = []
+        self.actions_to_execute = []
 
     def get_state(self):
         return self.get_data_collection_state()
     
     ''' Returns sector number and state associated with the sector. '''
     def get_data_collection_state(self):
-        # TODO: Need to seed numpy?
-        return np.random.randint(low=0, high=self.num_sectors, size=1)[0], \
-            self.garden.get_cc_per_plant(), np.dstack((self.garden.get_plant_grid(),
-                                                       self.garden.get_water_grid()))
+        np.random.seed(random.randint(0, 99999999))
+        if len(self.plant_centers) > 0:
+            np.random.shuffle(self.plant_centers)
+            center_to_sample = self.plant_centers[0]
+            self.plant_centers = self.plant_centers[1:]
+        else:
+            np.random.shuffle(self.non_plant_centers)
+            center_to_sample = self.non_plant_centers[0]
+            self.non_plant_centers = self.non_plant_centers[1:]
+        
+        cc_per_plant = self.garden.get_cc_per_plant()
+        global_cc_vec = np.append(self.rows * self.cols - np.sum(cc_per_plant), cc_per_plant)
+        return center_to_sample, global_cc_vec / np.sum(global_cc_vec), \
+            np.dstack((self.garden.get_plant_prob(center_to_sample), \
+                self.garden.get_water_grid(center_to_sample)))
 
-    def get_canopy_image(self, sector):
+    def get_canopy_image(self, center):
         dir_path = self.config.get('data_collection', 'dir_path')
         self.garden.step = 1
-        x_low, y_low = self.garden.get_sector_x(sector), self.garden.get_sector_y(sector)
-        x_high, y_high = x_low + self.sector_rows - 1, y_low + self.sector_cols - 1
+        x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
         _, ax = plt.subplots()
         ax.set_xlim(y_low, y_high)
         ax.set_ylim(x_low, x_high)
@@ -95,21 +111,20 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def get_curr_action(self):
         return self.curr_action
-    
-    def get_irr_action(self):
-        return self.irr_action
 
     def reward(self, state):
-        total_cc = np.sum(self.garden.leaf_grid)
-        cc_per_plant = [np.sum(self.garden.leaf_grid[:,:,i]) for i in range(self.garden.leaf_grid.shape[2])]
-        prob = cc_per_plant / total_cc
-        prob = prob[np.where(prob > 0)]
-        entropy = -np.sum(prob*np.log(prob))
-        water_coef = self.config.getfloat('reward', 'water_coef')
-        cc_coef = self.config.getfloat('reward', 'cc_coef')
-        action_sum = self.sector_rows * self.sector_cols
-        water_used = self.irr_action * action_sum
-        return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * water_used/action_sum + 1)
+        # total_cc = np.sum(self.garden.leaf_grid)
+        # cc_per_plant = [np.sum(self.garden.leaf_grid[:,:,i]) for i in range(self.garden.leaf_grid.shape[2])]
+        # prob = cc_per_plant / total_cc
+        # prob = prob[np.where(prob > 0)]
+        # entropy = -np.sum(prob*np.log(prob))
+        # water_coef = self.config.getfloat('reward', 'water_coef')
+        # cc_coef = self.config.getfloat('reward', 'cc_coef')
+        # action_sum = self.sector_rows * self.sector_cols
+        # water_used = self.irr_action * action_sum
+        # return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * water_used/action_sum + 1)
+        #TODO: update reward calculation for new state
+        return 0
         
     '''
     Method called by the gym environment to execute an action.
@@ -119,35 +134,35 @@ class SimAlphaGardenWrapper(WrapperEnv):
     Returns:
         state - state of the environment after irrigation
     '''
-    def take_action(self, sector, action):
+    def take_action(self, center, action):
         self.curr_action = action
         
         # State and action before performing a time step.
         global_cc_vec = self.garden.get_cc_per_plant()
-        plant_grid = self.garden.get_plant_grid()
-        water_grid = self.garden.get_water_grid()
-        action_vec = np.zeros(5 + len(global_cc_vec))
+        plant_grid = self.garden.get_plant_prob(center)
+        water_grid = self.garden.get_water_grid(center)
+        action_vec = np.zeros(len(self.irr_actions) + len(global_cc_vec))
         
         # Save canopy image before performing a time step.
         if self.curr_action >= 0:
-            path = self.get_canopy_image(sector)
-            # self.plot_water_map(path, water_grid, plant_grid)
+            path = self.get_canopy_image(center)
+            self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
             action_vec[self.curr_action] = 1
             np.save(path + '_action', action_vec)
             np.savez(path + '.npz', seeds=plant_grid, water=water_grid, global_cc=global_cc_vec)
-            
-        if action == 0:
-            self.irr_action = 0
-        elif action in range(1, 5):
-            self.action = self.irr_actions[action]
-            self.irr_action = self.action
-            self.garden.perform_timestep(sector=sector, irrigation=self.action)
-        else:
-            self.irr_action = 0
-            plant_to_prune = action - 5 # minus 5 offset for no action and irrigation actions
-            self.garden.perform_timestep(sector=sector, prune=plant_to_prune)
-            
-        return self.garden.get_state()
+
+        if len(self.actions_to_execute) < ACTIONS_PER_TIMESTEP or (len(self.plant_centers) == 0 and len(self.non_plant_centers) == 0):
+            if self.curr_action > 0:
+                self.centers_to_execute.append(center)
+                self.actions_to_execute.append(self.curr_action)
+            return self.get_state()
+        
+        # Execute actions only if we have reached the ACTIONS_PER_TIMESTEP threshold.
+        self.garden.perform_timestep(
+            sectors=self.centers_to_execute, actions=self.actions_to_execute)
+        self.plant_centers = self.plant_centers_original
+        self.non_plant_centers = self.non_plant_centers_original
+        return self.get_state()
 
     '''
     Method called by the gym environment to reset the simulator.
@@ -155,15 +170,19 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def reset(self):
         self.garden = \
             Garden(
-                plants=self.PlantType.get_random_plants(self.rows, self.cols),
+                plants=self.PlantType.get_random_plants(self.rows, self.cols, self.sector_rows, self.sector_cols),
                 N=self.rows,
                 M=self.cols,
                 sector_rows=self.sector_rows,
                 sector_cols=self.sector_cols,
-                irr_threshold=0,
+                irr_threshold=5,
                 step=self.step,
                 plant_types=self.PlantType.plant_names,
                 animate=False)
+        self.plant_centers_original = self.PlantType.plant_centers
+        self.plant_centers = self.PlantType.plant_centers
+        self.non_plant_centers_original = self.PlantType.non_plant_centers
+        self.non_plant_centers = self.PlantType.non_plant_centers
 
     '''
     Method called by the environment to display animations.

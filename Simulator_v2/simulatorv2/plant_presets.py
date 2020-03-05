@@ -40,6 +40,8 @@ def _compute_from_table_values(name="plant", color="g", germination_time=(0, 1),
 
 
 PLANT_TYPES = {
+    "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
+                                          seed_spacing=9, maturation_time=62.5),
     "bok-choy": _compute_from_table_values(name="bok-choy", color=(86/255, 139/255, 31/255), germination_time=(5, 10),
                                            seed_spacing=6, maturation_time=45),
     "basil": _compute_from_table_values(name="basil", color=(9/255, 77/255, 10/255), germination_time=(5, 10),
@@ -80,7 +82,5 @@ PLANT_TYPES = {
                                          seed_spacing=5, maturation_time=28),
     "borage": _compute_from_table_values(name="borage", color=(58/255, 137/255, 100/255),
                                          germination_time=(5, 15),
-                                         seed_spacing=20, maturation_time=56),
-    "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
-                                          seed_spacing=9, maturation_time=62.5)
+                                         seed_spacing=20, maturation_time=56)
 }

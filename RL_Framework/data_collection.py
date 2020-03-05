@@ -7,6 +7,7 @@ from file_utils import FileUtils
 import simulatorv2.baselines.baseline_policy as baseline_policy
 from simulatorv2.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulatorv2.plant_type import PlantType
+from simulatorv2.sim_globals import NUM_IRR_ACTIONS
 from stable_baselines.common.vec_env import DummyVecEnv
 
 class DataCollection:
@@ -41,7 +42,7 @@ class DataCollection:
             cc_vec = env.env_method('get_global_cc_vec')[0]
             sector = env.env_method('get_sector')[0]
             action = policy(i, obs, cc_vec, rows, cols, sector, sector_rows, sector_cols,
-                            garden_step, water_threshold)
+                            garden_step, water_threshold, NUM_IRR_ACTIONS)
             obs, rewards, _, _ = env.step(action)
 
 if __name__ == '__main__':    
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     action_high = 1
     obs_low = 0
     obs_high = rows * cols
-    garden_time_steps = 400
+    garden_time_steps = 200000
     garden_step = 1
     water_threshold = 0.5
     

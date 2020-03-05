@@ -2,7 +2,7 @@ import numpy as np
 from heapq import nlargest
 from simulatorv2.logger import Logger, Event
 from simulatorv2.visualization import setup_animation, setup_saving
-from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS
 import pickle
 
 
@@ -30,6 +30,9 @@ class Garden:
 
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
+        
+        # Grid to hold the plant probabilities of each location
+        self.plant_prob = np.zeros((N, M, len(plant_types)))
 
         # Grid for plant leaf state representation
         self.leaf_grid = np.zeros((N, M, len(plant_types)))
@@ -107,35 +110,42 @@ class Garden:
             self.grid[plant.row, plant.col]['nearby'].add((self.plant_types.index(plant.type), plant.id))
             self.plant_grid[plant.row, plant.col, self.plant_types.index(plant.type)] = 1
             self.leaf_grid[plant.row, plant.col, self.plant_types.index(plant.type)] += 1
-
     
-    def get_sector_x(self, sector):
-        return (sector % (self.N // self.sector_rows)) * self.sector_rows
+    def get_sector_bounds(self, center):
+        x_low = center[0] - (self.sector_rows // 2)
+        y_low = center[1] - (self.sector_cols // 2)
+        x_high = center[0] + (self.sector_rows // 2)
+        y_high = center[1] + (self.sector_cols // 2)
+        return x_low, y_low, x_high, y_high
     
-    def get_sector_y(self, sector):
-        return (sector // (self.M // self.sector_cols)) * self.sector_cols
-    
-    # Updates plants after one timestep, returns list of plant objects
-    # irrigations is NxM vector of irrigation amounts
-    def perform_timestep(self, sector=None, irrigation=-1, prune=None):
+    def perform_timestep_irr(self, center, irrigation):
         self.irrigation_points = {}
         
         if irrigation > 0:
-            x = self.get_sector_x(sector)
-            y = self.get_sector_y(sector)
-            for i in range(x, x + self.sector_rows):
-                for j in range(y, y + self.sector_cols):
+            x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+            for i in range(x_low, x_high + 1):
+                for j in range(y_low, y_high + 1):
                     location = (i, j)
                     self.irrigate(location, irrigation)
                     self.irrigation_points[location] = irrigation
-        self.reset_water(0.5)
+    
+    def perform_timestep_prune(self, sector, plant_to_prune):
+        if plant_to_prune is not None and self.timestep >= self.prune_delay:
+            self.prune_plant_type(sector, plant_to_prune)
+    
+    # Updates plants after one timestep, returns list of plant objects
+    # irrigations is NxM vector of irrigation amounts
+    def perform_timestep(self, sectors=[], actions=[]):
+        for i, action in enumerate(actions):
+            if action <= NUM_IRR_ACTIONS:
+                self.perform_timestep_irr(sectors[i], action)
+            elif action > NUM_IRR_ACTIONS:
+                self.perform_timestep_prune(sectors[i], action)
+
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
         
-        if prune is not None and self.timestep >= self.prune_delay:
-            self.prune_plant_type(sector, prune)
-
         if self.animate:
             self.anim_step()
 
@@ -286,7 +296,7 @@ class Garden:
 
         for i in range(len(self.plant_types)):
             while prob[i] > self.prune_threshold / len(self.plant_types):
-                coords_updated = self.prune_plant_type(-1, i)
+                coords_updated = self.prune_plant_type(None, i)
                 for coord in coords_updated:
                     point = self.grid[coord]
                     if point['nearby']:
@@ -297,17 +307,19 @@ class Garden:
 
     def compute_plant_cc_dist(self):
         cc_per_plant_type = np.zeros(len(self.plant_types))
-        for point in self.enumerate_grid():
-            if point['nearby']:
-                tallest_type_id = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+        # self.plant_prob = np.zeros((len(self.plant_types), self.N, self.M))
+        for point in self.enumerate_grid(coords=True):
+            if point[0]['nearby']:
+                tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
                 cc_per_plant_type[tallest_type_id] += 1
+                # self.plant_prob[point[1][0], point[1][1], tallest_type_id] = 1
+                # print(self.plant_prob[tallest_type_id][point[1][0]][point[1][1]].shape)
         return cc_per_plant_type
 
-    def prune_plant_type(self, sector, plant_type_id):
-        if sector >= 0:
-            x_low, y_low = self.get_sector_x(sector), self.get_sector_y(sector)
-            x_high, y_high = x_low + self.sector_rows, y_low + self.sector_cols
-            sector_plants = list(filter(lambda plant: x_low <= plant.row < x_high and y_low <= plant.col < y_high,
+    def prune_plant_type(self, center, plant_type_id):
+        if center is not None:
+            x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+            sector_plants = list(filter(lambda plant: x_low <= plant.row <= x_high and y_low <= plant.col <= y_high,
                                         self.plants[plant_type_id].values()))
             if not sector_plants:
                 return
@@ -366,12 +378,26 @@ class Garden:
     def get_radius_grid(self):
         return self.radius_grid
 
-    def get_plant_grid(self):
+    def get_plant_grid(self, center):
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        return self.plant_grid[x_low:x_high+1,y_low:y_high,:]
+    
+    def get_plant_grid_full(self):
         return self.plant_grid
     
-    def get_water_grid(self):
+    def get_water_grid(self, center):
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        return self.water_grid[x_low:x_high+1,y_low:y_high]
+
+    def get_water_grid_full(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return self.water_grid
+    
+    def get_plant_prob(self, center):
+        # TODO: change
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        return self.plant_grid[x_low:x_high+1,y_low:y_high,:]
 
     def get_cc_per_plant(self):
         return self.compute_plant_cc_dist()
