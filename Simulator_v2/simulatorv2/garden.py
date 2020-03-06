@@ -2,7 +2,7 @@ import numpy as np
 from heapq import nlargest
 from simulatorv2.logger import Logger, Event
 from simulatorv2.visualization import setup_animation, setup_saving
-from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNING_WINDOW_RATIO
 import pickle
 
 
@@ -117,6 +117,19 @@ class Garden:
         x_high = center[0] + (self.sector_rows // 2)
         y_high = center[1] + (self.sector_cols // 2)
         return x_low, y_low, x_high, y_high
+
+    # get all plants, returning a list of plants irrespective of type
+    def get_all_plants(self):
+        list_of_list_of_plants = map(lambda plant_dict: plant_dict.values(), self.plants)        
+        return [plant for list_of_plants in list_of_list_of_plants for plant in list_of_plants]
+
+    # get pruning window from size of the garden
+    def get_pruning_window(self, center):
+        x_low = center[0] - ((self.sector_rows) * PRUNING_WINDOW_RATIO // 2)
+        y_low = center[1] - ((self.sector_cols) * PRUNING_WINDOW_RATIO // 2)
+        x_high = center[0] + ((self.sector_rows) * PRUNING_WINDOW_RATIO // 2)
+        y_high = center[1] + ((self.sector_cols) * PRUNING_WINDOW_RATIO // 2)
+        return x_low, y_low, x_high, y_high
     
     def perform_timestep_irr(self, center, irrigation):
         self.irrigation_points = {}
@@ -129,10 +142,26 @@ class Garden:
                     self.irrigate(location, irrigation)
                     self.irrigation_points[location] = irrigation
     
-    def perform_timestep_prune(self, sector, plant_to_prune):
-        if plant_to_prune is not None and self.timestep >= self.prune_delay:
-            self.prune_plant_type(sector, plant_to_prune)
-    
+    # performs pruning (details in comments below)
+    def perform_timestep_prune(self, center):
+
+        if self.timestep >= self.prune_delay:
+            # get plant types from the window in the middle of the sector
+            x_low, y_low, x_high, y_high = self.get_pruning_window(center)
+
+            # get all plants, irrespective of type
+            all_plants = self.get_all_plants()
+            
+            # get plants in the pruning window at the center
+            window_plants = list(filter(lambda plant: x_low <= plant.row <= x_high and y_low <= plant.col <= y_high,
+                                        all_plants))            
+            # prune all plants in window
+            for plant in window_plants:
+                plant.pruned = True
+                amount_to_prune = self.prune_rate * plant.radius
+                self.update_plant_size(plant, outward=-amount_to_prune)
+                self.update_plant_coverage(plant, record_coords_updated=True)
+
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, sectors=[], actions=[]):
@@ -140,7 +169,7 @@ class Garden:
             if action <= NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], action)
             elif action > NUM_IRR_ACTIONS:
-                self.perform_timestep_prune(sectors[i], action)
+                self.perform_timestep_prune(sectors[i])
 
         self.distribute_light()
         self.distribute_water()

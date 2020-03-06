@@ -146,7 +146,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # Save canopy image before performing a time step.
         if self.curr_action >= 0:
             path = self.get_canopy_image(center)
-            self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
+            # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
             action_vec[self.curr_action] = 1
             np.save(path + '_action', action_vec)
             np.savez(path + '.npz', seeds=plant_grid, water=water_grid, global_cc=global_cc_vec)
