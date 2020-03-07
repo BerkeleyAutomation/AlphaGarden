@@ -1,3 +1,4 @@
+from simulatorv2.sim_globals import OVERWATERED_THRESHOLD, UNDERWATERD_THRESHOLD
 class PlantStage:
     def __init__(self, plant, duration, index):
         self.plant = plant
@@ -54,8 +55,8 @@ class GrowthStage(PlantStage):
         self.overwatered = False
         self.underwatered = False
         self.stress_time = 0
-        self.overwatered_threshold = 2
-        self.underwatered_threshold = 0.1
+        self.overwatered_threshold = OVERWATERED_THRESHOLD
+        self.underwatered_threshold = UNDERWATERD_THRESHOLD
         self.overwatered_time_threshold = 5
         self.underwatered_time_threshold = 5
 
@@ -138,8 +139,8 @@ class WaitingStage(PlantStage):
         self.overwatered = False
         self.underwatered = False
         self.stress_time = 0
-        self.overwatered_threshold = 2
-        self.underwatered_threshold = 0.1
+        self.overwatered_threshold = OVERWATERED_THRESHOLD
+        self.underwatered_threshold = UNDERWATERD_THRESHOLD
         self.overwatered_time_threshold = 5
         self.underwatered_time_threshold = 5
 

@@ -307,13 +307,12 @@ class Garden:
 
     def compute_plant_cc_dist(self):
         cc_per_plant_type = np.zeros(len(self.plant_types))
-        # self.plant_prob = np.zeros((len(self.plant_types), self.N, self.M))
+        self.plant_prob = np.zeros((self.N, self.M, len(self.plant_types)))
         for point in self.enumerate_grid(coords=True):
             if point[0]['nearby']:
                 tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
                 cc_per_plant_type[tallest_type_id] += 1
-                # self.plant_prob[point[1][0], point[1][1], tallest_type_id] = 1
-                # print(self.plant_prob[tallest_type_id][point[1][0]][point[1][1]].shape)
+                self.plant_prob[:,:,tallest_type_id][point[1][0],point[1][1]] = 1
         return cc_per_plant_type
 
     def prune_plant_type(self, center, plant_type_id):
@@ -395,9 +394,8 @@ class Garden:
         return self.water_grid
     
     def get_plant_prob(self, center):
-        # TODO: change
         x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
-        return self.plant_grid[x_low:x_high+1,y_low:y_high,:]
+        return self.plant_prob[x_low:x_high+1,y_low:y_high,:]
 
     def get_cc_per_plant(self):
         return self.compute_plant_cc_dist()
