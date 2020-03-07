@@ -35,30 +35,30 @@ class DataCollection:
         return DummyVecEnv([lambda: env])
     
     ''' Applies a baseline irrigation policy on an environment for one garden life cycle. '''
-    def evaluate_policy(self, env, policy, garden_time_steps, rows, cols, sector_rows, sector_cols,
+    def evaluate_policy(self, env, policy, collection_time_steps, sector_rows, sector_cols,
                         garden_step, water_threshold):
         obs = env.reset()
-        for i in range(garden_time_steps):
+        for i in range(collection_time_steps):
             cc_vec = env.env_method('get_global_cc_vec')[0]
-            sector = env.env_method('get_sector')[0]
-            action = policy(i, obs, cc_vec, rows, cols, sector, sector_rows, sector_cols,
-                            garden_step, water_threshold, NUM_IRR_ACTIONS)
+            action = policy(i, obs, cc_vec, sector_rows, sector_cols, garden_step, water_threshold,
+                            NUM_IRR_ACTIONS)
             obs, rewards, _, _ = env.step(action)
 
 if __name__ == '__main__':    
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types
-    depth = num_plant_types + 1
+    depth = num_plant_types + 2 # +1 for water, +1 for 'earth' type 
     sector_rows = 15
     sector_cols = 30
     action_low = 0
     action_high = 1
     obs_low = 0
     obs_high = rows * cols
-    garden_time_steps = 200000
+    # TODO: make collection_time_steps depend on number of plants in garden.
+    collection_time_steps = 210 * 200 # 210 sectors observed/garden_day * 200 garden_days
     garden_step = 1
-    water_threshold = 0.5
+    water_threshold = 0.4
     
     data_collection = DataCollection()
     
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     
     data_collection.evaluate_policy(
         data_collection.init_env(rows, cols, depth, sector_rows, sector_cols, action_low,
-                                  action_high, obs_low, obs_high, garden_time_steps, garden_step,
+                                  action_high, obs_low, obs_high, collection_time_steps, garden_step,
                                   num_plant_types),
-        baseline_policy.policy, garden_time_steps, rows, cols, sector_rows,
+        baseline_policy.policy, collection_time_steps, sector_rows,
         sector_cols, garden_step, water_threshold)
         

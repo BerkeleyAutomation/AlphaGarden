@@ -5,7 +5,7 @@ import numpy as np
 import configparser
 import matplotlib.pyplot as plt
 from datetime import datetime
-from simulatorv2.sim_globals import MAX_WATER_LEVEL, ACTIONS_PER_TIMESTEP
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 import os
 import random
 
@@ -43,10 +43,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_state(self):
         return self.get_data_collection_state()
     
+    def get_full_state(self):
+        return np.dstack((self.garden.get_water_grid_full(), self.garden.get_plant_grid_full()))
+    
     ''' Returns sector number and state associated with the sector. '''
     def get_data_collection_state(self):
         np.random.seed(random.randint(0, 99999999))
-        if len(self.plant_centers) > 0:
+        if len(self.actions_to_execute) <= self.PlantType.plant_in_bounds and len(self.plant_centers) > 0:
             np.random.shuffle(self.plant_centers)
             center_to_sample = self.plant_centers[0]
             self.plant_centers = self.plant_centers[1:]
@@ -149,20 +152,23 @@ class SimAlphaGardenWrapper(WrapperEnv):
             # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
             action_vec[self.curr_action] = 1
             np.save(path + '_action', action_vec)
-            np.savez(path + '.npz', seeds=plant_grid, water=water_grid, global_cc=global_cc_vec)
+            np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec)
 
-        if len(self.actions_to_execute) < ACTIONS_PER_TIMESTEP or (len(self.plant_centers) == 0 and len(self.non_plant_centers) == 0):
-            if self.curr_action > 0:
-                self.centers_to_execute.append(center)
-                self.actions_to_execute.append(self.curr_action)
-            return self.get_state()
+        self.centers_to_execute.append(center)
+        self.actions_to_execute.append(self.curr_action)
+            
+        # We want PERCENT_NON_PLANT_CENTERS of samples to come from non plant centers
+        if len(self.actions_to_execute) < self.PlantType.plant_in_bounds + int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS):
+            return self.get_full_state()
         
-        # Execute actions only if we have reached the ACTIONS_PER_TIMESTEP threshold.
+        # Execute actions only if we have reached the nubmer of actions threshold.
         self.garden.perform_timestep(
             sectors=self.centers_to_execute, actions=self.actions_to_execute)
-        self.plant_centers = self.plant_centers_original
-        self.non_plant_centers = self.non_plant_centers_original
-        return self.get_state()
+        self.actions_to_execute = []
+        self.centers_to_execute = []
+        self.plant_centers = np.copy(self.plant_centers_original)
+        self.non_plant_centers = np.copy(self.non_plant_centers_original)
+        return self.get_full_state()
 
     '''
     Method called by the gym environment to reset the simulator.
@@ -179,10 +185,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 step=self.step,
                 plant_types=self.PlantType.plant_names,
                 animate=False)
-        self.plant_centers_original = self.PlantType.plant_centers
-        self.plant_centers = self.PlantType.plant_centers
-        self.non_plant_centers_original = self.PlantType.non_plant_centers
-        self.non_plant_centers = self.PlantType.non_plant_centers
+        self.plant_centers_original = np.copy(self.PlantType.plant_centers)
+        self.plant_centers = np.copy(self.PlantType.plant_centers)
+        self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)
+        self.non_plant_centers = np.copy(self.PlantType.non_plant_centers)
 
     '''
     Method called by the environment to display animations.
