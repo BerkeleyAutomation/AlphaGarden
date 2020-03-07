@@ -31,8 +31,8 @@ class Garden:
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
         
-        # Grid to hold the plant probabilities of each location
-        self.plant_prob = np.zeros((N, M, len(plant_types)))
+        # Grid to hold the plant probabilities of each location, depth is 1 + ... b/c of 'earth'
+        self.plant_prob = np.zeros((N, M, 1 + len(plant_types)))
 
         # Grid for plant leaf state representation
         self.leaf_grid = np.zeros((N, M, len(plant_types)))
@@ -307,12 +307,12 @@ class Garden:
 
     def compute_plant_cc_dist(self):
         cc_per_plant_type = np.zeros(len(self.plant_types))
-        self.plant_prob = np.zeros((self.N, self.M, len(self.plant_types)))
+        self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
         for point in self.enumerate_grid(coords=True):
             if point[0]['nearby']:
                 tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
                 cc_per_plant_type[tallest_type_id] += 1
-                self.plant_prob[:,:,tallest_type_id][point[1][0],point[1][1]] = 1
+                self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
         return cc_per_plant_type
 
     def prune_plant_type(self, center, plant_type_id):

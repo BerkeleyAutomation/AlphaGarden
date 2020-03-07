@@ -48,14 +48,15 @@ if __name__ == '__main__':
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types
-    depth = num_plant_types + 1
+    depth = num_plant_types + 2 # +1 for water, +1 for 'earth' type 
     sector_rows = 15
     sector_cols = 30
     action_low = 0
     action_high = 1
     obs_low = 0
     obs_high = rows * cols
-    collection_time_steps = 200000
+    # TODO: make collection_time_steps depend on number of plants in garden.
+    collection_time_steps = 210 * 200 # 210 sectors observed/garden_day * 200 garden_days
     garden_step = 1
     water_threshold = 0.4
     

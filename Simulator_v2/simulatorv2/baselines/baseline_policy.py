@@ -11,7 +11,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, step, water
     water_grid = plants_and_water[:,:,-1]
     if timestep > PRUNE_DELAY:
         for i in range(1, len(global_cc_vec)): # We start from 1 because we don't prune earth
-            if plant_in_sector(plants, i-1) and (global_cc_vec[i] > 1 / (len(global_cc_vec)-1)):
+            if plant_in_sector(plants, i) and (global_cc_vec[i] > 1 / len(global_cc_vec)):
                 return [i + num_irr_actions + 1]
     sector_water = np.sum(water_grid)
     if sector_water < sector_rows * sector_cols * step * water_threshold:
