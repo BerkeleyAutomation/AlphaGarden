@@ -118,13 +118,10 @@ class Garden:
         y_high = center[1] + (self.sector_cols // 2)
         return x_low, y_low, x_high, y_high
 
-    # get all plants, returning a list of plants irrespective of type
-    def get_all_plants(self):
-        list_of_list_of_plants = map(lambda plant_dict: plant_dict.values(), self.plants)        
-        return [plant for list_of_plants in list_of_list_of_plants for plant in list_of_plants]
-
     # get pruning window from size of the garden
     def get_pruning_window(self, center):
+
+        # TODO (dfangshuo): recompute pruning window
         x_low = center[0] - ((self.sector_rows) * PRUNING_WINDOW_RATIO // 2)
         y_low = center[1] - ((self.sector_cols) * PRUNING_WINDOW_RATIO // 2)
         x_high = center[0] + ((self.sector_rows) * PRUNING_WINDOW_RATIO // 2)
@@ -150,13 +147,20 @@ class Garden:
             x_low, y_low, x_high, y_high = self.get_pruning_window(center)
 
             # get all plants, irrespective of type
-            all_plants = self.get_all_plants()
-            
-            # get plants in the pruning window at the center
-            window_plants = list(filter(lambda plant: x_low <= plant.row <= x_high and y_low <= plant.col <= y_high,
-                                        all_plants))            
-            # prune all plants in window
-            for plant in window_plants:
+            all_plants = self.grid['nearby']
+            plants_to_prune = set()
+
+            for row in range(x_low, x_high + 1):
+                for col in range(y_low, y_high + 1):
+                    plants_at_pos = all_plants[row][col]  # set of plants at position
+
+                    tallest_plant_at_pos = max(plants_at_pos, key=lambda x: x.height)
+                    
+                    # add the tallest plant at a position into the set
+                    # this only prunes plants that are un-occluded
+                    plants_to_prune.add(tallest_plant_at_pos)
+
+            for plant in plants_to_prune:
                 plant.pruned = True
                 amount_to_prune = self.prune_rate * plant.radius
                 self.update_plant_size(plant, outward=-amount_to_prune)
