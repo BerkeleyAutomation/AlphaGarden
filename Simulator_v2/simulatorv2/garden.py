@@ -357,7 +357,6 @@ class Garden:
     def prune_sector_center(self, center):
         x_low, y_low, x_high, y_high = self.get_prune_bounds(center)
         non_occluded_plants = set()
-        print('pruning')
         for point in self.enumerate_grid(x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
             if point['nearby']:
                 tallest = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]])
