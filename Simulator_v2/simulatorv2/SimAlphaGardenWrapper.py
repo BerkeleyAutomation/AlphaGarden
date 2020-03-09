@@ -66,7 +66,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             center_to_sample = self.non_plant_centers[0]
             self.non_plant_centers = self.non_plant_centers[1:]
        
-        # center_to_sample = (7, 7) 
+        # center_to_sample = (7, 15) 
         # center_to_sample = (57, 57)
         
         cc_per_plant = self.garden.get_cc_per_plant()
@@ -92,8 +92,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
-                self.plant_heights.append((plant.type, plant.height))
-                self.plant_radii.append((plant.type, plant.radius))
+                # self.plant_heights.append((plant.type, plant.height))
+                # self.plant_radii.append((plant.type, plant.radius))
                 # stage = plant.current_stage()
                 # name = plant.type
                 # if isinstance(stage, GerminationStage):

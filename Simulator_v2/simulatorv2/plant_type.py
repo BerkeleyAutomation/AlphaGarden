@@ -30,7 +30,7 @@ class PlantType:
         
         coords = [(r, c) for c in range(cols) for r in range(rows)]
         np.random.shuffle(coords)
-        # coords = [(10, 4), (8, 6), (4, 12)] 
+        # coords = [(0, 0), (14, 27), (7, 15), (10, 16)] 
         # coords = [(60, 54), (58, 56), (54, 62)] 
         for _ in range(NUM_PLANTS):
             name, plant = self.plant_types[np.random.randint(0, self.num_plant_types)]

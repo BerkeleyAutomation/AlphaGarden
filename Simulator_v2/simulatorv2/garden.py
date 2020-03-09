@@ -121,30 +121,26 @@ class Garden:
         return x_low, y_low, x_high, y_high 
 
     def get_sector_bounds_no_pad(self, center):
-        x_low = min(0, center[0] - (self.sector_rows // 2))
-        y_low = min(0, center[1] - (self.sector_cols // 2))
-        x_high = max(center[0] + (self.sector_rows // 2), self.N-1)
-        y_high = max(center[1] + (self.sector_cols // 2), self.M-1)
+        x_low = max(0, center[0] - (self.sector_rows // 2))
+        y_low = max(0, center[1] - (self.sector_cols // 2))
+        x_high = min(center[0] + (self.sector_rows // 2), self.N-1)
+        y_high = min(center[1] + (self.sector_cols // 2), self.M-1)
         return x_low, y_low, x_high, y_high
     
     
     def get_prune_bounds(self, center):
-        x_low = min(0, center[0] - (self.prune_window_rows // 2))
-        y_low = min(0, center[1] - (self.prune_window_cols // 2))
-        x_high = max(center[0] + (self.prune_window_rows // 2), self.N-1)
-        y_high = max(center[1] + (self.prune_window_cols // 2), self.M-1)
+        x_low = max(0, center[0] - (self.prune_window_rows // 2))
+        y_low = max(0, center[1] - (self.prune_window_cols // 2))
+        x_high = min(center[0] + (self.prune_window_rows // 2), self.N-1)
+        y_high = min(center[1] + (self.prune_window_cols // 2), self.M-1)
         return x_low, y_low, x_high, y_high 
     
     def perform_timestep_irr(self, center, irrigation):
         self.irrigation_points = {}
-        
+        center = (center[0], center[1])
         if irrigation > 0:
-            x_low, y_low, x_high, y_high = self.get_sector_bounds_no_pad(center)
-            for i in range(x_low, x_high + 1):
-                for j in range(y_low, y_high + 1):
-                    location = (i, j)
-                    self.irrigate(location, irrigation)
-                    self.irrigation_points[location] = irrigation
+            self.irrigate(center, irrigation)
+            self.irrigation_points[center] = irrigation
     
     def perform_timestep_prune(self, sector):
         if self.timestep >= self.prune_delay:

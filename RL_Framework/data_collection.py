@@ -67,7 +67,7 @@ if __name__ == '__main__':
     garden_days = 200 
     sector_obs_per_day = 210
     collection_time_steps = sector_obs_per_day * garden_days # 210 sectors observed/garden_day * 200 garden_days
-    water_threshold = 0.1
+    water_threshold = 0.25
     
     data_collection = DataCollection()
     
