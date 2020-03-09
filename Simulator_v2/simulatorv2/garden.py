@@ -2,14 +2,14 @@ import numpy as np
 from heapq import nlargest
 from simulatorv2.logger import Logger, Event
 from simulatorv2.visualization import setup_animation, setup_saving
-from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 
 
 class Garden:
-    def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, step=1,
-                 drainage_rate=0.4, irr_threshold=5, plant_types=[], skip_initial_germination=False,
-                 animate=False, save=False):
+    def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
+                 prune_window_cols=1, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
+                 skip_initial_germination=False, animate=False, save=False):
         # list of dictionaries, one for each plant type, with plant ids as keys, plant objects as values
         self.plants = [{} for _ in range(len(plant_types))]
 
@@ -18,7 +18,9 @@ class Garden:
         
         self.sector_rows = sector_rows
         self.sector_cols = sector_cols
-
+        self.prune_window_rows = prune_window_rows
+        self.prune_window_cols = prune_window_cols
+        
         # list of plant types the garden will support
         # TODO: Set this list to be constant
         self.plant_types = plant_types
@@ -60,7 +62,7 @@ class Garden:
         self.prune_delay = PRUNE_DELAY
 
         # proportion of plant radius to decrease by after pruning action
-        self.prune_rate = 0.2
+        self.prune_rate = PRUNE_RATE 
 
         # determines max amount of coverage of one plant type in the garden before that plant is pruned
         # percentage calculated as self.prune_threshold / number of plant types in the garden
@@ -116,22 +118,37 @@ class Garden:
         y_low = center[1] - (self.sector_cols // 2)
         x_high = center[0] + (self.sector_rows // 2)
         y_high = center[1] + (self.sector_cols // 2)
+        return x_low, y_low, x_high, y_high 
+
+    def get_sector_bounds_no_pad(self, center):
+        x_low = min(0, center[0] - (self.sector_rows // 2))
+        y_low = min(0, center[1] - (self.sector_cols // 2))
+        x_high = max(center[0] + (self.sector_rows // 2), self.N-1)
+        y_high = max(center[1] + (self.sector_cols // 2), self.M-1)
         return x_low, y_low, x_high, y_high
+    
+    
+    def get_prune_bounds(self, center):
+        x_low = min(0, center[0] - (self.prune_window_rows // 2))
+        y_low = min(0, center[1] - (self.prune_window_cols // 2))
+        x_high = max(center[0] + (self.prune_window_rows // 2), self.N-1)
+        y_high = max(center[1] + (self.prune_window_cols // 2), self.M-1)
+        return x_low, y_low, x_high, y_high 
     
     def perform_timestep_irr(self, center, irrigation):
         self.irrigation_points = {}
         
         if irrigation > 0:
-            x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+            x_low, y_low, x_high, y_high = self.get_sector_bounds_no_pad(center)
             for i in range(x_low, x_high + 1):
                 for j in range(y_low, y_high + 1):
                     location = (i, j)
                     self.irrigate(location, irrigation)
                     self.irrigation_points[location] = irrigation
     
-    def perform_timestep_prune(self, sector, plant_to_prune):
-        if plant_to_prune is not None and self.timestep >= self.prune_delay:
-            self.prune_plant_type(sector, plant_to_prune)
+    def perform_timestep_prune(self, sector):
+        if self.timestep >= self.prune_delay:
+            self.prune_sector_center(sector)
     
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
@@ -140,7 +157,7 @@ class Garden:
             if action <= NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], action)
             elif action > NUM_IRR_ACTIONS:
-                self.perform_timestep_prune(sectors[i], action)
+                self.perform_timestep_prune(sectors[i])
 
         self.distribute_light()
         self.distribute_water()
@@ -313,11 +330,13 @@ class Garden:
                 tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
                 cc_per_plant_type[tallest_type_id] += 1
                 self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
+            else:
+               self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
         return cc_per_plant_type
 
     def prune_plant_type(self, center, plant_type_id):
         if center is not None:
-            x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+            x_low, y_low, x_high, y_high = self.get_sector_bounds_no_pad(center)
             sector_plants = list(filter(lambda plant: x_low <= plant.row <= x_high and y_low <= plant.col <= y_high,
                                         self.plants[plant_type_id].values()))
             if not sector_plants:
@@ -330,6 +349,20 @@ class Garden:
         self.update_plant_size(largest_plant, outward=-amount_to_prune)
         return self.update_plant_coverage(largest_plant, record_coords_updated=True)
 
+    def prune_sector_center(self, center):
+        # get plants in center, prune them
+        x_low, y_low, x_high, y_high = self.get_prune_bounds(center)
+
+        for plant_type_id in range(len(self.plant_types)):
+            center_plants = list(filter(lambda plant: x_low <= plant.row <= x_high and y_low <= plant.col <= y_high,
+                                        self.plants[plant_type_id].values()))
+            for plant in center_plants:
+                # TODO: only prune visible plants
+                plant.pruned = True
+                amount_to_prune = self.prune_rate * plant.radius
+                self.update_plant_size(plant, outward=-amount_to_prune)
+                return self.update_plant_coverage(plant, record_coords_updated=True)
+    
     def save_coverage_and_diversity(self):
         cc_per_plant_type = self.compute_plant_cc_dist()
         total_cc = np.sum(cc_per_plant_type)
@@ -378,24 +411,51 @@ class Garden:
         return self.radius_grid
 
     def get_plant_grid(self, center):
+        row_pad = self.sector_rows // 2
+        col_pad = self.sector_cols // 2 
         x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
-        return self.plant_grid[x_low:x_high+1,y_low:y_high,:]
+        x_low += row_pad
+        y_low += col_pad
+        x_high += row_pad
+        y_high += col_pad
+        
+        temp = np.pad(np.copy(self.plant_grid), \
+            ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        return temp[x_low:x_high+1,y_low:y_high,:]
     
     def get_plant_grid_full(self):
         return self.plant_grid
     
     def get_water_grid(self, center):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        row_pad = self.sector_rows // 2
+        col_pad = self.sector_cols // 2 
         x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
-        return self.water_grid[x_low:x_high+1,y_low:y_high]
+        x_low += row_pad
+        y_low += col_pad
+        x_high += row_pad
+        y_high += col_pad
+        
+        temp = np.pad(np.copy(self.water_grid), \
+            ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        return temp[x_low:x_high+1,y_low:y_high,:]
 
     def get_water_grid_full(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return self.water_grid
     
     def get_plant_prob(self, center):
+        row_pad = self.sector_rows // 2
+        col_pad = self.sector_cols // 2 
         x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
-        return self.plant_prob[x_low:x_high+1,y_low:y_high,:]
+        x_low += row_pad
+        y_low += col_pad
+        x_high += row_pad
+        y_high += col_pad
+        
+        temp = np.pad(np.copy(self.plant_prob), \
+            ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        return temp[x_low:x_high+1,y_low:y_high,:]
 
     def get_cc_per_plant(self):
         return self.compute_plant_cc_dist()

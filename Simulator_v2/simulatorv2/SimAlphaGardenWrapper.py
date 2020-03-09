@@ -6,18 +6,22 @@ import configparser
 import matplotlib.pyplot as plt
 from datetime import datetime
 from simulatorv2.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
+from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
 
 
 class SimAlphaGardenWrapper(WrapperEnv):
-    def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, step=1):
+    def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
+                 prune_window_cols, step=1):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.rows = rows
         self.cols = cols
         self.num_sectors = (rows * cols) / (sector_rows * sector_cols)
         self.sector_rows = sector_rows
         self.sector_cols = sector_cols
+        self.prune_window_rows = prune_window_rows
+        self.prune_window_cols = prune_window_cols
         self.step = step
         self.PlantType = PlantType()
         self.reset()
@@ -39,7 +43,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
         
         self.centers_to_execute = []
         self.actions_to_execute = []
-
+        
+        self.plant_radii = []
+        self.plant_heights = []
+        
     def get_state(self):
         return self.get_data_collection_state()
     
@@ -49,6 +56,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     ''' Returns sector number and state associated with the sector. '''
     def get_data_collection_state(self):
         np.random.seed(random.randint(0, 99999999))
+        # TODO: don't need plant_in_bounds anymore.  Remove.
         if len(self.actions_to_execute) <= self.PlantType.plant_in_bounds and len(self.plant_centers) > 0:
             np.random.shuffle(self.plant_centers)
             center_to_sample = self.plant_centers[0]
@@ -57,10 +65,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
             np.random.shuffle(self.non_plant_centers)
             center_to_sample = self.non_plant_centers[0]
             self.non_plant_centers = self.non_plant_centers[1:]
+       
+        # center_to_sample = (7, 7) 
+        # center_to_sample = (57, 57)
         
         cc_per_plant = self.garden.get_cc_per_plant()
         global_cc_vec = np.append(self.rows * self.cols - np.sum(cc_per_plant), cc_per_plant)
-        return center_to_sample, global_cc_vec / np.sum(global_cc_vec), \
+        return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample), \
                 self.garden.get_water_grid(center_to_sample)))
 
@@ -79,8 +90,32 @@ class SimAlphaGardenWrapper(WrapperEnv):
         ax.axis('off')
         shapes = []
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
-                            key=lambda x: x.height, reverse=True):
+                            key=lambda x: x.height, reverse=False):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
+                self.plant_heights.append((plant.type, plant.height))
+                self.plant_radii.append((plant.type, plant.radius))
+                # stage = plant.current_stage()
+                # name = plant.type
+                # if isinstance(stage, GerminationStage):
+                #     plt.text(plant.col-16, plant.row+7, name + ' Germination Stage', fontsize=8)
+                # elif isinstance(stage, GrowthStage):
+                #     if stage.overwatered:
+                #         plt.text(plant.col-16, plant.row+7, name + ' Growth Stage, Overwatered', fontsize=8)
+                #     elif stage.underwatered:
+                #         plt.text(plant.col-16, plant.row+7, name + ' Growth Stage, Underwatered', fontsize=8)
+                #     else:
+                #         plt.text(plant.col-16, plant.row+7, name + ' Growth Stage, Normal', fontsize=8)
+                # elif isinstance(stage, WaitingStage):
+                #     if stage.overwatered:
+                #         plt.text(plant.col-16, plant.row+7, name + ' Waiting Stage, Overwatered', fontsize=8)
+                #     elif stage.underwatered:
+                #         plt.text(plant.col-16, plant.row+7, name + ' Waiting Stage, Underwatered', fontsize=8)
+                #     else:
+                #         plt.text(plant.col-16, plant.row+7, name + ' Waiting Stage, Normal', fontsize=8)
+                # elif isinstance(stage, WiltingStage):
+                #     plt.text(plant.col-16, plant.row+7, name + ' Wilting Stage', fontsize=8)
+                # elif isinstance(stage, DeathStage):
+                #     plt.text(plant.col-16, plant.row+7, name + ' Death Stage', fontsize=8)
                 if plant.pruned:
                     # shape = plt.Rectangle(((plant.col - plant.radius, plant.row - plant.radius)) * self.garden.step, plant.radius * 2, plant.radius * 2, fc='red', ec='red')
                     shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
@@ -152,7 +187,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
             # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
             action_vec[self.curr_action] = 1
             np.save(path + '_action', action_vec)
+            # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
             np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec)
+            self.plant_heights = []
+            self.plant_radii = []
 
         self.centers_to_execute.append(center)
         self.actions_to_execute.append(self.curr_action)
@@ -181,6 +219,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 M=self.cols,
                 sector_rows=self.sector_rows,
                 sector_cols=self.sector_cols,
+                prune_window_rows=self.prune_window_rows,
+                prune_window_cols=self.prune_window_cols,
                 irr_threshold=5,
                 step=self.step,
                 plant_types=self.PlantType.plant_names,

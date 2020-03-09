@@ -6,17 +6,19 @@ import os
 torch.set_default_dtype(torch.float64)
 
 class Net(nn.Module):
-    def __init__(self, input_cc_mean, input_cc_std, input_raw_mean, input_raw_std, name='alpha_net'):
+    def __init__(self, input_cc_mean, input_cc_std, input_action_mean, input_action_std,
+                 input_raw_mean, input_raw_std, name='alpha_net'):
         super(Net, self).__init__()
         self.name = name
         self.input_cc_mean = input_cc_mean
         self.input_cc_std = input_cc_std
+        self.input_action_mean = input_action_mean
+        self.input_action_std = input_action_std
         self.input_raw_mean = input_raw_mean
         self.input_raw_std = input_raw_std
 
-        # can add another conv, number of filters, max/avg pooling
         self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=16, stride=1, kernel_size=5, padding=2)
-        self.cc_bn1 = nn.BatchNorm2d(16) # normalize every batch between each layer
+        self.cc_bn1 = nn.BatchNorm2d(16) 
         self.cc_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
         self.cc_bn2 = nn.BatchNorm2d(32)
         self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
@@ -42,7 +44,7 @@ class Net(nn.Module):
         # self.fc6 = nn.Linear(2048, DataConstants.OUTPUT_DIM)
 
     def forward(self, x):
-        cc_sector, water_and_seeds, global_cc = x
+        cc_sector, water_and_plants, global_cc = x
         ## TODO: normalize cc image
         cc = self.cc_conv1(cc_sector)
         # print shape after each step
@@ -53,8 +55,8 @@ class Net(nn.Module):
         cc = F.relu(cc)
         cc = self.cc_pool(cc)
 
-        ##TODO: normalize water_and_seeds
-        raw = self.raw_conv1(water_and_seeds)
+        ##TODO: normalize water_and_plants
+        raw = self.raw_conv1(water_and_plants)
         raw = self.raw_bn1(raw)
         raw = F.relu(raw)
         raw = self.raw_conv2(raw)

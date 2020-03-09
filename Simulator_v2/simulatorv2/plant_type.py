@@ -30,17 +30,16 @@ class PlantType:
         
         coords = [(r, c) for c in range(cols) for r in range(rows)]
         np.random.shuffle(coords)
-        
+        # coords = [(10, 4), (8, 6), (4, 12)] 
+        # coords = [(60, 54), (58, 56), (54, 62)] 
         for _ in range(NUM_PLANTS):
             name, plant = self.plant_types[np.random.randint(0, self.num_plant_types)]
             coord = coords.pop(0)
             r, c = coord[0], coord[1]
             plants.extend([Plant(r, c, c1=plant['c1'], growth_time=plant['growth_time'],
                                     color=plant['color'], plant_type=name)])
-            # TODO: Once padding is added around the garden, remove the in_bounds_check.
-            if in_bounds(r, c):
-                self.plant_in_bounds += 1
-                self.plant_centers.append(tuple((r, c)))
+            self.plant_in_bounds += 1
+            self.plant_centers.append(tuple((r, c)))
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 
         # for plant in plants:

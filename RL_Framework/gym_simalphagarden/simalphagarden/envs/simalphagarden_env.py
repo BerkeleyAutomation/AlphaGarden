@@ -14,8 +14,8 @@ class SimAlphaGardenEnv(gym.Env):
         # Reward ranges from 0 to garden area
         self.reward_range = (0, sector_rows * sector_cols)
 
-        # No action, 4 irrigation actions, 1 action for pruning each plant type
-        self.action_space = spaces.Discrete(5 + num_plant_types)
+        # No action, irrigate, prune center
+        self.action_space = spaces.Discrete(3)
         
         # Nubmer of plant types in the garden.  Used for reshaping global_cc_vec observation
         self.num_plant_types = num_plant_types

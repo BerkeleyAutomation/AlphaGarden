@@ -26,10 +26,10 @@ class Dataset(TorchDataset):
         for input_fname in input_fnames:
             if data_type == 'raw':
                 data = np.load(input_fname)
-                seeds = data['seeds']
+                plants = data['plants']
                 water = data['water']
                 global_cc = data['global_cc']
-                inputs.extend([seeds[:,:,i] for i in range(seeds.shape[2])])
+                inputs.extend([plants[:,:,i] for i in range(plants.shape[2])])
                 inputs.append(water[:,:,0])
                 vec_inputs.append(global_cc)
             elif data_type == 'action':
@@ -55,4 +55,4 @@ class Dataset(TorchDataset):
         output = '{}_action.npy'.format(tag) # do the same thing for the output
         action = np.load(output)
         state = np.load(input_raw_fname)
-        return ((state['global_cc'], np.dstack((state['seeds'], state['water']))), action)
+        return ((state['global_cc'], np.dstack((state['plants'], state['water']))), action)
