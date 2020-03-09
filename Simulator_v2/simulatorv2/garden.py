@@ -201,10 +201,15 @@ class Garden:
                 amounts.append((midpt, water_amt))
         return amounts
 
-    def enumerate_grid(self, coords=False):
-        for i in range(0, len(self.grid)):
-            for j in range(len(self.grid[i])):
-                yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
+    def enumerate_grid(self, coords=False, x_low=None, y_low=None, x_high=None, y_high=None):
+        if x_low and y_low and x_high and y_high:
+            for i in range(x_low, x_high + 1):
+                for j in range(y_low, y_high + 1):
+                    yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
+        else:
+            for i in range(0, len(self.grid)):
+                for j in range(len(self.grid[i])):
+                    yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
 
     def distribute_light(self):
         for point in self.enumerate_grid():
@@ -350,18 +355,20 @@ class Garden:
         return self.update_plant_coverage(largest_plant, record_coords_updated=True)
 
     def prune_sector_center(self, center):
-        # get plants in center, prune them
         x_low, y_low, x_high, y_high = self.get_prune_bounds(center)
-
-        for plant_type_id in range(len(self.plant_types)):
-            center_plants = list(filter(lambda plant: x_low <= plant.row <= x_high and y_low <= plant.col <= y_high,
-                                        self.plants[plant_type_id].values()))
-            for plant in center_plants:
-                # TODO: only prune visible plants
-                plant.pruned = True
-                amount_to_prune = self.prune_rate * plant.radius
-                self.update_plant_size(plant, outward=-amount_to_prune)
-                return self.update_plant_coverage(plant, record_coords_updated=True)
+        non_occluded_plants = set()
+        print('pruning')
+        for point in self.enumerate_grid(x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
+            if point['nearby']:
+                tallest = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]])
+                tallest_type = tallest[0]
+                tallest_plant_id = tallest[1]
+                non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
+        for plant in non_occluded_plants:
+            plant.pruned = True
+            amount_to_prune = self.prune_rate * plant.radius
+            self.update_plant_size(plant, outward=-amount_to_prune)
+            self.update_plant_coverage(plant, record_coords_updated=True)
     
     def save_coverage_and_diversity(self):
         cc_per_plant_type = self.compute_plant_cc_dist()
