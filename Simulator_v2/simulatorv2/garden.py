@@ -355,7 +355,7 @@ class Garden:
         non_occluded_plants = set()
         for point in self.enumerate_grid(x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
             if point['nearby']:
-                tallest = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]])
+                tallest = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
                 tallest_type = tallest[0]
                 tallest_plant_id = tallest[1]
                 non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])

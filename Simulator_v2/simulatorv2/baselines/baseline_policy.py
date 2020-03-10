@@ -9,10 +9,9 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     prune_window_cc = {}
     for i in range(1, len(global_cc_vec)):
         # Get cc for plants in prune sector
-        if plant_in_area(plants, (sector_rows - prune_window_rows) // 2, prune_window_rows,
-                         (sector_cols - prune_window_cols) // 2, prune_window_cols, i):
+        if plant_in_area(plants, (sector_rows - prune_window_rows) // 2, (sector_cols - prune_window_cols) // 2, prune_window_rows, prune_window_cols, i):
             prune_window_cc[i] = prune_window_cc.get(i, 0) + 1
-    
+
     for plant_id in prune_window_cc.keys():
         prune_window_cc[plant_id] = prune_window_cc[plant_id] * prune_rate
         global_cc_vec[plant_id] -= prune_window_cc[plant_id] 
@@ -40,11 +39,12 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     
     # Irrigate
     sector_water = np.sum(water_grid)
-    if sector_water < sector_rows * sector_cols * step * water_threshold:
+    maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold
+    if sector_water < maximum_water_potential:
         irr_policy = 0
-        while sector_water < MAX_WATER_LEVEL:
+        while sector_water < maximum_water_potential:
              irr_policy += 1
-             sector_water += MAX_WATER_LEVEL / num_irr_actions
+             sector_water += maximum_water_potential / num_irr_actions
         return [irr_policy]
     
     # No action
