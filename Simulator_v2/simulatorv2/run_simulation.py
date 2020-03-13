@@ -36,7 +36,7 @@ def run_simulation(args, run):
 
     # Run the simulation for NUM_TIMESTEPS steps
     for i in range(NUM_TIMESTEPS):
-        plants = garden.perform_timestep(prune=args.prune, sector=0)
+        plants = garden.perform_timestep()
     print("--- %s seconds ---" % (time.time() - start_time))
 
     # Display either graphs of garden data and the final garden state, or a full animation of garden timesteps
@@ -65,7 +65,7 @@ def get_parsed_args():
                              'show plots of plant behaviors [p]')
     parser.add_argument('--irrigator', type=str, help='[uniform|sequential] The irrigation policy to use')
     parser.add_argument('--export', type=str, help='Name of file to save results to (if "none", will not save results)')
-    parser.add_argument('--prune', dest='prune', action='store_true', help='To enable baseline pruning policy')
+    #parser.add_argument('--prune', dest='prune', action='store_true', help='To enable baseline pruning policy')
     parser.add_argument('--save_path', type=str, default='./saved_plots',
                         help='Local path of folder to save plots for later animation.')
     parser.add_argument('--runs', type=int, default=1, help='Number of times to run simulation.')

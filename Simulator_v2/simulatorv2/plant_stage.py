@@ -1,8 +1,11 @@
+import numpy as np
 from simulatorv2.sim_globals import OVERWATERED_THRESHOLD, UNDERWATERD_THRESHOLD
+
+
 class PlantStage:
-    def __init__(self, plant, duration, index):
+    def __init__(self, plant, duration_mean, duration_scale, index):
         self.plant = plant
-        self.duration = duration
+        self.duration = max(0, round(np.random.normal(duration_mean, duration_scale)))
         self.index = index
 
     def start_stage(self):
@@ -34,10 +37,10 @@ class PlantStage:
 
 
 class GerminationStage(PlantStage):
-    def __init__(self, plant, duration, start_height, start_radius):
-        super().__init__(plant, duration, 0)
-        self.start_height = start_height
-        self.start_radius = start_radius
+    def __init__(self, plant, duration_mean, duration_scale, start_height, start_radius, height_scale, radius_scale):
+        super().__init__(plant, duration_mean, duration_scale, 0)
+        self.start_height = max(0.1, np.random.normal(start_height, height_scale))
+        self.start_radius = max(0.1, np.random.normal(start_radius, radius_scale))
 
     def amount_to_grow(self):
         if self.current_time == self.duration - 1:
@@ -50,10 +53,11 @@ class GerminationStage(PlantStage):
 
 
 class GrowthStage(PlantStage):
-    def __init__(self, plant, duration):
-        super().__init__(plant, duration, 1)
+    def __init__(self, plant, duration_mean, duration_scale):
+        super().__init__(plant, duration_mean, duration_scale, 1)
         self.overwatered = False
         self.underwatered = False
+        self.recovering = False
         self.stress_time = 0
         self.overwatered_threshold = OVERWATERED_THRESHOLD
         self.underwatered_threshold = UNDERWATERD_THRESHOLD
@@ -77,11 +81,10 @@ class GrowthStage(PlantStage):
                 return 0, (self.overwatered_wilting_factor - 1) * self.plant.radius
 
             else:
-                self.stress_time -= 1
-                self.new_color = (max(self.plant.color[0] - 10 / 255, 0),) + self.plant.color[1:]
-                if self.stress_time == 0:
-                    self.overwatered = False
-                return 0, self.plant.radius * (1 / self.overwatered_wilting_factor - 1)
+                self.stress_time = 0
+                self.overwatered = False
+                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                return 0, 0
 
         elif self.underwatered:
             print("Plant underwatered!")
@@ -91,11 +94,10 @@ class GrowthStage(PlantStage):
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
             else:
-                self.stress_time -= 1
-                self.new_color = (max(self.plant.color[0] - 10 / 255, 0),) + self.plant.color[1:]
-                if self.stress_time == 0:
-                    self.underwatered = False
-                return 0, self.plant.radius * (1 / self.overwatered_wilting_factor - 1)
+                self.stress_time = 0
+                self.underwatered = False
+                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                return 0, 0
 
         else:
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
@@ -114,7 +116,7 @@ class GrowthStage(PlantStage):
         unocc_ratio = self.plant.amount_sunlight / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
         upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
-        self.new_color = self.plant.color
+        self.new_color = self.plant.original_color
         return upward, outward
 
     def step(self):
@@ -134,8 +136,8 @@ class GrowthStage(PlantStage):
 
 
 class WaitingStage(PlantStage):
-    def __init__(self, plant, duration):
-        super().__init__(plant, duration, 2)
+    def __init__(self, plant, duration_mean, duration_scale):
+        super().__init__(plant, duration_mean, duration_scale, 2)
         self.overwatered = False
         self.underwatered = False
         self.stress_time = 0
@@ -161,11 +163,10 @@ class WaitingStage(PlantStage):
                 return 0, (self.overwatered_wilting_factor - 1) * self.plant.radius
 
             else:
-                self.stress_time -= 1
-                self.new_color = (max(self.plant.color[0] - 10 / 255, 0),) + self.plant.color[1:]
-                if self.stress_time == 0:
-                    self.overwatered = False
-                return 0, self.plant.radius * (1 / self.overwatered_wilting_factor - 1)
+                self.stress_time = 0
+                self.overwatered = False
+                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                return 0, 0
 
         elif self.underwatered:
             print("Plant underwatered!")
@@ -175,11 +176,10 @@ class WaitingStage(PlantStage):
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
             else:
-                self.stress_time -= 1
-                self.new_color = (max(self.plant.color[0] - 10 / 255, 0),) + self.plant.color[1:]
-                if self.stress_time == 0:
-                    self.underwatered = False
-                return 0, self.plant.radius * (1 / self.overwatered_wilting_factor - 1)
+                self.stress_time = 0
+                self.underwatered = False
+                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                return 0, 0
 
         else:
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
@@ -194,7 +194,7 @@ class WaitingStage(PlantStage):
                 self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
-        self.new_color = self.plant.color
+        self.new_color = self.plant.original_color
         return 0, 0
 
     def step(self):
@@ -208,10 +208,15 @@ class WaitingStage(PlantStage):
             return self.index + 1
         return self.index
 
+    def set_stress(self, overwatered, underwatered, stress_time):
+        self.overwatered = overwatered
+        self.underwatered = underwatered
+        self.stress_time = stress_time
+
 
 class WiltingStage(PlantStage):
-    def __init__(self, plant, duration, final_radius):
-        super().__init__(plant, duration, 3)
+    def __init__(self, plant, duration_mean, duration_scale, final_radius):
+        super().__init__(plant, duration_mean, duration_scale, 3)
         self.max_final_radius = final_radius
 
     def start_stage(self):
@@ -239,7 +244,7 @@ class WiltingStage(PlantStage):
 
 class DeathStage(PlantStage):
     def __init__(self, plant):
-        super().__init__(plant, -1, 4)
+        super().__init__(plant, -1, 1, 4)
 
     def desired_water_amt(self):
         return 0

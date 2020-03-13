@@ -154,7 +154,6 @@ class Garden:
                 self.perform_timestep_irr(sectors[i], action)
             elif action > NUM_IRR_ACTIONS:
                 self.perform_timestep_prune(sectors[i])
-
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
