@@ -7,7 +7,7 @@ from file_utils import FileUtils
 import simulatorv2.baselines.baseline_policy as baseline_policy
 from simulatorv2.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulatorv2.plant_type import PlantType
-from simulatorv2.sim_globals import NUM_IRR_ACTIONS
+from simulatorv2.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 from stable_baselines.common.vec_env import DummyVecEnv
 
 class DataCollection:
@@ -64,10 +64,10 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
-    garden_days = 200 
-    sector_obs_per_day = 210
+    garden_days = 100 
+    sector_obs_per_day =  int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days # 210 sectors observed/garden_day * 200 garden_days
-    water_threshold = 0.25
+    water_threshold = 0.5
     
     data_collection = DataCollection()
     
