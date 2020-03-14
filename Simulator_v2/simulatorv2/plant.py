@@ -1,12 +1,12 @@
 from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 from simulatorv2.plant_presets import PLANT_TYPES
-import numpy as np
 
 
 class Plant:
 
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
-                 germination_time=3, start_height=1, start_radius=1):
+                 germination_time=3, germination_scale=1, start_height=1, start_radius=1, height_scale=0.1,
+                 radius_scale=0.1):
         self.id = None
 
         # coordinates of plant
@@ -22,6 +22,7 @@ class Plant:
 
         # color of plant when plotted (must be RGB tuple)
         self.color = color
+        self.original_color = color
 
         # plant species (for visualization purposes)
         self.type = plant_type
@@ -29,10 +30,11 @@ class Plant:
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
         self.stages = [
-            GerminationStage(self, germination_time, start_height, start_radius),
-            GrowthStage(self, growth_time),
-            WaitingStage(self, 10),
-            WiltingStage(self, 20, 2),
+            GerminationStage(self, germination_time, germination_scale, start_height, start_radius, height_scale,
+                             radius_scale),
+            GrowthStage(self, growth_time, 2),
+            WaitingStage(self, 10, 2),
+            WiltingStage(self, 20, 2, 2),
             DeathStage(self)
         ]
         self.start_from_beginning()
@@ -42,10 +44,12 @@ class Plant:
         if name in PLANT_TYPES:
             p = PLANT_TYPES[name]
             g_min, g_max = p["germination_time"]
-            germination_time = np.random.randint(g_min, g_max + 1)
+            germination_time = (g_min + g_max) / 2
+            germination_scale = (g_max - germination_time) / 2
             return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"],
                          color=p["color"], plant_type=p["plant_type"], germination_time=germination_time,
-                         start_height=p["start_height"], start_radius=p["start_radius"])
+                         germination_scale=germination_scale, start_height=p["start_height"],
+                         start_radius=p["start_radius"])
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
@@ -81,8 +85,12 @@ class Plant:
         return self.stages[self.stage_index]
 
     def switch_stage(self, next_stage_index):
+        prev_stage = self.current_stage()
         self.stage_index = next_stage_index
-        self.current_stage().start_stage()
+        curr_stage = self.current_stage()
+        curr_stage.start_stage()
+        if isinstance(prev_stage, GrowthStage) and isinstance(curr_stage, WaitingStage):
+            curr_stage.set_stress(prev_stage.overwatered, prev_stage.underwatered, prev_stage.stress_time)
         # print(f"Plant {self.id} moving to new stage!")
         # print(self.current_stage())
 
