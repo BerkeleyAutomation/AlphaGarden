@@ -70,6 +70,7 @@ class Garden:
 
         # timestep of simulation
         self.timestep = 0
+        self.performing_timestep = True
 
         # Add initial plants to grid
         self.curr_id = 0
@@ -167,6 +168,7 @@ class Garden:
             self.save_coverage_and_diversity()
 
         self.timestep += 1
+        self.performing_timestep = True
         return [plant for plant_type in self.plants for plant in plant_type.values()]
 
     # Resets all water resource levels to the same amount
@@ -324,16 +326,18 @@ class Garden:
                 prob = cc_per_plant_type / np.sum(cc_per_plant_type)
 
     def compute_plant_cc_dist(self):
-        cc_per_plant_type = np.zeros(len(self.plant_types))
-        self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
-        for point in self.enumerate_grid(coords=True):
-            if point[0]['nearby']:
-                tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
-                cc_per_plant_type[tallest_type_id] += 1
-                self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
-            else:
-               self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
-        return cc_per_plant_type
+        if self.performing_timestep:
+            self.cc_per_plant_type = np.zeros(len(self.plant_types))
+            self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
+            for point in self.enumerate_grid(coords=True):
+                if point[0]['nearby']:
+                    tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+                    self.cc_per_plant_type[tallest_type_id] += 1
+                    self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
+                else:
+                    self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
+        self.performing_timestep = False
+        return self.cc_per_plant_type
 
     def prune_plant_type(self, center, plant_type_id):
         if center is not None:
