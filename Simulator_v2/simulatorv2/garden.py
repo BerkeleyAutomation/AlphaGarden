@@ -8,8 +8,8 @@ import pickle
 
 class Garden:
     def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, drainage_rate=0.4, irr_threshold=5, plant_types=[],
-                 skip_initial_germination=False, animate=False, save=False):
+                 prune_window_cols=1, step=1, drainage_rate=0.4, irr_threshold=5, init_water_mean=0.2,
+                 init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
         # list of dictionaries, one for each plant type, with plant ids as keys, plant objects as values
         self.plants = [{} for _ in range(len(plant_types))]
 
@@ -29,6 +29,7 @@ class Garden:
         # and set of coordinates of plants that can get water/light from that location.
         # First dimension is horizontal, second is vertical.
         self.grid = np.empty((N, M), dtype=[('water', 'f'), ('nearby', 'O')])
+        self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
 
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
