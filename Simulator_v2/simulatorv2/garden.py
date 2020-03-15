@@ -411,7 +411,8 @@ class Garden:
 
     def get_garden_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid))
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid, self.health_grid))
 
     def get_radius_grid(self):
         return self.radius_grid
@@ -451,10 +452,22 @@ class Garden:
         return self.water_grid
     
     def get_health_grid(self, center):
-        pass
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)   # TODO: need to add this 
+        row_pad = self.sector_rows // 2
+        col_pad = self.sector_cols // 2 
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        x_low += row_pad
+        y_low += col_pad
+        x_high += row_pad
+        y_high += col_pad
+        
+        temp = np.pad(np.copy(self.health_grid), \
+            ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        return temp[x_low:x_high+1,y_low:y_high,:]
 
     def get_health_grid_full(self):
-        pass
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return self.health_grid
 
     def get_plant_prob(self, center):
         row_pad = self.sector_rows // 2
@@ -474,7 +487,8 @@ class Garden:
 
     def get_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
 
     def show_animation(self):
         if self.animate:
