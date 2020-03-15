@@ -450,6 +450,12 @@ class Garden:
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return self.water_grid
     
+    def get_health_grid(self, center):
+        pass
+
+    def get_health_grid_full(self):
+        pass
+
     def get_plant_prob(self, center):
         row_pad = self.sector_rows // 2
         col_pad = self.sector_cols // 2 
