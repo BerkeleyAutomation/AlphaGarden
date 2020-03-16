@@ -347,7 +347,7 @@ class Garden:
             if point[0]['nearby']:
                 tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
                 tallest_plant_at_point = self.plants[tallest_type_id][coord] 
-                plant_health_grid[coord] = tallest_plant_at_point.current_stage()
+                plant_health_grid[coord] = tallest_plant_at_point.stage_index
 
         return plant_health_grid
 
