@@ -345,9 +345,16 @@ class Garden:
         for point in self.enumerate_grid(coords=True):
             coord = point[1]
             if point[0]['nearby']:
-                tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
-                tallest_plant_at_point = self.plants[tallest_type_id][coord] 
-                plant_health_grid[coord] = tallest_plant_at_point.stage_index
+
+                tallest_height = -1
+                tallest_plant_stage = 0
+
+                for tup in point[0]['nearby']:
+                    if self.plants[tup[0]][tup[1]].height > tallest_height:
+                        tallest_height = self.plants[tup[0]][tup[1]].height
+                        tallest_plant_stage = self.plants[tup[0]][tup[1]].stage_index
+
+                plant_health_grid[coord] = tallest_plant_stage  # TODO: just plant stage, or also plant_id with stage?
 
         return plant_health_grid
 
