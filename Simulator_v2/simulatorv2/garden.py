@@ -25,11 +25,12 @@ class Garden:
         # TODO: Set this list to be constant
         self.plant_types = plant_types
 
-        # Structured array of gridpoints. Each point contains its water levels
-        # and set of coordinates of plants that can get water/light from that location.
+        # Structured array of gridpoints. Each point contains its water levels (float)
+        # health (integer), and set of coordinates of plants that can get water/light from that location.
         # First dimension is horizontal, second is vertical.
-        self.grid = np.empty((N, M), dtype=[('water', 'f'), ('nearby', 'O')])
+        self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
         self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
+        self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
 
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
@@ -338,6 +339,17 @@ class Garden:
                     self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
         self.performing_timestep = False
         return self.cc_per_plant_type
+
+    def compute_plant_health(self, grid_shape):
+        plant_health_grid = np.empty(grid_shape)
+        for point in self.enumerate_grid(coords=True):
+            coord = point[1]
+            if point[0]['nearby']:
+                tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+                tallest_plant_at_point = self.plants[tallest_type_id][coord] 
+                plant_health_grid[coord] = tallest_plant_at_point.current_stage()
+
+        return plant_health_grid
 
     def prune_plant_type(self, center, plant_type_id):
         if center is not None:

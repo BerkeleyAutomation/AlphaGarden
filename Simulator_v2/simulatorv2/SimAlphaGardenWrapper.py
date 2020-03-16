@@ -73,7 +73,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         global_cc_vec = np.append(self.rows * self.cols - np.sum(cc_per_plant), cc_per_plant)
         return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample), \
-                self.garden.get_water_grid(center_to_sample)))
+                self.garden.get_water_grid(center_to_sample), \
+                self.garden.get_health_grid(center_to_sample)))
 
     def get_canopy_image(self, center):
         dir_path = self.config.get('data_collection', 'dir_path')
