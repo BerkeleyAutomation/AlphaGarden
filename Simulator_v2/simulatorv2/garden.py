@@ -254,6 +254,7 @@ class Garden:
             for plant in plant_type.values():
                 self.grow_plant(plant)
                 self.update_plant_coverage(plant)
+                self.update_plant_health(plant)     # need to update the plant health here
 
     def grow_plant(self, plant):
         # next_step = plant.radius // self.step + 1
@@ -271,6 +272,9 @@ class Garden:
 
         # if prev_radius < next_line_dist and plant.radius >= next_line_dist:
         #    return next_step
+
+    def update_plant_health(self, plant):
+        self.grid['health'][plant.row, plant.col] = plant.stage_index
 
     def update_plant_size(self, plant, upward=None, outward=None):
         if upward:
@@ -471,7 +475,7 @@ class Garden:
         return self.water_grid
     
     def get_health_grid(self, center):
-        self.health_grid = np.expand_dims(self.grid['health'], axis=2)   # TODO: need to add this 
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2) 
         row_pad = self.sector_rows // 2
         col_pad = self.sector_cols // 2 
         x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
