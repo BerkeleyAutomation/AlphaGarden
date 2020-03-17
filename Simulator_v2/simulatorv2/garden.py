@@ -168,6 +168,10 @@ class Garden:
             self.save_step()
             self.save_coverage_and_diversity()
 
+        # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
+        # print(self.grid['health'])
+        # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
         self.timestep += 1
         self.performing_timestep = True
         return [plant for plant_type in self.plants for plant in plant_type.values()]
@@ -274,7 +278,14 @@ class Garden:
         #    return next_step
 
     def update_plant_health(self, plant):
-        self.grid['health'][plant.row, plant.col] = plant.stage_index
+        point = self.grid[(plant.row, plant.col)]
+        
+        assert point['nearby']
+        
+        tallest_plant_id = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[1]
+        if tallest_plant_id == plant.id:
+            # print(plant.id, "is the tallest plant!")
+            self.grid['health'][plant.row, plant.col] = plant.stage_index
 
     def update_plant_size(self, plant, upward=None, outward=None):
         if upward:
