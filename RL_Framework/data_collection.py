@@ -49,9 +49,9 @@ class DataCollection:
             obs, rewards, _, _ = env.step(action)
 
 if __name__ == '__main__':    
-    import os
-    cpu_cores =  [i for i in range(30, 61)]
-    os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
+    # import os
+    # cpu_cores =  [i for i in range(30, 61)]
+    # os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types
