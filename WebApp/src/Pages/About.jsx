@@ -1,7 +1,6 @@
 import React from 'react';
 import PageHeading from './PageHeading';
 import Watercolor from './Watercolor';
-import ReactMarkdown from 'react-markdown';
 
 const About = (props) => {
   const { windowWidth, windowHeight } = props;

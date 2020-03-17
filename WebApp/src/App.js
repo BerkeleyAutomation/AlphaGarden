@@ -3,7 +3,7 @@ import './App.css';
 import BackVideo from './Components/BackVideo.js';
 import Element3 from './Components/Element3.js';
 import Grid from './Media/zoom_grid.svg';
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Sidebar from './Components/Sidebar';
 import Home from './Pages/Home';
 import About from './Pages/About';
