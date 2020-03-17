@@ -2,7 +2,7 @@ import numpy as np
 from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE
 
 def plant_in_area(plants, r, c, w, h, plant_idx):
-    return np.any(plants[r:r+w,c:c+h,plant_idx])
+    return np.any(plants[r:r+w,c:c+h,plant_idx]), np.sum(plants[r:r+w,c:c+h,plant_idx])
 
 def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prune_window_rows,
                            prune_window_cols, prune_rate):
@@ -16,10 +16,11 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
         prune_window_cc[plant_id] = prune_window_cc[plant_id] * prune_rate
         global_cc_vec[plant_id] -= prune_window_cc[plant_id] 
     
-    prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:])
+    proj_plant_cc = np.sum((global_cc_vec / np.sum(global_cc_vec, dtype="float"))[1:])
+    prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
     prob = prob[np.where(prob > 0)]
-    entropy = -np.sum(prob * np.log(prob))
-    return entropy
+    entropy = -np.sum(prob * np.log(prob), dtype="float") / np.log(20)
+    return proj_plant_cc, entropy
     
 def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day):
@@ -29,14 +30,18 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     
     # Prune
     if timestep > PRUNE_DELAY * sector_obs_per_day:
-        prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:]) # We start from 1 because we don't include earth in diversity
-        prob = prob[np.where(prob > 0)]
-        curr_entropy = -np.sum(prob * np.log(prob))
-        future_entropy = calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols,
-                                                prune_window_rows, prune_window_cols, PRUNE_RATE)
-        if future_entropy > curr_entropy:
-            return [2]
-    
+        # total_plant_cc =  np.sum((global_cc_vec / np.sum(global_cc_vec, dtype="float"))[1:])
+        prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
+        violations = np.where(prob > 0.2)[0]
+        prune_window_cc = {}
+        for plant_idx in violations:   
+            inside, area = plant_in_area(plants, (sector_rows - prune_window_rows) // 2, (sector_cols - prune_window_cols) // 2, prune_window_rows, prune_window_cols, plant_idx + 1)
+            if inside:
+                prune_window_cc[plant_idx] = prune_window_cc.get(plant_idx, 0) + area
+        for plant_id in prune_window_cc.keys():
+            if prune_window_cc[plant_id] > 20:       
+                return [2]
+   
     # Irrigate
     sector_water = np.sum(water_grid)
     maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold
@@ -49,3 +54,4 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     
     # No action
     return [0]
+

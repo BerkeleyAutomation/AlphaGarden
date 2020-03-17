@@ -49,6 +49,9 @@ class DataCollection:
             obs, rewards, _, _ = env.step(action)
 
 if __name__ == '__main__':    
+    import os
+    cpu_cores =  [i for i in range(30, 61)]
+    os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types
@@ -67,7 +70,7 @@ if __name__ == '__main__':
     garden_days = 100 
     sector_obs_per_day =  int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days # 210 sectors observed/garden_day * 200 garden_days
-    water_threshold = 0.5
+    water_threshold = 0.6
     
     data_collection = DataCollection()
     
