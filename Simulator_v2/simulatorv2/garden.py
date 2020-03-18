@@ -160,7 +160,10 @@ class Garden:
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        
+
+        for sector in sectors:
+            self.update_plant_health(sector)
+
         if self.animate:
             self.anim_step()
 
@@ -169,9 +172,8 @@ class Garden:
             self.save_coverage_and_diversity()
 
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
-        # print(self.grid['health'])
-        # print(">>>>>>>>>>>>>>>>>>> NEARBY GRID IS")
-        # print(self.grid['nearby'])
+        # print(self.get_health_grid((57, 57)))
+        # print(">>>>>>>>>>>>>>>>>>>")
 
         self.timestep += 1
         self.performing_timestep = True
@@ -259,7 +261,6 @@ class Garden:
             for plant in plant_type.values():
                 self.grow_plant(plant)
                 self.update_plant_coverage(plant)
-                self.update_plant_health()
 
     def grow_plant(self, plant):
         # next_step = plant.radius // self.step + 1
@@ -278,8 +279,10 @@ class Garden:
         # if prev_radius < next_line_dist and plant.radius >= next_line_dist:
         #    return next_step
 
-    def update_plant_health(self):
-        for point in self.enumerate_grid(coords=True):
+    def update_plant_health(self, center):
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
+            # tallest_plant_stage = 0
             if point[0]['nearby']:
                 tallest_plant_tup = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
                 tallest_type_id, tallest_plant_id = tallest_plant_tup[0], tallest_plant_tup[1]
