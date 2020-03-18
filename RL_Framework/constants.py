@@ -17,4 +17,4 @@ class TrainingConstants(object):
     LOG_DIR = 'logs'
     NET_SAVE_FNAME = 'net.pth'
     ACT_DIM = 3
-    FLAT_STATE_DIM = 4000
+    FLAT_STATE_DIM = 13051654

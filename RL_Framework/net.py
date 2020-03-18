@@ -39,7 +39,6 @@ class Net(nn.Module):
         # self.fc6 = nn.Linear(2048, DataConstants.OUTPUT_DIM)
 
     def forward(self, x):
-        print("FORWARD")
         cc_sector, water_and_plants, global_cc = x
         cc_normalized = (cc_sector - self.input_cc_mean) / self.input_cc_std
         cc = self.cc_conv1(cc_normalized)
@@ -59,13 +58,12 @@ class Net(nn.Module):
         raw = self.raw_bn2(raw)
         raw = F.relu(raw)
         raw = self.raw_pool(raw)
-        print("raw.size: ", raw.size())
-        print("cc.size: ", cc.size())
-        cc_and_raw = torch.cat((cc, raw), dim=1)
+
+        cc_and_raw = torch.cat((torch.flatten(cc), torch.flatten(cc)))
         global_cc_normalized = (global_cc - self.input_raw_mean[0]) / self.input_raw_std[0]
-        state = torch.cat((cc_and_raw, global_cc_normalized), dim=1)
+        state = torch.cat((cc_and_raw, torch.flatten(global_cc_normalized)))
         state = F.relu(state)
-        print("state.size: ", state.size())
+        # print("state.size: ", state.size())
         action = self.fc(state)
 
         ## the code from GLOMP for reference:
@@ -83,7 +81,6 @@ class Net(nn.Module):
         # x = F.relu(x)
         # x = self.fc6(x)
         # return x
-        print("FORWARD-END")
         return action
 
     def save(self, dir_path, net_fname):
