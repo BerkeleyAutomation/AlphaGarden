@@ -2,18 +2,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import os
+from constants import TrainingConstants
 
 torch.set_default_dtype(torch.float64)
 
 class Net(nn.Module):
-    def __init__(self, input_cc_mean, input_cc_std, input_action_mean, input_action_std,
-                 input_raw_mean, input_raw_std, name='alpha_net'):
+    def __init__(self, input_cc_mean, input_cc_std, input_raw_mean, input_raw_std, name='alpha_net'):
         super(Net, self).__init__()
         self.name = name
         self.input_cc_mean = input_cc_mean
         self.input_cc_std = input_cc_std
-        self.input_action_mean = input_action_mean
-        self.input_action_std = input_action_std
         self.input_raw_mean = input_raw_mean
         self.input_raw_std = input_raw_std
 
@@ -23,16 +21,13 @@ class Net(nn.Module):
         self.cc_bn2 = nn.BatchNorm2d(32)
         self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
-        self.raw_conv1 = nn.Conv2d(in_channels=3, out_channels=16, stride=1, kernel_size=5, padding=2)
-        self.raw_bn1 = nn.BatchNorm2d(16)
-        self.raw_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
-        self.raw_bn2 = nn.BatchNorm2d(32)
+        self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=32, stride=1, kernel_size=5, padding=2)
+        self.raw_bn1 = nn.BatchNorm2d(32)
+        self.raw_conv2 = nn.Conv2d(32, 64, stride=1, kernel_size=3, padding=1)
+        self.raw_bn2 = nn.BatchNorm2d(64)
         self.raw_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
-        self.fc = nn.Linear(concatenated_state_dim, action_dim) # TODO: when you change the number of layers and the other hyperparams you'll get different
-                                                                #       dimensions at the end for each CNN and you'll need to adjust "concatenated_state_dim"
-                                                                #       accordingly. The action space will change every time you experiment with defferent
-                                                                #       number of plant types, so it should be a constant in a training config file
+        self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
 
         ## the code from GLOMP for reference:
         # self.flatten = nn.Flatten()
@@ -44,9 +39,10 @@ class Net(nn.Module):
         # self.fc6 = nn.Linear(2048, DataConstants.OUTPUT_DIM)
 
     def forward(self, x):
+        print("FORWARD")
         cc_sector, water_and_plants, global_cc = x
-        ## TODO: normalize cc image
-        cc = self.cc_conv1(cc_sector)
+        cc_normalized = (cc_sector - self.input_cc_mean) / self.input_cc_std
+        cc = self.cc_conv1(cc_normalized)
         # print shape after each step
         cc = self.cc_bn1(cc)
         cc = F.relu(cc)
@@ -55,19 +51,21 @@ class Net(nn.Module):
         cc = F.relu(cc)
         cc = self.cc_pool(cc)
 
-        ##TODO: normalize water_and_plants
-        raw = self.raw_conv1(water_and_plants)
+        water_and_plants_normalized = (water_and_plants - self.input_raw_mean[1]) / self.input_raw_std[1]
+        raw = self.raw_conv1(water_and_plants_normalized)
         raw = self.raw_bn1(raw)
         raw = F.relu(raw)
         raw = self.raw_conv2(raw)
         raw = self.raw_bn2(raw)
         raw = F.relu(raw)
         raw = self.raw_pool(raw)
-
+        print("raw.size: ", raw.size())
+        print("cc.size: ", cc.size())
         cc_and_raw = torch.cat((cc, raw), dim=1)
-        # TODO: normalize global_cc; concatenate cnn to array pytorch
-        state = torch.cat((cc_and_raw, global_cc), dim=1)
+        global_cc_normalized = (global_cc - self.input_raw_mean[0]) / self.input_raw_std[0]
+        state = torch.cat((cc_and_raw, global_cc_normalized), dim=1)
         state = F.relu(state)
+        print("state.size: ", state.size())
         action = self.fc(state)
 
         ## the code from GLOMP for reference:
@@ -85,7 +83,7 @@ class Net(nn.Module):
         # x = F.relu(x)
         # x = self.fc6(x)
         # return x
-
+        print("FORWARD-END")
         return action
 
     def save(self, dir_path, net_fname):

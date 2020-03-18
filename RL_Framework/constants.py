@@ -2,7 +2,6 @@ class DeviceConstants(object):
     CUDA = 'cuda'
     CPU = 'cpu'
 
-
 class TrainingConstants(object):
     NUM_EPOCHS = 60
     TOTAL_SIZE = 1.0
@@ -17,3 +16,5 @@ class TrainingConstants(object):
     NET_NAME = 'baseline_net'
     LOG_DIR = 'logs'
     NET_SAVE_FNAME = 'net.pth'
+    ACT_DIM = 3
+    FLAT_STATE_DIM = 4000

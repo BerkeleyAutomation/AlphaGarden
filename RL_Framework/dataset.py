@@ -14,11 +14,10 @@ class Dataset(TorchDataset):
         self.input_raw_fnames = ([data_dir + '/' + fname for fname in os.listdir(self.data_dir) if '.npz' in fname])
         self.input_raw_fnames.sort()
         self.input_cc_mean, self.input_cc_std = self._get_moments(self.input_cc_fnames, 'cc')
-        self.input_action_mean, self.input_action_std = self._get_moments(self.input_action_fnames, 'action')
         self.input_raw_mean, self.input_raw_std = self._get_moments(self.input_raw_fnames, 'raw')
 
     def __len__(self):
-        return len(self.input_fnames)
+        return len(self.input_cc_fnames)
 
     def _get_moments(self, input_fnames, data_type):
         inputs = []
@@ -29,13 +28,12 @@ class Dataset(TorchDataset):
                 plants = data['plants']
                 water = data['water']
                 global_cc = data['global_cc']
-                inputs.extend([plants[:,:,i] for i in range(plants.shape[2])])
-                inputs.append(water[:,:,0])
+                # inputs.extend([plants[:,:,i] for i in range(plants.shape[2])])
+                # inputs.append(water[:,:,0])
+                inputs.append(np.transpose(np.dstack((plants, water)), (2, 0, 1)))
                 vec_inputs.append(global_cc)
-            elif data_type == 'action':
-                vec_inputs.append(np.load(input_fname))
             else:
-                image = cv2.imread(input_fname)
+                image = np.transpose(cv2.imread(input_fname), (2, 0, 1))
                 inputs.append(image)
 
         inputs = np.array(inputs)
@@ -43,16 +41,15 @@ class Dataset(TorchDataset):
         if data_type == 'raw':
             return (np.mean(vec_inputs, axis=0), np.mean(inputs, axis=0)), \
                 (np.std(vec_inputs + 1e-10, axis=0), np.std(inputs + 1e-10, axis=0))
-        elif data_type == 'action':
-            return np.mean(vec_inputs, axis=0), np.std(vec_inputs + 1e-10, axis=0)
         else:
             return np.mean(inputs, axis=0), np.std(inputs + 1e-10, axis=0)
 
     def __getitem__(self, idx):
         input_cc_fname = self.input_cc_fnames[idx] # this is how we index the dataset
+        sector_img = np.transpose(cv2.imread(input_cc_fname), (2, 0, 1))
         tag = input_cc_fname[:input_cc_fname.rfind('_')] # this should extract only the hash from the cc file name
         input_raw_fname = '{}.npz'.format(tag) # find the raw data that corresponds with the cc by hash
         output = '{}_action.npy'.format(tag) # do the same thing for the output
         action = np.load(output)
         state = np.load(input_raw_fname)
-        return ((state['global_cc'], np.dstack((state['plants'], state['water']))), action)
+        return ((sector_img, np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), state['global_cc']), action)

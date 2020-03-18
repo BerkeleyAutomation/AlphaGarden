@@ -114,7 +114,7 @@ class Trainer(object):
         num_batches = len(self._train_data_loader)
         train_losses = []
         for batch_idx, (data, target) in enumerate(self._train_data_loader):
-            data, target = data.to(self._device), target.to(self._device)
+            # data, target = data.to(self._device), target.to(self._device)
             self._optimizer.zero_grad()
             output = self._net(data)
             loss = F.mse_loss(output, target)
