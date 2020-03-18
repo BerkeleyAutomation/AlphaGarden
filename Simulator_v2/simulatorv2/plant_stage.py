@@ -77,7 +77,7 @@ class GrowthStage(PlantStage):
             print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.overwatered_wilting_factor - 1) * self.plant.radius
 
             else:
@@ -90,7 +90,7 @@ class GrowthStage(PlantStage):
             print("Plant underwatered!")
             if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
             else:
@@ -103,13 +103,13 @@ class GrowthStage(PlantStage):
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.overwatered = True
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.overwatered_wilting_factor - 1) * self.plant.radius
 
             elif self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.underwatered = True
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
         G = self.plant.c1 * self.plant.water_amt
@@ -159,7 +159,7 @@ class WaitingStage(PlantStage):
             print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.overwatered_wilting_factor - 1) * self.plant.radius
 
             else:
@@ -172,7 +172,7 @@ class WaitingStage(PlantStage):
             print("Plant underwatered!")
             if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
             else:
@@ -185,13 +185,13 @@ class WaitingStage(PlantStage):
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.overwatered = True
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.overwatered_wilting_factor - 1) * self.plant.radius
 
             elif self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.underwatered = True
                 self.stress_time += 1
-                self.new_color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
         self.new_color = self.plant.original_color
@@ -232,7 +232,7 @@ class WiltingStage(PlantStage):
         return 0, (self.wilting_factor - 1) * self.plant.radius
 
     def step(self):
-        self.plant.color = (min(self.plant.color[0] + 10 / 255, 1),) + self.plant.color[1:]
+        self.plant.color = self.plant.get_new_color()
         self.current_time += 1
         if self.current_time >= self.duration:
             return self.index + 1

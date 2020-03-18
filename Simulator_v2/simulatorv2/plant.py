@@ -6,7 +6,7 @@ class Plant:
 
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
                  germination_time=3, germination_scale=1, start_height=1, start_radius=1, height_scale=0.1,
-                 radius_scale=0.1):
+                 radius_scale=0.1, stopping_color=(120/255, 63/255, 0/255)):
         self.id = None
 
         # coordinates of plant
@@ -26,6 +26,9 @@ class Plant:
 
         # plant species (for visualization purposes)
         self.type = plant_type
+        
+        # last color to stop at for plant wilting
+        self.stopping_color = stopping_color
 
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
@@ -120,3 +123,7 @@ class Plant:
 
     def __str__(self):
         return f"[Plant] Radius: {self.radius} | Height: {self.height}"
+
+    def get_new_color(self):
+        new_color = (min(self.color[0] + 10 / 255, 1),) + self.color[1:]
+        return new_color
