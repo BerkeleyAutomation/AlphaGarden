@@ -170,7 +170,8 @@ class Garden:
 
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
         # print(self.grid['health'])
-        # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        # print(">>>>>>>>>>>>>>>>>>> NEARBY GRID IS")
+        # print(self.grid['nearby'])
 
         self.timestep += 1
         self.performing_timestep = True
@@ -258,7 +259,7 @@ class Garden:
             for plant in plant_type.values():
                 self.grow_plant(plant)
                 self.update_plant_coverage(plant)
-                self.update_plant_health(plant)     # need to update the plant health here
+                self.update_plant_health()
 
     def grow_plant(self, plant):
         # next_step = plant.radius // self.step + 1
@@ -277,15 +278,14 @@ class Garden:
         # if prev_radius < next_line_dist and plant.radius >= next_line_dist:
         #    return next_step
 
-    def update_plant_health(self, plant):
-        point = self.grid[(plant.row, plant.col)]
-        
-        assert point['nearby']
-        
-        tallest_plant_id = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[1]
-        if tallest_plant_id == plant.id:
-            # print(plant.id, "is the tallest plant!")
-            self.grid['health'][plant.row, plant.col] = plant.stage_index
+    def update_plant_health(self):
+        for point in self.enumerate_grid(coords=True):
+            if point[0]['nearby']:
+                tallest_plant_tup = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
+                tallest_type_id, tallest_plant_id = tallest_plant_tup[0], tallest_plant_tup[1]
+                tallest_plant_stage = self.plants[tallest_type_id][tallest_plant_id].stage_index
+
+                self.grid['health'][point[1]] = tallest_plant_stage
 
     def update_plant_size(self, plant, upward=None, outward=None):
         if upward:
