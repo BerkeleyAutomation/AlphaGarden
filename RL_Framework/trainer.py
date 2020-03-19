@@ -116,8 +116,9 @@ class Trainer(object):
         for batch_idx, (data, target) in enumerate(self._train_data_loader):
             # data, target = data.to(self._device), target.to(self._device)
             self._optimizer.zero_grad()
-            output = self._net(data)
-            loss = F.mse_loss(output, target)
+            output = self._net(data).reshape(len(target), TrainingConstants.NUM_CLASSES)
+            criterion = torch.nn.CrossEntropyLoss()
+            loss = criterion(output, target)
             loss.backward()
             self._optimizer.step()
             if batch_idx % self._log_interval == 0:

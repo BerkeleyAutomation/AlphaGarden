@@ -191,7 +191,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         global_cc_vec = self.garden.get_cc_per_plant()
         plant_grid = self.garden.get_plant_prob(center)
         water_grid = self.garden.get_water_grid(center)
-        action_vec = np.zeros(len(self.irr_actions) + len(global_cc_vec))
+        # action_vec = np.zeros(len(self.irr_actions) + 2) 
         
         # Save canopy image before performing a time step.
         # if True:
@@ -199,7 +199,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         if self.curr_action >= 0:
             path = self.get_canopy_image(center)
             # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
-            action_vec[self.curr_action] = 1
+            action_vec = np.array(action)
             np.save(path + '_action', action_vec)
             # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
             np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec)

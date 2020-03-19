@@ -16,5 +16,6 @@ class TrainingConstants(object):
     NET_NAME = 'baseline_net'
     LOG_DIR = 'logs'
     NET_SAVE_FNAME = 'net.pth'
-    ACT_DIM = 3
-    FLAT_STATE_DIM = 13051654
+    NUM_CLASSES = 3
+    ACT_DIM = BSZ * NUM_CLASSES # classes 
+    FLAT_STATE_DIM = 15936080
