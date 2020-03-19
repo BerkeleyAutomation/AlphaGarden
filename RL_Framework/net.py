@@ -39,7 +39,11 @@ class Net(nn.Module):
         # self.fc6 = nn.Linear(2048, DataConstants.OUTPUT_DIM)
 
     def forward(self, x):
-        cc_sector, water_and_plants, global_cc = x
+        max_y = max(TrainingConstants.CC_IMG_DIMS[2], TrainingConstants.RAW_DIMS[2], TrainingConstants.GLOBAL_CC_DIMS[2])
+        cc_sector = x[:,:,:,:max_y][:,:TrainingConstants.CC_IMG_DIMS[0],:TrainingConstants.CC_IMG_DIMS[1],:TrainingConstants.CC_IMG_DIMS[2]]
+        water_and_plants = x[:,:,:,max_y:max_y*2][:,:TrainingConstants.RAW_DIMS[0],:TrainingConstants.RAW_DIMS[1],:TrainingConstants.RAW_DIMS[2]]
+        global_cc = x[:,:,:,max_y*2:][:,:TrainingConstants.GLOBAL_CC_DIMS[0],:TrainingConstants.GLOBAL_CC_DIMS[1],:TrainingConstants.GLOBAL_CC_DIMS[2]]
+        
         cc_normalized = (cc_sector - self.input_cc_mean) / self.input_cc_std
         cc = self.cc_conv1(cc_normalized)
         # print shape after each step
