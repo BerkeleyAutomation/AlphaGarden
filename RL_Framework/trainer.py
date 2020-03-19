@@ -148,7 +148,8 @@ class Trainer(object):
                 i += 1
                 data, target = data.to(self._device), target.to(self._device)
                 output = self._net(data)
-                loss = F.mse_loss(output, target)
+                criterion = torch.nn.CrossEntropyLoss()
+                loss = criterion(output, target)
                 eval_loss += loss.item()
                 eval_losses.append(loss.item())
 

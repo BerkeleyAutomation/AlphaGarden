@@ -19,6 +19,6 @@ class TrainingConstants(object):
     NUM_CLASSES = 3
     ACT_DIM = BSZ * NUM_CLASSES # classes 
     FLAT_STATE_DIM = 15936800
-    CC_IMG_DIMS = (3, 251, 499)
+    CC_IMG_DIMS = (3, 235, 499)
     RAW_DIMS = (12, 15, 30)
     GLOBAL_CC_DIMS = (10, 1, 1)
