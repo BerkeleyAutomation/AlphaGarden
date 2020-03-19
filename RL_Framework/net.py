@@ -92,7 +92,8 @@ class Net(nn.Module):
         moments_path = os.path.join(dir_path, 'moments.txt') ## TODO: save all moments you used
         torch.save(self.state_dict(), net_path)
         with open(moments_path, 'w+') as mfile:
-            mfile.write(str(self.input_mean) + ', ' + str(self.input_std))
+            mfile.write(str(self.input_cc_mean) + ', ' + str(self.input_cc_std))
+            mfile.write(str(self.input_raw_mean) + ', ' + str(self.input_raw_std))
 
     def load(self, dir_path, net_fname):
         net_path = os.path.join(dir_path, net_fname)
