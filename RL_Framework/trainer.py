@@ -114,7 +114,7 @@ class Trainer(object):
         num_batches = len(self._train_data_loader)
         train_losses = []
         for batch_idx, (data, target) in enumerate(self._train_data_loader):
-            # data, target = data.to(self._device), target.to(self._device)
+            data, target = data.to(self._device), target.to(self._device)
             self._optimizer.zero_grad()
             output = self._net(data).reshape(len(target), TrainingConstants.NUM_CLASSES)
             criterion = torch.nn.CrossEntropyLoss()
