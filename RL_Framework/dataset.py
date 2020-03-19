@@ -52,4 +52,5 @@ class Dataset(TorchDataset):
         output = '{}_action.npy'.format(tag) # do the same thing for the output
         action = np.load(output)
         state = np.load(input_raw_fname)
-        return ((sector_img, np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), state['global_cc']), action)
+        input = np.array((sector_img, np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), state['global_cc']))
+        return (input, action)
