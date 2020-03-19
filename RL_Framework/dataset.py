@@ -53,7 +53,6 @@ class Dataset(TorchDataset):
         output = '{}_action.npy'.format(tag) # do the same thing for the output
         action = np.load(output)
         state = np.load(input_raw_fname)
-<<<<<<< HEAD
         
         max_z = max(TrainingConstants.CC_IMG_DIMS[0], TrainingConstants.RAW_DIMS[0], TrainingConstants.GLOBAL_CC_DIMS[0])
         max_x = max(TrainingConstants.CC_IMG_DIMS[1], TrainingConstants.RAW_DIMS[1], TrainingConstants.GLOBAL_CC_DIMS[1])
@@ -64,7 +63,3 @@ class Dataset(TorchDataset):
         global_cc = np.pad(state['global_cc'].reshape(TrainingConstants.GLOBAL_CC_DIMS), ((0, max_z-TrainingConstants.GLOBAL_CC_DIMS[0]), (0, max_x-TrainingConstants.GLOBAL_CC_DIMS[1]), (0, max_y-TrainingConstants.GLOBAL_CC_DIMS[2])), 'constant')
 
         return (np.dstack((sector_img, raw, global_cc)), action)
-=======
-        input = np.array((sector_img, np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), state['global_cc']))
-        return (input, action)
->>>>>>> cc5cc715dc0f81b0f87ddc3afc5bb1e8fecf4784
