@@ -24,13 +24,9 @@ Pillow==7.0.0
 protobuf==3.11.3
 pyglet==1.5.0
 pyparsing==2.4.6
-PyQt5==5.14.1
-PyQt5-sip==12.7.1
 python-dateutil==2.8.1
 pytz==2019.3
 scipy==1.4.1
--e ./RL_Framework/gym_simalphagarden
--e ./Simulator_v2
 six==1.14.0
 stable-baselines==2.9.0
 tensorboard==1.15.0
@@ -40,4 +36,5 @@ termcolor==1.1.0
 torch==1.4.0
 Werkzeug==1.0.0
 wrapt==1.12.0
-
+-e ./RL_Framework/gym_simalphagarden
+-e ./Simulator_v2

@@ -1,3 +1,4 @@
+'''
 from simulatorv2.logger import Event
 from simulatorv2.plant_stage import *
 import matplotlib
@@ -215,3 +216,4 @@ def _add_plots(garden, reverse=False, final=False):
         shapes.append(shape)
 
     return shapes
+'''

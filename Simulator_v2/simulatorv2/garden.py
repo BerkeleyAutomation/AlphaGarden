@@ -1,7 +1,7 @@
 import numpy as np
 from heapq import nlargest
 from simulatorv2.logger import Logger, Event
-from simulatorv2.visualization import setup_animation, setup_saving
+#from simulatorv2.visualization import setup_animation, setup_saving
 from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 
