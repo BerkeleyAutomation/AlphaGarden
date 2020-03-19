@@ -9,8 +9,8 @@ def _compute_from_table_values(
     germination_time=(0, 1), 
     seed_spacing=1, 
     maturation_time=10, 
-    stopping_color=(1, 0, 1),
-    color_step=(10/255, 0/255, 0/255)
+    stopping_color=(0, 0, 1),
+    color_step=(10/255, 0, 0)
     ):
     """
     germination_time (int, int) - a range of values in days for the plant's germination time.
@@ -49,7 +49,7 @@ def _compute_from_table_values(
 
 PLANT_TYPES = {
     "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
-                                          seed_spacing=9, maturation_time=62.5),
+                                          seed_spacing=9, maturation_time=62.5, stopping_color=(119/255, 0, 1)),
     "bok-choy": _compute_from_table_values(name="bok-choy", color=(86/255, 139/255, 31/255), germination_time=(5, 10),
                                            seed_spacing=6, maturation_time=45, stopping_color=(115/255, 0, 1)),
     "basil": _compute_from_table_values(name="basil", color=(9/255, 77/255, 10/255), germination_time=(5, 10),

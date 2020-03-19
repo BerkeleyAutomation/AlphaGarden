@@ -83,7 +83,7 @@ class GrowthStage(PlantStage):
             else:
                 self.stress_time = 0
                 self.overwatered = False
-                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, 0
 
         elif self.underwatered:
@@ -96,7 +96,7 @@ class GrowthStage(PlantStage):
             else:
                 self.stress_time = 0
                 self.underwatered = False
-                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, 0
 
         else:
@@ -165,7 +165,7 @@ class WaitingStage(PlantStage):
             else:
                 self.stress_time = 0
                 self.overwatered = False
-                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, 0
 
         elif self.underwatered:
@@ -178,7 +178,7 @@ class WaitingStage(PlantStage):
             else:
                 self.stress_time = 0
                 self.underwatered = False
-                self.new_color = ((self.plant.color[0] + self.plant.original_color[0]) / 2,) + self.plant.color[1:]
+                self.new_color = self.plant.get_new_color()
                 return 0, 0
 
         else:
