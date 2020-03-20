@@ -2,6 +2,7 @@ import os
 import numpy as np
 from cv2 import cv2
 from torch.utils.data.dataset import Dataset as TorchDataset
+from constants import TrainingConstants
 
 class Dataset(TorchDataset):
     def __init__(self, data_dir):
@@ -14,11 +15,10 @@ class Dataset(TorchDataset):
         self.input_raw_fnames = ([data_dir + '/' + fname for fname in os.listdir(self.data_dir) if '.npz' in fname])
         self.input_raw_fnames.sort()
         self.input_cc_mean, self.input_cc_std = self._get_moments(self.input_cc_fnames, 'cc')
-        self.input_action_mean, self.input_action_std = self._get_moments(self.input_action_fnames, 'action')
         self.input_raw_mean, self.input_raw_std = self._get_moments(self.input_raw_fnames, 'raw')
 
     def __len__(self):
-        return len(self.input_fnames)
+        return len(self.input_cc_fnames)
 
     def _get_moments(self, input_fnames, data_type):
         inputs = []
@@ -29,13 +29,17 @@ class Dataset(TorchDataset):
                 plants = data['plants']
                 water = data['water']
                 global_cc = data['global_cc']
-                inputs.extend([plants[:,:,i] for i in range(plants.shape[2])])
-                inputs.append(water[:,:,0])
+                # inputs.extend([plants[:,:,i] for i in range(plants.shape[2])])
+                # inputs.append(water[:,:,0])
+                inputs.append(np.transpose(np.dstack((plants, water)), (2, 0, 1)))
                 vec_inputs.append(global_cc)
-            elif data_type == 'action':
-                vec_inputs.append(np.load(input_fname))
             else:
                 image = cv2.imread(input_fname)
+
+                h, w, c = image.shape
+                img = cv2.resize(image, (int(w/4), int(h/4)))
+                image = np.transpose(img, (2, 0, 1))
+                
                 inputs.append(image)
 
         inputs = np.array(inputs)
@@ -43,8 +47,6 @@ class Dataset(TorchDataset):
         if data_type == 'raw':
             return (np.mean(vec_inputs, axis=0), np.mean(inputs, axis=0)), \
                 (np.std(vec_inputs + 1e-10, axis=0), np.std(inputs + 1e-10, axis=0))
-        elif data_type == 'action':
-            return np.mean(vec_inputs, axis=0), np.std(vec_inputs + 1e-10, axis=0)
         else:
             return np.mean(inputs, axis=0), np.std(inputs + 1e-10, axis=0)
 
@@ -55,4 +57,18 @@ class Dataset(TorchDataset):
         output = '{}_action.npy'.format(tag) # do the same thing for the output
         action = np.load(output)
         state = np.load(input_raw_fname)
-        return ((state['global_cc'], np.dstack((state['plants'], state['water']))), action)
+        
+        max_z = max(TrainingConstants.CC_IMG_DIMS[0], TrainingConstants.RAW_DIMS[0], TrainingConstants.GLOBAL_CC_DIMS[0])
+        max_x = max(TrainingConstants.CC_IMG_DIMS[1], TrainingConstants.RAW_DIMS[1], TrainingConstants.GLOBAL_CC_DIMS[1])
+        max_y = max(TrainingConstants.CC_IMG_DIMS[2], TrainingConstants.RAW_DIMS[2], TrainingConstants.GLOBAL_CC_DIMS[2])
+
+        sector_img = cv2.imread(input_cc_fname)
+        h, w, c = sector_img.shape
+        img = cv2.resize(sector_img, (int(w/4), int(h/4)))
+        sector_img = np.transpose(img, (2, 0, 1))
+
+        sector_img = np.pad(sector_img, ((0, max_z-TrainingConstants.CC_IMG_DIMS[0]), (0, max_x-TrainingConstants.CC_IMG_DIMS[1]), (0, max_y-TrainingConstants.CC_IMG_DIMS[2])), 'constant')
+        raw = np.pad(np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), ((0, max_z-TrainingConstants.RAW_DIMS[0]), (0, max_x-TrainingConstants.RAW_DIMS[1]), (0, max_y-TrainingConstants.RAW_DIMS[2])), 'constant')
+        global_cc = np.pad(state['global_cc'].reshape(TrainingConstants.GLOBAL_CC_DIMS), ((0, max_z-TrainingConstants.GLOBAL_CC_DIMS[0]), (0, max_x-TrainingConstants.GLOBAL_CC_DIMS[1]), (0, max_y-TrainingConstants.GLOBAL_CC_DIMS[2])), 'constant')
+
+        return (np.dstack((sector_img, raw, global_cc)), action)

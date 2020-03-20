@@ -70,7 +70,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # center_to_sample = (57, 57)
         
         cc_per_plant = self.garden.get_cc_per_plant()
-        global_cc_vec = np.append(self.rows * self.cols - np.sum(cc_per_plant), cc_per_plant)
+        global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
         return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample), \
                 self.garden.get_water_grid(center_to_sample), \
@@ -79,7 +79,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_canopy_image(self, center):
         dir_path = self.config.get('data_collection', 'dir_path')
         self.garden.step = 1
-        x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
+        # x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
+        x_low, y_low, x_high, y_high = 0, 0, 149, 299
+        # plt.style.use('ggplot')
         _, ax = plt.subplots()
         ax.set_xlim(y_low, y_high)
         ax.set_ylim(x_low, x_high)
@@ -88,13 +90,22 @@ class SimAlphaGardenWrapper(WrapperEnv):
         ax.set_xticklabels([])
         ax.set_yticks([])
         ax.set_xticks([])
+        # ax.set_xticks(np.arange(y_low, y_high+1))
+        # ax.set_yticks(np.arange(x_low, x_high+1))
         ax.axis('off')
+        # ax.set_axisbelow(False)
+        # ax.grid(color='k') 
+        # for axi in (ax.xaxis, ax.yaxis):
+        #     for tic in axi.get_major_ticks():
+        #         tic.tick1On = tic.tick2On = False
+        #         tic.label1On = tic.label2On = False
+        # ax.grid(color='k') 
         shapes = []
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
-                # self.plant_heights.append((plant.type, plant.height))
-                # self.plant_radii.append((plant.type, plant.radius))
+                self.plant_heights.append((plant.type, plant.height))
+                self.plant_radii.append((plant.type, plant.radius))
                 # stage = plant.current_stage()
                 # name = plant.type
                 # if isinstance(stage, GerminationStage):
@@ -132,14 +143,15 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return file_path
     
     def plot_water_map(self, folder_path, water_grid, plants) :
-        plt.figure(figsize=(30, 30))
+        # plt.figure(figsize=(30, 30))
+        plt.axis('off')
         plt.imshow(water_grid[:,:,0], cmap='Blues', interpolation='nearest')
         for i in range(plants.shape[2]):
             p = plants[:,:,i]
             nonzero = np.nonzero(p)
             for row, col in zip(nonzero[0], nonzero[1]):
-                plt.plot(col, row, marker='.', markersize=10, color="lawngreen")
-        plt.savefig(folder_path + "_water" + '.png', bbox_inches='tight', pad_inches=0.02)
+                plt.plot(col, row, marker='.', markersize=1, color="lime")
+        plt.savefig(folder_path + "_water" + '.svg', bbox_inches='tight', pad_inches=0.02)
         plt.close()
 
     def get_garden_state(self):
@@ -169,11 +181,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
     Method called by the gym environment to execute an action.
 
     Parameters:
-        action - an integer.  0 = no action, 1-4 = irrigation, 5+ = pruning
+        action - an integer.  0 = no action, 1 = irrigation, 2 = pruning
     Returns:
         state - state of the environment after irrigation
     '''
-    def take_action(self, center, action):
+    def take_action(self, center, action, time_step):
         self.curr_action = action
         
         # State and action before performing a time step.
@@ -181,13 +193,15 @@ class SimAlphaGardenWrapper(WrapperEnv):
         plant_grid = self.garden.get_plant_prob(center)
         water_grid = self.garden.get_water_grid(center)
         health_grid = self.garden.get_health_grid(center)
-        action_vec = np.zeros(len(self.irr_actions) + len(global_cc_vec))
+        # action_vec = np.zeros(len(self.irr_actions) + 2) 
         
         # Save canopy image before performing a time step.
+        # if True:
+        # if time_step % 100 == 0:
         if self.curr_action >= 0:
             path = self.get_canopy_image(center)
             # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
-            action_vec[self.curr_action] = 1
+            action_vec = np.array(action)
             np.save(path + '_action', action_vec)
             # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
             np.savez(path + '.npz', plants=plant_grid, water=water_grid, health=health_grid, global_cc=global_cc_vec)

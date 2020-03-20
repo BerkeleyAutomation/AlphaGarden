@@ -99,7 +99,7 @@ if __name__ == '__main__':
         device = DeviceConstants.CPU
 
     dataset = Dataset(data_dir)
-    net = Net(dataset.input_mean, dataset.input_std, name=net_name)  # TODO: adjust with the network's inputs
+    net = Net(dataset.input_cc_mean, dataset.input_cc_std, dataset.input_raw_mean, dataset.input_raw_std, name=net_name)
     trainer = Trainer(net,
                       dataset,
                       num_epochs,

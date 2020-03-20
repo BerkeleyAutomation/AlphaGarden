@@ -34,7 +34,7 @@ class SimAlphaGardenEnv(gym.Env):
         return [self.global_cc_vec, obs]
 
     def _take_action(self, sector, action):
-        return self.wrapper_env.take_action(sector, action)
+        return self.wrapper_env.take_action(sector, action, self.current_step)
 
     def get_current_step(self):
         return self.current_step
