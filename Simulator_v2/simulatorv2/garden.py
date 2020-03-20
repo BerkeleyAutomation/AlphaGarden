@@ -289,6 +289,8 @@ class Garden:
                 tallest_plant_stage = self.plants[tallest_type_id][tallest_plant_id].stage_index
 
                 self.grid['health'][point[1]] = tallest_plant_stage
+            elif self.grid['health'][point[1]] != 0:
+                self.grid['health'][point[1]] = 0
 
     def update_plant_size(self, plant, upward=None, outward=None):
         if upward:
