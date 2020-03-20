@@ -34,7 +34,12 @@ class Dataset(TorchDataset):
                 inputs.append(np.transpose(np.dstack((plants, water)), (2, 0, 1)))
                 vec_inputs.append(global_cc)
             else:
-                image = np.transpose(cv2.imread(input_fname), (2, 0, 1))
+                image = cv2.imread(input_fname)
+
+                h, w, c = image.shape
+                img = cv2.resize(image, (int(w/4), int(h/4)))
+                image = np.transpose(img, (2, 0, 1))
+                
                 inputs.append(image)
 
         inputs = np.array(inputs)
@@ -57,6 +62,11 @@ class Dataset(TorchDataset):
         max_z = max(TrainingConstants.CC_IMG_DIMS[0], TrainingConstants.RAW_DIMS[0], TrainingConstants.GLOBAL_CC_DIMS[0])
         max_x = max(TrainingConstants.CC_IMG_DIMS[1], TrainingConstants.RAW_DIMS[1], TrainingConstants.GLOBAL_CC_DIMS[1])
         max_y = max(TrainingConstants.CC_IMG_DIMS[2], TrainingConstants.RAW_DIMS[2], TrainingConstants.GLOBAL_CC_DIMS[2])
+
+        img = cv2.imread(input_cc_fname)
+        h, w, c = img.shape
+        img = cv2.resize(img, (int(w/4), int(h/4)))
+        sector_img = np.transpose(img, (2, 0, 1))
 
         sector_img = np.pad(sector_img, ((0, max_z-TrainingConstants.CC_IMG_DIMS[0]), (0, max_x-TrainingConstants.CC_IMG_DIMS[1]), (0, max_y-TrainingConstants.CC_IMG_DIMS[2])), 'constant')
         raw = np.pad(np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), ((0, max_z-TrainingConstants.RAW_DIMS[0]), (0, max_x-TrainingConstants.RAW_DIMS[1]), (0, max_y-TrainingConstants.RAW_DIMS[2])), 'constant')

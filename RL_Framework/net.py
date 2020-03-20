@@ -28,6 +28,8 @@ class Net(nn.Module):
         self.raw_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
         self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
+        
+        self._device = TrainingConstants.DEVICE
 
         ## the code from GLOMP for reference:
         # self.flatten = nn.Flatten()
@@ -44,7 +46,8 @@ class Net(nn.Module):
         water_and_plants = x[:,:,:,max_y:max_y*2][:,:TrainingConstants.RAW_DIMS[0],:TrainingConstants.RAW_DIMS[1],:TrainingConstants.RAW_DIMS[2]]
         global_cc = x[:,:,:,max_y*2:][:,:TrainingConstants.GLOBAL_CC_DIMS[0],:TrainingConstants.GLOBAL_CC_DIMS[1],:TrainingConstants.GLOBAL_CC_DIMS[2]]
         
-        cc_normalized = (cc_sector - self.input_cc_mean) / self.input_cc_std
+        # cc_normalized = (cc_sector - self.input_cc_mean) / self.input_cc_std
+        cc_normalized = (cc_sector - torch.tensor(self.input_cc_mean, dtype=torch.float32, device=self._device)) / torch.tensor(self.input_cc_std, dtype=torch.float32, device=self._device)
         cc = self.cc_conv1(cc_normalized)
         # print shape after each step
         cc = self.cc_bn1(cc)
@@ -54,7 +57,8 @@ class Net(nn.Module):
         cc = F.relu(cc)
         cc = self.cc_pool(cc)
 
-        water_and_plants_normalized = (water_and_plants - self.input_raw_mean[1]) / self.input_raw_std[1]
+        # water_and_plants_normalized = (water_and_plants - self.input_raw_mean[1]) / self.input_raw_std[1]
+        water_and_plants_normalized = (water_and_plants - torch.tensor(self.input_raw_mean[1], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[1], dtype=torch.float32, device=self._device)
         raw = self.raw_conv1(water_and_plants_normalized)
         raw = self.raw_bn1(raw)
         raw = F.relu(raw)
@@ -64,7 +68,8 @@ class Net(nn.Module):
         raw = self.raw_pool(raw)
 
         cc_and_raw = torch.cat((torch.flatten(cc), torch.flatten(cc)))
-        global_cc_normalized = (global_cc - self.input_raw_mean[0]) / self.input_raw_std[0]
+        # global_cc_normalized = (global_cc - self.input_raw_mean[0]) / self.input_raw_std[0]
+        global_cc_normalized = (global_cc - torch.tensor(self.input_raw_mean[0], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[0], dtype=torch.float32, device=self._device)
         state = torch.cat((cc_and_raw, torch.flatten(global_cc_normalized)))
         state = F.relu(state)
         # print("state.size: ", state.size())
