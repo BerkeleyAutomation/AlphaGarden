@@ -6,7 +6,7 @@ class Plant:
 
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
                  germination_time=3, germination_scale=1, start_height=1, start_radius=1, height_scale=0.1,
-                 radius_scale=0.1):
+                 radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255)):
         self.id = None
 
         # coordinates of plant
@@ -23,6 +23,9 @@ class Plant:
         # color of plant when plotted (must be RGB tuple)
         self.color = color
         self.original_color = color
+        
+        self.stopping_color = stopping_color    # last color to stop at for plant wilting
+        self.color_step = color_step            # color to change by when wilting
 
         # plant species (for visualization purposes)
         self.type = plant_type
@@ -49,7 +52,7 @@ class Plant:
             return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"],
                          color=p["color"], plant_type=p["plant_type"], germination_time=germination_time,
                          germination_scale=germination_scale, start_height=p["start_height"],
-                         start_radius=p["start_radius"])
+                         start_radius=p["start_radius"], stopping_color=p["stopping_color"], color_step=p["color_step"])
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
@@ -120,3 +123,20 @@ class Plant:
 
     def __str__(self):
         return f"[Plant] Radius: {self.radius} | Height: {self.height}"
+
+    def get_new_color(self):
+
+        new_red = self.color[0]
+        new_green = self.color[1]
+
+        if self.color_step[0] > 0:
+            new_red = min(self.color[0] + self.color_step[0], self.stopping_color[0])
+        elif self.color_step[0] < 0:
+            new_red = max(self.color[0] + self.color_step[0], self.stopping_color[0])
+
+        if self.color_step[1] > 0:
+            new_green = min(self.color[1] + self.color_step[1], self.stopping_color[1])
+        elif self.color_step[1] < 0:
+            new_green = max(self.color[1] + self.color_step[1], self.stopping_color[1])
+        
+        return (new_red, new_green, self.color[2] + self.color_step[2])
