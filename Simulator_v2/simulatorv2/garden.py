@@ -286,7 +286,7 @@ class Garden:
             if point[0]['nearby']:
                 tallest_plant_tup = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
                 tallest_type_id, tallest_plant_id = tallest_plant_tup[0], tallest_plant_tup[1]
-                tallest_plant_stage = self.plants[tallest_type_id][tallest_plant_id].stage_index
+                tallest_plant_stage = self.plants[tallest_type_id][tallest_plant_id].stage_index + 1
 
                 self.grid['health'][point[1]] = tallest_plant_stage
             elif self.grid['health'][point[1]] != 0:
@@ -372,7 +372,7 @@ class Garden:
                 for tup in point[0]['nearby']:
                     if self.plants[tup[0]][tup[1]].height > tallest_height:
                         tallest_height = self.plants[tup[0]][tup[1]].height
-                        tallest_plant_stage = self.plants[tup[0]][tup[1]].stage_index
+                        tallest_plant_stage = self.plants[tup[0]][tup[1]].stage_index + 1
 
                 plant_health_grid[coord] = tallest_plant_stage  # TODO: just plant stage, or also plant_id with stage?
 
