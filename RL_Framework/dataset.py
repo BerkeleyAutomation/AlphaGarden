@@ -21,59 +21,60 @@ class Dataset(TorchDataset):
         return len(self.input_cc_fnames)
 
     def _get_moments(self, input_fnames, data_type):
-        count = 0
-        input_sums = []
-        input_sq_sums = []
-        vec_sums = []
-        vec_sq_sums = []
+        count = float(len(input_fnames))
+        i = 0
+        input_mean = []
+        input_sq_mean = []
+        vec_mean = []
+        vec_sq_mean = []
         for input_fname in input_fnames:
-            count += 1
+            i += 1
             if data_type == 'raw':
                 data = np.load(input_fname)
                 plants = data['plants']
                 water = data['water']
                 global_cc = data['global_cc']
                 
-                plants_and_water = np.array(np.transpose(np.dstack((plants, water)), (2, 0, 1)), dtype=np.float32)
-                global_cc = np.array(global_cc, dtype=np.float32)
+                plants_and_water = np.array(np.transpose(np.dstack((plants, water)), (2, 0, 1)), dtype=np.float64)
+                global_cc = np.array(global_cc, dtype=np.float64)
+                pw_mean = np.divide(plants_and_water, count)
+                pw2_mean = np.divide(plants_and_water**2, count)
+                g_mean = np.divide(global_cc, count)
+                g2_mean = np.divide(global_cc**2, count)
 
-                if count == 1:
-                    input_sums.append(plants_and_water)
-                    input_sq_sums.append(plants_and_water**2)
-                    vec_sums.append(global_cc)
-                    vec_sq_sums.append(global_cc**2)
+                if i == 1:
+                    input_mean.append(pw_mean)
+                    input_sq_mean.append(pw2_mean)
+                    vec_mean.append(g_mean)
+                    vec_sq_mean.append(g2_mean)
                 else:
-                    input_sums = np.stack((input_sums, plants_and_water), axis=0)
-                    input_sq_sums = np.stack((input_sq_sums, plants_and_water**2), axis=0)
-                    vec_sums = np.stack((vec_sums, global_cc), axis=0)
-                    vec_sq_sums = np.stack((vec_sq_sums, global_cc**2), axis=0)
+                    input_mean = np.stack((input_mean, pw_mean), axis=0)
+                    input_sq_mean = np.stack((input_sq_mean, pw2_mean), axis=0)
+                    vec_mean = np.stack((vec_mean, g_mean), axis=0)
+                    vec_sq_mean = np.stack((vec_sq_mean, g2_mean), axis=0)
 
-                input_sums = np.sum(input_sums, axis=0)
-                input_sq_sums = np.sum(input_sq_sums, axis=0)
-                vec_sums = np.sum(vec_sums, axis=0)
-                vec_sq_sums = np.sum(vec_sq_sums, axis=0)
+                input_mean = np.sum(input_mean, axis=0)
+                input_sq_mean = np.sum(input_sq_mean, axis=0)
+                vec_mean = np.sum(vec_mean, axis=0)
+                vec_sq_mean = np.sum(vec_sq_mean, axis=0)
             else:
-                image = np.array(np.transpose(cv2.imread(input_fname), (2, 0, 1)), dtype=np.float32)
-                if count == 1:
-                    input_sums.append(image)
-                    input_sq_sums.append(image**2)
+                image = np.array(np.transpose(cv2.imread(input_fname), (2, 0, 1)), dtype=np.float64)
+                image_mean = np.divide(image, count)
+                image2_mean = np.divide(image**2, count)
+                if i == 1:
+                    input_mean.append(image_mean)
+                    input_sq_mean.append(image2_mean)
                 else:
-                    input_sums = np.stack((input_sums, image), axis=0)
-                    input_sq_sums = np.stack((input_sq_sums, image**2), axis=0)
-                input_sums = np.sum(input_sums, axis=0)
-                input_sq_sums = np.sum(input_sq_sums, axis=0)
+                    input_mean = np.stack((input_mean, image_mean), axis=0)
+                    input_sq_mean = np.stack((input_sq_mean, image2_mean), axis=0)
+                input_mean = np.sum(input_mean, axis=0)
+                input_sq_mean = np.sum(input_sq_mean, axis=0)
 
         if data_type == 'raw':
-            input_mean = np.divide(input_sums, float(count))
-            vec_mean = np.divide(vec_sums, float(count))
-            input_sq_mean = np.divide(input_sq_sums, float(count))
-            vec_sq_mean = np.divide(vec_sq_sums, float(count))
             input_std = (input_sq_mean - (input_mean**2) + 1e-10)**0.5
             vec_std = (vec_sq_mean - (vec_mean**2) + 1e-10)**0.5
             return (vec_mean, input_mean), (vec_std, input_std)
         else:
-            input_mean = np.divide(input_sums, float(count))
-            input_sq_mean = np.divide(input_sq_sums, float(count))
             input_std = (input_sq_mean - (input_mean**2))**0.5
             return input_mean, input_std
 
