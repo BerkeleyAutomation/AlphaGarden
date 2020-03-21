@@ -34,12 +34,7 @@ class Dataset(TorchDataset):
                 inputs.append(np.transpose(np.dstack((plants, water)), (2, 0, 1)))
                 vec_inputs.append(global_cc)
             else:
-                image = cv2.imread(input_fname)
-
-                h, w, c = image.shape
-                img = cv2.resize(image, (int(w/4), int(h/4)))
-                image = np.transpose(img, (2, 0, 1))
-                
+                image = np.transpose(cv2.imread(input_fname), (2, 0, 1))
                 inputs.append(image)
 
         inputs = np.array(inputs)
@@ -52,6 +47,7 @@ class Dataset(TorchDataset):
 
     def __getitem__(self, idx):
         input_cc_fname = self.input_cc_fnames[idx] # this is how we index the dataset
+        sector_img = np.transpose(cv2.imread(input_cc_fname), (2, 0, 1))
         tag = input_cc_fname[:input_cc_fname.rfind('_')] # this should extract only the hash from the cc file name
         input_raw_fname = '{}.npz'.format(tag) # find the raw data that corresponds with the cc by hash
         output = '{}_action.npy'.format(tag) # do the same thing for the output
@@ -61,11 +57,6 @@ class Dataset(TorchDataset):
         max_z = max(TrainingConstants.CC_IMG_DIMS[0], TrainingConstants.RAW_DIMS[0], TrainingConstants.GLOBAL_CC_DIMS[0])
         max_x = max(TrainingConstants.CC_IMG_DIMS[1], TrainingConstants.RAW_DIMS[1], TrainingConstants.GLOBAL_CC_DIMS[1])
         max_y = max(TrainingConstants.CC_IMG_DIMS[2], TrainingConstants.RAW_DIMS[2], TrainingConstants.GLOBAL_CC_DIMS[2])
-
-        sector_img = cv2.imread(input_cc_fname)
-        h, w, c = sector_img.shape
-        img = cv2.resize(sector_img, (int(w/4), int(h/4)))
-        sector_img = np.transpose(img, (2, 0, 1))
 
         sector_img = np.pad(sector_img, ((0, max_z-TrainingConstants.CC_IMG_DIMS[0]), (0, max_x-TrainingConstants.CC_IMG_DIMS[1]), (0, max_y-TrainingConstants.CC_IMG_DIMS[2])), 'constant')
         raw = np.pad(np.transpose(np.dstack((state['plants'], state['water'])), (2, 0, 1)), ((0, max_z-TrainingConstants.RAW_DIMS[0]), (0, max_x-TrainingConstants.RAW_DIMS[1]), (0, max_y-TrainingConstants.RAW_DIMS[2])), 'constant')

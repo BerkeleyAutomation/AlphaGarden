@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import os
 from constants import TrainingConstants
+import numpy as np
+from cv2 import cv2
 
 torch.set_default_dtype(torch.float64)
 
@@ -10,36 +12,57 @@ class Net(nn.Module):
     def __init__(self, input_cc_mean, input_cc_std, input_raw_mean, input_raw_std, name='alpha_net'):
         super(Net, self).__init__()
         self.name = name
+        
+        self.downsample_rate = 4
+        
+        input_cc_mean = np.transpose(input_cc_mean, (1, 2, 0))
+        h, w, c = input_cc_mean.shape
+        img = cv2.resize(input_cc_mean, (int(w/self.downsample_rate), int(h/self.downsample_rate)))
+        input_cc_mean = np.transpose(img, (2, 0, 1))
+
+        input_cc_std = np.transpose(input_cc_std, (1, 2, 0))
+        h, w, c = input_cc_std.shape
+        img = cv2.resize(input_cc_std, (int(w/self.downsample_rate), int(h/self.downsample_rate)))
+        input_cc_std = np.transpose(img, (2, 0, 1))
+        
         self.input_cc_mean = input_cc_mean
         self.input_cc_std = input_cc_std
         self.input_raw_mean = input_raw_mean
         self.input_raw_std = input_raw_std
         self._device = TrainingConstants.DEVICE
 
-        self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=16, stride=1, kernel_size=5, padding=2)
-        self.cc_bn1 = nn.BatchNorm2d(16) 
-        self.cc_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
-        self.cc_bn2 = nn.BatchNorm2d(32)
+        self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=8, stride=1, kernel_size=5, padding=2)
+        self.cc_bn1 = nn.BatchNorm2d(8) 
+        self.cc_conv2 = nn.Conv2d(8, 16, stride=1, kernel_size=3, padding=1)
+        self.cc_bn2 = nn.BatchNorm2d(16)
         self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-        self.cc_fc = nn.Linear(62, 16)
+        self.cc_fc = nn.Linear(62, 8)
 
-        self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=32, stride=1, kernel_size=5, padding=2)
-        self.raw_bn1 = nn.BatchNorm2d(32)
-        self.raw_conv2 = nn.Conv2d(32, 64, stride=1, kernel_size=3, padding=1)
-        self.raw_bn2 = nn.BatchNorm2d(64)
+        self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=16, stride=1, kernel_size=5, padding=2)
+        self.raw_bn1 = nn.BatchNorm2d(16)
+        self.raw_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
+        self.raw_bn2 = nn.BatchNorm2d(32)
         self.raw_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
         self.raw_fc = nn.Linear(15, 8)
 
         self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
-        
-
+                
     def forward(self, x):
         max_y = max(TrainingConstants.CC_IMG_DIMS[2], TrainingConstants.RAW_DIMS[2], TrainingConstants.GLOBAL_CC_DIMS[2])
-        cc_sector = x[:,:,:,:max_y][:,:TrainingConstants.CC_IMG_DIMS[0],:TrainingConstants.CC_IMG_DIMS[1],:TrainingConstants.CC_IMG_DIMS[2]]
+        cc_img_sector = x[:,:,:,:max_y][:,:TrainingConstants.CC_IMG_DIMS[0],:TrainingConstants.CC_IMG_DIMS[1],:TrainingConstants.CC_IMG_DIMS[2]]
         water_and_plants = x[:,:,:,max_y:max_y*2][:,:TrainingConstants.RAW_DIMS[0],:TrainingConstants.RAW_DIMS[1],:TrainingConstants.RAW_DIMS[2]]
         global_cc = x[:,:,:,max_y*2:][:,:TrainingConstants.GLOBAL_CC_DIMS[0],:TrainingConstants.GLOBAL_CC_DIMS[1],:TrainingConstants.GLOBAL_CC_DIMS[2]]
-        
-        cc_normalized = (cc_sector - torch.tensor(self.input_cc_mean, dtype=torch.float32, device=self._device)) / torch.tensor(self.input_cc_std, dtype=torch.float32, device=self._device)
+
+        cc_sector = []
+        for i in range(len(cc_img_sector)):
+            sector_img = cc_img_sector[i].cpu().numpy()
+            sector_img = np.transpose(sector_img, (1, 2, 0))
+            h, w, c = sector_img.shape
+            img = cv2.resize(sector_img, (int(w/self.downsample_rate), int(h/self.downsample_rate)))
+            cc_sector.append(np.transpose(img, (2, 0, 1)))
+        cc_sector = torch.from_numpy(np.array(cc_sector)).to(self._device)
+
+        cc_normalized = (cc_sector - torch.tensor(self.input_cc_mean, dtype=torch.float32, device=self._device)) / torch.tensor(self.input_cc_std + 1e-10, dtype=torch.float32, device=self._device)
         cc = self.cc_conv1(cc_normalized)
         cc = self.cc_bn1(cc)
         cc = F.relu(cc)
@@ -47,6 +70,7 @@ class Net(nn.Module):
         cc = self.cc_bn2(cc)
         cc = F.relu(cc)
         cc = self.cc_pool(cc)
+        # print('cc_size', cc.size())
         cc = self.cc_fc(cc)
 
         water_and_plants_normalized = (water_and_plants - torch.tensor(self.input_raw_mean[1], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[1], dtype=torch.float32, device=self._device)
@@ -57,15 +81,16 @@ class Net(nn.Module):
         raw = self.raw_bn2(raw)
         raw = F.relu(raw)
         raw = self.raw_pool(raw)
+        # print('raw_size', raw.size())
         raw = self.raw_fc(raw)
-        print("cc, raw ", cc.size(), raw.size())
+        # print("cc, raw ", cc.size(), raw.size())
         cc = cc.reshape((cc.shape[0], -1))
         raw = raw.reshape((raw.shape[0], -1))
-        print("cc, raw ", cc.size(), raw.size())
+        # print("cc, raw ", cc.size(), raw.size())
         cc_and_raw = torch.cat((cc, raw), dim=1)
-        print("cc_and_raw - ", cc_and_raw.size())
+        # print("cc_and_raw - ", cc_and_raw.size())
         global_cc_normalized = (global_cc - torch.tensor(self.input_raw_mean[0], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[0], dtype=torch.float32, device=self._device)
-        print("global_cc_normalized - ", global_cc_normalized.size())
+        # print("global_cc_normalized - ", global_cc_normalized.size())
         global_cc_normalized = global_cc_normalized.reshape((global_cc_normalized.shape[0], -1))
         state = torch.cat((cc_and_raw, global_cc_normalized), dim=1)
         state = F.relu(state)
