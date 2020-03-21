@@ -73,7 +73,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
         return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample), \
-                self.garden.get_water_grid(center_to_sample)))
+                self.garden.get_water_grid(center_to_sample), \
+                self.garden.get_health_grid(center_to_sample)))
 
     def get_canopy_image(self, center):
         dir_path = self.config.get('data_collection', 'dir_path')
@@ -191,6 +192,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         global_cc_vec = self.garden.get_cc_per_plant()
         plant_grid = self.garden.get_plant_prob(center)
         water_grid = self.garden.get_water_grid(center)
+        health_grid = self.garden.get_health_grid(center)
         # action_vec = np.zeros(len(self.irr_actions) + 2) 
         
         # Save canopy image before performing a time step.
@@ -202,7 +204,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             action_vec = np.array(action)
             np.save(path + '_action', action_vec)
             # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
-            np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec)
+            np.savez(path + '.npz', plants=plant_grid, water=water_grid, health=health_grid, global_cc=global_cc_vec)
             self.plant_heights = []
             self.plant_radii = []
 
