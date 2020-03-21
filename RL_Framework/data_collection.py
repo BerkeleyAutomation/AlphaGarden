@@ -55,7 +55,7 @@ if __name__ == '__main__':
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types
-    depth = num_plant_types + 2 # +1 for water, +1 for 'earth' type 
+    depth = num_plant_types + 3  # +1 for health, +1 for water, +1 for 'earth' type
     sector_rows = 15
     sector_cols = 30
     prune_window_rows = 5
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
-    garden_days = 100 
+    garden_days = 100
     sector_obs_per_day =  int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
