@@ -27,9 +27,25 @@ class Net(nn.Module):
         
         self.input_cc_mean = input_cc_mean
         self.input_cc_std = input_cc_std
+        # print(np.any(np.isnan(self.input_cc_mean)), np.any(np.isnan(self.input_cc_std)))
         self.input_raw_mean = input_raw_mean
         self.input_raw_std = input_raw_std
+        # print(np.any(np.isnan(self.input_raw_mean[0])), np.any(np.isnan(self.input_raw_std[0])), np.any(np.isnan(self.input_raw_mean[1])), np.any(np.isnan(self.input_raw_std[1])))
         self._device = TrainingConstants.DEVICE
+
+        # self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=8, stride=1, kernel_size=5, padding=2)
+        # self.cc_bn1 = nn.BatchNorm2d(8) 
+        # self.cc_conv2 = nn.Conv2d(8, 16, stride=1, kernel_size=3, padding=1)
+        # self.cc_bn2 = nn.BatchNorm2d(16)
+        # self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        # self.cc_fc = nn.Linear(62, 8)
+
+        # self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=16, stride=1, kernel_size=5, padding=2)
+        # self.raw_bn1 = nn.BatchNorm2d(16)
+        # self.raw_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
+        # self.raw_bn2 = nn.BatchNorm2d(32)
+        # self.raw_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        # self.raw_fc = nn.Linear(15, 8)
 
         self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=16, stride=1, kernel_size=5, padding=2)
         self.cc_bn1 = nn.BatchNorm2d(16) 
@@ -73,7 +89,7 @@ class Net(nn.Module):
         # print('cc_size', cc.size())
         cc = self.cc_fc(cc)
 
-        water_and_plants_normalized = (water_and_plants - torch.tensor(self.input_raw_mean[1], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[1], dtype=torch.float32, device=self._device)
+        water_and_plants_normalized = (water_and_plants - torch.tensor(self.input_raw_mean[1], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[1] + 1e-10, dtype=torch.float32, device=self._device)
         raw = self.raw_conv1(water_and_plants_normalized)
         raw = self.raw_bn1(raw)
         raw = F.relu(raw)
@@ -89,12 +105,12 @@ class Net(nn.Module):
         # print("cc, raw ", cc.size(), raw.size())
         cc_and_raw = torch.cat((cc, raw), dim=1)
         # print("cc_and_raw - ", cc_and_raw.size())
-        global_cc_normalized = (global_cc - torch.tensor(self.input_raw_mean[0], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[0], dtype=torch.float32, device=self._device)
+        global_cc_normalized = (global_cc - torch.tensor(self.input_raw_mean[0], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[0] + 1e-10, dtype=torch.float32, device=self._device)
         # print("global_cc_normalized - ", global_cc_normalized.size())
         global_cc_normalized = global_cc_normalized.reshape((global_cc_normalized.shape[0], -1))
         state = torch.cat((cc_and_raw, global_cc_normalized), dim=1)
         state = F.relu(state)
-        print("state.size: ", state.size())
+        # print("state.size: ", state.size())
         action = self.fc(state)
         return action
 
