@@ -36,11 +36,7 @@ class Net(nn.Module):
         self.cc_conv2 = nn.Conv2d(8, 16, stride=1, kernel_size=3, padding=1)
         self.cc_bn2 = nn.BatchNorm2d(16)
         self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-<<<<<<< HEAD
         self.cc_fc = nn.Linear(62, 8)
-=======
-        self.cc_fc = nn.Linear(62, 16)
->>>>>>> e03b750a6bdaa63811abca6e69c70b8d0a2eb3c1
 
         self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=16, stride=1, kernel_size=5, padding=2)
         self.raw_bn1 = nn.BatchNorm2d(16)
@@ -50,18 +46,12 @@ class Net(nn.Module):
         self.raw_fc = nn.Linear(15, 8)
 
         self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
-<<<<<<< HEAD
                 
-=======
-        
-
->>>>>>> e03b750a6bdaa63811abca6e69c70b8d0a2eb3c1
     def forward(self, x):
         max_y = max(TrainingConstants.CC_IMG_DIMS[2], TrainingConstants.RAW_DIMS[2], TrainingConstants.GLOBAL_CC_DIMS[2])
         cc_img_sector = x[:,:,:,:max_y][:,:TrainingConstants.CC_IMG_DIMS[0],:TrainingConstants.CC_IMG_DIMS[1],:TrainingConstants.CC_IMG_DIMS[2]]
         water_and_plants = x[:,:,:,max_y:max_y*2][:,:TrainingConstants.RAW_DIMS[0],:TrainingConstants.RAW_DIMS[1],:TrainingConstants.RAW_DIMS[2]]
         global_cc = x[:,:,:,max_y*2:][:,:TrainingConstants.GLOBAL_CC_DIMS[0],:TrainingConstants.GLOBAL_CC_DIMS[1],:TrainingConstants.GLOBAL_CC_DIMS[2]]
-<<<<<<< HEAD
 
         cc_sector = []
         for i in range(len(cc_img_sector)):
@@ -73,10 +63,6 @@ class Net(nn.Module):
         cc_sector = torch.from_numpy(np.array(cc_sector)).to(self._device)
 
         cc_normalized = (cc_sector - torch.tensor(self.input_cc_mean, dtype=torch.float32, device=self._device)) / torch.tensor(self.input_cc_std + 1e-10, dtype=torch.float32, device=self._device)
-=======
-        
-        cc_normalized = (cc_sector - torch.tensor(self.input_cc_mean, dtype=torch.float32, device=self._device)) / torch.tensor(self.input_cc_std, dtype=torch.float32, device=self._device)
->>>>>>> e03b750a6bdaa63811abca6e69c70b8d0a2eb3c1
         cc = self.cc_conv1(cc_normalized)
         cc = self.cc_bn1(cc)
         cc = F.relu(cc)
@@ -84,10 +70,7 @@ class Net(nn.Module):
         cc = self.cc_bn2(cc)
         cc = F.relu(cc)
         cc = self.cc_pool(cc)
-<<<<<<< HEAD
         # print('cc_size', cc.size())
-=======
->>>>>>> e03b750a6bdaa63811abca6e69c70b8d0a2eb3c1
         cc = self.cc_fc(cc)
 
         water_and_plants_normalized = (water_and_plants - torch.tensor(self.input_raw_mean[1], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[1], dtype=torch.float32, device=self._device)
@@ -98,7 +81,6 @@ class Net(nn.Module):
         raw = self.raw_bn2(raw)
         raw = F.relu(raw)
         raw = self.raw_pool(raw)
-<<<<<<< HEAD
         # print('raw_size', raw.size())
         raw = self.raw_fc(raw)
         # print("cc, raw ", cc.size(), raw.size())
@@ -109,17 +91,6 @@ class Net(nn.Module):
         # print("cc_and_raw - ", cc_and_raw.size())
         global_cc_normalized = (global_cc - torch.tensor(self.input_raw_mean[0], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[0], dtype=torch.float32, device=self._device)
         # print("global_cc_normalized - ", global_cc_normalized.size())
-=======
-        raw = self.raw_fc(raw)
-        print("cc, raw ", cc.size(), raw.size())
-        cc = cc.reshape((cc.shape[0], -1))
-        raw = raw.reshape((raw.shape[0], -1))
-        print("cc, raw ", cc.size(), raw.size())
-        cc_and_raw = torch.cat((cc, raw), dim=1)
-        print("cc_and_raw - ", cc_and_raw.size())
-        global_cc_normalized = (global_cc - torch.tensor(self.input_raw_mean[0], dtype=torch.float32, device=self._device)) / torch.tensor(self.input_raw_std[0], dtype=torch.float32, device=self._device)
-        print("global_cc_normalized - ", global_cc_normalized.size())
->>>>>>> e03b750a6bdaa63811abca6e69c70b8d0a2eb3c1
         global_cc_normalized = global_cc_normalized.reshape((global_cc_normalized.shape[0], -1))
         state = torch.cat((cc_and_raw, global_cc_normalized), dim=1)
         state = F.relu(state)
