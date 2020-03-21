@@ -31,17 +31,17 @@ class Net(nn.Module):
         self.input_raw_std = input_raw_std
         self._device = TrainingConstants.DEVICE
 
-        self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=8, stride=1, kernel_size=5, padding=2)
-        self.cc_bn1 = nn.BatchNorm2d(8) 
-        self.cc_conv2 = nn.Conv2d(8, 16, stride=1, kernel_size=3, padding=1)
-        self.cc_bn2 = nn.BatchNorm2d(16)
+        self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=16, stride=1, kernel_size=5, padding=2)
+        self.cc_bn1 = nn.BatchNorm2d(16) 
+        self.cc_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
+        self.cc_bn2 = nn.BatchNorm2d(32)
         self.cc_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-        self.cc_fc = nn.Linear(62, 8)
+        self.cc_fc = nn.Linear(62, 16)
 
-        self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=16, stride=1, kernel_size=5, padding=2)
-        self.raw_bn1 = nn.BatchNorm2d(16)
-        self.raw_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
-        self.raw_bn2 = nn.BatchNorm2d(32)
+        self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=32, stride=1, kernel_size=5, padding=2)
+        self.raw_bn1 = nn.BatchNorm2d(32)
+        self.raw_conv2 = nn.Conv2d(32, 64, stride=1, kernel_size=3, padding=1)
+        self.raw_bn2 = nn.BatchNorm2d(64)
         self.raw_pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
         self.raw_fc = nn.Linear(15, 8)
 
