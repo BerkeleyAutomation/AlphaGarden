@@ -281,7 +281,7 @@ class Garden:
 
     def update_plant_health(self, center):
         x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
-        for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
+        for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high-1, y_high=y_high-1):
             # tallest_plant_stage = 0
             if point[0]['nearby']:
                 tallest_plant_tup = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)

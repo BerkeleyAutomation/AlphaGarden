@@ -79,8 +79,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_canopy_image(self, center):
         dir_path = self.config.get('data_collection', 'dir_path')
         self.garden.step = 1
-        # x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
-        x_low, y_low, x_high, y_high = 0, 0, 149, 299
+        x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
+        # x_low, y_low, x_high, y_high = 0, 0, 149, 299
         # plt.style.use('ggplot')
         _, ax = plt.subplots()
         ax.set_xlim(y_low, y_high)
