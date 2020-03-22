@@ -32,6 +32,8 @@ class TrainingConstants(object):
     # FLAT_STATE_DIM = 2564
     # FURTHER REDUCED WITH POOLING AND FC
     # FLAT_STATE_DIM = 1380
+    # MINUTE WITH POOLING AND FC
+    # FLAT_STATE_DIM = 1188
     CC_IMG_DIMS = (3, 235, 499)
     CC_DS_DIMS = (3, 58, 124)
     RAW_DIMS = (12, 15, 30)

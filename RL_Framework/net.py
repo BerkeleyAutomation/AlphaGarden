@@ -153,6 +153,25 @@ class Net(nn.Module):
         # self.raw_bn2 = nn.BatchNorm2d(32)
         # self.raw_pool2 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
         # self.raw_fc = nn.Linear(7, 4)
+
+        # MINUTE WITH POOLING AND FC
+        # self.cc_conv1 = nn.Conv2d(in_channels=3, out_channels=8, stride=1, kernel_size=5, padding=2)
+        # self.cc_bn1 = nn.BatchNorm2d(8) 
+        # self.cc_pool1 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0) 
+        # self.cc_fc1 = nn.Linear(62, 16)
+        # self.cc_conv2 = nn.Conv2d(8, 16, stride=1, kernel_size=3, padding=1)
+        # self.cc_bn2 = nn.BatchNorm2d(16)
+        # self.cc_pool2 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        # self.cc_fc = nn.Linear(8, 4) 
+
+        # self.raw_conv1 = nn.Conv2d(in_channels=12, out_channels=12, stride=1, kernel_size=5, padding=2)
+        # self.raw_bn1 = nn.BatchNorm2d(12)
+        # self.raw_pool1 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        # self.raw_fc1 = nn.Linear(15, 15)
+        # self.raw_conv2 = nn.Conv2d(12, 16, stride=1, kernel_size=3, padding=1)
+        # self.raw_bn2 = nn.BatchNorm2d(16)
+        # self.raw_pool2 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        # self.raw_fc = nn.Linear(7, 4)
         
         self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
                 
