@@ -21,6 +21,12 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     prob = prob[np.where(prob > 0)]
     entropy = -np.sum(prob * np.log(prob), dtype="float") / np.log(20)
     return proj_plant_cc, entropy
+
+def only_dead_plants(plants):
+    for plant in range(plants.shape[2]):
+        if np.isin(plants[:,:,plant], [0, 5]).all():
+            return True
+    return False
     
 def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day):
@@ -41,6 +47,10 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         for plant_id in prune_window_cc.keys():
             if prune_window_cc[plant_id] > 20:       
                 return [2]
+   
+    # Don't irrigate if sector only has dead plants
+    if only_dead_plants(plants):
+        return [0]
    
     # Irrigate
     sector_water = np.sum(water_grid)
