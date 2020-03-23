@@ -189,7 +189,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.curr_action = action
         
         # State and action before performing a time step.
-        global_cc_vec = self.garden.get_cc_per_plant()
+        cc_per_plant = self.garden.get_cc_per_plant()
+        global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
         plant_grid = self.garden.get_plant_prob(center)
         water_grid = self.garden.get_water_grid(center)
         health_grid = self.garden.get_health_grid(center)

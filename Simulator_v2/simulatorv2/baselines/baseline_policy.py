@@ -24,7 +24,6 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
 
 def only_dead_plants(health):
     if np.isin(health, [0, 5]).all():
-        print('true')
         return True
     return False
     
