@@ -1,7 +1,7 @@
 import numpy as np
 from heapq import nlargest
 from simulatorv2.logger import Logger, Event
-from simulatorv2.visualization import setup_animation, setup_saving
+#from simulatorv2.visualization import setup_animation, setup_saving
 from simulatorv2.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 
@@ -25,11 +25,12 @@ class Garden:
         # TODO: Set this list to be constant
         self.plant_types = plant_types
 
-        # Structured array of gridpoints. Each point contains its water levels
-        # and set of coordinates of plants that can get water/light from that location.
+        # Structured array of gridpoints. Each point contains its water levels (float)
+        # health (integer), and set of coordinates of plants that can get water/light from that location.
         # First dimension is horizontal, second is vertical.
-        self.grid = np.empty((N, M), dtype=[('water', 'f'), ('nearby', 'O')])
+        self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
         self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
+        self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
 
         # Grid for plant growth state representation
         self.plant_grid = np.zeros((N, M, len(plant_types)))
@@ -159,13 +160,20 @@ class Garden:
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        
+
+        for sector in sectors:
+            self.update_plant_health(sector)
+
         if self.animate:
             self.anim_step()
 
         elif self.save:
             self.save_step()
             self.save_coverage_and_diversity()
+
+        # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
+        # print(self.get_health_grid((57, 57)))
+        # print(">>>>>>>>>>>>>>>>>>>")
 
         self.timestep += 1
         self.performing_timestep = True
@@ -271,6 +279,19 @@ class Garden:
         # if prev_radius < next_line_dist and plant.radius >= next_line_dist:
         #    return next_step
 
+    def update_plant_health(self, center):
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high-1, y_high=y_high-1):
+            # tallest_plant_stage = 0
+            if point[0]['nearby']:
+                tallest_plant_tup = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
+                tallest_type_id, tallest_plant_id = tallest_plant_tup[0], tallest_plant_tup[1]
+                tallest_plant_stage = self.plants[tallest_type_id][tallest_plant_id].stage_index + 1
+
+                self.grid['health'][point[1]] = tallest_plant_stage
+            elif self.grid['health'][point[1]] != 0:
+                self.grid['health'][point[1]] = 0
+
     def update_plant_size(self, plant, upward=None, outward=None):
         if upward:
             plant.height += upward
@@ -338,6 +359,24 @@ class Garden:
                     self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
         self.performing_timestep = False
         return self.cc_per_plant_type
+
+    def compute_plant_health(self, grid_shape):
+        plant_health_grid = np.empty(grid_shape)
+        for point in self.enumerate_grid(coords=True):
+            coord = point[1]
+            if point[0]['nearby']:
+
+                tallest_height = -1
+                tallest_plant_stage = 0
+
+                for tup in point[0]['nearby']:
+                    if self.plants[tup[0]][tup[1]].height > tallest_height:
+                        tallest_height = self.plants[tup[0]][tup[1]].height
+                        tallest_plant_stage = self.plants[tup[0]][tup[1]].stage_index + 1
+
+                plant_health_grid[coord] = tallest_plant_stage  # TODO: just plant stage, or also plant_id with stage?
+
+        return plant_health_grid
 
     def prune_plant_type(self, center, plant_type_id):
         if center is not None:
@@ -411,7 +450,8 @@ class Garden:
 
     def get_garden_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid))
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid, self.health_grid))
 
     def get_radius_grid(self):
         return self.radius_grid
@@ -450,6 +490,24 @@ class Garden:
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return self.water_grid
     
+    def get_health_grid(self, center):
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2) 
+        row_pad = self.sector_rows // 2
+        col_pad = self.sector_cols // 2 
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        x_low += row_pad
+        y_low += col_pad
+        x_high += row_pad
+        y_high += col_pad
+        
+        temp = np.pad(np.copy(self.health_grid), \
+            ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        return temp[x_low:x_high+1,y_low:y_high,:]
+
+    def get_health_grid_full(self):
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return self.health_grid
+
     def get_plant_prob(self, center):
         row_pad = self.sector_rows // 2
         col_pad = self.sector_cols // 2 
@@ -468,7 +526,8 @@ class Garden:
 
     def get_state(self):
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid))
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
 
     def show_animation(self):
         if self.animate:

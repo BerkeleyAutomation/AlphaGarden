@@ -1,5 +1,29 @@
 import logging
 from torch.utils.tensorboard import SummaryWriter
+import sys
+import colorlog
+import numpy as np
+
+root_logger = logging.getLogger()
+stdout_hdlr = logging.StreamHandler(sys.stdout)
+stdout_frmtr = colorlog.ColoredFormatter(
+    '%(processName)s %(purple)s%(name)-20s'
+    ' %(log_color)s%(levelname)-8s%(reset)s'
+    ' %(white)s%(message)s',
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
+)
+stdout_hdlr.setFormatter(stdout_frmtr)
+root_logger.addHandler(stdout_hdlr)
+root_logger.setLevel(logging.INFO)
+
+np.set_printoptions(suppress=True)
+
 
 native_logger = logging.getLogger(__file__)
 

@@ -9,3 +9,4 @@ Labeled_Data/
 gym_simalphagarden/simalphagarden/envs/__pycache__/
 gym_simalphagarden/simalphagarden/envs/gym_simalphagarden/__pycache__/
 gym_simalphagarden/wrapperenv/__pycache__/
+nets/

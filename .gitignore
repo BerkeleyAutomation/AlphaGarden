@@ -6,3 +6,5 @@
 /AquaCropOS_v50a/__pycache__/
 .vscode
 .idea
+Labeled_Data*
+env
