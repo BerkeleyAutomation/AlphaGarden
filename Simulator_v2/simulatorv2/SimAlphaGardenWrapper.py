@@ -5,7 +5,7 @@ import numpy as np
 import configparser
 import matplotlib.pyplot as plt
 from datetime import datetime
-from simulatorv2.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
+from simulatorv2.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD
 from simulatorv2.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
@@ -13,7 +13,7 @@ import random
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols, step=1):
+                 prune_window_cols, step=1, dir_path="/"):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.rows = rows
         self.cols = cols
@@ -47,6 +47,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.plant_radii = []
         self.plant_heights = []
         
+        self.dir_path = dir_path
+        
     def get_state(self):
         return self.get_data_collection_state()
     
@@ -77,7 +79,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 self.garden.get_health_grid(center_to_sample)))
 
     def get_canopy_image(self, center):
-        dir_path = self.config.get('data_collection', 'dir_path')
+        dir_path = self.dir_path
         self.garden.step = 1
         x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
         # x_low, y_low, x_high, y_high = 0, 0, 149, 299
@@ -238,7 +240,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 sector_cols=self.sector_cols,
                 prune_window_rows=self.prune_window_rows,
                 prune_window_cols=self.prune_window_cols,
-                irr_threshold=5,
+                irr_threshold=IRR_THRESHOLD,
                 step=self.step,
                 plant_types=self.PlantType.plant_names,
                 animate=False)

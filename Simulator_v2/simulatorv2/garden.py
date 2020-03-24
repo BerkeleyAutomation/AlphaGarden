@@ -282,13 +282,24 @@ class Garden:
     def update_plant_health(self, center):
         x_low, y_low, x_high, y_high = self.get_sector_bounds_no_pad(center)
         for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
-            # tallest_plant_stage = 0
             if point[0]['nearby']:
                 tallest_plant_tup = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
                 tallest_type_id, tallest_plant_id = tallest_plant_tup[0], tallest_plant_tup[1]
-                tallest_plant_stage = self.plants[tallest_type_id][tallest_plant_id].stage_index + 1
-
-                self.grid['health'][point[1]] = tallest_plant_stage
+                tallest_plant = self.plants[tallest_type_id][tallest_plant_id]
+                tallest_plant_stage = tallest_plant.stages[tallest_plant.stage_index]
+                
+                if tallest_plant.stage_index in [-1, 3, 4]: # no plant, dead, wilting
+                    self.grid['health'][point[1]] = 0
+                elif tallest_plant.stage_index == 0: # germinating
+                    self.grid['health'][point[1]] = 2
+                elif tallest_plant.stage_index in [1, 2]: # growing, waiting
+                    if tallest_plant_stage.overwatered:
+                       self.grid['health'][point[1]] = 3 # overwatered
+                    elif tallest_plant_stage.underwatered:
+                       self.grid['health'][point[1]] = 1 # underwatered
+                    else:
+                        self.grid['health'][point[1]] = 2 # normal
+                        
             elif self.grid['health'][point[1]] != 0:
                 self.grid['health'][point[1]] = 0
 
@@ -368,13 +379,26 @@ class Garden:
 
                 tallest_height = -1
                 tallest_plant_stage = 0
+                tallest_plant_stage_idx = -1 
 
                 for tup in point[0]['nearby']:
-                    if self.plants[tup[0]][tup[1]].height > tallest_height:
-                        tallest_height = self.plants[tup[0]][tup[1]].height
-                        tallest_plant_stage = self.plants[tup[0]][tup[1]].stage_index + 1
-
-                plant_health_grid[coord] = tallest_plant_stage  # TODO: just plant stage, or also plant_id with stage?
+                    plant = self.plants[tup[0]][tup[1]]
+                    if plant.height > tallest_height:
+                        tallest_height = plant.height
+                        tallest_plant_stage = plant.stages[plant.stage_index]
+                        tallest_plant_stage_idx = plant.stage_index
+                
+                if tallest_plant_stage_idx in [-1, 3, 4]:
+                    plant_health_grid[coord] = 0
+                elif tallest_plant_stage_idx == 0:
+                    plant_health_grid[coord] = 2
+                elif tallest_plant_stage_idx in [1, 2]:
+                    if tallest_plant_stage.overwatered:
+                       plant_health_grid[coord] = 3
+                    elif tallest_plant_stage.underwatered:
+                       plant_health_grid[coord] = 1
+                    else:
+                        plant_health_grid[coord] = 2
 
         return plant_health_grid
 

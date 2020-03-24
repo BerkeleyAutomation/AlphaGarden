@@ -46,8 +46,6 @@ class FileUtils:
         config.add_section('reward')
         config['reward']['cc_coef'] = str(cc_coef)
         config['reward']['water_coef'] = str(water_coef)
-        config.add_section('data_collection')
-        config['data_collection']['dir_path'] = dir_path
 
         pathlib.Path('gym_config').mkdir(parents=True, exist_ok=True)
         with open('gym_config/config.ini', 'w') as configfile:

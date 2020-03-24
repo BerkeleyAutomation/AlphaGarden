@@ -18,12 +18,12 @@ class DataCollection:
     ''' Initializes and returns a simalphagarden gym environment. '''
     def init_env(self, rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
                  prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
-                 garden_step, num_plant_types):
+                 garden_step, num_plant_types, dir_path):
         env = gym.make(
             'simalphagarden-v0',
             wrapper_env=SimAlphaGardenWrapper(garden_time_steps, rows, cols, sector_rows,
                                               sector_cols, prune_window_rows, prune_window_cols,
-                                              step=garden_step),
+                                              step=garden_step, dir_path=dir_path),
             garden_x=rows,
             garden_y=cols,
             garden_z=depth,
@@ -80,13 +80,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     params = vars(args)
     dir_path = params['d'] 
-    data_collection.fileutils.create_config(dir_path=dir_path)
     pathlib.Path(dir_path).mkdir(exist_ok=True)
     
     data_collection.evaluate_policy(
         data_collection.init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
                                  prune_window_cols, action_low, action_high, obs_low, obs_high,
-                                 collection_time_steps, garden_step, num_plant_types),
+                                 collection_time_steps, garden_step, num_plant_types, dir_path),
         baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)
         
