@@ -9,6 +9,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import SubsetRandomSampler
+from torch.utils.data.distributed import DistributedSampler
+import torch.distributed as dist
 from logger import Logger
 from constants import TrainingConstants
 
@@ -18,7 +20,8 @@ class Trainer(object):
     """
     def __init__(self,
                  net,
-                 dataset,
+                 train_dataset,
+                 val_dataset,
                  num_epochs=TrainingConstants.NUM_EPOCHS,
                  total_size=TrainingConstants.TOTAL_SIZE,
                  val_size=TrainingConstants.VAL_SIZE,
@@ -30,7 +33,8 @@ class Trainer(object):
                  device=TrainingConstants.DEVICE,
                  output_dir=TrainingConstants.OUTPUT_DIR):
         self._net = net
-        self._dataset = dataset
+        self._train_dataset = train_dataset
+        self._val_dataset = val_dataset
         self._num_epochs = num_epochs
         self._total_size = total_size
         self._val_size = val_size
@@ -44,42 +48,63 @@ class Trainer(object):
 
         self._native_logger = logging.getLogger(self.__class__.__name__)
 
-    def _setup(self):
+    def _setup(self, gpu, args):
+        print('hit setup method', gpu)
+        rank = args.nr * args.gpus + gpu
+        dist.init_process_group(
+            backend='nccl',
+            init_method='env://',
+            world_size=args.world_size,
+            rank=rank
+        )
+        torch.manual_seed(88)
+        print('process group created', gpu)
         date_time = datetime.now().strftime('%m-%d-%Y_%H:%M:%S')
         self._output_dir = os.path.join(
             self._output_dir,
             '{}_{}'.format(self._net.name, str(date_time))
         )
-        os.makedirs(self._output_dir)
+        if not os.path.exists(self._output_dir):
+            os.makedirs(self._output_dir)
 
         self._logger = Logger(
             os.path.join(self._output_dir, TrainingConstants.LOG_DIR)
         )
 
-        ind = np.arange(len(self._dataset))
-        np.random.shuffle(ind)
-        ind = ind[:ceil(self._total_size*len(ind))]
-        train_ind = ind[:ceil((1-self._val_size)*len(ind))]
-        val_ind = ind[ceil((1-self._val_size)*len(ind)):]
+        # ind = np.arange(len(self._dataset))
+        # np.random.shuffle(ind)
+        # ind = ind[:ceil(self._total_size*len(ind))]
+        # train_ind = ind[:ceil((1-self._val_size)*len(ind))]
+        # val_ind = ind[ceil((1-self._val_size)*len(ind)):]
 
-        train_sampler = SubsetRandomSampler(train_ind)
-        val_sampler = SubsetRandomSampler(val_ind)
+        print('Distributed Sampler time', gpu)
+        train_sampler = DistributedSampler(
+            self._train_dataset,
+            num_replicas=args.world_size,
+            rank=rank
+        )
+        print('data loader time', gpu)
+        # val_sampler = SubsetRandomSampler(val_ind)
         self._train_data_loader = torch.utils.data.DataLoader(
-                                    self._dataset,
+                                    self._train_dataset,
                                     batch_size=self._bsz,
-                                    num_workers=1,
+                                    shuffle=False,
+                                    num_workers=4,
                                     pin_memory=True,
                                     sampler=train_sampler
                                  )
-        self._val_data_loader = torch.utils.data.DataLoader(
-                                    self._dataset,
-                                    batch_size=self._bsz,
-                                    num_workers=1,
-                                    pin_memory=True,
-                                    sampler=val_sampler
-                               )
+        # self._val_data_loader = torch.utils.data.DataLoader(
+        #                             self._dataset,
+        #                             batch_size=self._bsz,
+        #                             num_workers=8,
+        #                             pin_memory=True,
+        #                             sampler=val_sampler
+        #                        )
 
+        print('about to setup device')
         self._device = torch.device(self._device)
+        torch.cuda.set_device(gpu)
+        self._net = torch.nn.parallel.DistributedDataParallel(self._net.cuda(gpu), device_ids=[gpu])
         self._net = self._net.to(self._device)
 
         self._optimizer = optim.Adadelta(self._net.parameters(),
@@ -113,6 +138,7 @@ class Trainer(object):
 
         num_batches = len(self._train_data_loader)
         train_losses = []
+        self._native_logger.info('START TRAINING ' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         for batch_idx, (data, target) in enumerate(self._train_data_loader):
             data, target = data.to(self._device), target.to(self._device)
             self._optimizer.zero_grad()
@@ -134,34 +160,37 @@ class Trainer(object):
                     )
                 )
                 train_losses.append(loss.item())
+        self._native_logger.info('END TRAINING ' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self._log_metric(epoch, 'train/epoch_ce_loss', train_losses)
 
-        self._log_metric(epoch, 'train/epoch_mse_loss', train_losses)
+    # def _eval(self, epoch):
+    #     self._net.eval()
 
-    def _eval(self, epoch):
-        self._net.eval()
+    #     eval_loss = 0
+    #     eval_losses = []
+    #     self._native_logger.info('START EVAL ' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    #     with torch.no_grad():
+    #         i = 0
+    #         for batch_idx, (data, target) in enumerate(self._val_data_loader):
+    #             i += 1
+    #             data, target = data.to(self._device), target.to(self._device)
+    #             output = self._net(data)
+    #             criterion = torch.nn.CrossEntropyLoss()
+    #             loss = criterion(output, target)
+    #             eval_loss += loss.item()
+    #             eval_losses.append(loss.item())
 
-        eval_loss = 0
-        eval_losses = []
-        with torch.no_grad():
-            i = 0
-            for batch_idx, (data, target) in enumerate(self._val_data_loader):
-                i += 1
-                data, target = data.to(self._device), target.to(self._device)
-                output = self._net(data)
-                criterion = torch.nn.CrossEntropyLoss()
-                loss = criterion(output, target)
-                eval_loss += loss.item()
-                eval_losses.append(loss.item())
+    #     num_batches = len(self._val_data_loader)
+    #     eval_loss /= num_batches
+    #     self._native_logger.info('END EVAL ' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    #     self._log_metric(epoch, 'eval/epoch_ce_loss', eval_losses)
 
-        num_batches = len(self._val_data_loader)
-        eval_loss /= num_batches
-        self._log_metric(epoch, 'eval/epoch_mse_loss', eval_losses)
-
-    def train(self):
-        self._setup()
+    def train(self, gpu, args):
+        print('hit train method', gpu)
+        self._setup(gpu, args)
         for epoch in range(1, self._num_epochs+1):
             self._train(epoch)
-            self._eval(epoch)
+            # self._eval(epoch)
             self._scheduler.step()
             self._native_logger.info('')
         self._net.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME)
