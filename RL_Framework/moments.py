@@ -15,7 +15,7 @@ class Moments:
         self.input_cc_mean, self.input_cc_std = self._get_moments(self.input_cc_fnames, 'cc')
         self.input_raw_vec_mean, self.input_raw_mean, self.input_raw_vec_std, self.input_raw_std = self._get_moments(self.input_raw_fnames, 'raw')
         
-        moments_path = os.path.join(data_dir, 'moments') ## TODO: save all moments you used
+        moments_path = os.path.join(data_dir, 'moments')
         np.savez(moments_path, input_cc_mean=self.input_cc_mean, input_cc_std=self.input_cc_std, \
             input_raw_mean=self.input_raw_mean, input_raw_std=self.input_raw_std, \
                 input_raw_vec_mean=self.input_raw_vec_mean, input_raw_vec_std=self.input_raw_vec_std)
@@ -33,23 +33,24 @@ class Moments:
                 data = np.load(input_fname)
                 plants = data['plants']
                 water = data['water']
+                health = data['health']
                 global_cc = data['global_cc']
                 
-                plants_and_water = np.array(np.transpose(np.dstack((plants, water)), (2, 0, 1)), dtype=np.float64)
+                plants_water_health = np.array(np.transpose(np.dstack((plants, water, health)), (2, 0, 1)), dtype=np.float64)
                 global_cc = np.array(global_cc, dtype=np.float64)
-                pw_mean = np.divide(plants_and_water, count)
-                pw2_mean = np.divide(plants_and_water**2, count)
+                pwh_mean = np.divide(plants_water_health, count)
+                pwh2_mean = np.divide(plants_water_health**2, count)
                 g_mean = np.divide(global_cc, count)
                 g2_mean = np.divide(global_cc**2, count)
 
                 if i == 1:
-                    input_mean.append(pw_mean)
-                    input_sq_mean.append(pw2_mean)
+                    input_mean.append(pwh_mean)
+                    input_sq_mean.append(pwh2_mean)
                     vec_mean.append(g_mean)
                     vec_sq_mean.append(g2_mean)
                 else:
-                    input_mean = np.stack((input_mean, pw_mean), axis=0)
-                    input_sq_mean = np.stack((input_sq_mean, pw2_mean), axis=0)
+                    input_mean = np.stack((input_mean, pwh_mean), axis=0)
+                    input_sq_mean = np.stack((input_sq_mean, pwh2_mean), axis=0)
                     vec_mean = np.stack((vec_mean, g_mean), axis=0)
                     vec_sq_mean = np.stack((vec_sq_mean, g2_mean), axis=0)
 
