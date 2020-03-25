@@ -36,8 +36,8 @@ class Moments:
                 health = data['health']
                 global_cc = data['global_cc']
                 
-                plants_water_health = np.array(np.transpose(np.dstack((plants, water, health)), (2, 0, 1)), dtype=np.float64)
-                global_cc = np.array(global_cc, dtype=np.float64)
+                plants_water_health = np.array(np.transpose(np.dstack((plants, water, health)), (2, 0, 1)), dtype=np.float32)
+                global_cc = np.array(global_cc, dtype=np.float32)
                 pwh_mean = np.divide(plants_water_health, count)
                 pwh2_mean = np.divide(plants_water_health**2, count)
                 g_mean = np.divide(global_cc, count)
@@ -59,7 +59,7 @@ class Moments:
                 vec_mean = np.sum(vec_mean, axis=0)
                 vec_sq_mean = np.sum(vec_sq_mean, axis=0)
             else:
-                image = np.array(np.transpose(cv2.imread(input_fname), (2, 0, 1)), dtype=np.float64)
+                image = np.array(np.transpose(cv2.imread(input_fname), (2, 0, 1)), dtype=np.float32)
                 image_mean = np.divide(image, count)
                 image2_mean = np.divide(image**2, count)
                 if i == 1:

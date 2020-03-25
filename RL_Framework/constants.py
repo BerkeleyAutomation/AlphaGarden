@@ -18,8 +18,4 @@ class TrainingConstants(object):
     NET_SAVE_FNAME = 'net.pth'
     NUM_CLASSES = 3
     ACT_DIM = NUM_CLASSES
-    FLAT_STATE_DIM = 1401
-    CC_IMG_DIMS = (3, 235, 499)
-    CC_DS_DIMS = (3, 58, 124)
-    RAW_DIMS = (13, 15, 30)
-    GLOBAL_CC_DIMS = (11, 1, 1)
+    FLAT_STATE_DIM = 1291

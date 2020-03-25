@@ -80,6 +80,7 @@ class Trainer(object):
                                )
 
         self._device = torch.device(self._device)
+        # self._net = torch.nn.DataParallel(self._net, device_ids=[0, 1, 2, 3])
         self._net = self._net.to(self._device)
 
         self._optimizer = optim.Adadelta(self._net.parameters(),
@@ -113,10 +114,13 @@ class Trainer(object):
 
         num_batches = len(self._train_data_loader)
         train_losses = []
-        for batch_idx, (data, target) in enumerate(self._train_data_loader):
-            data, target = data.to(self._device), target.to(self._device)
+        for batch_idx, (cc_sector, water_plants_health, global_cc, target) in enumerate(self._train_data_loader):
+            cc_sector = cc_sector.to(self._device)
+            water_plants_health = water_plants_health.to(self._device)
+            global_cc = global_cc.to(self._device)
+            target = target.to(self._device)
             self._optimizer.zero_grad()
-            output = self._net(data)
+            output = self._net((cc_sector, water_plants_health, global_cc))
             criterion = torch.nn.CrossEntropyLoss()
             loss = criterion(output, target)
             loss.backward()
@@ -135,7 +139,7 @@ class Trainer(object):
                 )
                 train_losses.append(loss.item())
 
-        self._log_metric(epoch, 'train/epoch_mse_loss', train_losses)
+        self._log_metric(epoch, 'train/epoch_ce_loss', train_losses)
 
     def _eval(self, epoch):
         self._net.eval()
@@ -144,10 +148,13 @@ class Trainer(object):
         eval_losses = []
         with torch.no_grad():
             i = 0
-            for batch_idx, (data, target) in enumerate(self._val_data_loader):
+            for batch_idx, (cc_sector, water_plants_health, global_cc, target) in enumerate(self._val_data_loader):
                 i += 1
-                data, target = data.to(self._device), target.to(self._device)
-                output = self._net(data)
+                cc_sector = cc_sector.to(self._device)
+                water_plants_health = water_plants_health.to(self._device)
+                global_cc = global_cc.to(self._device)
+                target = target.to(self._device) 
+                output = self._net((cc_sector, water_plants_health, global_cc))
                 criterion = torch.nn.CrossEntropyLoss()
                 loss = criterion(output, target)
                 eval_loss += loss.item()
@@ -155,7 +162,7 @@ class Trainer(object):
 
         num_batches = len(self._val_data_loader)
         eval_loss /= num_batches
-        self._log_metric(epoch, 'eval/epoch_mse_loss', eval_losses)
+        self._log_metric(epoch, 'eval/epoch_ce_loss', eval_losses)
 
     def train(self):
         self._setup()
