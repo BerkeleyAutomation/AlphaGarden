@@ -3,7 +3,7 @@ class DeviceConstants(object):
     CPU = 'cpu'
 
 class TrainingConstants(object):
-    NUM_EPOCHS = 50
+    NUM_EPOCHS = 10 
     TOTAL_SIZE = 1.0
     VAL_SIZE = 0.2
     BSZ = 24 

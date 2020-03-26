@@ -13,7 +13,7 @@ import random
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols, step=1, dir_path="/"):
+                 prune_window_cols, seed=1000, step=1, dir_path="/"):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.rows = rows
         self.cols = cols
@@ -24,6 +24,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.prune_window_cols = prune_window_cols
         self.step = step
         self.PlantType = PlantType()
+        self.seed = seed
         self.reset()
         self.state = self.garden.get_state()
         self.curr_action = -1
@@ -233,7 +234,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def reset(self):
         self.garden = \
             Garden(
-                plants=self.PlantType.get_random_plants(self.rows, self.cols, self.sector_rows, self.sector_cols),
+                plants=self.PlantType.get_random_plants(self.seed, self.rows, self.cols, self.sector_rows, self.sector_cols),
                 N=self.rows,
                 M=self.cols,
                 sector_rows=self.sector_rows,

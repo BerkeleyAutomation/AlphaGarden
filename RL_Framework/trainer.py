@@ -171,4 +171,6 @@ class Trainer(object):
             self._eval(epoch)
             self._scheduler.step()
             self._native_logger.info('')
-        self._net.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME)
+            if epoch % 5 == 0:
+                self._net.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, str(epoch) + '_')
+        self._net.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, 'final_')

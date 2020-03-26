@@ -153,10 +153,13 @@ class Garden:
     # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, sectors=[], actions=[]):
         for i, action in enumerate(actions):
-            if action <= NUM_IRR_ACTIONS:
-                self.perform_timestep_irr(sectors[i], action)
-            elif action > NUM_IRR_ACTIONS:
+            if action == NUM_IRR_ACTIONS:
+                self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
+            elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
+            elif action == NUM_IRR_ACTIONS + 2:
+                self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
+                self.perform_timestep_prune(sectors[i]) 
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()

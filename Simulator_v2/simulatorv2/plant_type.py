@@ -1,4 +1,3 @@
-import random
 import numpy as np
 from simulatorv2.plant import Plant
 from simulatorv2.plant_presets import PLANT_TYPES
@@ -14,13 +13,12 @@ class PlantType:
         self.non_plant_centers = []
         self.plant_in_bounds = 0
 
-    def get_random_plants(self, rows, cols, sector_rows, sector_cols):
+    def get_random_plants(self, seed, rows, cols, sector_rows, sector_cols):
         self.plant_in_bounds = 0
         self.plant_centers = []
         self.non_plant_centers = []
         
-        random.seed(datetime.now())
-        np.random.seed(random.randint(0, 99999999))
+        np.random.seed(seed)
         plants = []
         sector_rows_half = sector_rows // 2
         sector_cols_half = sector_cols // 2
