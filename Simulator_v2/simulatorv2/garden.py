@@ -98,10 +98,13 @@ class Garden:
         if animate:
             self.anim_step, self.anim_show, = setup_animation(self)
 
-        if save:
-            self.coverage = []
-            self.diversity = []
-            self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
+        self.coverage = []
+        self.diversity = []
+        self.water_use = []
+        self.actions = []
+
+        # if save:
+            # self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
 
     def add_plant(self, plant):
         if (plant.row, plant.col) in self.plant_locations:
@@ -152,13 +155,16 @@ class Garden:
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, sectors=[], actions=[]):
+        water_use = 0
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
+                water_use += 1
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
             elif action == NUM_IRR_ACTIONS + 2:
                 self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
+                water_use += 1
                 self.perform_timestep_prune(sectors[i]) 
         self.distribute_light()
         self.distribute_water()
@@ -170,9 +176,11 @@ class Garden:
         if self.animate:
             self.anim_step()
 
-        elif self.save:
-            self.save_step()
-            self.save_coverage_and_diversity()
+        # elif self.save:
+            # self.save_step()
+        self.save_coverage_and_diversity()
+        self.save_water_use(water_use / len(sectors))
+        self.actions.append(actions)
 
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
         # print(self.get_health_grid((57, 57)))
@@ -445,6 +453,9 @@ class Garden:
         self.coverage.append(coverage)
         self.diversity.append(diversity)
 
+    def save_water_use(self, amount):
+        self.water_use.append(amount)
+
     def _get_new_points(self, plant):
         rad_step = int(plant.radius // self.step)
         start_row, end_row = max(0, plant.row - rad_step), min(self.grid.shape[0] - 1, plant.row + rad_step)
@@ -544,8 +555,7 @@ class Garden:
         x_high += row_pad
         y_high += col_pad
         
-        temp = np.pad(np.copy(self.plant_prob), \
-            ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        temp = np.pad(np.copy(self.plant_prob), ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
         return temp[x_low:x_high+1,y_low:y_high,:]
 
     def get_cc_per_plant(self):

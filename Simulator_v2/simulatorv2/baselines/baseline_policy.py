@@ -46,8 +46,11 @@ def overwatered_contribution(health, water):
     return w
 
 def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
-           prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day):
-    plants_and_water = state[1][0]
+           prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day,
+           vectorized=True):
+    plants_and_water = state[1]
+    if vectorized:
+        plants_and_water = plants_and_water[0]
     plants = plants_and_water[:,:,:-2]
     water_grid = plants_and_water[:,:,-2]
     health = plants_and_water[:,:,-1]

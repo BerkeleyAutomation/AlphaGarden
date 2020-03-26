@@ -90,4 +90,3 @@ if __name__ == '__main__':
                                  collection_time_steps, garden_step, num_plant_types, dir_path, seed),
         baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)
-        
