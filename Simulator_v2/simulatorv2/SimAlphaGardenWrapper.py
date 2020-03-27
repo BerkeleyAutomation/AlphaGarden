@@ -47,6 +47,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         
         self.plant_radii = []
         self.plant_heights = []
+
+        self.dir_path = dir_path
         
     def get_state(self):
         return self.get_data_collection_state()
@@ -67,6 +69,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
             center_to_sample = self.non_plant_centers[0]
             self.non_plant_centers = self.non_plant_centers[1:]
         
+        # center_to_sample = (7, 15) 
+        # center_to_sample = (57, 57)
+        
         cc_per_plant = self.garden.get_cc_per_plant()
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
         return center_to_sample, global_cc_vec, \
@@ -76,7 +81,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def get_canopy_image(self, center, eval):
         if not eval:
-            dir_path = self.config.get('data_collection', 'dir_path')
+            dir_path = self.dir_path
         self.garden.step = 1
         x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
         # x_low, y_low, x_high, y_high = 0, 0, 149, 299
