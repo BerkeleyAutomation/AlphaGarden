@@ -46,7 +46,7 @@ def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
     return env
 
 
-def evaluate_net_policy(env, policy, steps, save_dir='net_policy_data/'):
+def evaluate_net_policy(env, policy, steps, trial, save_dir='net_policy_data/'):
     obs = env.reset()
     for i in range(steps):
         curr_img = env.get_curr_img()
@@ -66,11 +66,11 @@ def evaluate_net_policy(env, policy, steps, save_dir='net_policy_data/'):
         action = torch.argmax(policy(x)).item()
         obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
-    save_data(metrics, save_dir)
+    save_data(metrics, trial, save_dir)
 
 def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-        sector_obs_per_day, save_dir='baseline_policy_data/'):
+        sector_obs_per_day, trial, save_dir='baseline_policy_data/'):
     obs = env.reset()
     for i in range(collection_time_steps):
         cc_vec = env.get_global_cc_vec()
@@ -79,9 +79,9 @@ def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, se
                         sector_obs_per_day, vectorized=False)[0]
         obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
-    save_data(metrics, save_dir)
+    save_data(metrics, trial, save_dir)
 
-def evaluate_naive_policy(env, collection_time_steps, save_dir='naive_policy_data/'):
+def evaluate_naive_policy(env, collection_time_steps, trial, save_dir='naive_policy_data/'):
     env.reset()
     for i in range(collection_time_steps):
         action = 1
@@ -89,13 +89,13 @@ def evaluate_naive_policy(env, collection_time_steps, save_dir='naive_policy_dat
             action += 2
         env.step(action)
     metrics = env.get_metrics()
-    save_data(metrics, save_dir)
+    save_data(metrics, trial, save_dir)
 
-def save_data(metrics, save_dir):
+def save_data(metrics, trial, save_dir):
     dirname = os.path.dirname(save_dir)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    with open(save_dir + 'data.pkl', 'wb') as f:
+    with open(save_dir + 'data_' + str(trial) + '.pkl', 'wb') as f:
         pickle.dump(metrics, f)
     coverage, diversity, water_use, actions = metrics
     fig, ax = plt.subplots()
@@ -107,11 +107,11 @@ def save_data(metrics, save_dir):
     plt.plot(x, lower, dashes=[5, 5], label=str(round(min(diversity), 2)))
     plt.plot(x, upper, dashes=[5, 5], label=str(round(max(diversity), 2)))
     plt.legend()
-    plt.savefig(save_dir + 'coverage_and_diversity.png', bbox_inches='tight', pad_inches=0.02)
+    plt.savefig(save_dir + 'coverage_and_diversity_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.clf()
     plt.plot(water_use, label='water use')
     plt.legend()
-    plt.savefig(save_dir + 'water_use.png', bbox_inches='tight', pad_inches=0.02)
+    plt.savefig(save_dir + 'water_use_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.close()
 
 if __name__ == '__main__':
@@ -130,12 +130,13 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
-    garden_days = 1
+    garden_days = 100
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
     
     for i in range(args.tests):
+        trial = i + 1
         seed = args.seed + i
         
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
@@ -144,9 +145,9 @@ if __name__ == '__main__':
         if args.policy == 'b':
             evaluate_baseline_policy(env,
                 baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
-                prune_window_cols, garden_step, water_threshold, sector_obs_per_day)
+                prune_window_cols, garden_step, water_threshold, sector_obs_per_day, trial)
         elif args.policy == 'n':
-            evaluate_naive_policy(env, collection_time_steps)
+            evaluate_naive_policy(env, collection_time_steps, trial)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
@@ -157,4 +158,4 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
 
-            evaluate_net_policy(env, policy, collection_time_steps)
+            evaluate_net_policy(env, policy, collection_time_steps, trial)
