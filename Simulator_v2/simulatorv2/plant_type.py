@@ -2,7 +2,7 @@ import numpy as np
 from simulatorv2.plant import Plant
 from simulatorv2.plant_presets import PLANT_TYPES
 from simulatorv2.sim_globals import NUM_PLANTS
-from datetime import datetime
+
 
 class PlantType:
     def __init__(self):
