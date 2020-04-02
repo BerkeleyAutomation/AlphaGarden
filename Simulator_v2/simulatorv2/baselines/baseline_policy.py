@@ -49,7 +49,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day,
            vectorized=True, eval=False):
     if eval:
-        plant_and_water = state
+        plants_and_water = state
     else:
         plants_and_water = state[1]
     if vectorized:
