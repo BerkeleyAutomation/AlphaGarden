@@ -59,7 +59,6 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     health = plants_and_water[:,:,-1]
     
     action = 0
-    print((1 / NUM_PLANT_TYPES_USED) * 2)
     
     # Prune
     if timestep > PRUNE_DELAY * sector_obs_per_day:
