@@ -114,6 +114,7 @@ def save_data(metrics, trial, save_dir):
         pickle.dump(metrics, f)
     coverage, diversity, water_use, actions = metrics
     fig, ax = plt.subplots()
+    ax.set_ylim([0, 1])
     plt.plot(coverage, label='coverage')
     plt.plot(diversity, label='diversity')
     x = np.arange(len(diversity))
