@@ -95,7 +95,6 @@ def evaluate_adaptive_policy(env, policy, collection_time_steps, sector_rows, se
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-
 def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
