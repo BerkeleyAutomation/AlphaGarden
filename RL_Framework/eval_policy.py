@@ -77,8 +77,8 @@ def get_action(env, i, center, policy, actions):
     actions.put((i, action))
 
 def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
-        prune_window_rows, prune_window_cols, garden_step, water_threshold,
-        sector_obs_per_day, trial, save_dir='baseline_policy_data/'):
+                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                             sector_obs_per_day, trial, save_dir='baseline_policy_data/'):
     obs = env.reset()
     for day in range(collection_time_steps // sector_obs_per_day):
         actions = mp.Queue()
@@ -95,15 +95,17 @@ def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, se
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_naive_policy(env, collection_time_steps, trial, save_dir='naive_policy_data/'):
+
+def evaluate_naive_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='naive_policy_data/'):
     env.reset()
-    for i in range(collection_time_steps):
-        action = 1
-        if np.random.random() < 0.01:
-            action += 2
-        env.step(action)
+    for i in range(garden_days):
+        water = 1 if i % freq == 0 else 0
+        for j in range(sector_obs_per_day):
+            prune = 2 if np.random.random() < 0.01 else 0
+            env.step(water + prune)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
+
 
 def save_data(metrics, trial, save_dir):
     dirname = os.path.dirname(save_dir)
@@ -127,6 +129,7 @@ def save_data(metrics, trial, save_dir):
     plt.legend()
     plt.savefig(save_dir + 'water_use_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.close()
+
 
 if __name__ == '__main__':
     import os
@@ -152,6 +155,7 @@ if __name__ == '__main__':
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
+    naive_water_freq = 2
     
     for i in range(args.tests):
         trial = i + 1
@@ -161,11 +165,11 @@ if __name__ == '__main__':
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         
         if args.policy == 'b':
-            evaluate_baseline_policy(env,
-                baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
-                prune_window_cols, garden_step, water_threshold, sector_obs_per_day, trial)
+            evaluate_baseline_policy(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                                     prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                                     sector_obs_per_day, trial)
         elif args.policy == 'n':
-            evaluate_naive_policy(env, collection_time_steps, trial)
+            evaluate_naive_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
