@@ -81,7 +81,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     params = vars(args)
     dir_path = params['d']
-    seed = params['s'] 
+    seed = params['s']
     pathlib.Path(dir_path).mkdir(exist_ok=True)
     
     data_collection.evaluate_policy(

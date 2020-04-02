@@ -15,7 +15,7 @@ def main():
         if not os.path.exists(dir):
             os.mkdir(dir)
         print('DIR', dir)
-        args = ('python RL_Framework/data_collection.py' + ' -d' + dir + '/')
+        args = ('python RL_Framework/data_collection.py' + ' -d' + dir + '/' + ' -s' + str(idx))
         proc = subprocess.Popen(args, shell=True)
         procs.append(proc)
 

@@ -31,8 +31,22 @@ class SimAlphaGardenEnv(gym.Env):
         
         self.reset()
 
+    ''' BEGIN MULTIPROCESSING METHODS '''
+    def get_centers(self):
+        return self.wrapper_env.get_random_centers()
+    
+    def get_center_state(self, center, need_img):
+        cc_img, global_cc_vec, obs = self.wrapper_env.get_center_state(center)
+        if need_img: 
+            return (cc_img, global_cc_vec, obs)
+        return (global_cc_vec, obs)
+    
+    def take_multiple_actions(self, sectors, actions):
+        self.wrapper_env.take_multiple_actions(sectors, actions)
+    ''' END MULTIPROCESSING METHODS '''
+
     def _next_observation(self):
-        self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state()
+        self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state(eval=self.eval)
         self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types + 1, 1))
         return [self.global_cc_vec, obs]
 

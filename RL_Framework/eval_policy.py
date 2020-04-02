@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import pickle
 import argparse
 import os
+import multiprocessing as mp
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tests', type=int, default=1)
@@ -68,16 +69,29 @@ def evaluate_net_policy(env, policy, steps, trial, save_dir='net_policy_data/'):
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
+def get_action(env, i, center, policy, actions):
+    cc_vec, obs = env.get_center_state(center, False)
+    action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                    prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
+                    sector_obs_per_day, vectorized=False, eval=True)[0]
+    actions.put((i, action))
+
 def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
         prune_window_rows, prune_window_cols, garden_step, water_threshold,
         sector_obs_per_day, trial, save_dir='baseline_policy_data/'):
     obs = env.reset()
-    for i in range(collection_time_steps):
-        cc_vec = env.get_global_cc_vec()
-        action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
-                        prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                        sector_obs_per_day, vectorized=False)[0]
-        obs, rewards, _, _ = env.step(action)
+    for day in range(collection_time_steps // sector_obs_per_day):
+        actions = mp.Queue()
+        centers = env.get_centers()
+        processes = [mp.Process(target=get_action, args=(env, day * sector_obs_per_day + i, centers[i], policy, actions)) for i in range(sector_obs_per_day)]
+        for p in processes:
+            p.start()
+        for p in processes:
+            p.join()
+        results = [actions.get() for p in processes]
+        results.sort()
+        results = [r[1] for r in results]
+        env.take_multiple_actions(centers, results)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -115,6 +129,10 @@ def save_data(metrics, trial, save_dir):
     plt.close()
 
 if __name__ == '__main__':
+    import os
+    cpu_cores = [i for i in range(0, 80)] # Cores (numbered 0-11)
+    os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
+
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types

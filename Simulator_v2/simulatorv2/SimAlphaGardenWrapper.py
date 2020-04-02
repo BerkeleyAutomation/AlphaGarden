@@ -26,7 +26,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.PlantType = PlantType()
         self.seed = seed
         self.reset()
-        self.state = self.garden.get_state()
         self.curr_action = -1
          
         self.config = configparser.ConfigParser()
@@ -50,24 +49,39 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         self.dir_path = dir_path
         
-    def get_state(self):
-        return self.get_data_collection_state()
+    def get_state(self, eval=False):
+        return self.get_data_collection_state(eval=eval)
     
     def get_full_state(self):
         return np.dstack((self.garden.get_water_grid_full(), self.garden.get_plant_grid_full()))
     
+    def get_random_centers(self):
+        np.random.shuffle(self.non_plant_centers)
+        return np.concatenate((self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
+    
+    def get_center_state(self, center, eval=False):
+        cc_per_plant = self.garden.get_cc_per_plant()
+        global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
+        cc_img = self.get_canopy_image(center, eval)
+        return cc_img, global_cc_vec, \
+            np.dstack((self.garden.get_plant_prob(center), \
+                self.garden.get_water_grid(center), \
+                self.garden.get_health_grid(center))) 
+    
     ''' Returns sector number and state associated with the sector. '''
-    def get_data_collection_state(self):
+    def get_data_collection_state(self, eval=False):
         np.random.seed(random.randint(0, 99999999))
         # TODO: don't need plant_in_bounds anymore.  Remove.
         if len(self.actions_to_execute) <= self.PlantType.plant_in_bounds and len(self.plant_centers) > 0:
             np.random.shuffle(self.plant_centers)
             center_to_sample = self.plant_centers[0]
-            self.plant_centers = self.plant_centers[1:]
+            if not eval:
+                self.plant_centers = self.plant_centers[1:]
         else:
             np.random.shuffle(self.non_plant_centers)
             center_to_sample = self.non_plant_centers[0]
-            self.non_plant_centers = self.non_plant_centers[1:]
+            if not eval:
+                self.non_plant_centers = self.non_plant_centers[1:]
         
         # center_to_sample = (7, 15) 
         # center_to_sample = (57, 57)
@@ -85,7 +99,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.garden.step = 1
         x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
         # x_low, y_low, x_high, y_high = 0, 0, 149, 299
-        # plt.style.use('ggplot')
         fig, ax = plt.subplots()
         ax.set_xlim(y_low, y_high)
         ax.set_ylim(x_low, x_high)
@@ -94,49 +107,14 @@ class SimAlphaGardenWrapper(WrapperEnv):
         ax.set_xticklabels([])
         ax.set_yticks([])
         ax.set_xticks([])
-        # ax.set_xticks(np.arange(y_low, y_high+1))
-        # ax.set_yticks(np.arange(x_low, x_high+1))
         ax.axis('off')
-        # ax.set_axisbelow(False)
-        # ax.grid(color='k') 
-        # for axi in (ax.xaxis, ax.yaxis):
-        #     for tic in axi.get_major_ticks():
-        #         tic.tick1On = tic.tick2On = False
-        #         tic.label1On = tic.label2On = False
-        # ax.grid(color='k') 
         shapes = []
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
                 self.plant_heights.append((plant.type, plant.height))
                 self.plant_radii.append((plant.type, plant.radius))
-                # stage = plant.current_stage()
-                # name = plant.type
-                # if isinstance(stage, GerminationStage):
-                #     plt.text(plant.col-16, plant.row+7, name + ' Germination Stage', fontsize=8)
-                # elif isinstance(stage, GrowthStage):
-                #     if stage.overwatered:
-                #         plt.text(plant.col-16, plant.row+7, name + ' Growth Stage, Overwatered', fontsize=8)
-                #     elif stage.underwatered:
-                #         plt.text(plant.col-16, plant.row+7, name + ' Growth Stage, Underwatered', fontsize=8)
-                #     else:
-                #         plt.text(plant.col-16, plant.row+7, name + ' Growth Stage, Normal', fontsize=8)
-                # elif isinstance(stage, WaitingStage):
-                #     if stage.overwatered:
-                #         plt.text(plant.col-16, plant.row+7, name + ' Waiting Stage, Overwatered', fontsize=8)
-                #     elif stage.underwatered:
-                #         plt.text(plant.col-16, plant.row+7, name + ' Waiting Stage, Underwatered', fontsize=8)
-                #     else:
-                #         plt.text(plant.col-16, plant.row+7, name + ' Waiting Stage, Normal', fontsize=8)
-                # elif isinstance(stage, WiltingStage):
-                #     plt.text(plant.col-16, plant.row+7, name + ' Wilting Stage', fontsize=8)
-                # elif isinstance(stage, DeathStage):
-                #     plt.text(plant.col-16, plant.row+7, name + ' Death Stage', fontsize=8)
-                if plant.pruned:
-                    # shape = plt.Rectangle(((plant.col - plant.radius, plant.row - plant.radius)) * self.garden.step, plant.radius * 2, plant.radius * 2, fc='red', ec='red')
-                    shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
-                else:
-                    shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
+                shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
                 shape_plot = ax.add_artist(shape)
                 shapes.append(shape_plot)
         plt.gca().invert_yaxis()
@@ -159,7 +137,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
             return cropped
 
     def plot_water_map(self, folder_path, water_grid, plants):
-        # plt.figure(figsize=(30, 30))
         plt.axis('off')
         plt.imshow(water_grid[:,:,0], cmap='Blues', interpolation='nearest')
         for i in range(plants.shape[2]):
@@ -246,6 +223,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
         if eval:
             return out, self.get_full_state()
         return self.get_full_state()
+
+    def take_multiple_actions(self, centers, actions):
+        self.garden.perform_timestep_multiple(sectors=centers, actions=actions)
 
     '''
     Method called by the gym environment to reset the simulator.
