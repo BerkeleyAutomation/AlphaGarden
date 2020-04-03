@@ -49,8 +49,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         self.dir_path = dir_path
         
-    def get_state(self, eval=False):
-        return self.get_data_collection_state(eval=eval)
+    def get_state(self, multi=False):
+        return self.get_data_collection_state(multi=multi)
     
     def get_full_state(self):
         return np.dstack((self.garden.get_water_grid_full(), self.garden.get_plant_grid_full()))
@@ -69,18 +69,18 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 self.garden.get_health_grid(center))) 
     
     ''' Returns sector number and state associated with the sector. '''
-    def get_data_collection_state(self, eval=False):
+    def get_data_collection_state(self, multi=False):
         np.random.seed(random.randint(0, 99999999))
         # TODO: don't need plant_in_bounds anymore.  Remove.
         if len(self.actions_to_execute) <= self.PlantType.plant_in_bounds and len(self.plant_centers) > 0:
             np.random.shuffle(self.plant_centers)
             center_to_sample = self.plant_centers[0]
-            if not eval:
+            if not multi:
                 self.plant_centers = self.plant_centers[1:]
         else:
             np.random.shuffle(self.non_plant_centers)
             center_to_sample = self.non_plant_centers[0]
-            if not eval:
+            if not multi:
                 self.non_plant_centers = self.non_plant_centers[1:]
         
         # center_to_sample = (7, 15) 
