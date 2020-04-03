@@ -94,6 +94,9 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_metrics(self):
         return self.wrapper_env.get_metrics()
+    
+    def get_prune_window_greatest_width(self):
+        return self.wrapper_env.get_prune_window_greatest_width(self.sector)
 
     def show_animation(self):
         return self.wrapper_env.show_animation()

@@ -469,6 +469,21 @@ class Garden:
         self.update_plant_size(largest_plant, outward=-amount_to_prune)
         return self.update_plant_coverage(largest_plant, record_coords_updated=True)
 
+    def get_prune_window_greatest_width(self, sector):
+        greatest_width = 0
+        x_low, y_low, x_high, y_high = self.get_prune_bounds(sector)
+        for point in self.enumerate_grid(x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
+            if point['nearby']:
+                tallest = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)
+                tallest_type = tallest[0]
+                tallest_plant_id = tallest[1]
+                non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
+        for plant in non_occluded_plants:
+            if plant.width > greatest_width:
+                greatest_width = plant.width
+        
+        return greatest_width 
+    
     def prune_sector_center(self, center):
         x_low, y_low, x_high, y_high = self.get_prune_bounds(center)
         non_occluded_plants = set()
