@@ -32,12 +32,14 @@ class Plant:
 
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
+        Waiting = WaitingStage(self, 30, 2) if self.type == "invasive" else WaitingStage(self, 10, 2)
+        Wilting = WiltingStage(self, 10, 2, 2) if self.type == "invasive" else WiltingStage(self, 20, 2, 2)
         self.stages = [
             GerminationStage(self, germination_time, germination_scale, start_height, start_radius, height_scale,
                              radius_scale),
             GrowthStage(self, growth_time, 2),
-            WaitingStage(self, 10, 2),
-            WiltingStage(self, 20, 2, 2),
+            Waiting,
+            Wilting,
             DeathStage(self)
         ]
         self.start_from_beginning()
