@@ -153,46 +153,6 @@ class Garden:
         if self.timestep >= self.prune_delay:
             self.prune_sector_center(sector)
         
-    ''' BEGIN MULTIPROCESSING METHODS '''
-    def perform_timestep_single(self, sector, action, water_use):
-        if action == NUM_IRR_ACTIONS:
-            self.perform_timestep_irr(sector, MAX_WATER_LEVEL)
-            water_use.put(1)
-        elif action == NUM_IRR_ACTIONS + 1:
-            self.perform_timestep_prune(sector)
-        elif action == NUM_IRR_ACTIONS + 2:
-            self.perform_timestep_irr(sector, MAX_WATER_LEVEL)
-            water_use += 1
-            self.perform_timestep_prune(sector) 
-
-    def perform_timestep_multiple(self, sectors=[], actions=[]):
-        water_use = mp.Queue()
-        processes = [mp.Process(target=self.perform_timestep_single, args=(sectors[i], actions[i], water_use)) for i in range(len(actions))]
-        for p in processes:
-            p.start()
-        for p in processes:
-            p.join()
-        water_use = np.sum([water_use.get() for w in range(water_use.qsize())])
-        
-        self.distribute_light()
-        self.distribute_water()
-        self.grow_plants()
-
-        for sector in sectors:
-            self.update_plant_health(sector)
-
-        if self.animate:
-            self.anim_step()
-
-        self.save_coverage_and_diversity()
-        self.save_water_use(water_use / len(sectors))
-        self.actions.append(actions)
-
-        self.timestep += 1
-        self.performing_timestep = True
-        return [plant for plant_type in self.plants for plant in plant_type.values()]
-    ''' END MULTIPROCESSING METHODS '''
-
     # Updates plants after one timestep, returns list of plant objects
     # irrigations is NxM vector of irrigation amounts
     def perform_timestep(self, sectors=[], actions=[]):

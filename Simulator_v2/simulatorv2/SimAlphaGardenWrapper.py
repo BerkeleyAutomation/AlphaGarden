@@ -225,7 +225,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return self.get_full_state()
 
     def take_multiple_actions(self, centers, actions):
-        self.garden.perform_timestep_multiple(sectors=centers, actions=actions)
+        self.garden.perform_timestep(sectors=centers, actions=actions)
 
     '''
     Method called by the gym environment to reset the simulator.
