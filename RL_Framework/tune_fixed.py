@@ -21,6 +21,7 @@ parser.add_argument('-n', '--net', type=str, default='/')
 parser.add_argument('-m', '--moments', type=str, default='/')
 parser.add_argument('-s', '--seed', type=int, default=0)
 parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l] baseline [b], naive baseline [n], learned [l]')
+parser.add_argument('-l', '--threshold', type=int, default=-1)
 args = parser.parse_args()
 
 
@@ -76,33 +77,14 @@ def get_action(env, i, center, policy, actions):
                     sector_obs_per_day, vectorized=False, eval=True)[0]
     actions.put((i, action))
 
-def evaluate_adaptive_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
-                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                             sector_obs_per_day, trial, save_dir='adaptive_policy_data/'):
-    obs = env.reset()
-    for day in range(collection_time_steps // sector_obs_per_day):
-        actions = mp.Queue()
-        centers = env.get_centers()
-        processes = [mp.Process(target=get_action, args=(env, day * sector_obs_per_day + i, centers[i], policy, actions)) for i in range(sector_obs_per_day)]
-        for p in processes:
-            p.start()
-        for p in processes:
-            p.join()
-        results = [actions.get() for p in processes]
-        results.sort()
-        results = [r[1] for r in results]
-        env.take_multiple_actions(centers, results)
-    metrics = env.get_metrics()
-    save_data(metrics, trial, save_dir)
-
-def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
+def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data_ogs/'):
     env.reset()
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
         for _ in range(sector_obs_per_day):
-            prune = 2 if env.get_prune_window_greatest_width() > prune_thresh and i % 3 == 0 else 0
+            # prune = 2 if env.get_prune_window_greatest_width() > prune_thresh and i % 3 == 0 else 0
             # prune = 2 if np.random.random() < 0.01 and i % 3 == 0 else 0
-            # prune = 2 if np.random.random() < 0.01 else 0
+            prune = 2 if np.random.random() < 0.01 else 0
 
             env.step(water + prune)
     metrics = env.get_metrics()
@@ -131,6 +113,15 @@ def save_data(metrics, trial, save_dir):
     plt.legend()
     plt.savefig(save_dir + 'water_use_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.close()
+
+
+    coverage_list.append(np.sum(coverage))
+    diversity_list.append(np.mean(diversity))
+    water_use_list.append(np.sum(water_use))
+
+    print('Average total coverage: ' + str(np.mean(coverage_list)))
+    print('Average diversity: ' + str(np.mean(diversity_list)))
+    print('Average total water use: ' + str(np.mean(water_use_list)))
 
 
 if __name__ == '__main__':
@@ -167,20 +158,5 @@ if __name__ == '__main__':
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         
-        if args.policy == 'b':
-            evaluate_adaptive_policy(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
-                                     prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                     sector_obs_per_day, trial)
-        elif args.policy == 'n':
-            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold)
-        else:
-            moments = np.load(args.moments)
-            input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
-            input_raw_mean, input_raw_std = (moments['input_raw_vec_mean'], moments['input_raw_mean']), (
-                moments['input_raw_vec_std'], moments['input_raw_std'])
-
-            policy = Net(input_cc_mean, input_cc_std, input_raw_mean, input_raw_std)
-            policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
-            policy.eval()
-
-            evaluate_learned_policy(env, policy, collection_time_steps, trial)
+        evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, args.threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
+        
