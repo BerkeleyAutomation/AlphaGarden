@@ -21,7 +21,7 @@ parser.add_argument('-n', '--net', type=str, default='/')
 parser.add_argument('-m', '--moments', type=str, default='/')
 parser.add_argument('-s', '--seed', type=int, default=0)
 parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l] baseline [b], naive baseline [n], learned [l]')
-parser.add_argument('-l', '--threshold', type=int, default=-1)
+parser.add_argument('-l', '--threshold', type=float, default=-1)
 args = parser.parse_args()
 
 
