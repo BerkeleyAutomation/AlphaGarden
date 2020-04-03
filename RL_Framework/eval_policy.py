@@ -47,7 +47,7 @@ def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
     return env
 
 
-def evaluate_net_policy(env, policy, steps, trial, save_dir='net_policy_data/'):
+def evaluate_learned_policy(env, policy, steps, trial, save_dir='learned_policy_data/'):
     obs = env.reset()
     for i in range(steps):
         curr_img = env.get_curr_img()
@@ -76,9 +76,9 @@ def get_action(env, i, center, policy, actions):
                     sector_obs_per_day, vectorized=False, eval=True)[0]
     actions.put((i, action))
 
-def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_adaptive_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                             sector_obs_per_day, trial, save_dir='baseline_policy_data/'):
+                             sector_obs_per_day, trial, save_dir='adaptive_policy_data/'):
     obs = env.reset()
     for day in range(collection_time_steps // sector_obs_per_day):
         actions = mp.Queue()
@@ -96,7 +96,7 @@ def evaluate_baseline_policy(env, policy, collection_time_steps, sector_rows, se
     save_data(metrics, trial, save_dir)
 
 
-def evaluate_naive_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='naive_policy_data/'):
+def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
@@ -115,6 +115,7 @@ def save_data(metrics, trial, save_dir):
         pickle.dump(metrics, f)
     coverage, diversity, water_use, actions = metrics
     fig, ax = plt.subplots()
+    ax.set_ylim([0, 1])
     plt.plot(coverage, label='coverage')
     plt.plot(diversity, label='diversity')
     x = np.arange(len(diversity))
@@ -165,11 +166,11 @@ if __name__ == '__main__':
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         
         if args.policy == 'b':
-            evaluate_baseline_policy(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+            evaluate_adaptive_policy(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                      prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                      sector_obs_per_day, trial)
         elif args.policy == 'n':
-            evaluate_naive_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
+            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
@@ -180,4 +181,4 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
 
-            evaluate_net_policy(env, policy, collection_time_steps, trial)
+            evaluate_learned_policy(env, policy, collection_time_steps, trial)
