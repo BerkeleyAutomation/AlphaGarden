@@ -100,8 +100,10 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
         for _ in range(sector_obs_per_day):
+            prune = 2 if env.get_prune_window_greatest_width() > prune_thresh and i % 3 == 0 else 0
+            # prune = 2 if np.random.random() < 0.01 and i % 3 == 0 else 0
+            # prune = 2 if np.random.random() < 0.01
 
-            prune = 2 if env.env_method('get_prune_window_greatest_width') > prune_thresh and i % 3 == 0 else 0
             env.step(water + prune)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
@@ -156,7 +158,7 @@ if __name__ == '__main__':
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
     naive_water_freq = 2
-    naive_prune_threshold = 10
+    naive_prune_threshold = 5
     
     for i in range(args.tests):
         trial = i + 1
