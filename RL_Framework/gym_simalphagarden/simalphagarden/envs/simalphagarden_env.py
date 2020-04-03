@@ -6,7 +6,7 @@ class SimAlphaGardenEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, wrapper_env, garden_x, garden_y, garden_z, sector_rows, sector_cols,
-                 action_low, action_high, obs_low, obs_high, num_plant_types, eval=False):
+                 action_low, action_high, obs_low, obs_high, num_plant_types, eval=False, multi=False):
         super(SimAlphaGardenEnv, self).__init__()
         self.wrapper_env = wrapper_env
         self.max_time_steps = self.wrapper_env.max_time_steps
@@ -27,6 +27,7 @@ class SimAlphaGardenEnv(gym.Env):
                        dtype=np.float16)))
 
         self.eval = eval
+        self.multi = multi
         self.curr_img = None
         
         self.reset()
@@ -46,7 +47,7 @@ class SimAlphaGardenEnv(gym.Env):
     ''' END MULTIPROCESSING METHODS '''
 
     def _next_observation(self):
-        self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state(eval=self.eval)
+        self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state(multi=self.multi)
         self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types + 1, 1))
         return [self.global_cc_vec, obs]
 
