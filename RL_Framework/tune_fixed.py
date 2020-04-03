@@ -114,7 +114,9 @@ def save_data(metrics, trial, save_dir):
     plt.savefig(save_dir + 'water_use_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.close()
 
-
+    coverage_list = []
+    diversity_list = []
+    water_use_list = []
     coverage_list.append(np.sum(coverage))
     diversity_list.append(np.mean(diversity))
     water_use_list.append(np.sum(water_use))
