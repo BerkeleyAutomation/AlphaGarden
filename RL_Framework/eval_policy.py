@@ -78,11 +78,7 @@ def get_action(env, i, center, policy, actions):
                     sector_obs_per_day, vectorized=False, eval=True)[0]
     actions.put((i, action))
 
-<<<<<<< HEAD
 def evaluate_baseline_policy_multi(env, policy, collection_time_steps, sector_rows, sector_cols, 
-=======
-def evaluate_adaptive_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
->>>>>>> 66c2769d8644e10b6c58a5c1dad4c10d80c5ff47
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
                              sector_obs_per_day, trial, save_dir='adaptive_policy_data/'):
     obs = env.reset()
@@ -219,7 +215,6 @@ if __name__ == '__main__':
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         
         if args.policy == 'b':
-<<<<<<< HEAD
             if args.multi:
                 env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                     action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, multi=True)
@@ -231,7 +226,7 @@ if __name__ == '__main__':
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
         elif args.policy == 'n':
-            evaluate_naive_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
+            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, multi=True)
@@ -244,16 +239,11 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
             
-            evaluate_baseline_compare_net(env, baseline_policy.policy, None, collection_time_steps,
+            evaluate_baseline_compare_net(env, baseline_policy.policy, policy, collection_time_steps,
                                           sector_rows, sector_cols, prune_window_rows, prune_window_cols,
                                           garden_step, water_threshold, sector_obs_per_day, trial)
-=======
-            evaluate_adaptive_policy(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
-                                     prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                     sector_obs_per_day, trial)
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
->>>>>>> 66c2769d8644e10b6c58a5c1dad4c10d80c5ff47
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
