@@ -22,6 +22,7 @@ parser.add_argument('-m', '--moments', type=str, default='/')
 parser.add_argument('-s', '--seed', type=int, default=0)
 parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l] baseline [b], naive baseline [n], learned [l]')
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
+parser.add_argument('-l', '--threshold', type=float, default=1.0)
 args = parser.parse_args()
 
 
@@ -110,7 +111,8 @@ def evaluate_baseline_policy_serial(env, policy, collection_time_steps, sector_r
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='fixed_policy_data/'):
+def 
+(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
@@ -230,7 +232,7 @@ if __name__ == '__main__':
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
         elif args.policy == 'n':
-            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
+            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, multi=True)
@@ -246,8 +248,6 @@ if __name__ == '__main__':
             evaluate_baseline_compare_net(env, baseline_policy.policy, policy, collection_time_steps,
                                           sector_rows, sector_cols, prune_window_rows, prune_window_cols,
                                           garden_step, water_threshold, sector_obs_per_day, trial)
-        elif args.policy == 'n':
-            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
