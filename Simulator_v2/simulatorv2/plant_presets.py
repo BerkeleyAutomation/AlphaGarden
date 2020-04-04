@@ -49,6 +49,7 @@ def _compute_from_table_values(
 
 PLANT_TYPES = {
     # removed unknown plant, replaced with invasive species
+<<<<<<< HEAD
     # "invasive": _compute_from_table_values(name="invasive", color=(9/255, 47/255, 10/255), germination_time=(2, 5),
       #                                      seed_spacing=25, maturation_time=30, stopping_color=(119/255, 0, 1)),
     # "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
