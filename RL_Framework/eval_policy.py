@@ -48,8 +48,42 @@ def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
     )
     return env
 
+def get_action_net(env, i, center, policy, actions):
+    curr_img, cc_vec, obs = env.get_center_state(center, True)
+    if curr_img is None:
+        sector_img = np.ones((3, 235, 499)) * 255
+    else:
+        sector_img = np.transpose(curr_img, (2, 0, 1))
+        
+    raw = np.transpose(obs, (2, 0, 1))
+    global_cc_vec = env.get_global_cc_vec()
 
-def evaluate_learned_policy(env, policy, steps, trial, save_dir='learned_policy_data/'):
+    sector_img = torch.from_numpy(np.expand_dims(sector_img, axis=0)).float()
+    raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
+    global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
+    x = (sector_img, raw, global_cc_vec)
+            
+    action = torch.argmax(policy(x)).item()
+    actions.put((i, action))
+    
+def evaluate_learned_policy_multi(env, policy, steps, sector_obs_per_day, trial, save_dir='learned_policy_data/'):
+    obs = env.reset()
+    for day in range(steps // sector_obs_per_day):
+        actions = mp.Queue()
+        centers = env.get_centers()
+        processes = [mp.Process(target=get_action_net, args=(env, day * sector_obs_per_day + i, centers[i], policy, actions)) for i in range(sector_obs_per_day)]
+        for p in processes:
+            p.start()
+        for p in processes:
+            p.join()
+        results = [actions.get() for p in processes]
+        results.sort()
+        results = [r[1] for r in results]
+        env.take_multiple_actions(centers, results)
+    metrics = env.get_metrics()
+    save_data(metrics, trial, save_dir)
+
+def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_policy_data/'):
     obs = env.reset()
     for i in range(steps):
         curr_img = env.get_curr_img()
@@ -253,5 +287,7 @@ if __name__ == '__main__':
             policy = Net(input_cc_mean, input_cc_std, input_raw_mean, input_raw_std)
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
-
-            evaluate_learned_policy(env, policy, collection_time_steps, trial)
+            if args.multi:
+                evaluate_learned_policy_multi(env, policy, collection_time_steps, sector_obs_per_day, trial)
+            else:
+                evaluate_learned_policy_serial(env, policy, collection_time_steps, trial)
