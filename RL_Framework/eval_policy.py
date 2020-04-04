@@ -112,8 +112,7 @@ def evaluate_baseline_policy_serial(env, policy, collection_time_steps, sector_r
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def 
-(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
+def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
@@ -207,7 +206,11 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
+<<<<<<< Updated upstream
     garden_days = args.days
+=======
+    garden_days = 10
+>>>>>>> Stashed changes
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
