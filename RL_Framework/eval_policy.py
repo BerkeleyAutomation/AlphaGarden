@@ -215,11 +215,16 @@ if __name__ == '__main__':
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         
         if args.policy == 'b':
-            env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
-            evaluate_baseline_policy_multi(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
-                                    prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                    sector_obs_per_day, trial)
+            if args.multi:
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
+                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+                evaluate_baseline_policy_multi(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                                        prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                                        sector_obs_per_day, trial)
+            else:
+                evaluate_baseline_policy_serial(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                                        prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                                        sector_obs_per_day, trial) 
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
         elif args.policy == 'c':
