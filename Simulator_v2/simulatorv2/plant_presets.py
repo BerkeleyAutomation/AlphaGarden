@@ -49,8 +49,8 @@ def _compute_from_table_values(
 
 PLANT_TYPES = {
     # removed unknown plant, replaced with invasive species
-    # "invasive": _compute_from_table_values(name="invasive", color=(9/255, 47/255, 10/255), germination_time=(2, 5),
-    #                                      seed_spacing=25, maturation_time=30, stopping_color=(119/255, 0, 1)),
+    # "invasive": _compute_from_table_values(name="invasive", color=(255/255, 0/255, 0/255), germination_time=(2, 5),
+    #                                        seed_spacing=40, maturation_time=40, stopping_color=(119/255, 0, 1)),
     "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
                                           seed_spacing=9, maturation_time=63, stopping_color=(119/255, 0, 1)),
     # "bok-choy": _compute_from_table_values(name="bok-choy", color=(86/255, 139/255, 31/255), germination_time=(5, 10),
