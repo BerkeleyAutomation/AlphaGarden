@@ -149,7 +149,7 @@ def evaluate_baseline_compare_net(env, baseline_policy, net_policy, collection_t
         net_action = torch.argmax(policy(x)).item()
         
         if net_action != action:
-            np.savez(str(i) + '_' + str(net_action) + '_' + str(action) + '.npz', raw=obs[1], global_cc=cc_vec, img=curr_img)
+            np.savez(save_dir + str(i) + '_' + str(net_action) + '_' + str(action) + '.npz', raw=obs[1], global_cc=cc_vec, img=curr_img)
         
         obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
