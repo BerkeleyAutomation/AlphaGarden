@@ -257,3 +257,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def get_metrics(self):
         return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions
+
+    def get_prune_window_greatest_width(self, sector):
+        return self.garden.get_prune_window_greatest_width(sector)
