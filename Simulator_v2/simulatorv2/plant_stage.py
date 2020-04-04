@@ -222,7 +222,9 @@ class WiltingStage(PlantStage):
     def start_stage(self):
         super().start_stage()
         self.final_radius = min(self.plant.radius / 2, self.max_final_radius)
-        self.wilting_factor = (self.final_radius / self.plant.radius) ** (1 / self.duration)
+
+        eps = 1e-10 if self.plant.radius == 0 else 0
+        self.wilting_factor = (self.final_radius / (self.plant.radius + eps)) ** (1 / self.duration)
 
     def desired_water_amt(self):
         healthy_amt = super().desired_water_amt()
