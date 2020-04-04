@@ -206,11 +206,7 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
-<<<<<<< Updated upstream
     garden_days = args.days
-=======
-    garden_days = 10
->>>>>>> Stashed changes
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
