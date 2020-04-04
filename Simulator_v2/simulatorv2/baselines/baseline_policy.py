@@ -63,7 +63,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     # Prune
     if timestep > PRUNE_DELAY * sector_obs_per_day:
         prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
-        violations = np.where(prob > (1 / NUM_PLANT_TYPES_USED) * 2)[0]
+        violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}
         for plant_idx in violations:   
             inside, area = plant_in_area(plants, (sector_rows - prune_window_rows) // 2, (sector_cols - prune_window_cols) // 2, prune_window_rows, prune_window_cols, plant_idx + 1)
