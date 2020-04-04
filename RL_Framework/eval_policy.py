@@ -154,7 +154,7 @@ def evaluate_baseline_compare_net(env, baseline_policy, net_policy, collection_t
         net_action = torch.argmax(policy(x)).item()
         
         if net_action != action:
-            np.savez(str(i) + '_' + str(net_action) + '_' + str(action) + '.npz', raw=obs[1], global_cc=cc_vec, img=curr_img)
+            np.savez(save_dir + str(i) + '_' + str(net_action) + '_' + str(action) + '.npz', raw=obs[1], global_cc=cc_vec, img=curr_img)
         
         obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
@@ -221,21 +221,16 @@ if __name__ == '__main__':
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         
         if args.policy == 'b':
-            if args.multi:
-                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, multi=True)
-                evaluate_baseline_policy_multi(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
-                                        prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial)
-            else:
-                evaluate_baseline_policy_serial(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
-                                        prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial)
+            env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
+                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+            evaluate_baseline_policy_multi(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                                    prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                                    sector_obs_per_day, trial)
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, multi=True)
+                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
             input_raw_mean, input_raw_std = (moments['input_raw_vec_mean'], moments['input_raw_mean']), (
