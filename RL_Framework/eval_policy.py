@@ -309,6 +309,8 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
             if args.multi:
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
+                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
                 evaluate_learned_policy_multi(env, policy, collection_time_steps, sector_obs_per_day, trial)
             else:
                 evaluate_learned_policy_serial(env, policy, collection_time_steps, trial)
