@@ -12,8 +12,8 @@ coverage_list, diversity_list, water_use_list = [], [], []
 for file in os.listdir(args.path):
     if file.endswith(".pkl"):
         coverage, diversity, water_use, actions = pickle.load(open(args.path + '/' + file, 'rb'))
-        coverage_list.append(np.sum(coverage))
-        diversity_list.append(np.mean(diversity))
+        coverage_list.append(np.sum(coverage[20:71]))
+        diversity_list.append(np.mean(diversity[20:71]))
         water_use_list.append(np.sum(water_use))
 
 print('Average total coverage: ' + str(np.mean(coverage_list)))
