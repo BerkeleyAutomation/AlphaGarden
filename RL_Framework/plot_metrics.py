@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
-dirpath = '/Users/yahavavigal/Desktop/'
+dirpath = '/Users/yahavavigal/Projects/AlphaGarden/AlphaGardenSim/Experiments/'
 # paths = ['no_prune_policy_data/data_4.pkl', 'fixed_policy_data/data_4.pkl', 'adaptive_policy_data/data_6.pkl', 'trained_policy_data/data_17.pkl']
 # paths_inv = ['./no_prune_policy_data_inv/data_6.pkl', './fixed_policy_data_inv/data_9.pkl', './adaptive_policy_data_inv/data_2.pkl', './trained_policy_data_inv/data_2.pkl']
 paths = ['no_prune_policy_data/', 'fixed_policy_data/', 'adaptive_policy_data/', 'trained_policy_data/']
@@ -14,6 +14,7 @@ filename = ['No Pruning Policy', 'Fixed Policy', 'Adaptive Policy', 'Learned Pol
 
 
 def plot_coverag_and_diversity(path, title, output_filename):
+    print(path)
     coverage, diversity, water_use, actions = pickle.load(open(path, 'rb'))
     fig, ax = plt.subplots()
     ax.set_ylim([0, 1])
@@ -72,14 +73,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     inv = args.invasive
-    dir_suff = args['d']
-    folder = paths_inv[args['p']] if inv else paths[args['p']]
-    path = dir_suff + folder + args['f']
-    title = titles_inv[args['p']] if inv else titles[args['p']]
+    dir_suff = args.dir
+    folder = paths_inv[args.policy] if inv else paths[args.policy]
+    path = dir_suff + folder + args.filename
+    title = titles_inv[args.policy] if inv else titles[args.policy]
     suff = " invasive" if inv else ''
-    output_filename = filename[args['p']] + suff + '.pdf'
-    plot_coverag_and_diversity(path, title, output_filename)
-    if inv:
-        plot_water(paths_inv, inv=True)
+    output_filename = filename[args.policy] + suff + '.pdf'
+    if args.test == 'coverage':
+        plot_coverag_and_diversity(path, title, output_filename)
     else:
-        plot_water(paths, inv=False)
+        if inv:
+            plot_water(paths_inv, inv=True)
+        else:
+            plot_water(paths, inv=False)
