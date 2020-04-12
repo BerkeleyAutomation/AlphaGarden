@@ -6,8 +6,10 @@ from simulator.simulator_presets import *
 from simulator.visualization import plot_data, plot_garden
 import argparse
 import time
+from deprecated import deprecated
 
 
+@deprecated(version='0.0.1', reason="Automation pipline for simulation is deprecated.")
 def run_simulation(args, run):
     start_time = time.time()
 
@@ -54,7 +56,7 @@ def run_simulation(args, run):
     if args.export:
         export_results(plants, garden.logger, args.export)
 
-
+@deprecated(version='0.0.1', reason="Automation pipline for simulation is deprecated.")
 def get_parsed_args():
     parser = argparse.ArgumentParser(description='Run the garden simulation.')
     parser.add_argument('--setup', type=str, default='random',
@@ -75,8 +77,11 @@ def get_parsed_args():
 
     return parser.parse_args()
 
-
-args = get_parsed_args()
-
-for i in range(args.runs):
-    run_simulation(args, i)
+'''
+if __name__ == '__main__':    
+    
+    args = get_parsed_args()
+    
+    for i in range(args.runs):
+        run_simulation(args, i)
+'''

@@ -17,13 +17,17 @@ import pstats
 import io
 from graph_utils import GraphUtils
 from file_utils import FileUtils
+from deprecated import deprecated
 
+@deprecated(version='0.0.1', reason="RL pipline is deprecated.")
 def get_sector_x(sector, garden_x, sector_width):
     return (sector % (garden_x // sector_width)) * sector_width
 
+@deprecated(version='0.0.1', reason="RL pipline is deprecated.")
 def get_sector_y(sector, garden_y, sector_height):
     return (sector // (garden_y // sector_height)) * sector_height
 
+@deprecated(version='0.0.1', reason="RL pipline is deprecated.")
 class Pipeline:
     def __init__(self):
         self.graph_utils = GraphUtils()
@@ -279,6 +283,7 @@ class Pipeline:
                     cnn_args=policy_kwargs[i])
                 self.single_run(folder_path, num_evals, policy_kwargs[0], is_baseline=False)
 
+'''
 if __name__ == '__main__':
     n = 1
     rl_config = [
@@ -316,3 +321,4 @@ if __name__ == '__main__':
     ]
     num_evals = 1
     Pipeline().batch_run(n, rl_config, garden_x, garden_y, sector_width, sector_height, num_plant_types, num_plants_per_type, num_evals=num_evals, policy_kwargs=policy_kwargs, baseline_policy=baseline_policy, is_baseline=is_baseline)
+'''

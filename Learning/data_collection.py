@@ -49,6 +49,7 @@ class DataCollection:
                             sector_obs_per_day)
             obs, rewards, _, _ = env.step(action)
 
+
 if __name__ == '__main__':    
     # import os
     # cpu_cores =  [i for i in range(30, 61)]
