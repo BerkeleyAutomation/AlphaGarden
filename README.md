@@ -1,11 +1,25 @@
-# SimAlphaGarden
+AlphaGardenSim
 -------
-Steps to run an experiment:
 
-1.  Run ```pip install -e .``` inside [gym\_simalphagarden/](https://github.com/BerkeleyAutomation/AlphaGarden/tree/case/RL_Framework/gym_simalphagarden).
+AlphaGardenSim is a fast, first order open-access simulator that integrates single plant growth models with inter-plant 
+competition for sun light and water. The simulation builds up on [Gym](https://gym.openai.com/) and implements an 
+environment for polyculture farming. More on the simulator can be found in our [paper]().
 
-2.  Run ```pip install -e .``` inside [Simulator_v2/](https://github.com/BerkeleyAutomation/AlphaGarden/tree/case/Simulator_v2). 
+- [ ] ToDo: Add picture
 
-3.  Install any missing dependencies.
+# Table of contents
+1. [Installation](#installation)
+2. [Data Generation](#datageneration)
+3. [Experiment](#experiment)
 
-4.  Run ```python pipeline.py``` found [here](https://github.com/BerkeleyAutomation/AlphaGarden/blob/case/RL_Framework/pipeline.py).
+## Installation <a name="installation"></a>
+
+Install the required pip packages:
+
+1.  Run ```pip install -r requirements.txt ``` inside [AlphaGarden](https://github.com/BerkeleyAutomation/AlphaGarden/).
+
+## Data Generation <a name="datageneration"></a>
+The first paragraph text
+
+## Experiment <a name="experiment"></a>
+The second paragraph text
