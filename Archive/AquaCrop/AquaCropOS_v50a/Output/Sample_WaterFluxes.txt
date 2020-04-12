@@ -1,0 +1,1 @@
+Year	Month	Day	SimDay	Season	wRZ	zGW	wSurf	Irr	Infl	RO	DP	CR	GWin	Es	EsX	Tr	TrX	

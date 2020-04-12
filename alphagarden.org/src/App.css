@@ -1,0 +1,300 @@
+@font-face {
+  font-family: 'Roboto Mono';
+  src: local('Roboto Mono'), url(./Fonts/Roboto_Mono/RobotoMono-Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto Thin';
+  src: local('Roboto Thin'), url(./Fonts/Roboto_Mono/RobotoMono-Light.ttf) format('truetype');
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 1EM;
+}
+
+
+#backgroundVideo {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  max-height:100%; 
+  max-width:100%;
+  z-index: 0;
+}
+
+
+.Overlay {
+  position: fixed;
+  z-index: 5;
+  color: #f1f1f1;
+}
+
+.Overlay1 {
+  position: fixed;
+  z-index: 5;
+  text-align: center;
+  color: #f1f1f1;
+  text-shadow: 0px 0px 18.9253px rgba(255, 255, 255, 0.7);
+ 
+
+}
+  /* width: 100%; */
+  /* height: 100%; */
+.LOADING svg{
+  position: fixed;
+  width: 95%;
+  height: auto;
+}
+
+.LOADING img{
+  position: fixed;
+  top: 0px;
+  z-index: -3;
+}
+
+#boxed{
+  position: absolute;
+  border: 2px solid white;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Roboto Mono';
+  text-align: left;
+  z-index: 6;
+  top: 33%;
+  left: 35%;
+
+}
+
+.top{
+  position: relative;
+  z-index: 5;
+  font-size: 36px;
+  font-weight: bold;
+
+}
+
+#button {
+  color: rgba(255, 255, 255, 0.9);
+  border: 2px solid white; 
+  background-color: inherit;
+  font-size: 96px;
+  font-weight: lighter;
+  letter-spacing: 0.2em;
+  text-shadow: 0px 0px 18.9253px rgba(255, 255, 255, 0.7);
+}
+
+.Data p{
+  position: absolute;
+  bottom: 8.5%;
+  left: 8.5%;
+  font-size: 20px;
+  width: 100%;
+}
+
+
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* This fires as soon as the element enters the DOM */
+.fade-enter{
+  opacity: 0;
+}
+/* This is where we can add the transition*/
+.fade-enter-active{
+  opacity: 1;
+  transition: opacity 2s;
+}
+/* This fires as soon as the this.state.showList is false */
+.fade-exit{
+  animation: fadeOut 2s ease;
+}
+/* fires as element leaves the DOM*/
+.fade-exit-active{
+  /* opacity: 0;
+  transition: opacity 2s ease; */
+  animation: fadeOut 2s ease;
+}
+
+@keyframes fadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+.fade-in {
+  opacity: 1;
+  animation-name: fadeInOpacity;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 4s;
+}
+
+.over-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.over-exit-active {
+  opacity: 0.01;
+  transform: scale(1.1);
+  transition: all 300ms;
+}
+
+#Zoom1 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(37.5%, 37.5%, 0px); 
+}
+
+#Zoom2 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(12.5%, 37.5%, 0px); 
+
+}
+
+#Zoom3 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-12.5%, 37.5%, 0px);
+
+}
+
+
+#Zoom4 {
+  transition: transform 3s;
+  transform: scale(4, 4) ;
+  transform-origin: -37.5% 37.5%;
+  /*animation-duration: 2s;
+  animation-timing-function: ease;
+  animation-name: Zoom4;
+  animation-fill-mode: forwards;
+*/
+}
+/*@keyframes Zoom4 {
+  10% {
+    transform:  translate3d(-3.75%, 3.75%, 0px); 
+  }
+  20% {
+    transform: translate3d(-7.5%, 7.5%, 0px); 
+  }
+  30% {
+    transform:  translate3d(-11.25%, 11.25%, 0px); 
+  }
+  40% {
+    transform: translate3d(-15%, 15%, 0px); 
+  }
+  50% {
+    transform: scale(2, 2) translate3d(-18.75%, 18.75%, 0px); 
+  }
+  60% {
+    transform: scale(2.0, 2.0) translate3d(-22.5%, 22.5%, 0px); 
+  }
+  70% {
+    transform: scale(2.5, 2.5) translate3d(-26.25%, 26.25%, 0px); 
+  }
+
+
+  80% {
+    transform: scale(3, 3) translate3d(-30%, 30%, 0px); 
+  }
+
+  90% {
+    transform: scale(3.5, 3.5) translate3d(-33.75%, 33.75%, 0px); 
+  }
+
+  100% {
+    transform: scale(4, 4) translate3d(-37.5%, 37.5%, 0px); 
+  }
+}*/
+
+#Zoom5 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(37.5%, 12.5%, 0px);
+  
+}
+
+
+#Zoom6 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(12.5%, 12.5%, 0px); 
+}
+
+#Zoom7 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-12.5%, 12.5%, 0px);
+
+}
+
+
+#Zoom8 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-37.5%, 12.5%, 0px);  
+}
+
+#Zoom9 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(37.5%, -12.5%, 0px);
+  
+}
+
+
+#Zoom10 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(12.5%, -12.5%, 0px);  
+}
+
+#Zoom11 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-12.5%, -12.5%, 0px);
+
+}
+
+
+#Zoom12 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-37.5%, -12.5%, 0px); 
+}
+
+#Zoom13 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(37.5%, -37.5%, 0px);
+
+}
+
+
+#Zoom14 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(12.5%, -37.5%, 0px);  
+}
+
+#Zoom15 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-12.5%, -37.5%, 0px);
+
+}
+
+
+#Zoom16 img{
+  transition: transform 3s;
+  transform: scale(4, 4) translate3d(-37.5%, -37.5%, 0px); 
+}
+
+
+
+#ZoomOut{
+  transition: transform 3s;
+  transform: scale3d(1, 1, 1) translate3d(0%, 0%, 0px);  
+}
+

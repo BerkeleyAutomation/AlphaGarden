@@ -1,0 +1,15 @@
+%% ---------- Soil parameter inputs for AquaCropOS ---------- %%
+%% Soil surface covered by mulches (0: No; 1: Yes) %%
+Mulches : 0
+%% Area of soil surface covered by mulches during growing season (%) %%
+MulchPctGS : 50
+%% Area of soil surface covered by mulches outside growing season (%) %%
+MulchPctOS : 50
+%% Soil evaporation adjustment factor due to effect of mulches %%
+fMulch : 0.5
+%% Surface bunds present (0: No; 1: Yes) %%
+Bunds : 0
+%% Bund height (m) %%
+zBund : 0
+%% Initial water height in surface bunds (mm) %%
+BundWater : 0

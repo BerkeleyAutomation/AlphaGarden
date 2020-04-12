@@ -1,0 +1,1 @@
+Year	Month	Day	SimDay	Season	GDD	TotGDD	Root Depth	CC	RefCC	Bio	RefBio	HI	HIadj	Yield	

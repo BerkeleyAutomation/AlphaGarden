@@ -1,0 +1,6 @@
+README.md
+setup.py
+wrapperenv.egg-info/PKG-INFO
+wrapperenv.egg-info/SOURCES.txt
+wrapperenv.egg-info/dependency_links.txt
+wrapperenv.egg-info/top_level.txt

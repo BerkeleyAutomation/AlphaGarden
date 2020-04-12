@@ -1,0 +1,45 @@
+%% ---------- Soil parameter inputs for AquaCropOS ---------- %%
+%% Soil profile filename %%
+SoilProfile.txt
+%% Soil textural properties filename %%
+SoilTexture_ClayLoam.txt
+%% Soil hydraulic properties filename %%
+SoilHydrology_ClayLoam.txt
+%% Calculate soil hydraulic properties (0: No, 1: Yes) %%
+CalcSHP : 0
+%% Total thickness of soil profile (m) %%
+zSoil : 2.3
+%% Total number of compartments %%
+nComp : 12
+%% Total number of layers %%
+nLayer : 1
+%% Thickness of soil surface skin evaporation layer (m) %%
+EvapZsurf : 0.04
+%% Minimum thickness of full soil surface evaporation layer (m) %%
+EvapZmin : 0.15
+%% Maximum thickness of full soil surface evaporation layer (m) %%
+EvapZmax : 0.30
+%% Maximum soil evaporation coefficient %%
+Kex : 1.1
+%% Shape factor describing reduction in soil evaporation %%
+fevap : 4
+%% Proportional value of Wrel at which soil evaporation layer expands %%
+fWrelExp : 0.4
+%% Maximum coefficient for soil evaporation reduction due to sheltering effect of withered canopy %%
+fwcc : 50
+%% Adjust default value for readily evaporable water (0: No, 1: Yes) %%
+AdjREW : 0
+%% Readily evaporable water (mm) (only used if adjusting) %%
+REW : 11
+%% Adjust curve number for antecedent moisture content (0:No, 1:Yes) %%
+AdjCN : 1
+%% Curve number %%
+CN : 72
+%% Thickness of soil surface (m) used to calculate water content to adjust curve number %%
+zCN : 0.3
+%% Thickness of soil surface (m) used to calculate water content for germination %%
+zGerm : 0.3
+%% Depth of restrictive soil layer (set to negative value if not present) %%
+zRes : -999
+%% Capillary rise shape factor %%
+fshape_cr : 16

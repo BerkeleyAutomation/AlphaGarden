@@ -1,0 +1,7 @@
+%% --------- Groundwater table for AquaCropOS ---------- %%
+%% Water table present ('Y' or 'N') %%
+N
+%% Water table method ('Constant' depth; 'Variable' depth) %%
+Constant
+%% Date (dd/mm/yyyy)   Depth (m) %%
+01/09/2000  2

@@ -1,3 +1,0 @@
-%% --------- Crop rotation time-series for AquaCropOS --------- %%
-%% PlantDate	HarvestDate	Crop %%
-01/05/1983  30/09/1983  Maize

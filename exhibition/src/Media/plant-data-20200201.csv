@@ -1,0 +1,370 @@
+type,center_x,center_y,radius
+Marigold,209,312,12
+Dill,1371,134,12
+Marigold,225,235,13
+Marigold,865,802,13
+Unknown,1199,735,13
+Unknown,1214,741,13
+Marigold,1227,797,14
+Marigold,543,293,15
+Unknown,609,610,16
+Dill,667,480,16
+Bok Choy,1146,530,16
+Dill,1259,152,16
+Marigold,507,731,17
+Unknown,765,904,17
+Dill,870,642,17
+Dill,922,674,17
+Dill,1118,230,17
+Dill,1159,803,17
+Marigold,1185,587,17
+Unknown,1301,732,17
+Dill,1596,658,17
+Unknown,1901,231,17
+Marigold,60,490,18
+Dill,522,514,18
+Dill,698,730,18
+Dill,1018,692,18
+Dill,1226,502,18
+Unknown,1289,840,18
+Unknown,261,162,19
+Unknown,332,128,19
+Dill,810,279,19
+Dill,915,952,19
+Unknown,975,953,19
+Marigold,1079,535,19
+Unknown,1326,873,19
+Marigold,1680,719,19
+Unknown,493,227,20
+Calendula,683,1059,20
+Unknown,785,1032,20
+Marigold,813,592,20
+Calendula,970,907,20
+Calendula,1024,878,20
+Dill,1540,763,20
+Bok Choy,200,608,21
+Unknown,217,469,21
+Unknown,524,281,21
+Unknown,870,385,21
+Calendula,881,1030,21
+Marigold,1025,755,21
+Calendula,1088,185,21
+Unknown,1104,630,21
+Dill,1609,105,21
+Calendula,1619,387,21
+Unknown,1790,50,21
+Dill,1796,200,21
+Unknown,159,587,22
+Dill,684,565,22
+Unknown,816,1036,22
+Unknown,1088,143,22
+Calendula,1136,178,22
+Dill,1161,732,22
+Dill,1452,476,22
+Dill,1514,631,22
+Dill,466,579,23
+Marigold,476,20,23
+Bok Choy,1103,974,23
+Dill,1192,644,23
+Dill,1400,1057,23
+Dill,1702,288,23
+Dill,329,532,24
+Bok Choy,615,576,24
+Calendula,659,25,24
+Unknown,661,575,24
+Unknown,736,123,24
+Unknown,1097,235,24
+Bok Choy,1108,773,24
+Unknown,1230,209,24
+Dill,1315,633,24
+Dill,1602,598,24
+Unknown,29,478,25
+Unknown,88,504,25
+Dill,153,894,25
+Unknown,527,383,25
+Dill,617,462,25
+Bok Choy,722,62,25
+Dill,944,892,25
+Marigold,1327,672,25
+Unknown,1463,698,25
+Dill,1551,980,25
+Marigold,1565,28,25
+Dill,1758,942,25
+Dill,1760,906,25
+Bok Choy,209,565,26
+Bok Choy,233,956,26
+Unknown,424,220,26
+Bok Choy,529,431,26
+Unknown,726,763,26
+Calendula,759,71,26
+Bok Choy,772,157,26
+Calendula,1124,266,26
+Bok Choy,1132,754,26
+Dill,1175,200,26
+Bok Choy,1279,450,26
+Marigold,1416,348,26
+Dill,1611,263,26
+Unknown,220,158,27
+Unknown,563,168,27
+Bok Choy,1231,469,27
+Bok Choy,1345,699,27
+Unknown,1733,718,27
+Unknown,1831,934,27
+Bok Choy,77,68,28
+Calendula,91,840,28
+Bok Choy,167,937,28
+Calendula,426,976,28
+Unknown,556,215,28
+Bok Choy,955,213,28
+Dill,1014,966,28
+Dill,1131,1018,28
+Unknown,1158,621,28
+Bok Choy,285,952,29
+Bok Choy,401,584,29
+Calendula,495,975,29
+Unknown,670,724,29
+Unknown,793,688,29
+Unknown,1048,846,29
+Dill,1065,739,29
+Unknown,1244,820,29
+Dill,1389,183,29
+Unknown,1666,245,29
+Unknown,247,664,30
+Dill,286,557,30
+Unknown,319,950,30
+Bok Choy,355,567,30
+Bok Choy,410,511,30
+Bok Choy,448,867,30
+Unknown,570,747,30
+Comfrey/Borage,621,315,30
+Dill,731,876,30
+Unknown,789,834,30
+Unknown,852,1053,30
+Bok Choy,1288,186,30
+Calendula,1301,1004,30
+Unknown,1430,414,30
+Unknown,1707,242,30
+Calendula,1743,228,30
+Unknown,128,812,31
+Bok Choy,226,49,31
+Unknown,252,816,31
+Unknown,276,463,31
+Bok Choy,410,88,31
+Unknown,422,454,31
+Unknown,478,328,31
+Unknown,518,675,31
+Unknown,1050,896,31
+Bok Choy,1191,514,31
+Dill,1376,845,31
+Unknown,1415,851,31
+Unknown,1735,151,31
+Bok Choy,561,684,32
+Bok Choy,810,405,32
+Unknown,983,685,32
+Unknown,1187,661,32
+Bok Choy,182,675,33
+Unknown,226,908,33
+Unknown,269,761,33
+Bok Choy,283,686,33
+Unknown,360,743,33
+Unknown,365,1059,33
+Calendula,467,278,33
+Calendula,728,562,33
+Unknown,767,603,33
+Bok Choy,844,1005,33
+Dill,935,347,33
+Bok Choy,984,517,33
+Dill,1000,289,33
+Marigold,1294,222,33
+Unknown,1840,91,33
+Calendula,448,1017,34
+Bok Choy,716,232,34
+Unknown,766,1062,34
+Bok Choy,902,435,34
+Bok Choy,909,327,34
+Unknown,1866,949,34
+Bok Choy,65,611,35
+Unknown,138,500,35
+Comfrey/Borage,339,325,35
+Dill,370,865,35
+Unknown,718,644,35
+Unknown,763,794,35
+Bok Choy,876,568,35
+Calendula,1190,92,35
+Unknown,1885,16,35
+Bok Choy,547,800,36
+Bok Choy,588,400,36
+Comfrey/Borage,601,273,36
+Unknown,616,678,36
+Unknown,667,594,36
+Unknown,812,977,36
+Bok Choy,877,89,36
+Unknown,972,653,36
+Bok Choy,1010,360,36
+Calendula,1252,1016,36
+Unknown,1735,955,36
+Calendula,97,796,37
+Unknown,139,85,37
+Dill,369,1021,37
+Bok Choy,578,904,37
+Bok Choy,905,625,37
+Unknown,1048,425,37
+Calendula,1100,487,37
+Unknown,73,769,38
+Bok Choy,115,50,38
+Bok Choy,186,288,38
+Unknown,222,765,38
+Unknown,348,700,38
+Unknown,631,521,38
+Unknown,773,235,38
+Radish,1124,442,38
+Bok Choy,1402,937,38
+Unknown,1565,793,38
+Unknown,1721,286,38
+Bok Choy,156,350,39
+Comfrey/Borage,287,333,39
+Unknown 1,296,79,39
+Nasturtium,319,814,39
+Unknown,326,650,39
+Unknown,360,787,39
+Bok Choy,566,337,39
+Unknown,682,863,39
+Bok Choy,760,966,39
+Unknown,1022,641,39
+Bok Choy,1028,578,39
+Unknown,1347,907,39
+Unknown,1861,646,39
+Unknown,1774,548,40
+Unknown,86,1057,41
+Comfrey/Borage,343,376,41
+Unknown 1,442,404,41
+Calendula,1127,65,41
+Unknown,1746,563,41
+Bok Choy,664,129,42
+Unknown,726,1032,42
+Bok Choy,932,584,42
+Unknown,1410,684,42
+Unknown,1457,780,42
+Unknown,1513,712,42
+Unknown 1,201,415,43
+Unknown,278,599,43
+Unknown,498,468,43
+Radish,942,120,43
+Dill,1096,1043,43
+Unknown,1446,952,43
+Unknown,1882,869,43
+Unknown,1888,589,43
+Unknown,45,559,44
+Radish,435,722,44
+Unknown,490,1026,44
+Unknown,572,843,44
+Unknown,1006,799,44
+Unknown 1,1111,319,44
+Unknown,1273,333,44
+Unknown,1837,566,44
+Comfrey/Borage,481,83,45
+Unknown,1007,451,45
+Bok Choy,1023,216,45
+Bok Choy,1110,576,45
+Unknown,1632,172,45
+Unknown,1690,192,45
+Unknown,489,739,46
+Unknown,497,918,46
+Unknown,527,62,46
+Unknown,580,496,46
+Unknown,666,586,46
+Unknown 1,783,540,46
+Unknown,1391,606,46
+Unknown,524,541,47
+Unknown,488,651,48
+Radish,1055,303,48
+Nasturtium,1200,284,48
+Unknown,1440,310,48
+Unknown,1488,871,48
+Unknown 1,1516,675,48
+Nasturtium,1525,287,48
+Unknown,1567,516,48
+Unknown,1728,779,48
+Unknown,1764,371,48
+Unknown,195,863,49
+Unknown,281,407,49
+Unknown,389,665,49
+Unknown,444,639,49
+Unknown,690,186,49
+Unknown 1,1277,50,49
+Unknown,209,514,50
+Unknown 1,769,303,50
+Unknown,825,789,50
+Unknown,1697,91,50
+Unknown,253,678,51
+Nasturtium,306,851,51
+Bok Choy,915,498,51
+Unknown,1414,487,51
+Bok Choy,101,419,52
+Unknown,129,752,52
+Bok Choy,214,109,52
+Unknown 1,672,399,52
+Nasturtium,1504,220,52
+Radish,669,794,53
+Radish,1367,740,53
+Unknown,1512,948,53
+Unknown,1837,230,53
+Radish,1045,1036,54
+Unknown,1661,778,54
+Unknown,1707,633,54
+Unknown,96,715,55
+Unknown,280,261,55
+Unknown 1,708,668,55
+Unknown,1366,343,55
+Radish,1392,66,55
+Radish,1439,21,55
+Unknown,483,796,56
+Unknown 1,1346,1072,56
+Unknown 1,165,1028,57
+Unknown 1,177,630,57
+Nasturtium,258,1035,57
+Radish,801,476,57
+Radish,1500,490,57
+Unknown,1815,158,57
+Unknown,483,600,58
+Radish,1621,712,58
+Radish,1813,1004,58
+Unknown,197,219,59
+Unknown,1542,622,59
+Nasturtium,734,467,60
+Nasturtium,407,799,61
+Unknown 1,930,840,61
+Unknown,1793,325,61
+Unknown,1652,418,62
+Unknown,1862,702,62
+Unknown,1900,100,62
+Radish,421,315,63
+Unknown 1,797,911,63
+Unknown,1479,1034,63
+Radish,342,478,64
+Unknown 1,363,204,64
+Unknown 1,1560,150,66
+Unknown,66,933,67
+Unknown,549,957,67
+Radish,1560,388,67
+Radish,1476,549,68
+Nasturtium,1846,791,69
+Unknown 1,599,1029,70
+Nasturtium,834,690,70
+Nasturtium,1174,878,71
+Unknown 1,1336,242,72
+Unknown 1,577,582,73
+Unknown,1596,310,74
+Radish,1690,864,74
+Nasturtium,1816,470,74
+Radish,1623,61,75
+Radish,1606,871,76
+Unknown,1848,336,76
+Unknown 1,1266,95,79
+Radish,1298,935,79
+Radish,1450,219,79
+Unknown 1,1298,506,80
+Unknown 1,1640,533,82
+Radish,1180,395,84
+Unknown 1,1313,518,84
+Nasturtium,1020,102,88
