@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import gym
 import torch
-from simulatorv2.SimAlphaGardenWrapper import SimAlphaGardenWrapper
-from simulatorv2.plant_type import PlantType
-from simulatorv2.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
+from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
+from simulator.plant_type import PlantType
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 import simalphagarden
-import simulatorv2.baselines.baseline_policy as baseline_policy
+import simulator.baselines.baseline_policy as baseline_policy
 from net import Net
 from constants import TrainingConstants
 import numpy as np
