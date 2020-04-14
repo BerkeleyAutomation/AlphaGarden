@@ -44,6 +44,5 @@ setup(
         "termcolor==1.1.0",
         "Werkzeug==1.0.0",
         "wrapt==1.12.0",
-        "torch==1.4.0"
-        ],
+        ] + [] if "win" in sys.platform else ["torch==1.4.0"],
 )
