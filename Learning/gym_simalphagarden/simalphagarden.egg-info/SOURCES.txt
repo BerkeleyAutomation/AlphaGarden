@@ -1,7 +1,0 @@
-README.md
-setup.py
-simalphagarden.egg-info/PKG-INFO
-simalphagarden.egg-info/SOURCES.txt
-simalphagarden.egg-info/dependency_links.txt
-simalphagarden.egg-info/requires.txt
-simalphagarden.egg-info/top_level.txt

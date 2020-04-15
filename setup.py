@@ -1,11 +1,17 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
 import sys
 setup(
-    name = "AlphaGarden",
+    name = "alphagarden",
     version = "0.0.1",
     python_requires = '==3.7.7',
-    packages = find_packages(),
+    packages=[ 
+        'simalphagarden', 
+        'wrapperenv', 
+        'simulator'],
+    package_dir={'simalphagarden': 'alphagarden/Learning', 
+        'wrapperenv': 'alphagarden/Learning', 
+        'simulator': 'alphagarden/Simulator'},
     install_requires = [ 
         "absl-py==0.9.0",
         "astor==0.8.1",
