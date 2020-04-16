@@ -76,7 +76,7 @@ List of used plant types and their important parameters.
 
 
 
-![Table of Plants ](https://raw.github.com/BerkeleyAutomation/AlphaGarden/store-assets/plantTable.png)
+![Table of Plants ](store-assets/plantTable.png)
 
 ## Troubleshooting
 
