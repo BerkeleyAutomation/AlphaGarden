@@ -1,7 +1,7 @@
 # AlphaGardenSim
 
 AlphaGardenSim is a fast, first order open-access simulator that integrates single plant growth models with inter-plant 
-competition for sun light and water. The aim of the simulator is to support learning a control policy for cultivating
+competition for sun light and water. The aim of the simulator is to support learning control policies for cultivating
 a polyculture garden. More on this [here](https://goldberg.berkeley.edu/art/AlphaGarden/). 
 The simulator implements a custom [OpenAI gym](https://gym.openai.com/) reinforcement learning environment for this 
 polyculture farming setup. More on the simulator can be found in the [paper]().
@@ -71,7 +71,7 @@ To run your own experiments or reproduce the experiments from the paper follow t
 
 * Some of the parameters described in the experimental setup are stored in the [sim_global.py](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator/simulator/sim_globals.py) file 
 
-* Experimental data cna be generated with the data_collection module. Further parameters are defined in this file.
+* Experimental data can be generated with the [data_collection.py](https://github.com/BerkeleyAutomation/AlphaGarden/Learning/data_collection.py) module. Further important parameters are defined in this file.
 
 * List of 13 edible plant types used with different germination times, maturation times and growth rates, sampled from plant-specific Gaussian distributions.
 Plants are modeled with the [Plant](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator/simulator/plant.py) class and the data can be found [here](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator/simulator/plant_presets.py)
