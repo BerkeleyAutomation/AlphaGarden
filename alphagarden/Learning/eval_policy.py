@@ -51,7 +51,7 @@ def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
     return env
 
 def get_action_net(env, i, center, policy, actions):
-    curr_img, cc_vec, obs = env.get_center_state(center, True)
+    curr_img, cc_vec, obs = env.get_center_state(center, need_img=True, multi=True)
     if curr_img is None:
         sector_img = np.ones((3, 235, 499)) * 255
     else:
@@ -108,7 +108,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
     save_data(metrics, trial, save_dir)
 
 def get_action(env, i, center, policy, actions):
-    cc_vec, obs = env.get_center_state(center, False)
+    cc_vec, obs = env.get_center_state(center, need_img=False, multi=True)
     action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                     sector_obs_per_day, vectorized=False, eval=True)[0]

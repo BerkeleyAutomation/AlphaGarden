@@ -36,8 +36,8 @@ class SimAlphaGardenEnv(gym.Env):
     def get_centers(self):
         return self.wrapper_env.get_random_centers()
     
-    def get_center_state(self, center, need_img):
-        cc_img, global_cc_vec, obs = self.wrapper_env.get_center_state(center, need_img)
+    def get_center_state(self, center, need_img, multi):
+        cc_img, global_cc_vec, obs = self.wrapper_env.get_center_state(center, multi)
         if need_img: 
             return (cc_img, global_cc_vec, obs)
         return (global_cc_vec, obs)
