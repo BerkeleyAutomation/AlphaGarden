@@ -1,25 +1,58 @@
-AlphaGardenSim
--------
+# AlphaGardenSim
 
 AlphaGardenSim is a fast, first order open-access simulator that integrates single plant growth models with inter-plant 
-competition for sun light and water. The simulation builds up on [Gym](https://gym.openai.com/) and implements an 
+competition for sun light and water. The simulation implements a custom [OpenAI gym](https://gym.openai.com/) 
 environment for polyculture farming. More on the simulator can be found in our [paper]().
 
-- [ ] ToDo: Add picture
+![AlphaGarden Watercolering](https://raw.github.com/BerkeleyAutomation/AlphaGarden/store-sassets/watercolorAlphaGarden.png)
 
-# Table of contents
-1. [Installation](#installation)
-2. [Data Generation](#datageneration)
-3. [Experiment](#experiment)
+### Table of Contents
+**[Installation Instructions](#installation-instructions)**<br>
+**[Usage Instructions](#usage-instructions)**<br>
+**[Troubleshooting](#troubleshooting)**<br>
+**[Notes and Miscellaneous](#notes-and-miscellaneous)**<br>
+**[Building the Extension Bundles](#building-the-extension-bundles)**<br>
+**[Next Steps, Credits, Feedback, License](#next-steps)**<br>
 
-## Installation <a name="installation"></a>
+## Installation Instructions
 
-Install the required pip packages:
+For now the *AlphaGardenSim* module is distributed with two parts: [Learning](https://github.com/BerkeleyAutomation/AlphaGarden/Learning) 
+containing the *simalphagarden* and *wrapperenv* packages and [Simulator](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator) 
+containing the *simulator* package.
 
-1.  Run ```pip install -r requirements.txt ``` inside [AlphaGarden](https://github.com/BerkeleyAutomation/AlphaGarden/).
+Install the required pip packages and the mentioned packages from above:
 
-## Data Generation <a name="datageneration"></a>
-The first paragraph text
+Run ```pip install -r requirements.txt ``` inside [AlphaGarden](https://github.com/BerkeleyAutomation/AlphaGarden/).
 
-## Experiment <a name="experiment"></a>
-The second paragraph text
+See the **[Usage Instructions](#usage-instructions)** for more details on how to use the simulator.
+
+### Tests
+
+Currently no tests are included. Tests may be added in the future.
+
+### Built With
+
+* [gym](https://gym.openai.com/) - Toolkit for developing and comparing reinforcement learning algorithms
+* [TODO add other]
+
+## Usage Instructions
+
+![Table of Plants ](https://raw.github.com/BerkeleyAutomation/AlphaGarden/store-assets/plantTable.png)
+
+## Troubleshooting
+
+## Notes and Miscellaneous
+
+## Building the Extension Bundles
+
+## Next Steps
+
+## Credits
+
+## Feedback
+
+## License
+
+### Code
+
+### Images
