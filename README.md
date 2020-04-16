@@ -6,7 +6,7 @@ a polyculture garden. More on this [here](https://goldberg.berkeley.edu/art/Alph
 The simulator implements a custom [OpenAI gym](https://gym.openai.com/) reinforcement learning environment for this 
 polyculture farming setup. More on the simulator can be found in the [paper]().
 
-![AlphaGarden Watercolering](https://raw.github.com/BerkeleyAutomation/AlphaGarden/store-sassets/watercolorAlphaGarden.png)
+![AlphaGarden Watercolering](store-assets/watercolorAlphaGarden.png)
 
 ### Table of Contents
 **[Installation Instructions](#installation-instructions)**<br>
