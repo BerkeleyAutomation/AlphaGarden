@@ -13,8 +13,7 @@ polyculture farming setup. More on the simulator can be found in the [paper]().
 **[Usage Instructions](#usage-instructions)**<br>
 **[Troubleshooting](#troubleshooting)**<br>
 **[Notes and Miscellaneous](#notes-and-miscellaneous)**<br>
-**[Building the Extension Bundles](#building-the-extension-bundles)**<br>
-**[Next Steps, Credits, Feedback, License](#next-steps)**<br>
+**[Next Steps, Acknowledgements, Feedback, License](#next-steps)**<br>
 
 ## Installation Instructions and Quickstart
 
@@ -101,11 +100,20 @@ Plants are modeled with the [Plant](https://github.com/BerkeleyAutomation/AlphaG
 
 ## Notes and Miscellaneous
 
-## Building the Extension Bundles
-
 ## Next Steps
 
-## Credits
+* We plan to refactor the code and repackage the distribution.
+* In future work, we will tune the simulator with measurements from a real garden, and use the learned policy to bootstrap a reinforcement learning policy.
+
+## Acknowledgements
+
+This research was performed at the AUTOLAB at UC Berkeley in affiliation with the Berkeley AI Research (BAIR) Lab, Berkeley Deep Drive (BDD), 
+the Real-Time Intelligent Secure Execution (RISE) Lab, and the CITRIS ”People and Robots” (CPAR) Initiative. 
+This research was supported in part by the RAPID: Robot-Assisted Precision Irrigation Delivery Project (USDA 2017-67021-25925 
+under NSF National Robotics Initiative). The authors were supported in part by donations from Siemens, Google, Toyota Research Institute,
+Honda Research, and Hewlett-Packard. We thank our colleagues who provided helpful feedback and suggestions, in particular Mary Power, 
+Jackson Chui, Jeff Ichnowski, Micah Carroll, Paul Shao, Eric Siegel, Isaac Blankensmith, Maya Man, Sarah Newman, Shubha Jagannatha, 
+Sona Dolasia, Christiane Paul, Vishal Satish and Atsunobu Kotani.
 
 ## Feedback
 
