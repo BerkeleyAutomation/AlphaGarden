@@ -1,1 +1,0 @@
-Year	Month	Day	SimDay	Season	0.05m	0.15m	0.25m	0.375m	0.525m	0.7m	0.9m	1.125m	1.375m	1.625m	1.875m	2.15m	
