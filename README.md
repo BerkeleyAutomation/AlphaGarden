@@ -2,9 +2,9 @@
 
 AlphaGardenSim is a fast, first order open-access simulator that integrates single plant growth models with inter-plant 
 competition for sun light and water. The aim of the simulator is to support learning control policies for cultivating
-a polyculture garden. More on this [here](https://goldberg.berkeley.edu/art/AlphaGarden/). 
+a polyculture garden. More on this [here](http://alphagarden.org/). 
 The simulator implements a custom [OpenAI gym](https://gym.openai.com/) reinforcement learning environment for this 
-polyculture farming setup. More on the simulator can be found in the [paper]().
+polyculture farming setup.
 
 ![AlphaGarden Watercolering](store-assets/watercolorAlphaGarden.png)
 
@@ -24,12 +24,12 @@ containing the *simulator* package.
 Install the required pip packages and the mentioned packages from above:
 
 1. `git clone` the repository
-2. Open the `AlphaGarden` repository 
-3. Run ```pip install -r requirements.txt ``` inside [AlphaGarden](https://github.com/BerkeleyAutomation/AlphaGarden/). 
+2. Open the `AlphaGarden` [repository](https://github.com/BerkeleyAutomation/AlphaGarden/)
+3. Run ```pip install -r requirements.txt ```
 
 To run the simulator and collect data:
 
-4. Move to the Learning folder with `cd Leaning/`
+4. Move to the Learning folder with `cd Learning/`
 5. Run `python data_collection.py`
 
 See the **[Usage Instructions](#usage-instructions)** for more details on how to use the simulator.
@@ -41,40 +41,22 @@ Currently no tests are included. Tests may be added in the future.
 ### Built With
 
 * [gym](https://gym.openai.com/) - Toolkit for developing and comparing reinforcement learning algorithms
-* [TODO add other]
 
 ## Usage Instructions
 
 The simulator models the inter-plant dynamics and competition for light and water. A main idea is to use the simulator
 to learn a control policy for the garden that is reliable and sustainable.
 
-### General Information
-
-In the following important variables from *AlphaGarden* are listed:
-
-* The garden is modeled as a discrete MxN grid
-* Time *t* is specified in units of days
-* *p(x,y)* in the garden contains up to one seed, and up to a fixed capacity of water.
-* *D(k)* as a set of *k* plant types available in the garden, as well as types soil and unknown
-* Vector **d**_(x,y,t)_ of length k representing the distribution of the plant (or soil) type that is visible overhead at point p(x, y)
-* Seed locations in the garden **s(x,y)**
-* Health of the plant at point *p(x, y)* at time t as *h(x,y,t)*
-* Amount of soil moisture available at point *p(x,y)* at time *t* *w(x,y,t)*
-* Vector **p**_(k, t)_ holds the global population in the garden as a distribution over point types D
-* *c(t)* is the total canopy coverage w.r.t. the garden size at time *t*
-* *v(t)* is the diversity in the garden at time *t*
-* *s(t)* represents the sustainability in the garden
-
 ### Simulation Experiments
 
 To run your own experiments or reproduce the experiments from the paper follow these instructions.
 
-* Some of the parameters described in the experimental setup are stored in the [sim_global.py](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator/simulator/sim_globals.py) file 
+* Some of the parameters described in the experimental setup are stored in the [sim_global.py](AlphaGarden/Simulator/simulator/sim_globals.py) file 
 
-* Experimental data can be generated with the [data_collection.py](https://github.com/BerkeleyAutomation/AlphaGarden/Learning/data_collection.py) module. Further important parameters are defined in this file.
+* Experimental data can be generated with the [data_collection.py](AlphaGarden/Learning/data_collection.py) module. Further important parameters are defined in this file.
 
 * List of 13 edible plant types used with different germination times, maturation times and growth rates, sampled from plant-specific Gaussian distributions.
-Plants are modeled with the [Plant](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator/simulator/plant.py) class and the data can be found [here](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator/simulator/plant_presets.py)
+Plants are modeled with the [Plant](AlphaGarden/Simulator/simulator/plant.py) class and the data can be found [here](AlphaGarden/Simulator/simulator/plant_presets.py)
 
 | Plant Type      | Mean Germination Time (days)  | Mean Maturation Time (days)  | Mean Mature Radius (inches) | k<sub>1</sub> | k<sub>2</sub> |
 | --------------- |:-----------------------------:|:----------------------------:|:---------------------------:|:-------------:| -------------:|
@@ -96,9 +78,7 @@ Plants are modeled with the [Plant](https://github.com/BerkeleyAutomation/AlphaG
 
 ### Evaluation
 
-## Troubleshooting
-
-## Notes and Miscellaneous
+A description for evaluating policies will be added in the future.
 
 ## Next Steps
 
@@ -115,10 +95,31 @@ Honda Research, and Hewlett-Packard. We thank our colleagues who provided helpfu
 Jackson Chui, Jeff Ichnowski, Micah Carroll, Paul Shao, Eric Siegel, Isaac Blankensmith, Maya Man, Sarah Newman, Shubha Jagannatha, 
 Sona Dolasia, Christiane Paul, Vishal Satish and Atsunobu Kotani.
 
-## Feedback
-
 ## License
 
 ### Code
 
+MIT License
+
+Copyright (c) 2020 UC Berkeley AUTOLAB
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ### Images
+Watercolor by Chelsea Qiu and Sarah Newman, Copyright (c) 2019
