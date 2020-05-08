@@ -11,8 +11,6 @@ polyculture farming setup.
 ### Table of Contents
 **[Installation Instructions](#installation-instructions)**<br>
 **[Usage Instructions](#usage-instructions)**<br>
-**[Troubleshooting](#troubleshooting)**<br>
-**[Notes and Miscellaneous](#notes-and-miscellaneous)**<br>
 **[Next Steps, Acknowledgements, Feedback, License](#next-steps)**<br>
 
 ## Installation Instructions and Quickstart
@@ -59,7 +57,7 @@ To run your own experiments or reproduce the experiments from the paper follow t
 Plants are modeled with the [Plant](AlphaGarden/Simulator/simulator/plant.py) class and the data can be found [here](AlphaGarden/Simulator/simulator/plant_presets.py)
 
 | Plant Type      | Mean Germination Time (days)  | Mean Maturation Time (days)  | Mean Mature Radius (inches) | k<sub>1</sub> | k<sub>2</sub> |
-| --------------- |:-----------------------------:|:----------------------------:|:---------------------------:|:-------------:| -------------:|
+| --------------- |:-----------------------------:|:----------------------------:|:---------------------------:|:-------------:| : -------------:|
 | Bok Choy        |7.5                            |45                            |3                            |0.33           |0.389          |
 | Basil           |7.5                            |62.5                          |4.5                          |0.33           |0.389          |
 | Lavender        |17.5                           |145                           |10.5                         |0.428          |0.455          |
