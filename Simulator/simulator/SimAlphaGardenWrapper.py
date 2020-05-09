@@ -132,7 +132,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             multi (bool): flag for parallel processing
 
         Returns:
-            Sector number and state associated with the sector.
+            Sector coordinate, global canopy cover vector and state associated with the sector.
 
         """
         np.random.seed(random.randint(0, 99999999))

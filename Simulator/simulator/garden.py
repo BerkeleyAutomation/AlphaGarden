@@ -24,8 +24,8 @@ class Garden:
             step (int): Distance between adjacent points in grid.
             drainage_rate (float): Drainage rate of water in soil.
             irr_threshold (int): Amount of grid points away from irrigation point that water will spread to.
-            init_water_mean (float):
-            init_water_scale (float):
+            init_water_mean (float): TODO
+            init_water_scale (float): TODO
             plant_types (list of str): Names of available plant types.
             skip_initial_germination (bool): Skip initial germination stage.
             animate (bool): Animate simulator run.  TODO Deprecated
