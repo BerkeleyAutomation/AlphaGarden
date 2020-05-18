@@ -56,42 +56,27 @@ To run your own experiments or reproduce the experiments from the paper follow t
 * List of 13 edible plant types used with different germination times, maturation times and growth rates, sampled from plant-specific Gaussian distributions.
 Plants are modeled with the [Plant](AlphaGarden/Simulator/simulator/plant.py) class and the data can be found [here](AlphaGarden/Simulator/simulator/plant_presets.py)
 
-| Plant Type      | Mean Germination Time (days)  | Mean Maturation Time (days)  | Mean Mature Radius (inches) | k<sub>1</sub> | k<sub>2</sub> |
-| --------------- |:-----------------------------:|:----------------------------:|:---------------------------:|:-------------:| : -------------:|
-| Bok Choy        |7.5                            |45                            |3                            |0.33           |0.389          |
-| Basil           |7.5                            |62.5                          |4.5                          |0.33           |0.389          |
-| Lavender        |17.5                           |145                           |10.5                         |0.428          |0.455          |
-| Parsley         |24.5                           |80                            |5.25                         |0.33           |0.389          |
-| Sage            |15.5                           |730                           |15                           |0.428          |0.455          |
-| Chives          |18                             |90                            |3.75                         |0.33           |0.389          |
-| Cilantro        |8.5                            |67.5                          |2                            |0.33           |0.389          |
-| Dill            |8.5                            |70                            |6.75                         |0.33           |0.389          |
-| Fennel          |10                             |65                            |5.5                          |0.33           |0.389          |
-| Nasturtium      |11                             |60                            |5.5                          |0.428          |0.455          |
-| Marigold        |7.5                            |50                            |3.5                          |0.267          |0.38           |
-| Calendula       |8.5                            |50                            |6                            |0.267          |0.38           |
-| Borage          |10                             |56                            |10                           |0.267          |0.38           |
-| Generic invasive| | | | |
-| ...     | ... |... |... |... | ... |
+| Plant Type       | Mean Germination Time (days)  | Mean Maturation Time (days)  | Mean Mature Radius (inches) | k<sub>1</sub> | k<sub>2</sub> |
+|:----------------:|:-----------------------------:|:----------------------------:|:---------------------------:|:-------------:|:-------------:|
+| Bok Choy         |7.5                            |45                            |3                            |0.33           |0.389          |
+| Basil            |7.5                            |62.5                          |4.5                          |0.33           |0.389          |
+| Lavender         |17.5                           |145                           |10.5                         |0.428          |0.455          |
+| Parsley          |24.5                           |80                            |5.25                         |0.33           |0.389          |
+| Sage             |15.5                           |730                           |15                           |0.428          |0.455          |
+| Chives           |18                             |90                            |3.75                         |0.33           |0.389          |
+| Cilantro         |8.5                            |67.5                          |2                            |0.33           |0.389          |
+| Dill             |8.5                            |70                            |6.75                         |0.33           |0.389          |
+| Fennel           |10                             |65                            |5.5                          |0.33           |0.389          |
+| Nasturtium       |11                             |60                            |5.5                          |0.428          |0.455          |
+| Marigold         |7.5                            |50                            |3.5                          |0.267          |0.38           |
+| Calendula        |8.5                            |50                            |6                            |0.267          |0.38           |
+| Borage           |10                             |56                            |10                           |0.267          |0.38           |
+| Generic invasive |                               |                              |                             |               |               |
+| ...              | ...                           |...                           |...                          |...            | ...           |
 
 ### Evaluation
 
 A description for evaluating policies will be added in the future.
-
-## Next Steps
-
-* We plan to refactor the code and repackage the distribution.
-* In future work, we will tune the simulator with measurements from a real garden, and use the learned policy to bootstrap a reinforcement learning policy.
-
-## Acknowledgements
-
-This research was performed at the AUTOLAB at UC Berkeley in affiliation with the Berkeley AI Research (BAIR) Lab, Berkeley Deep Drive (BDD), 
-the Real-Time Intelligent Secure Execution (RISE) Lab, and the CITRIS ”People and Robots” (CPAR) Initiative. 
-This research was supported in part by the RAPID: Robot-Assisted Precision Irrigation Delivery Project (USDA 2017-67021-25925 
-under NSF National Robotics Initiative). The authors were supported in part by donations from Siemens, Google, Toyota Research Institute,
-Honda Research, and Hewlett-Packard. We thank our colleagues who provided helpful feedback and suggestions, in particular Mary Power, 
-Jackson Chui, Jeff Ichnowski, Micah Carroll, Paul Shao, Eric Siegel, Isaac Blankensmith, Maya Man, Sarah Newman, Shubha Jagannatha, 
-Sona Dolasia, Christiane Paul, Vishal Satish and Atsunobu Kotani.
 
 ## License
 
