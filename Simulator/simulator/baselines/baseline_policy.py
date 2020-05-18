@@ -1,11 +1,40 @@
 import numpy as np
 from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED
 
+
 def plant_in_area(plants, r, c, w, h, plant_idx):
+    """ Check if any plants are within defined area and the total plant probability.
+
+    Args
+        plants (array): padded grid with the plant probabilities.
+        r (int) : row
+        c (int): column
+        w (int): width
+        h (int): height
+        plant_idx (int): plant type id in global canopy cover vector.
+
+    Return
+        True and sum plant probabilities tuple if any plant is in area,
+        False and sum plant probabilities tuple otherwise.
+    """
     return np.any(plants[r:r+w,c:c+h,plant_idx]), np.sum(plants[r:r+w,c:c+h,plant_idx])
 
 def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prune_window_rows,
                            prune_window_cols, prune_rate):
+    """ TODO
+
+    Args
+        global_cc_vec:
+        plants:
+        sector_rows:
+        sector_cols:
+        prune_window_rows:
+        prune_window_cols:
+        prune_rate:
+
+    Return
+
+    """
     prune_window_cc = {}
     for i in range(1, len(global_cc_vec)):
         # Get cc for plants in prune sector
@@ -23,6 +52,15 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     return proj_plant_cc, entropy
 
 def get_irr_square(health, center):
+    """ Get sliced grid with size as irrigation square around the plant center.
+    Args
+        health (array of int): Grid shaped array with health or other state of plants. TODO generalize naming
+        center (Array of [int,int]): Location [row, col] of plant center.
+
+    Return
+        Array with health grid for square around the plant.
+
+    """
     lower_x = center[0] - IRR_THRESHOLD
     upper_x = center[0] + IRR_THRESHOLD
     lower_y = center[1] - IRR_THRESHOLD
@@ -30,15 +68,47 @@ def get_irr_square(health, center):
     return health[lower_x:upper_x, lower_y:upper_y]
     
 def only_dead_plants(health):
+    """ Check if all plants are dead within grid.
+
+        Args
+            health (array of int): Grid shaped array with health state of plants.
+
+    Return
+        True if all dead, False otherwise.
+    """
     return np.isin(health, [0]).all()
 
 def has_underwatered(health):
+    """ Check if any plants are underwatered within grid.
+
+        Args
+            health (array of int): Grid shaped array with health state of plants.
+
+    Return
+        True if any plant is underwatered, False otherwise.
+    """
     return np.any(np.isin(health, [1]))
         
 def has_overwatered(health):
+    """ Check if any plants are overwatered within grid.
+
+        Args
+            health (array of int): Grid shaped array with health state of plants.
+
+    Return
+        True if any plant is overwatered, False otherwise.
+    """
     return np.any(np.isin(health, [3]))    
 
 def overwatered_contribution(health, water):
+    """ TODO
+        Args
+            health:
+            water:
+
+    Return
+
+    """
     x, y = np.where(health == 3)[:2]
     w = 0
     for row, col in list(zip(x, y)):
@@ -48,6 +118,28 @@ def overwatered_contribution(health, water):
 def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day,
            vectorized=True, eval=False):
+    """ Perform baseline policy with pruning and irrigation action.
+
+    Args
+        timestep (int): simulation time step.
+        state (tuple of (array, array)): Observed state (Reshaped global canopy cover vector,
+            array containing padded grid values: plant probabilities, water and plant's health each location in sector.
+        global_cc_vec (array): Global canopy cover.
+        sector_rows (int): Row size of a sector.
+        sector_cols (int): Column size of a sector.
+        prune_window_rows (int): Row size of pruning window.
+        prune_window_cols (int): Column size of pruning window.
+        step (int): Distance between adjacent points in grid.
+        water_threshold (float): TODO which kind of water threshold in paper?
+        num_irr_actions (int): action index of irrigation
+        sector_obs_per_day (int): number of sectors observed per days.
+        vectorized (bool): Flag for state shape.
+        eval (bool): Flag for evaluation.
+
+    Return
+        List with action [int].
+
+    """
     if eval:
         plants_and_water = state
     else:
@@ -70,7 +162,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
             if inside:
                 prune_window_cc[plant_idx] = prune_window_cc.get(plant_idx, 0) + area
         for plant_id in prune_window_cc.keys():
-            if prune_window_cc[plant_id] > 20: # PRUNE WINDOW IS 25 SQUARES, SO 20 SQUARES IS 80%      
+            if prune_window_cc[plant_id] > 20:  # PRUNE WINDOW IS 25 SQUARES, SO 20 SQUARES IS 80%
                 action += 2
    
     # Irrigate

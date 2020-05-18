@@ -2,6 +2,7 @@ import numpy as np
 import gym
 from gym import spaces
 
+
 class SimAlphaGardenEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
@@ -17,7 +18,7 @@ class SimAlphaGardenEnv(gym.Env):
         # No action, irrigate, prune center
         self.action_space = spaces.Discrete(4)
         
-        # Nubmer of plant types in the garden.  Used for reshaping global_cc_vec observation
+        # Number of plant types in the garden.  Used for reshaping global_cc_vec observation
         self.num_plant_types = num_plant_types
         
         # Observations include the seed mask for each plant type and the garden water grid

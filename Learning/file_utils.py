@@ -2,6 +2,7 @@ import pathlib
 import configparser
 from simulator import sim_globals
 
+
 class FileUtils:
     def __init__(self):
         pass

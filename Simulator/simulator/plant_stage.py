@@ -4,32 +4,61 @@ from simulator.sim_globals import OVERWATERED_THRESHOLD, UNDERWATERD_THRESHOLD
 
 class PlantStage:
     def __init__(self, plant, duration_mean, duration_scale, index):
+        """ Base class for modeling plant stages in bio standard life cycle trajectory.
+
+        Args
+            plant (obj): plant object.
+            duration_mean (int): Mean of normal distribution for stage's duration.
+            duration_scale (int): Standard deviation of normal distribution for stage's duration.
+            index (int): stage index.
+        """
         self.plant = plant
         self.duration = max(0, round(np.random.normal(duration_mean, duration_scale)))
         self.index = index
 
     def start_stage(self):
+        """ Reset time count for current stage."""
         self.current_time = 0
         # print(self)
 
     def desired_water_amt(self):
-        """Optionally override this to specify how much water the plant wants at this stage"""
+        """  Plant's desired water amount in current stage and environment.
+
+        Note:
+            Optionally override per stage.
+
+        Return
+            Max desired water amount (float).
+
+        """
         max_water = self.plant.c2 * (self.plant.amount_sunlight ** 0.5)
         return max_water
 
     def amount_to_grow(self):
-        """OVERRIDE THIS"""
+        """ Placeholder for stage and environment dependant plant growth calculation.
+
+        Note:
+            OVERRIDE THIS.
+
+        """
         raise NotImplementedError()
 
     def step(self):
-        """Optionally override this to specify when to move on to the next stage"""
+        """ Specify when to move on to the next stage and get current stage index.
+
+        Note:
+            Optionally override per stage.
+
+        Return
+            Index (int) of stage.
+        """
         self.current_time += 1
         if self.current_time >= self.duration:
             return self.index + 1
         return self.index
 
     def skip_to_end(self):
-        # Skip to last time step of current stage
+        """ Skip to last time step of current stage, """
         self.current_time = self.duration - 1
 
     def __str__(self):
@@ -38,11 +67,29 @@ class PlantStage:
 
 class GerminationStage(PlantStage):
     def __init__(self, plant, duration_mean, duration_scale, start_height, start_radius, height_scale, radius_scale):
+        """ Model of germination stage in bio standard life cycle trajectory.
+
+        Args
+            plant (obj): plant object.
+            duration_mean (int): Mean of normal distribution for duration for germination stage time.
+            duration_scale (int): Standard deviation of normal distribution for duration for germination stage time.
+            start_height (int): Mean of normal distribution for start height in germination stage.
+            start_radius (int): Mean of normal distribution for start radius in germination stage.
+            height_scale (float): Standard deviation of normal distribution for start height in germination stage.
+            radius_scale (float): Standard deviation of normal distribution for start radius in germination stage.
+
+        """
         super().__init__(plant, duration_mean, duration_scale, 0)
         self.start_height = max(0.1, np.random.normal(start_height, height_scale))
         self.start_radius = max(0.1, np.random.normal(start_radius, radius_scale))
 
     def amount_to_grow(self):
+        """ Calculate germination stage dependant growth of plant.
+
+        Return
+            First visible height (float) and radius (float) of plant after germination, no size and radius otherwise.
+
+        """
         if self.current_time == self.duration - 1:
             return self.start_height, self.start_radius
         else:
@@ -54,6 +101,13 @@ class GerminationStage(PlantStage):
 
 class GrowthStage(PlantStage):
     def __init__(self, plant, duration_mean, duration_scale):
+        """ Model of growth stage in bio standard life cycle trajectory.
+
+        Args
+            plant (obj): plant object.
+            duration_mean (int): Mean of normal distribution for duration for growth stage time.
+            duration_scale (int): Standard deviation of normal distribution for duration for growth stage time.
+        """
         super().__init__(plant, duration_mean, duration_scale, 1)
         self.overwatered = False
         self.underwatered = False
@@ -73,6 +127,11 @@ class GrowthStage(PlantStage):
         self.new_color = None
 
     def amount_to_grow(self):
+        """ Calculate growth stage dependant growth of plant.
+
+        Return
+            amount of height (float) and radius (float) change during growth stage.
+        """
         if self.overwatered:
             print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
@@ -120,7 +179,12 @@ class GrowthStage(PlantStage):
         return upward, outward
 
     def step(self):
-        """Optionally override this to specify when to move on to the next stage"""
+        """ Update time step for plant stage and stage index uppon state change.
+
+        Return
+            Index (int) of stage.
+        """
+
         self.current_time += 1
         self.plant.color = self.new_color
         if self.overwatered and self.stress_time >= self.overwatered_time_threshold:
@@ -137,6 +201,13 @@ class GrowthStage(PlantStage):
 
 class WaitingStage(PlantStage):
     def __init__(self, plant, duration_mean, duration_scale):
+        """ Model of waiting stage in bio standard life cycle trajectory.
+
+        Args
+            plant (obj): plant object.
+            duration_mean (int): Mean of normal distribution for duration for waiting stage time.
+            duration_scale (int): Standard deviation of normal distribution for duration for waiting stage time.
+        """
         super().__init__(plant, duration_mean, duration_scale, 2)
         self.overwatered = False
         self.underwatered = False
@@ -155,6 +226,11 @@ class WaitingStage(PlantStage):
         self.new_color = None
 
     def amount_to_grow(self):
+        """ Calculate waiting stage dependant growth of plant.
+
+        Return
+            amount of height (float) and radius (float) change of waiting stage.
+        """
         if self.overwatered:
             print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
@@ -198,6 +274,11 @@ class WaitingStage(PlantStage):
         return 0, 0
 
     def step(self):
+        """ Update time step for plant stage and stage index uppon state change.
+
+        Return
+            Index (int) of stage.
+        """
         self.current_time += 1
         self.plant.color = self.new_color
         if self.overwatered and self.stress_time >= self.overwatered_time_threshold:
@@ -209,6 +290,7 @@ class WaitingStage(PlantStage):
         return self.index
 
     def set_stress(self, overwatered, underwatered, stress_time):
+        """ Update stress information of plant and duration of stress."""
         self.overwatered = overwatered
         self.underwatered = underwatered
         self.stress_time = stress_time
@@ -216,23 +298,49 @@ class WaitingStage(PlantStage):
 
 class WiltingStage(PlantStage):
     def __init__(self, plant, duration_mean, duration_scale, final_radius):
+        """ Model of waiting stage in bio standard life cycle trajectory.
+
+        Args
+            plant (obj): plant object.
+            duration_mean (int): Mean of normal distribution for duration for waiting stage time.
+            duration_scale (int): Standard deviation of normal distribution for duration for waiting stage time.
+            final_radius (float): Estimated radius of wilted plant shortly before death stage.
+
+        """
         super().__init__(plant, duration_mean, duration_scale, 3)
         self.max_final_radius = final_radius
 
     def start_stage(self):
+        """ Reset time count for wilting stage and initialize wilting factors."""
         super().start_stage()
         eps = 1e-10 if self.plant.radius == 0 else 0
         self.final_radius = min(self.plant.radius / 2, self.max_final_radius)
         self.wilting_factor = (self.final_radius / (self.plant.radius + eps)) ** (1 / self.duration)
 
     def desired_water_amt(self):
+        """  Plant's desired water amount.
+
+        Return
+            Max desired water amount (float).
+
+        """
         healthy_amt = super().desired_water_amt()
         return (1 - self.current_time / self.duration) * healthy_amt
 
     def amount_to_grow(self):
+        """ Calculate wilting stage dependant shrinking of plant.
+
+        Return
+            amount of height (float) and radius (float) to shrink wilting plant.
+        """
         return 0, (self.wilting_factor - 1) * self.plant.radius
 
     def step(self):
+        """ Update time step for plant stage and stage index uppon state change.
+
+        Return
+            Index (int) of stage.
+        """
         self.plant.color = self.plant.get_new_color()
         self.current_time += 1
         if self.current_time >= self.duration:
@@ -245,15 +353,36 @@ class WiltingStage(PlantStage):
 
 class DeathStage(PlantStage):
     def __init__(self, plant):
+        """ Model of plant's death in bio standard life cycle trajectory.
+
+        plant (obj): plant object.
+
+        """
         super().__init__(plant, -1, 1, 4)
 
     def desired_water_amt(self):
+        """ No water needed during death stage
+
+        Return
+            Max desired water amount (float).
+
+        """
         return 0
 
     def amount_to_grow(self):
+        """ No growth in death stage
+
+        Return
+            height (float) and radius (float) change of plant.
+        """
         return 0, 0
 
     def step(self):
+        """ Get stage index of state.
+
+        Return
+            Index (int) of stage.
+        """
         return self.index
 
     def __str__(self):

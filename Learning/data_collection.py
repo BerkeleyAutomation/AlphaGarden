@@ -4,12 +4,13 @@ import gym
 import simalphagarden
 import os
 import pathlib
-from file_utils import FileUtils
+from Learning.file_utils import FileUtils
 import simulator.baselines.baseline_policy as baseline_policy
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 from stable_baselines.common.vec_env import DummyVecEnv
+
 
 class DataCollection:
     def __init__(self):
@@ -71,7 +72,7 @@ if __name__ == '__main__':
 
     garden_days = 10
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
-    collection_time_steps = sector_obs_per_day * garden_days # 210 sectors observed/garden_day * 200 garden_days
+    collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
     
     data_collection = DataCollection()
