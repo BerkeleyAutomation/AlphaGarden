@@ -24,15 +24,16 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     """ Estimate of the potential entropy of the garden if we prune the center of a sector.
 
     Args
-        global_cc_vec:
-        plants:
-        sector_rows:
-        sector_cols:
-        prune_window_rows:
-        prune_window_cols:
-        prune_rate:
+        global_cc_vec (array): Global canopy cover.
+        plants (array): padded grid with the plant probabilities.
+        ector_rows (int): Row size of a sector.
+        sector_cols (int): Column size of a sector.
+        prune_window_rows (int): Row size of pruning window.
+        prune_window_cols (int): Column size of pruning window.
+        prune_rate (float): Proportion of plant radius to decrease by after pruning action.
 
-    Return
+    Returns
+        Normalized sum of the global canopy cover vector (without soil), entropy of the global population.
 
     """
     prune_window_cc = {}
@@ -51,10 +52,10 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     entropy = -np.sum(prob * np.log(prob), dtype="float") / np.log(20)
     return proj_plant_cc, entropy
 
-def get_irr_square(health, center):
+def get_irr_square(grid, center):
     """ Get sliced grid with size as irrigation square around the plant center.
     Args
-        health (array of int): Grid shaped array with health or other state of plants. TODO generalize naming
+        health (array of int): Grid shaped array with health or other state of plants.
         center (Array of [int,int]): Location [row, col] of plant center.
 
     Return
@@ -65,7 +66,7 @@ def get_irr_square(health, center):
     upper_x = center[0] + IRR_THRESHOLD
     lower_y = center[1] - IRR_THRESHOLD
     upper_y = center[1] + IRR_THRESHOLD
-    return health[lower_x:upper_x, lower_y:upper_y]
+    return grid[lower_x:upper_x, lower_y:upper_y]
     
 def only_dead_plants(health):
     """ Check if all plants are dead within grid.
@@ -105,9 +106,10 @@ def overwatered_contribution(health, water):
 
         Args
             health (array of int): Grid shaped array with health state of plants.
-            water:
+            water (array of int): Grid shaped array with water info.
 
     Return
+         Count how many cells have a plant state of overwatered.
 
     """
     x, y = np.where(health == 3)[:2]

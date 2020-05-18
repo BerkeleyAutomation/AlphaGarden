@@ -169,7 +169,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
-            eval (bool): flag for evaluation TODO update.
+            eval (bool): flag for evaluation.
 
         Returns:
             Directory path of saved scenes if eval is False, cropped canopy image otherwise.
@@ -280,7 +280,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             center (Array of [int,int]): Location [row, col] of sector center
             action (int): Action for agent. 0 = no action, 1 = irrigation, 2 = pruning
             time_step (int): Time step of episode.
-            eval (bool): flag for evaluation TODO update.
+            eval (bool): flag for evaluation.
 
         Returns:
             Updated environment state and path to saved scenes if eval is True,

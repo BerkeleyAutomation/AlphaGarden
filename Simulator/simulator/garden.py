@@ -522,7 +522,6 @@ class Garden:
                 coords_updated = self.prune_plant_type(None, i)
                 for coord in coords_updated:
                     point = self.grid[coord]
-                    # TODO why do the follwing?
                     if point['nearby']:
                         tallest_type_id = max(point['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
                         cc_per_plant_type[tallest_type_id] += 1
@@ -530,14 +529,12 @@ class Garden:
                 prob = cc_per_plant_type / np.sum(cc_per_plant_type)
 
     def compute_plant_cc_dist(self):
-        # TODO Update
         """ Compute number of grid points per plant type in which the specific plant type is the highest plant.
 
         Return
             Array of with number of grid points of highest canopy coverage per plant type.
         """
         if self.performing_timestep:
-            # TODO why not in __init__? Rather local variable
             self.cc_per_plant_type = np.zeros(len(self.plant_types))
             self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
             for point in self.enumerate_grid(coords=True):
