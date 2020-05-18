@@ -21,7 +21,7 @@ def plant_in_area(plants, r, c, w, h, plant_idx):
 
 def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prune_window_rows,
                            prune_window_cols, prune_rate):
-    """ TODO
+    """ Estimate of the potential entropy of the garden if we prune the center of a sector.
 
     Args
         global_cc_vec:
@@ -101,9 +101,10 @@ def has_overwatered(health):
     return np.any(np.isin(health, [3]))    
 
 def overwatered_contribution(health, water):
-    """ TODO
+    """ Count how many cells have a plant state of overwatered.
+
         Args
-            health:
+            health (array of int): Grid shaped array with health state of plants.
             water:
 
     Return
@@ -130,9 +131,9 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         prune_window_rows (int): Row size of pruning window.
         prune_window_cols (int): Column size of pruning window.
         step (int): Distance between adjacent points in grid.
-        water_threshold (float): TODO which kind of water threshold in paper?
-        num_irr_actions (int): action index of irrigation
-        sector_obs_per_day (int): number of sectors observed per days.
+        water_threshold (float): Threshold when policy irrigates.
+        num_irr_actions (int): Action index of irrigation.
+        sector_obs_per_day (int): Number of sectors observed per days.
         vectorized (bool): Flag for state shape.
         eval (bool): Flag for evaluation.
 
