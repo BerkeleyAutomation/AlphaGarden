@@ -55,8 +55,8 @@ if __name__ == '__main__':
     # import os
     # cpu_cores =  [i for i in range(30, 61)]
     # os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
-    rows = 30
-    cols = 60
+    rows = 150
+    cols = 300
     num_plant_types = PlantType().num_plant_types
     depth = num_plant_types + 3  #  +1 for 'earth' type, +1 for water, +1 for health
     sector_rows = 15
