@@ -24,12 +24,12 @@ class Garden:
             step (int): Distance between adjacent points in grid.
             drainage_rate (float): Drainage rate of water in soil.
             irr_threshold (int): Amount of grid points away from irrigation point that water will spread to.
-            init_water_mean (float): TODO
-            init_water_scale (float): TODO
+            init_water_mean (float): Mean of normal distribution for initial water levels.
+            init_water_scale (float): Standard deviation of normal distribution for for initial water levels.
             plant_types (list of str): Names of available plant types.
             skip_initial_germination (bool): Skip initial germination stage.
-            animate (bool): Animate simulator run.  TODO Deprecated
-            save (bool): Save experiment plots. TODO Deprecated
+            animate (bool): Animate simulator run.  Deprecated!
+            save (bool): Save experiment plots.  Deprecated!
 
         """
 
@@ -210,15 +210,15 @@ class Garden:
             self.irrigate(center, irrigation)
             self.irrigation_points[center] = irrigation
     
-    def perform_timestep_prune(self, sector):
+    def perform_timestep_prune(self, center):
         """ Prune plants in given sector if certain amount of days have past.
 
         Args:
-            sector (Array of [int,int]): Location [row, col] of sector center TODO change name?
+            center (Array of [int,int]): Location [row, col] of sector center.
 
         """
         if self.timestep >= self.prune_delay:
-            self.prune_sector_center(sector)
+            self.prune_sector_center(center)
 
     def perform_timestep(self, sectors=[], actions=[]):
         """ Execute actions at given locations then update light, water, growth and health time step of simulation.
@@ -611,18 +611,17 @@ class Garden:
         self.update_plant_size(largest_plant, outward=-amount_to_prune)
         return self.update_plant_coverage(largest_plant, record_coords_updated=True)
 
-    # TODO should be sector or center?
-    def get_prune_window_greatest_width(self, sector):
-        """ Get the radius of the tallest (non occuluded) plant inside prine window.
+    def get_prune_window_greatest_width(self, center):
+        """ Get the radius of the tallest (non occluded) plant inside prune window.
 
         Args:
-            sector (Array of [int,int]): Location [row, col] of sector center
+            center (Array of [int,int]): Location [row, col] of sector center
 
         Return:
             Float, radius of plant.
         """
         greatest_radius = 0
-        x_low, y_low, x_high, y_high = self.get_prune_bounds(sector)
+        x_low, y_low, x_high, y_high = self.get_prune_bounds(center)
         non_occluded_plants = set()
         for point in self.enumerate_grid(x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
             if point['nearby']:

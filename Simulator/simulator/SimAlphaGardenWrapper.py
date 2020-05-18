@@ -376,13 +376,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions
 
     # TODO should this be center?
-    def get_prune_window_greatest_width(self, sector):
-        """Get the radius of the tallest (non occuluded) plant inside prine window.
+    def get_prune_window_greatest_width(self, center):
+        """Get the radius of the tallest (non occluded) plant inside prune window.
 
         Args:
-            sector (Array of [int,int]): Location [row, col] of sector center
+            center (Array of [int,int]): Location [row, col] of sector center.
 
         Return:
             Float, radius of plant.
         """
-        return self.garden.get_prune_window_greatest_width(sector)
+        return self.garden.get_prune_window_greatest_width(center)
