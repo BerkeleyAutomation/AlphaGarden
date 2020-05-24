@@ -18,17 +18,14 @@ The most important (class) files are mentioned in this table.
 
 Install the required pip packages and the mentioned packages from the README in the main folder.
 
-To train a supervised learning policy we need training data. Experiments showed that running 90-150 gardens with 200 plants from 10 plant types, 
-0.1 _PERCENT_NON_PLANT_CENTERS_ and 100 garden days deliver a reasonable amount of training data. 
-
 We can generate the data for one garden with `data_collection.py` or for a batch with `collect.py`.
 After having generating data, next step is to normalize the generated data with `moments.py`.
 To adjust the network architecture update the code in `net.py`. Before training, additional adjustments may be needed to be made in `trainer.py`, e.g. set GPU usage or amount of workers for loading training data.
-Before training, the normalised data generated with `moments.py` needs to be connected to the generated data. Last but not least, training is happening with `train.py`.
+Before training, run `moments.py`. Last but not least, you can train your network with `train.py`.
 
 You may want to run this in a container. There is a [Dockerfile](AlphaGarden/Dockerfile) provided in the root folder.
 
-In the following we discribe to pipeline in detail. 
+In the following we describe to pipeline in detail. 
 
 #### data_collection.py
 
@@ -41,9 +38,7 @@ To run the simulator and collect data for a garden:
 
 To run the simulator and collect data in a batch:
 
-1. Move to the Learning folder with `cd Learning/` 
-2. Run `python collect.py -d YOUR_DIRECTORY -n NUMBER_OF_BATCHES` where you specify the output directory and number of batches. 
-**Note**: 150 gardens may generate over 0.5 TB of data and the maximal amount of files per directory might be exceeded.
+Run `python collect.py -d YOUR_DIRECTORY -n NUMBER_OF_BATCHES` where you specify the output directory and number of batches. 
 
 #### moments.py
 
@@ -53,9 +48,6 @@ Update path to data directory. Code needs to be modified if data is spread acros
 
 Adjust the network architecture if needed.
 
-Line 33-39 are the conv layers for png images (variables start with *cc_*). <br>
-Line 41-47 are the layers for the numpy array (variables start with *raw_*).
-
 #### trainer.py
 
 To use GPUs
@@ -64,7 +56,7 @@ To use GPUs
 2. Change line 175 and 176 to contain `module`:         
    > `175` &ensp; self._net.module.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, str(epoch) + '_') <br>
    > `176` &ensp; &ensp; self._net.module.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, 'final_')
-3. Specify amount of workers for loading data in line 70: `num_workers=1`. On the DGX limit is 6 to not disturb others.  
+3. Specify amount of workers for loading data in line 70: `num_workers=1`.  
 
 #### dataset.py
 
