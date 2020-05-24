@@ -28,11 +28,11 @@ Before training, the normalised data generated with `moments.py` needs to be con
 
 You may want to run this in a container. There is a [Dockerfile](AlphaGarden/Dockerfile) provided in the root folder.
 
-In the following we 
+In the following we discribe to pipeline in detail. 
 
 #### data_collection.py
 
-To run the simulator and collect data:
+To run the simulator and collect data for a garden:
 
 1. Move to the Learning folder with `cd Learning/`
 2. Run `python data_collection.py`
@@ -42,7 +42,8 @@ To run the simulator and collect data:
 To run the simulator and collect data in a batch:
 
 1. Move to the Learning folder with `cd Learning/` 
-2. Run `python collect.py -d YOUR_DIRECTORY -n NUMBER_OF_BATCHES` where you specify the output directory and number of batches. **Note**: 150 gardens may generate over 0.5 TB of data and the maximal amount of files per directory might be exceeded.
+2. Run `python collect.py -d YOUR_DIRECTORY -n NUMBER_OF_BATCHES` where you specify the output directory and number of batches. 
+**Note**: 150 gardens may generate over 0.5 TB of data and the maximal amount of files per directory might be exceeded.
 
 #### moments.py
 
