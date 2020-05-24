@@ -76,7 +76,7 @@ Command-line options for `train.py` are:
 * `'--log_interval', type=int, default=TrainingConstants.LOG_INTERVAL` -- Log interval in batches. 
 * `'--cuda', action='store_true'` -- Enable CUDA support and utilize GPU devices.
 * `'--output_dir',  type=str, default=TrainingConstants.OUTPUT_DIR` -- Directory to output logs and trained model to.
-* `'--net_name', type=str, default=TrainingConstants.NET_NAME -- Name of network.
+* `'--net_name', type=str, default=TrainingConstants.NET_NAME` -- Name of network.
 
 #### eval_policy.py
 
