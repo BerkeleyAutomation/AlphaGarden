@@ -105,7 +105,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         np.random.shuffle(self.non_plant_centers)
         return np.concatenate((self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
     
-    def get_center_state(self, center, eval=False, image=True):
+    def get_center_state(self, center, image=True, eval=False):
         """Get state of the sector defined by all local and global quantities.
 
         Args:

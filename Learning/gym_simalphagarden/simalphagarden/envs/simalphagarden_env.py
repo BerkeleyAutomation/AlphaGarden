@@ -39,10 +39,10 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_center_state(self, center, need_img, multi):
         if need_img:
-            cc_img, global_cc_vec, obs = self.wrapper_env.get_center_state(center, multi, need_img)
+            cc_img, global_cc_vec, obs = self.wrapper_env.get_center_state(center, need_img, multi)
             return (cc_img, global_cc_vec, obs)
         else:
-            global_cc_vec, obs = self.wrapper_env.get_center_state(center, multi, need_img)
+            global_cc_vec, obs = self.wrapper_env.get_center_state(center, need_img, multi)
             return (global_cc_vec, obs)
     
     def take_multiple_actions(self, sectors, actions):
