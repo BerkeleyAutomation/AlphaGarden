@@ -105,20 +105,26 @@ class SimAlphaGardenWrapper(WrapperEnv):
         np.random.shuffle(self.non_plant_centers)
         return np.concatenate((self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
     
-    def get_center_state(self, center, eval=False):
+    def get_center_state(self, center, eval=False, image=True):
         """Get state of the sector defined by all local and global quantities.
 
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
+            image (bool): flag for image generation
             eval (bool): flag for evaluation
 
         Returns:
-            Sector number and state associated with the sector.
+            Image and state associated with the sector if image true, only state otherwise.
 
         """
         cc_per_plant = self.garden.get_cc_per_plant()
         # Amount of soil and number of grid points per plant type in which the specific plant type is the highest plant.
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
+        if not image:
+            return global_cc_vec, \
+                np.dstack((self.garden.get_plant_prob(center),
+                           self.garden.get_water_grid(center),
+                           self.garden.get_health_grid(center)))
         cc_img = self.get_canopy_image(center, eval)
         return cc_img, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center),

@@ -58,7 +58,7 @@ if __name__ == '__main__':
     rows = 150
     cols = 300
     num_plant_types = PlantType().num_plant_types
-    depth = num_plant_types + 3  #  +1 for 'earth' type, +1 for water, +1 for health
+    depth = num_plant_types + 3  # +1 for 'earth' type, +1 for water, +1 for health
     sector_rows = 15
     sector_cols = 30
     prune_window_rows = 5
