@@ -1,6 +1,6 @@
 # Learning
 
-As the name indicates, the Learning directory contains the code for learning control policies to automate 
+As the name indicates, the Learning directory contains the code for training and evaluation of control policies to automate 
 polyculture farming. This README serves as a high-level documentation of the class files.
 
 ## Files structure
@@ -18,14 +18,67 @@ The most important (class) files are mentioned in this table.
 
 Install the required pip packages and the mentioned packages from the README in the main folder.
 
-### data_collection.py
+We can generate the data for one garden with `data_collection.py` or for a batch with `collect.py`.
+After having generating data, next step is to normalize the generated data with `moments.py`.
+To adjust the network architecture update the code in `net.py`. Before training, additional adjustments may be needed to be made in `trainer.py`, e.g. set GPU usage or amount of workers for loading training data.
+Before training, run `moments.py`. Last but not least, you can train your network with `train.py`.
 
-To run the simulator and collect data:
+You may want to run this in a container. There is a [Dockerfile](AlphaGarden/Dockerfile) provided in the root folder.
+
+In the following we describe to pipeline in detail. 
+
+#### data_collection.py
+
+To run the simulator and collect data for a garden:
 
 1. Move to the Learning folder with `cd Learning/`
 2. Run `python data_collection.py`
 
-### eval_policy.py
+#### collect.py
+
+To run the simulator and collect data in a batch:
+
+Run `python collect.py -d YOUR_DIRECTORY -n NUMBER_OF_BATCHES` where you specify the output directory and number of batches. 
+
+#### moments.py
+
+Update path to data directory. Code needs to be modified if data is spread across several directories. 
+
+#### net.py
+
+Adjust the network architecture if needed.
+
+#### trainer.py
+
+To use GPUs
+
+1. Uncomment line 83: `self._net = torch.nn.DataParallel(self._net, device_ids=[0, 1, 2, 3])` and specify amount of GPUs to use.
+2. Change line 175 and 176 to contain `module`:         
+   > `175` &ensp; self._net.module.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, str(epoch) + '_') <br>
+   > `176` &ensp; &ensp; self._net.module.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, 'final_')
+3. Specify amount of workers for loading data in line 70: `num_workers=1`.  
+
+#### dataset.py
+
+Similar to `moments.py`: update code if data data is spread across several directories.
+
+#### train.py
+
+Command-line options for `train.py` are:
+* `'data_dir', type=str` -- Path to the training data.
+* `'--num_epochs', type=int, default=TrainingConstants.NUM_EPOCHS` -- Number of training epochs.
+* `'--total_size', type=float, default=TrainingConstants.TOTAL_SIZE` -- The proportion of the data to use.
+* `'--val_size', type=float, default=TrainingConstants.VAL_SIZE` -- The proportion of the data to use for validation.
+* `'--bsz', type=int, default=TrainingConstants.BSZ` -- Training batch size.
+* `'--base_lr', type=float, default=TrainingConstants.BASE_LR` -- Base learning rate.
+* `'--lr_step_size' type=int default=TrainingConstants.LR_STEP_SIZE` -- Step size for learning rate in epochs.
+* `'--lr_decay_rate', type=float, default=TrainingConstants.LR_DECAY_RATE` -- Decay rate for learning rate at every --lr_step_size.
+* `'--log_interval', type=int, default=TrainingConstants.LOG_INTERVAL` -- Log interval in batches. 
+* `'--cuda', action='store_true'` -- Enable CUDA support and utilize GPU devices.
+* `'--output_dir',  type=str, default=TrainingConstants.OUTPUT_DIR` -- Directory to output logs and trained model to.
+* `'--net_name', type=str, default=TrainingConstants.NET_NAME` -- Name of network.
+
+#### eval_policy.py
 
 To evaluate automation policies with the simulator:
 
@@ -41,3 +94,7 @@ Other command-line options for `eval_ploicy.py` are:
 * `'--multi', action='store_true'` -- Enable multiprocessing.
 * `'-l', '--threshold', type=float, default=1.0` -- Prune threshold
 * `'-d', '--days', type=int, default=100` -- Garden days
+
+#### get_metrics.py
+
+Get the final metrics, i.e. the average total coverage, average diversity and average total water use for the garden runs.
