@@ -289,7 +289,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             eval (bool): flag for evaluation.
 
         Returns:
-            Updated environment state and path to saved scenes if eval is True,
+            Sector image (out) and updated environment state if eval is True,
             only the updated environment state otherwise.
 
         """
