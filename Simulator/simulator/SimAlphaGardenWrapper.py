@@ -213,8 +213,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             buf = io.BytesIO()
             fig.savefig(buf, format="rgba", dpi=100, bbox_inches=bbox0)
             buf.seek(0)
-            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8),
-                             newshape=(235, 499, -1))
+            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(235, 499, -1))
             img = img[..., :3]
             buf.close()
             plt.close()
