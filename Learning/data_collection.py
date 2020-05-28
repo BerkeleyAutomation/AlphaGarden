@@ -4,13 +4,13 @@ import gym
 import simalphagarden
 import os
 import pathlib
-from Learning.file_utils import FileUtils
+from file_utils import FileUtils
 import simulator.baselines.baseline_policy as baseline_policy
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 from stable_baselines.common.vec_env import DummyVecEnv
-
+import time
 
 class DataCollection:
     def __init__(self):
@@ -51,7 +51,8 @@ class DataCollection:
             obs, rewards, _, _ = env.step(action)
 
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
+    start = time.time()
     # import os
     # cpu_cores =  [i for i in range(30, 61)]
     # os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
-    garden_days = 10
+    garden_days = 100
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 0.6
@@ -92,3 +93,5 @@ if __name__ == '__main__':
                                  collection_time_steps, garden_step, num_plant_types, dir_path, seed),
         baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)
+    end = time.time()
+    print(end - start)

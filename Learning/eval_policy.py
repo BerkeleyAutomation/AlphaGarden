@@ -14,6 +14,7 @@ import pickle
 import argparse
 import os
 import multiprocessing as mp
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tests', type=int, default=1)
@@ -237,6 +238,7 @@ def save_data(metrics, trial, save_dir):
 
 if __name__ == '__main__':
     import os
+    start = time.time()
     cpu_cores = [i for i in range(0, 80)] # Cores (numbered 0-11)
     os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
 
@@ -314,3 +316,5 @@ if __name__ == '__main__':
                 evaluate_learned_policy_multi(env, policy, collection_time_steps, sector_obs_per_day, trial)
             else:
                 evaluate_learned_policy_serial(env, policy, collection_time_steps, trial)
+    end = time.time()
+    print(end - start)
