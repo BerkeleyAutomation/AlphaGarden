@@ -10,6 +10,7 @@ from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
+import io
 
 
 class SimAlphaGardenWrapper(WrapperEnv):
@@ -105,20 +106,26 @@ class SimAlphaGardenWrapper(WrapperEnv):
         np.random.shuffle(self.non_plant_centers)
         return np.concatenate((self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
     
-    def get_center_state(self, center, eval=False):
+    def get_center_state(self, center, image=True, eval=False):
         """Get state of the sector defined by all local and global quantities.
 
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
+            image (bool): flag for image generation
             eval (bool): flag for evaluation
 
         Returns:
-            Sector number and state associated with the sector.
+            Image and state associated with the sector if image true, only state otherwise.
 
         """
         cc_per_plant = self.garden.get_cc_per_plant()
         # Amount of soil and number of grid points per plant type in which the specific plant type is the highest plant.
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
+        if not image:
+            return global_cc_vec, \
+                np.dstack((self.garden.get_plant_prob(center),
+                           self.garden.get_water_grid(center),
+                           self.garden.get_health_grid(center)))
         cc_img = self.get_canopy_image(center, eval)
         return cc_img, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center),
@@ -172,7 +179,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             eval (bool): flag for evaluation.
 
         Returns:
-            Directory path of saved scenes if eval is False, cropped canopy image otherwise.
+            Directory path of saved scenes if eval is False, canopy image otherwise.
 
         """
         if not eval:
@@ -184,10 +191,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
         ax.set_xlim(y_low, y_high)
         ax.set_ylim(x_low, x_high)
         ax.set_aspect('equal')
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_yticks([])
-        ax.set_xticks([])
         ax.axis('off')
         shapes = []
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
@@ -199,23 +202,22 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 shape_plot = ax.add_artist(shape)
                 shapes.append(shape_plot)
         plt.gca().invert_yaxis()
+        bbox0 = fig.get_tightbbox(fig.canvas.get_renderer()).padded(0.02)
         if not eval:
             r = os.urandom(16)
             file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
-            plt.savefig(file_path + '_cc.png', bbox_inches='tight', pad_inches=0.02)
+            plt.savefig(file_path + '_cc.png', bbox_inches=bbox0)
             plt.close()
             return file_path
         else:
-            ax.margins(0)
-            fig.tight_layout()
-            fig.canvas.draw()
-            image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-            image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-            image_from_plot = image_from_plot[:, 13:-14]
-            resized = cv2.resize(image_from_plot, (499, 391))
-            cropped = resized[78:-78]
+            buf = io.BytesIO()
+            fig.savefig(buf, format="rgba", dpi=100, bbox_inches=bbox0)
+            buf.seek(0)
+            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(235, 499, -1))
+            img = img[..., :3]
+            buf.close()
             plt.close()
-            return cropped
+            return img
 
     # TODO still needed?
     def plot_water_map(self, folder_path, water_grid, plants):
@@ -283,7 +285,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             eval (bool): flag for evaluation.
 
         Returns:
-            Updated environment state and path to saved scenes if eval is True,
+            Sector image (out) and updated environment state if eval is True,
             only the updated environment state otherwise.
 
         """
