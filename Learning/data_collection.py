@@ -10,7 +10,6 @@ from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 from stable_baselines.common.vec_env import DummyVecEnv
-import time
 
 class DataCollection:
     def __init__(self):
@@ -52,7 +51,6 @@ class DataCollection:
 
 
 if __name__ == '__main__':
-    start = time.time()
     # import os
     # cpu_cores =  [i for i in range(30, 61)]
     # os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
@@ -93,5 +91,3 @@ if __name__ == '__main__':
                                  collection_time_steps, garden_step, num_plant_types, dir_path, seed),
         baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)
-    end = time.time()
-    print(end - start)
