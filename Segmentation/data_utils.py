@@ -18,7 +18,7 @@ from constants import *
 
 def prepare_data(ids, im_width, im_height, test_size, seed=42):
     X = np.zeros((len(ids) * 5, im_height, im_width, 3), dtype=np.float32)
-    y = np.zeros((len(ids) * 5, im_height, im_width, 4), dtype=np.float32)
+    y = np.zeros((len(ids) * 5, im_height, im_width, 3), dtype=np.float32)
     i = 0
     for _, id_ in tqdm_notebook(enumerate(ids), total=len(ids)):
         # Load images
@@ -30,7 +30,7 @@ def prepare_data(ids, im_width, im_height, test_size, seed=42):
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
         mask = img_to_array(mask)
         mask = resize(mask, (im_height, im_width, 3), mode = 'constant', preserve_range = True)
-        ground_truth = np.full((im_height, im_width, 4), 0)
+        ground_truth = np.full((im_height, im_width, 3), 0)
         for typep in TYPES_TO_COLORS:
             if typep == 'other':
                 type_indices = np.argwhere(mask[:,:,:] < TYPES_TO_CHANNEL[typep]) # an array containing all the indices that match the pixels        

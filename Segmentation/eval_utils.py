@@ -35,8 +35,8 @@ def plot_loss_curve(results, title):
 
 def generate_full_label_map(test_image, model):
     base_map = np.full((test_image.shape[0], test_image.shape[1]), 0)
-    for i in np.arange(0, test_image.shape[0] - IM_HEIGHT, IM_HEIGHT):
-        for j in np.arange(0, test_image.shape[1] - IM_WIDTH, IM_WIDTH):
+    for i in np.arange(0, test_image.shape[0] - IM_HEIGHT, 64):
+        for j in np.arange(0, test_image.shape[1] - IM_WIDTH, 64):
             temp = np.zeros((1, IM_HEIGHT, IM_WIDTH, 3))
             temp[0] = test_image[i:i+IM_HEIGHT, j:j+IM_WIDTH]
             prediction = np.argmax(model.predict(temp)[0], axis=-1)
