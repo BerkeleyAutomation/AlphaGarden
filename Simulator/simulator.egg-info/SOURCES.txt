@@ -1,4 +1,3 @@
-README.md
 setup.py
 simulator.egg-info/PKG-INFO
 simulator.egg-info/SOURCES.txt
