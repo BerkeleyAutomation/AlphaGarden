@@ -2,7 +2,7 @@
 import gym
 import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
-from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer
+from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillow_Visualizer
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 import simalphagarden
@@ -272,7 +272,8 @@ if __name__ == '__main__':
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         # vis = Matplotlib_Visualizer(env.wrapper_env)
-        vis = OpenCV_Visualizer(env.wrapper_env)
+        # vis = OpenCV_Visualizer(env.wrapper_env)
+        vis = Pillow_Visualizer(env.wrapper_env)
         if args.policy == 'b':
             if args.multi:
                 env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,

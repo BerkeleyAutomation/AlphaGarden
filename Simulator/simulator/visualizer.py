@@ -10,6 +10,7 @@ from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, W
 import os
 import random
 import io
+from PIL import Image, ImageDraw
 
 
 class Visualizer(ABC):
@@ -128,3 +129,29 @@ class OpenCV_Visualizer(Visualizer):
         else:
             return image
 
+class Pillow_Visualizer(Visualizer):
+    def __init__(self, env):
+        super().__init__(env)
+
+    def get_canopy_image(self, bounds, dir_path, eval):
+        x_low, y_low, x_high, y_high = bounds
+        image = Image.new('RGB', (y_high, x_high), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
+        for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
+                            key=lambda x: x.height, reverse=False):
+            if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
+                self.env.plant_heights.append((plant.type, plant.height))
+                self.env.plant_radii.append((plant.type, plant.radius))
+                # print(plant.col, plant.row, plant.radius)
+                # print(plant.color)
+                plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255))
+                circle_bounding_box = (plant.col-plant.radius, plant.row-plant.radius, plant.col+plant.radius, plant.row+plant.radius)
+                draw.ellipse(circle_bounding_box, fill = plant_color)
+        # plt.gca().invert_yaxis() 
+        if not eval:
+            r = os.urandom(16)
+            file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
+            image.save(file_path + '_cc.png')
+            return file_path
+        else:
+            return image
