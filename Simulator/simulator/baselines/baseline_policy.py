@@ -167,15 +167,14 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         for plant_id in prune_window_cc.keys():
             if prune_window_cc[plant_id] > 20:  # PRUNE WINDOW IS 25 SQUARES, SO 20 SQUARES IS 80%
                 action += 2
-   
-    # Irrigate
+
     center = (sector_rows // 2, sector_cols // 2)
     health_irr_square = get_irr_square(health, center)
     water_irr_square = get_irr_square(water_grid, center)
     # Don't irrigate if sector only has dead plants, no plants, or wilting plants
     if only_dead_plants(health_irr_square):
         return [action]
-    
+    # Irrigate
     if has_underwatered(health_irr_square):
         return [action + 1]
    
