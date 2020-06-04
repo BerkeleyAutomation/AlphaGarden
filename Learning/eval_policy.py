@@ -24,6 +24,7 @@ parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l|i] bas
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
 parser.add_argument('-d', '--days', type=int, default=100)
+parser.add_argument('-w', '--water_threshold', type=float, default=0.6)
 args = parser.parse_args()
 
 
@@ -258,7 +259,7 @@ if __name__ == '__main__':
     garden_days = args.days
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
-    water_threshold = 0.6
+    water_threshold = args.water_threshold
     naive_water_freq = 2
     naive_prune_threshold = args.threshold
     
