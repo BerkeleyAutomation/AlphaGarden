@@ -157,7 +157,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     
     # Prune
     if timestep > PRUNE_DELAY * sector_obs_per_day:
-        prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
+        prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float")  # We start from 1 because we don't include earth in diversity
         violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}
         for plant_idx in violations:   
@@ -177,7 +177,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         return [action]
     
     if has_underwatered(health_irr_square):
-       return [action + 1]
+        return [action + 1]
    
     sector_water = np.sum(water_grid)
     maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold 
