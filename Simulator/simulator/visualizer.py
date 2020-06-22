@@ -41,7 +41,7 @@ class Visualizer(ABC):
         self.env.garden.step = 1
         bounds = self.env.garden.get_sector_bounds(center)
         # x_low, y_low, x_high, y_high = 0, 0, 149, 299
-        return self.get_canopy_image(bounds, dir_path + 'images/sector/', eval)
+        return self.get_canopy_image(bounds, dir_path + 'images/sector/', eval, scale=1)
 
     def get_canopy_image_full(self, eval):
         """Get image for canopy cover of the garden and save image to specified directory.
@@ -61,7 +61,7 @@ class Visualizer(ABC):
         if not eval:
             dir_path = self.env.dir_path
         self.env.garden.step = 1
-        bounds = (0, 0, self.env.rows - 1, self.env.cols - 1)
+        bounds = (0, 0, self.env.rows, self.env.cols)
         return self.get_canopy_image(bounds, dir_path + 'images/full/', eval)
 
 class Matplotlib_Visualizer(Visualizer):
@@ -107,9 +107,10 @@ class OpenCV_Visualizer(Visualizer):
     def __init__(self, env):
         super().__init__(env)
 
-    def get_canopy_image(self, bounds, dir_path, eval):
+    def get_canopy_image(self, bounds, dir_path, eval, scale = 8):
         x_low, y_low, x_high, y_high = bounds
-        image = np.ones((x_high,y_high,3), np.uint8) * 255
+        row_scale, col_scale = self.env.rows // (x_high - x_low) * scale, self.env.cols // (y_high - y_low) * scale
+        image = np.ones((self.env.rows * row_scale,self.env.cols * col_scale,3), np.uint8) * 255
         for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
@@ -118,11 +119,14 @@ class OpenCV_Visualizer(Visualizer):
                 # print(plant.col, plant.row, plant.radius)
                 # print(plant.color)
                 plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255))
-                image = cv2.circle(image, (plant.col, plant.row) , int(plant.radius), plant_color, -1)
-        # plt.gca().invert_yaxis() 
+                center_col, center_row = (plant.col - y_low) * col_scale, (plant.row - x_low) * row_scale, 
+                image = cv2.circle(image, (center_col, center_row), 
+                        int(plant.radius * row_scale), plant_color, -1)
+        image = cv2.resize(image, (600,300), interpolation = cv2.INTER_AREA)
         if not eval:
             r = os.urandom(16)
             # file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            dir_path = dir_path + "/OpenCV/test/"
             file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
             cv2.imwrite(file_path + '_cc.png', image)
             return file_path
@@ -133,9 +137,10 @@ class Pillow_Visualizer(Visualizer):
     def __init__(self, env):
         super().__init__(env)
 
-    def get_canopy_image(self, bounds, dir_path, eval):
+    def get_canopy_image(self, bounds, dir_path, eval, scale=8):
         x_low, y_low, x_high, y_high = bounds
-        image = Image.new('RGB', (y_high, x_high), (255, 255, 255))
+        row_scale, col_scale = self.env.rows // (x_high - x_low) * scale, self.env.cols // (y_high - y_low) * scale
+        image = Image.new('RGB', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255))
         draw = ImageDraw.Draw(image)
         for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
@@ -145,11 +150,14 @@ class Pillow_Visualizer(Visualizer):
                 # print(plant.col, plant.row, plant.radius)
                 # print(plant.color)
                 plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255))
-                circle_bounding_box = (plant.col-plant.radius, plant.row-plant.radius, plant.col+plant.radius, plant.row+plant.radius)
+                rad = int(col_scale * plant.radius)
+                circle_bounding_box = (plant.col*col_scale - rad, plant.row*row_scale - rad, 
+                                plant.col*col_scale + rad, plant.row*row_scale + rad)
                 draw.ellipse(circle_bounding_box, fill = plant_color)
-        # plt.gca().invert_yaxis() 
+        image = image.resize((600,300))
         if not eval:
             r = os.urandom(16)
+            dir_path = dir_path + "/Pillow/test/"
             file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
             image.save(file_path + '_cc.png')
             return file_path
