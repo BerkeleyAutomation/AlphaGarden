@@ -25,7 +25,7 @@ parser.add_argument('--multi', action='store_true', help='Enable multiprocessing
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
 parser.add_argument('-d', '--days', type=int, default=100)
 parser.add_argument('-w', '--water_threshold', type=float, default=0.6)
-parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics')
+parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 args = parser.parse_args()
 
 
