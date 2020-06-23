@@ -235,12 +235,12 @@ class Garden:
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
-                water_use += 1
+                water_use += MAX_WATER_LEVEL
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
             elif action == NUM_IRR_ACTIONS + 2:
                 self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
-                water_use += 1
+                water_use += MAX_WATER_LEVEL
                 self.perform_timestep_prune(sectors[i]) 
         self.distribute_light()
         self.distribute_water()

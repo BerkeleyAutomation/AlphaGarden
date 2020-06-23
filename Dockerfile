@@ -9,6 +9,5 @@ LABEL com.nvidia.volumes.needed="nvidia_driver"
 FROM python:3.7
 ADD . /app
 WORKDIR /app
-RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
+ENTRYPOINT ["python","./Learning/eval_policy.py"]
