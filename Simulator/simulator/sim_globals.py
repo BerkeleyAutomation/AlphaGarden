@@ -2,7 +2,7 @@ import os
 """
 Global simulator/garden constants. Affects both test run and RL settings
 """
-MAX_WATER_LEVEL = os.getenv('MAX_WATER_LEVEL', 0.5)  # Arbitrary until we get soil measurements; feel free to change
+MAX_WATER_LEVEL = float(os.getenv('MAX_WATER_LEVEL', 1.0))  # Arbitrary until we get soil measurements; feel free to change
 PRUNE_DELAY = 20  # Higher prune delay means plants grow larger before they may get pruned.
 PRUNE_THRESHOLD = 2
 PRUNE_RATE = 0.15
