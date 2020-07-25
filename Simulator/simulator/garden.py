@@ -2,14 +2,14 @@ import numpy as np
 from heapq import nlargest
 from simulator.logger import Logger, Event
 #from simulator.visualization import setup_animation, setup_saving
-from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
+from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 import multiprocessing as mp
 
 
 class Garden:
     def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, drainage_rate=0.4, irr_threshold=5, init_water_mean=0.2,
+                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=5, init_water_mean=0.4,
                  init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
 
@@ -22,7 +22,7 @@ class Garden:
             prune_window_rows (int): Row size of pruning window.
             prune_window_cols (int): Column size of pruning window.
             step (int): Distance between adjacent points in grid.
-            drainage_rate (float): Drainage rate of water in soil.
+            evaporation_rate (float): Drainage rate of water in soil. Evapotranspiration rate 1 mm per day
             irr_threshold (int): Amount of grid points away from irrigation point that water will spread to.
             init_water_mean (float): Mean of normal distribution for initial water levels.
             init_water_scale (float): Standard deviation of normal distribution for for initial water levels.
@@ -77,7 +77,7 @@ class Garden:
 
         self.step = step
 
-        self.drainage_rate = drainage_rate
+        self.evaporation_rate = evaporation_rate
         self.irr_threshold = irr_threshold
 
         #: Amount of days to wait after simulation start before pruning.
@@ -234,14 +234,14 @@ class Garden:
         water_use = 0
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
-                self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
-                water_use += MAX_WATER_LEVEL
+                self.perform_timestep_irr(sectors[i], IRRIGATION_AMOUNT)
+                water_use += IRRIGATION_AMOUNT
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
             elif action == NUM_IRR_ACTIONS + 2:
-                self.perform_timestep_irr(sectors[i], MAX_WATER_LEVEL)
-                water_use += MAX_WATER_LEVEL
-                self.perform_timestep_prune(sectors[i]) 
+                self.perform_timestep_irr(sectors[i], IRRIGATION_AMOUNT)
+                water_use += IRRIGATION_AMOUNT
+                self.perform_timestep_prune(sectors[i])
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
@@ -279,14 +279,17 @@ class Garden:
 
         Args:
             location (Array of [int,int]): Location [row, col] where to perform actions.
-            amount (int) amount of water for location.
+            amount (float) amount of water for location.
 
         """
         lower_x = max(0, location[0] - self.irr_threshold)
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount
+        window_grid_size = (self.irr_threshold+self.irr_threshold+1)*(self.irr_threshold+self.irr_threshold+1)/10000  # in square meters
+        # TODO: add distribution kernel for capillary action and spread of water jet
+        # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
+        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount/(window_grid_size*0.35)  # 0,0121m^2 * 0.35m depth
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
@@ -371,7 +374,7 @@ class Garden:
                     plant = self.plants[plant_type_and_id[0]][plant_type_and_id[1]]
                     plant.water_available += point['water']
 
-                while point['water'] > 0 and plant_types_and_ids:
+                while point['water'] > PERMANENT_WILTING_POINT and plant_types_and_ids:
 
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plant_types_and_ids)))
@@ -386,8 +389,8 @@ class Garden:
 
                     plant_types_and_ids.pop(i)
 
-            # Water evaporation/drainage from soil
-            point['water'] = max(0, point['water'] - self.drainage_rate)
+            # Water evaporation per square cm (grid point)
+            point['water'] = max(0, point['water'] - 0.01*0.01*self.evaporation_rate)
 
     def grow_plants(self):
         """ Compute growth for each plant and update plant coverage."""
