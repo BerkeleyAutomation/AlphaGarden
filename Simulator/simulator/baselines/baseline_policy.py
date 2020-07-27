@@ -177,9 +177,9 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     # Irrigate
     if has_underwatered(health_irr_square):
         return [action + 1]
-   
+
     sector_water = np.sum(water_grid)
-    maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold 
+    maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold
     if has_overwatered(health_irr_square):
         sector_water += overwatered_contribution(health_irr_square, water_irr_square)
     if sector_water < maximum_water_potential:

@@ -289,7 +289,7 @@ class Garden:
         window_grid_size = (self.irr_threshold+self.irr_threshold+1)*(self.irr_threshold+self.irr_threshold+1)/10000  # in square meters
         # TODO: add distribution kernel for capillary action and spread of water jet
         # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
-        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount/(window_grid_size*0.35)  # 0,0121m^2 * 0.35m depth
+        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount/(window_grid_size*0.35)  # 0.0121m^2 * 0.35m depth
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
