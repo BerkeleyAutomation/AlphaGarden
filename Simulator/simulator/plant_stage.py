@@ -133,7 +133,7 @@ class GrowthStage(PlantStage):
             amount of height (float) and radius (float) change during growth stage.
         """
         if self.overwatered:
-            print("Plant overwatered!")
+            # print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
                 self.new_color = self.plant.get_new_color()
@@ -146,7 +146,7 @@ class GrowthStage(PlantStage):
                 return 0, 0
 
         elif self.underwatered:
-            print("Plant underwatered!")
+            # print("Plant underwatered!")
             if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
                 self.new_color = self.plant.get_new_color()
@@ -232,7 +232,7 @@ class WaitingStage(PlantStage):
             amount of height (float) and radius (float) change of waiting stage.
         """
         if self.overwatered:
-            print("Plant overwatered!")
+            # print("Plant overwatered!")
             if self.plant.water_available > self.overwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
                 self.new_color = self.plant.get_new_color()
@@ -245,7 +245,7 @@ class WaitingStage(PlantStage):
                 return 0, 0
 
         elif self.underwatered:
-            print("Plant underwatered!")
+            # print("Plant underwatered!")
             if self.plant.water_amt < self.underwatered_threshold * self.desired_water_amt():
                 self.stress_time += 1
                 self.new_color = self.plant.get_new_color()

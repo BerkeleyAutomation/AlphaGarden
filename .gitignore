@@ -19,4 +19,6 @@ baseline_policy_data/
 dist/
 build/
 *.egg
-
+Learning/model/*.pt
+Learning/images/*.png
+Learning/runs/

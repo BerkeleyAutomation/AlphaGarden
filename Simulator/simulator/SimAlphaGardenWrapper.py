@@ -15,7 +15,7 @@ import io
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols, seed=None, step=1, dir_path="/"):
+                 prune_window_cols, seed=None, step=1, dir_path="/", random=True, plant_locations=None, plant_interaction=False):
         """AlphaGarden's wrapper for Gym, inheriting basic functions from the WrapperEnv.
 
         Args:
@@ -35,6 +35,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.rows = rows
         self.cols = cols
+
+        self.random = random
+        self.plant_locations = plant_locations
+        self.plant_interaction = plant_interaction
 
         #: int: Number of sectors (representing the area observable to the agent at time t) in garden.
         self.num_sectors = (rows * cols) / (sector_rows * sector_cols)
@@ -71,7 +75,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.plant_heights = []  #: List of tuples (str, float): Tuple containing plant type it's plant height.
 
         self.dir_path = dir_path
-        
+
     def get_state(self, multi=False):
         """Get state of a random sector defined by all local and global quantities.
 
@@ -304,14 +308,15 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # if True:
         # if time_step % 100 == 0:
         if self.curr_action >= 0:
-            out = self.get_canopy_image(center, eval)
-            if not eval:
-                path = out
-                # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
-                action_vec = np.array(action)
-                np.save(path + '_action', action_vec)
-                # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
-                np.savez(path + '.npz', plants=plant_grid, water=water_grid, health=health_grid, global_cc=global_cc_vec)
+            if self.random:
+                out = self.get_canopy_image(center, eval)
+                if not eval:
+                    path = out
+                    # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
+                    action_vec = np.array(action)
+                    np.save(path + '_action', action_vec)
+                    # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
+                    np.savez(path + '.npz', plants=plant_grid, water=water_grid, health=health_grid, global_cc=global_cc_vec)
             self.plant_heights = []
             self.plant_radii = []
 
@@ -347,9 +352,14 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def reset(self):
         """Method called by the gym environment to reset the simulator."""
+        if self.random:
+            plants = self.PlantType.get_random_plants(self.seed, self.rows, self.cols, self.sector_rows, self.sector_cols)
+        else:
+            plants = self.PlantType.get_custom_plants(self.rows, self.cols, self.sector_rows, self.sector_cols, self.plant_locations)
+
         self.garden = \
             Garden(
-                plants=self.PlantType.get_random_plants(self.seed, self.rows, self.cols, self.sector_rows, self.sector_cols),
+                plants=plants,
                 N=self.rows,
                 M=self.cols,
                 sector_rows=self.sector_rows,
@@ -359,7 +369,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 irr_threshold=IRR_THRESHOLD,
                 step=self.step,
                 plant_types=self.PlantType.plant_names,
-                animate=False)
+                animate=False,
+                plant_interaction=self.plant_interaction)
+
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
         self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)

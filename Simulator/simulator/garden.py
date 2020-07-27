@@ -5,12 +5,13 @@ from simulator.logger import Logger, Event
 from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 import multiprocessing as mp
-
+from simulator.plant_presets import PLANT_RELATION
 
 class Garden:
-    def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, drainage_rate=0.4, irr_threshold=5, init_water_mean=0.2,
-                 init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
+    def __init__(self, plants=[], N=300, M=150, sector_rows=30, sector_cols=15, prune_window_rows=5,
+                 prune_window_cols=5, step=1, drainage_rate=0.4, irr_threshold=5, init_water_mean=0.2,
+                 init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False,
+                 save=False, plant_interaction=False):
         """Model for garden.
 
         Args:
@@ -30,6 +31,7 @@ class Garden:
             skip_initial_germination (bool): Skip initial germination stage.
             animate (bool): Animate simulator run.  Deprecated!
             save (bool): Save experiment plots.  Deprecated!
+            plant_interaction (bool): Allow plant relationship to affect their growth.
 
         """
 
@@ -130,6 +132,9 @@ class Garden:
         # if save:
             # self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
 
+        # allow neighboring plants to affect one's growth
+        self.plant_interaction = plant_interaction
+
     def add_plant(self, plant):
         """ Add plants to garden's grid locations.
 
@@ -179,7 +184,6 @@ class Garden:
         x_high = min(center[0] + (self.sector_rows // 2), self.N-1)
         y_high = min(center[1] + (self.sector_cols // 2), self.M-1)
         return x_low, y_low, x_high, y_high
-    
     
     def get_prune_bounds(self, center):
         """Get bounds of prune window.
@@ -351,7 +355,6 @@ class Garden:
                                                                        key=lambda x: self.plants[x[0]][x[1]].height)):
                     self.plants[plant_type_id][plant_id].add_sunlight((self.light_decay ** i) * (self.step ** 2))
 
-
     def distribute_water(self):
         """ Water allocation.
 
@@ -411,6 +414,28 @@ class Garden:
 
         # prev_radius = plant.radius
         upward, outward = plant.amount_to_grow()
+
+        if self.plant_interaction:
+            factor = 1.0
+            relation_scores = []
+
+            x_low, y_low, x_high, y_high = self.get_sector_bounds_no_pad([plant.row, plant.col])
+            for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
+                # print (point)
+                if point[0]['nearby']:
+                    for (x, y) in point[0]['nearby']:
+                        neighbor = self.plants[x][y]
+                        if plant != neighbor:
+                            relation_score =  (neighbor.radius * neighbor.height * PLANT_RELATION[neighbor.type][plant.type]) / \
+                                             ((neighbor.row - plant.row) ** 2 + (neighbor.col - plant.col) ** 2)
+                            relation_scores.append(relation_score / 10.0)
+            if len(relation_scores) > 0:
+                mean_relation_score = np.mean(relation_scores)
+                # print ("mean_relation_score: ", mean_relation_score)
+                factor += mean_relation_score
+                upward *= factor
+                outward *= factor
+
         self.update_plant_size(plant, upward, outward)
 
         self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
@@ -437,7 +462,7 @@ class Garden:
                 tallest_type_id, tallest_plant_id = tallest_plant_tup[0], tallest_plant_tup[1]
                 tallest_plant = self.plants[tallest_type_id][tallest_plant_id]
                 tallest_plant_stage = tallest_plant.stages[tallest_plant.stage_index]
-                
+
                 if tallest_plant.stage_index in [-1, 3, 4]: # no plant, dead, wilting
                     self.grid['health'][point[1]] = 0
                 elif tallest_plant.stage_index == 0: # germinating
@@ -753,7 +778,7 @@ class Garden:
         
         temp = np.pad(np.copy(self.plant_grid), \
             ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
-        return temp[x_low:x_high+1,y_low:y_high,:]
+        return temp[x_low:x_high+1,y_low:y_high+1,:]
     
     def get_plant_grid_full(self):
         """ Get grid with plant growth state representation.
@@ -784,7 +809,7 @@ class Garden:
         
         temp = np.pad(np.copy(self.water_grid), \
             ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
-        return temp[x_low:x_high+1,y_low:y_high,:]
+        return temp[x_low:x_high+1,y_low:y_high+1,:]
 
     def get_water_grid_full(self):
         """ Get water grid for entire garden
@@ -816,7 +841,7 @@ class Garden:
         
         temp = np.pad(np.copy(self.health_grid), \
             ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
-        return temp[x_low:x_high+1,y_low:y_high,:]
+        return temp[x_low:x_high+1,y_low:y_high+1,:]
 
     def get_health_grid_full(self):
         """ Get grid with health states for entire garden
@@ -849,7 +874,7 @@ class Garden:
         y_high += col_pad
         
         temp = np.pad(np.copy(self.plant_prob), ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
-        return temp[x_low:x_high+1,y_low:y_high,:]
+        return temp[x_low:x_high+1,y_low:y_high+1,:]
 
     def get_cc_per_plant(self):
         """ Get number of grid points per plant type in which the specific plant type is the highest plant.
