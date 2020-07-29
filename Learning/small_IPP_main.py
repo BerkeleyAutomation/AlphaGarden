@@ -19,6 +19,8 @@ import numpy as np
 from InitialPlantPlacementNetwork import InitialPlantPlacementNetwork
 from InitialPlantPlacementHelper.ipp_globals import *
 from PIL import Image, ImageDraw, ImageFont
+from datetime import datetime
+
 
 class DataCollection:
 	def __init__( self ):
@@ -61,18 +63,21 @@ class DataCollection:
 							sector_obs_per_day)
 			obs, rewards, _, _ = env.step(action)
 		coverage, diversity, water_use, actions = env.env_method('get_metrics')[0]
-		best_id = np.argmax(coverage)
-		score = coverage[best_id] + diversity[best_id]
-		return score
-
+		best_id = np.argmax(coverage[10:])
+		# score = coverage[10 + best_id]
+		C = coverage[10 + best_id]
+		D = diversity[10 + best_id]
+		if C < 0.1:
+			return 0.0, 0.0, 0.0
+		return np.max([(C + D)/2.0 - 0.5, 0.0]) * 2.0, C, D
 
 if __name__ == '__main__':
-	rows = 70
-	cols = 70
+	rows = 110
+	cols = 110
 	num_plant_types = PlantType().num_plant_types
 	depth = num_plant_types + 3
-	sector_rows = 7
-	sector_cols = 7
+	sector_rows = 11
+	sector_cols = 11
 	prune_window_rows = 5
 	prune_window_cols = 5
 	garden_step = 1
@@ -87,16 +92,21 @@ if __name__ == '__main__':
 	collection_time_steps = sector_obs_per_day * garden_days
 	water_threshold = 0.6
 
-	writer = SummaryWriter(logdir='runs/50days')
+	now = datetime.now()
+	dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+	writer = SummaryWriter(logdir='runs/'+dt_string)
 
 	IPPN = InitialPlantPlacementNetwork(height=rows, width=cols, num_plant_types=num_plant_types, channel=RESNET_CHANNEL_SIZE)
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 	IPPN.to(device)
 
 	for param in IPPN.parameters():
-		nn.init.normal_(param, mean=0.0, std=0.025)
+		nn.init.normal_(param, mean=0.0, std=0.1)
 
-	optimizer = optim.Adam(IPPN.parameters(), lr=1e-2)
+	# IPPN.load_state_dict(torch.load('model/model-964.pt'))
+
+	optimizer = optim.Adam(IPPN.parameters(), lr=1e-3)
 
 	softmax = nn.Softmax(dim=0)
 
@@ -108,6 +118,9 @@ if __name__ == '__main__':
 	episodes = []
 	scores = []
 
+	all_scores = []
+	last_images = []
+
 	total_episodes = 0
 	update_count = 0
 
@@ -116,22 +129,25 @@ if __name__ == '__main__':
 			curr_placement_tensor = torch.FloatTensor(np.zeros([1, num_plant_types, rows, cols])).to(device)
 			episode = []
 			pred_plant_locations = []
+			action_preds = []
 			for i in plant_type_list:
 				all_pred_next_placement = IPPN(curr_placement_tensor)
 				for (pi,px,py) in pred_plant_locations:
-					all_pred_next_placement[0,i,px,py] = -1e+10
-				pred_next_placement = softmax(all_pred_next_placement[0,i].view([rows*cols]))
-				act_probs = pred_next_placement.data.numpy()
+					all_pred_next_placement[0, :, px, py] = -1e+5
+				pred_next_placement = softmax(all_pred_next_placement[0, i].view([rows*cols]))
+				act_probs = pred_next_placement.detach().cpu().numpy()
 				sampled_location_id = np.random.choice(len(act_probs), p=act_probs)
 				x = sampled_location_id // cols
 				y = sampled_location_id %  cols
 				pred_plant_locations.append((i,x,y))
 				episode.append([curr_placement_tensor.clone(), (x,y)])
 				curr_placement_tensor[0, i, x, y] = 1
+				action_preds.append(act_probs.reshape([rows, cols]) / np.max(act_probs))
+				action_preds.append(np.ones([rows, 50]) * 0.5)
 
 			data_collection = DataCollection()
 
-			score = data_collection.evaluate_policy(
+			score, coverage, diversity = data_collection.evaluate_policy(
 					data_collection.init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
 											 prune_window_cols, action_low, action_high, obs_low, obs_high,
 											 collection_time_steps, garden_step, num_plant_types, None, seed=0,
@@ -141,19 +157,24 @@ if __name__ == '__main__':
 
 			episodes.append(episode)
 			scores.append(score)
-			print ('Ep:', total_episodes, '\tScore:', score)
+
+			all_scores.append(score)
+			last_images.append(curr_placement_tensor.clone())
+
+			print ('Ep:', total_episodes, '\tScore:', score, '\tC:', coverage, '\tD:', diversity)
 			writer.add_scalar('Score', score, total_episodes)
 
+			im = Image.new("RGB", (rows*10+100, cols*10+100), (255,255,255))
+			dr = ImageDraw.Draw(im)
+			for i, (_, x, y) in enumerate(pred_plant_locations):
+				dr.ellipse((y*10-5+100,x*10-5+100,y*10+5+100,x*10+5+100), fill=COLORS[plant_type_list[i]])
+				dr.text((y*10+1+100,x*10+1+100), NAMES[plant_type_list[i]], COLORS[plant_type_list[i]], font=fnt)
+			dr.text((40, 40), 'Score: '+str(score), (0,0,0), font=fnt)
+			im.resize([800,800]).save('images/'+str(total_episodes)+'.png')
+
 			if total_episodes % 10 == 0:
-				im = Image.new("RGB", (rows*10+100, cols*10+100), (255,255,255))
-				dr = ImageDraw.Draw(im)
-				for i, (_, x, y) in enumerate(pred_plant_locations):
-					dr.ellipse((y*10-5+100,x*10-5+100,y*10+5+100,x*10+5+100), fill=COLORS[plant_type_list[i]])
-					dr.text((y*10+1+100,x*10+1+100), NAMES[plant_type_list[i]], COLORS[plant_type_list[i]], font=fnt)
-				dr.text((40, 40), 'Score: '+str(score), (0,0,0), font=fnt)
-				im.resize([800,800]).save('images/'+str(total_episodes)+'.png')
 				writer.add_image('Placement', np.asarray(im.resize([800,800])), total_episodes, dataformats='HWC')
-				writer.add_image('Pred', act_probs.reshape([rows, cols]) * 255, total_episodes, dataformats='HW')
+				writer.add_image('Pred', (act_probs/np.max(act_probs)).reshape([rows,cols])*255, total_episodes, dataformats='HW')
 
 			total_episodes += 1
 
@@ -184,13 +205,23 @@ if __name__ == '__main__':
 			batch_train_image = train_image[batch_id*BATCH_SIZE:(batch_id+1)*BATCH_SIZE]
 			batch_train_id = train_id[batch_id*BATCH_SIZE:(batch_id+1)*BATCH_SIZE]
 			batch_train_plant = train_plant[batch_id*BATCH_SIZE:(batch_id+1)*BATCH_SIZE]
-			loss = IPPN.compute_loss([batch_train_image, batch_train_id, batch_train_plant])
+			random_id2 = [i for i in range(len(last_images))]
+			np.random.shuffle(random_id2)
+			batch_train_last_image = torch.cat([last_images[i] for i in random_id2[:BATCH_SIZE]])
+			batch_train_score = torch.FloatTensor([all_scores[i] for i in random_id2[:BATCH_SIZE]]).to(device)
+			loss, loss1, loss2 = IPPN.compute_loss([batch_train_image, batch_train_id, batch_train_plant, batch_train_last_image, batch_train_score])
 			optimizer.zero_grad()
 			loss.backward()
 			optimizer.step()
-		print ('Ep:', total_episodes, '\tLoss:', loss.item())
 
-		writer.add_scalar('Loss', loss, total_episodes)
+		# print ('Ep:', total_episodes, '\tLoss:', loss.item())
+		writer.add_scalar('Loss/Total', loss, total_episodes)
+		writer.add_scalar('Loss/1', loss1, total_episodes)
+		writer.add_scalar('Loss/2', loss2, total_episodes)
+
 		update_count += 1
 		if update_count % 10 == 0:
 			torch.save(IPPN.state_dict(), 'model/model-' + str(total_episodes) + '.pt')
+
+		# episodes = []
+		# scores = []

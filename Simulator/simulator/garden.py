@@ -529,7 +529,8 @@ class Garden:
                     if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
                         if record_coords_updated:
                             coords_updated.append(point)
-                        plant.num_grid_points -= 1
+                        if plant.num_grid_points > 1:
+                            plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove((self.plant_types.index(plant.type), plant.id))
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] -= 1
                         if self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] < 0:
