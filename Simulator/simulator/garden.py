@@ -665,7 +665,7 @@ class Garden:
         coverage = total_cc / (self.N * self.M)
         prob = cc_per_plant_type[np.nonzero(cc_per_plant_type)] / total_cc
         entropy = np.sum(-prob * np.log(prob))
-        diversity = entropy / np.log(len(self.plant_types))  # normalized entropy
+        diversity = entropy / np.maximum(np.log(len(self.plant_types)), 1)  # normalized entropy
         self.coverage.append(coverage)
         self.diversity.append(diversity)
 
