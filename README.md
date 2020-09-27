@@ -23,7 +23,7 @@ Install the required pip packages and the mentioned packages from above:
 
 1. `git clone` the repository
 2. Open the `AlphaGarden` [repository](https://github.com/BerkeleyAutomation/AlphaGarden/)
-3. Run ```pip install -r requirements.txt ```
+3. Run ```pip install -r requirements.txt ```. Make sure you are using pip 20.0.2. Version 20.1 currently is not supported.
 
 To run the simulator and collect data:
 
