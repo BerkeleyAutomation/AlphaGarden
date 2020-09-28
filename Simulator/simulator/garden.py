@@ -22,7 +22,7 @@ class Garden:
             prune_window_rows (int): Row size of pruning window.
             prune_window_cols (int): Column size of pruning window.
             step (int): Distance between adjacent points in grid.
-            evaporation_rate (float): Drainage rate of water in soil. Evapotranspiration rate 1 mm per day
+            evaporation_rate (float): Evapotranspiration rate 1 mm per day
             irr_threshold (int): Amount of grid points away from irrigation point that water will spread to.
             init_water_mean (float): Mean of normal distribution for initial water levels.
             init_water_scale (float): Standard deviation of normal distribution for for initial water levels.
