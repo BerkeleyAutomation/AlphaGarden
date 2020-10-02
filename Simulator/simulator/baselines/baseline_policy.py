@@ -157,7 +157,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     
     # Prune
     if timestep > PRUNE_DELAY * sector_obs_per_day:
-        prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
+        prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float")  # We start from 1 because we don't include earth in diversity
         violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}
         for plant_idx in violations:   
@@ -167,20 +167,19 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         for plant_id in prune_window_cc.keys():
             if prune_window_cc[plant_id] > 20:  # PRUNE WINDOW IS 25 SQUARES, SO 20 SQUARES IS 80%
                 action += 2
-   
-    # Irrigate
+
     center = (sector_rows // 2, sector_cols // 2)
     health_irr_square = get_irr_square(health, center)
     water_irr_square = get_irr_square(water_grid, center)
     # Don't irrigate if sector only has dead plants, no plants, or wilting plants
     if only_dead_plants(health_irr_square):
         return [action]
-    
+    # Irrigate
     if has_underwatered(health_irr_square):
-       return [action + 1]
-   
+        return [action + 1]
+
     sector_water = np.sum(water_grid)
-    maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold 
+    maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold
     if has_overwatered(health_irr_square):
         sector_water += overwatered_contribution(health_irr_square, water_irr_square)
     if sector_water < maximum_water_potential:

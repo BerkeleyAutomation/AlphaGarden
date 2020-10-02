@@ -298,12 +298,12 @@ class WaitingStage(PlantStage):
 
 class WiltingStage(PlantStage):
     def __init__(self, plant, duration_mean, duration_scale, final_radius):
-        """ Model of waiting stage in bio standard life cycle trajectory.
+        """ Model of wilting stage in bio standard life cycle trajectory.
 
         Args
             plant (obj): plant object.
-            duration_mean (int): Mean of normal distribution for duration for waiting stage time.
-            duration_scale (int): Standard deviation of normal distribution for duration for waiting stage time.
+            duration_mean (int): Mean of normal distribution for duration for wilting stage time.
+            duration_scale (int): Standard deviation of normal distribution for duration for wilting stage time.
             final_radius (float): Estimated radius of wilted plant shortly before death stage.
 
         """
