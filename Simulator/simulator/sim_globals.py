@@ -1,12 +1,15 @@
+import os
 """
 Global simulator/garden constants. Affects both test run and RL settings
 """
-MAX_WATER_LEVEL = 1  # Arbitrary until we get soil measurements; feel free to change
+MAX_WATER_LEVEL = float(os.getenv('MAX_WATER_LEVEL', 0.5))  # % Volumetric Water Content = cubic meter water per grid point; maximal soil moisture capacity
+IRRIGATION_AMOUNT = float(os.getenv('IRRIGATION_AMOUNT', 0.001))  # cubic metre water -> 1 liter
+PERMANENT_WILTING_POINT = 0.1 # % Volumetric Water Content = cubic meter water per grid point; minimal amount of water remaining in the soil when the plant wilts in a humid atmosphere.
 PRUNE_DELAY = 20  # Higher prune delay means plants grow larger before they may get pruned.
 PRUNE_THRESHOLD = 2
 PRUNE_RATE = 0.21
 NUM_IRR_ACTIONS = 1
-IRR_THRESHOLD = 5
+IRR_THRESHOLD = 5  # unit size to calculate irrigation window.
 
 NUM_PLANTS = 700
 NUM_PLANT_TYPES_USED = 10

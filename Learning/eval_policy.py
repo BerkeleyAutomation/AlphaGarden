@@ -24,6 +24,8 @@ parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l|i] bas
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
 parser.add_argument('-d', '--days', type=int, default=100)
+parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
+parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 args = parser.parse_args()
 
 
@@ -135,7 +137,7 @@ def evaluate_baseline_policy_multi(env, policy, collection_time_steps, sector_ro
     
 def evaluate_baseline_policy_serial(env, policy, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                            sector_obs_per_day, trial, save_dir='baseline_policy_data/'):
+                            sector_obs_per_day, trial, save_dir):
     obs = env.reset()
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
@@ -258,9 +260,11 @@ if __name__ == '__main__':
     garden_days = args.days
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
-    water_threshold = 0.6
+    water_threshold = args.water_threshold
     naive_water_freq = 2
     naive_prune_threshold = args.threshold
+    save_dir = args.output_directory
+
     
     for i in range(args.tests):
         trial = i + 1
@@ -279,7 +283,7 @@ if __name__ == '__main__':
             else:
                 evaluate_baseline_policy_serial(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial) 
+                                        sector_obs_per_day, trial, save_dir)
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
