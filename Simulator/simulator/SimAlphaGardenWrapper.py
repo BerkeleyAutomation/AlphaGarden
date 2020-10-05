@@ -186,7 +186,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             dir_path = self.dir_path
         self.garden.step = 1
         x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
-        # x_low, y_low, x_high, y_high = 0, 0, 149, 299
+       # x_low, y_low, x_high, y_high = 0, 0, 149, 299
         fig, ax = plt.subplots()
         ax.set_xlim(y_low, y_high)
         ax.set_ylim(x_low, x_high)
@@ -302,7 +302,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         
         # Save canopy image before performing a time step.
         # if True:
-        # if time_step % 100 == 0:
+     #   if time_step % 100 == 0:
         if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
             if not eval:
