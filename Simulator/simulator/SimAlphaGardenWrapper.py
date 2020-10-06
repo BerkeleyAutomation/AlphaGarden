@@ -15,7 +15,7 @@ import io
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols, seed=None, step=1, dir_path="/"):
+                 prune_window_cols, seed=None, step=1, dir_path=""):
         """AlphaGarden's wrapper for Gym, inheriting basic functions from the WrapperEnv.
 
         Args:
@@ -205,7 +205,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         bbox0 = fig.get_tightbbox(fig.canvas.get_renderer()).padded(0.02)
         if not eval:
             r = os.urandom(16)
-            file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            # file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            file_path = dir_path + 'images/' + ''.join('%02x' % ord(chr(x)) for x in r)
             plt.savefig(file_path + '_cc.png', bbox_inches=bbox0)
             plt.close()
             return file_path
