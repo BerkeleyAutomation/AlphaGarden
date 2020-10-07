@@ -1,7 +1,7 @@
 import numpy as np
 from simulator.simulator_params import NUM_X_STEPS, STEP
 
-REAL_GARDEN_WIDTH = 3.0  # garden width in m
+REAL_GARDEN_WIDTH = 118.11  # garden width in inches
 
 
 def _compute_from_table_values(
@@ -26,7 +26,7 @@ def _compute_from_table_values(
 
 
     # square to m ratio to convert simulator size units to real-world units
-    garden_ratio = NUM_X_STEPS / REAL_GARDEN_WIDTH * 100
+    garden_ratio = NUM_X_STEPS / REAL_GARDEN_WIDTH
 
     PLANT_SIZE = {}
     for key in SEED_SPACING:
@@ -35,7 +35,7 @@ def _compute_from_table_values(
     c2 = 1
     k1, k2 = 0.3, 0.7
     h_0 = 0.1
-    r_0 = 0.1 * garden_ratio
+    r_0 = 0.1 / garden_ratio
     r_max = PLANT_SIZE[name]
     growth_time = int(maturation_time - (germination_time[0] + germination_time[1]) / 2)
     c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
@@ -56,32 +56,33 @@ def _compute_from_table_values(
     }
 
 SEED_SPACING = {
- 'borage':  0.381,
- 'mizuna': 0.254,
- 'sorrel': 0.3048,
- 'cilantro': 0.1524,
- 'radicchio': 0.2286,
- 'kale': 0.381,
- 'green_lettuce': 0.3048,
- 'red_lettuce': 0.254,
- 'arugula': 0.3048,
- 'swiss_chard': 0.3556,
- 'turnip': 0.2286
+ 'borage': 15,
+ 'mizuna': 10,
+ 'sorrel': 12,
+ 'cilantro': 6,
+ 'radicchio': 9,
+ 'kale': 15,
+ 'green_lettuce': 12,
+ 'red_lettuce': 10,
+ 'arugula': 12,
+ 'swiss_chard': 14,
+ 'turnip': 9
 }
 
 COMPANION_NEIGHBORHOOD_RADII = {
- 'borage':  0.381,
- 'mizuna': 0.254,
- 'sorrel': 0.3048,
- 'cilantro': 0.1524,
- 'radicchio': 0.2286,
- 'kale': 0.381,
- 'green_lettuce': 0.3048,
- 'red_lettuce': 0.254,
- 'arugula': 0.3048,
- 'swiss_chard': 0.3556,
- 'turnip': 0.2286
+ 'borage': 15,
+ 'mizuna': 10,
+ 'sorrel': 12,
+ 'cilantro': 6,
+ 'radicchio': 9,
+ 'kale': 15,
+ 'green_lettuce': 12,
+ 'red_lettuce': 10,
+ 'arugula': 12,
+ 'swiss_chard': 14,
+ 'turnip': 9
 }
+
 
 PLANTS_RELATION = {
         "borage":       {"borage": 1.0, "mizuna": -1.0, "sorrel": -1.0, "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "swiss_chard": 0.0, "turnip": 1.0},
@@ -97,7 +98,7 @@ PLANTS_RELATION = {
 }
 
 def get_r_max(v, ratio):
-    r_max = (v / 2) * ratio
+    r_max = (v / 2) / ratio
     return r_max
 
 PLANT_TYPES = {
