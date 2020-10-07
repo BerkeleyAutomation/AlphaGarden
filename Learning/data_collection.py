@@ -14,16 +14,19 @@ from stable_baselines.common.vec_env import DummyVecEnv
 class DataCollection:
     def __init__(self):
         self.fileutils = FileUtils()
-    
+
     ''' Initializes and returns a simalphagarden gym environment. '''
     def init_env(self, rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
                  prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
-                 garden_step, num_plant_types, dir_path, seed):
+                 garden_step, num_plant_types, dir_path, seed, randomize_seed_coords=False,
+                 plant_seed_config_file_path=None):
         env = gym.make(
             'simalphagarden-v0',
             wrapper_env=SimAlphaGardenWrapper(garden_time_steps, rows, cols, sector_rows,
                                               sector_cols, prune_window_rows, prune_window_cols,
-                                              seed=seed, step=garden_step, dir_path=dir_path),
+                                              seed=seed, step=garden_step, dir_path=dir_path,
+                                              randomize_seed_coords=randomize_seed_coords,
+                                              plant_seed_config_file_path=plant_seed_config_file_path),
             garden_x=rows,
             garden_y=cols,
             garden_z=depth,
@@ -34,9 +37,9 @@ class DataCollection:
             obs_low=obs_low,
             obs_high=obs_high,
             num_plant_types=num_plant_types
-        ) 
+        )
         return DummyVecEnv([lambda: env])
-    
+
     ''' Applies a baseline irrigation policy on an environment for one garden life cycle. '''
     def evaluate_policy(self, env, policy, collection_time_steps, sector_rows, sector_cols,
                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
@@ -48,6 +51,7 @@ class DataCollection:
                             prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                             sector_obs_per_day)
             obs, rewards, _, _ = env.step(action)
+
 
 
 if __name__ == '__main__':
@@ -63,7 +67,7 @@ if __name__ == '__main__':
     prune_window_rows = 5
     prune_window_cols = 5
     garden_step = 1
-    
+
     action_low = 0
     action_high = 1
     obs_low = 0
@@ -84,10 +88,15 @@ if __name__ == '__main__':
     dir_path = params['d']
     seed = params['s']
     pathlib.Path(dir_path).mkdir(exist_ok=True)
-    
+
+    seed_config_path = '/Users/sebastianoehme/Downloads/seed'
+    randomize_seeds_cords_flag = False
+
     data_collection.evaluate_policy(
         data_collection.init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
                                  prune_window_cols, action_low, action_high, obs_low, obs_high,
-                                 collection_time_steps, garden_step, num_plant_types, dir_path, seed),
+                                 collection_time_steps, garden_step, num_plant_types, dir_path, seed,
+                                 randomize_seed_coords=randomize_seeds_cords_flag,
+                                 plant_seed_config_file_path=seed_config_path),
         baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)

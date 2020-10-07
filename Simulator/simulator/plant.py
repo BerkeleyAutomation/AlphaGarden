@@ -48,6 +48,8 @@ class Plant:
 
         self.type = plant_type
 
+        self.companionship_factor = 1.0
+
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
         Waiting = WaitingStage(self, 30, 2) if self.type == "invasive" else WaitingStage(self, 10, 2)

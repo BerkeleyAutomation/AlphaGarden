@@ -31,12 +31,14 @@ args = parser.parse_args()
 
 def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
              prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
-             garden_step, num_plant_types, seed, multi=False):
+             garden_step, num_plant_types, seed, multi=False, randomize_seed_coords=False,
+             plant_seed_config_file_path=None):
     env = gym.make(
         'simalphagarden-v0',
         wrapper_env=SimAlphaGardenWrapper(garden_time_steps, rows, cols, sector_rows,
                                           sector_cols, prune_window_rows, prune_window_cols,
-                                          step=garden_step, seed=seed),
+                                          step=garden_step, seed=seed, randomize_seed_coords=randomize_seed_coords,
+                                          plant_seed_config_file_path=plant_seed_config_file_path),
         garden_x=rows,
         garden_y=cols,
         garden_z=depth,
@@ -265,18 +267,23 @@ if __name__ == '__main__':
     naive_prune_threshold = args.threshold
     save_dir = args.output_directory
 
+    seed_config_path = '/Users/sebastianoehme/Downloads/seed'
+    randomize_seeds_cords_flag = False
     
     for i in range(args.tests):
         trial = i + 1
         seed = args.seed + i
         
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
+                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
+                       randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
         
         if args.policy == 'b':
             if args.multi:
-                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
+                               action_low, action_high, obs_low, obs_high, collection_time_steps, garden_step,
+                               num_plant_types, seed, args.multi, randomize_seed_coords=randomize_seeds_cords_flag,
+                               plant_seed_config_file_path=seed_config_path)
                 evaluate_baseline_policy_multi(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
@@ -313,8 +320,10 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
             if args.multi:
-                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
+                               action_low, action_high, obs_low, obs_high, collection_time_steps, garden_step,
+                               num_plant_types, seed, args.multi, randomize_seed_coords=randomize_seeds_cords_flag,
+                               plant_seed_config_file_path=seed_config_path)
                 evaluate_learned_policy_multi(env, policy, collection_time_steps, sector_obs_per_day, trial)
             else:
                 evaluate_learned_policy_serial(env, policy, collection_time_steps, trial)
