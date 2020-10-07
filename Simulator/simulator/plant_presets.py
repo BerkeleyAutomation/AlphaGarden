@@ -56,33 +56,31 @@ def _compute_from_table_values(
     }
 
 SEED_SPACING = {
- 'borage': 15,
- 'mizuna': 10,
- 'sorrel': 12,
- 'cilantro': 6,
- 'radicchio': 9,
- 'kale': 15,
- 'green_lettuce': 12,
- 'red_lettuce': 10,
- 'arugula': 12,
- 'swiss_chard': 14,
- 'turnip': 9,
- 'mint': 12
+ 'borage':  0.381,
+ 'mizuna': 0.254,
+ 'sorrel': 0.3048,
+ 'cilantro': 0.1524,
+ 'radicchio': 0.2286,
+ 'kale': 0.381,
+ 'green_lettuce': 0.3048,
+ 'red_lettuce': 0.254,
+ 'arugula': 0.3048,
+ 'swiss_chard': 0.3556,
+ 'turnip': 0.2286
 }
 
 COMPANION_NEIGHBORHOOD_RADII = {
- 'borage': 15,
- 'mizuna': 10,
- 'sorrel': 12,
- 'cilantro': 6,
- 'radicchio': 9,
- 'kale': 15,
- 'green_lettuce': 12,
- 'red_lettuce': 10,
- 'arugula': 12,
- 'swiss_chard': 14,
- 'turnip': 9,
- 'mint': 12
+ 'borage':  0.381,
+ 'mizuna': 0.254,
+ 'sorrel': 0.3048,
+ 'cilantro': 0.1524,
+ 'radicchio': 0.2286,
+ 'kale': 0.381,
+ 'green_lettuce': 0.3048,
+ 'red_lettuce': 0.254,
+ 'arugula': 0.3048,
+ 'swiss_chard': 0.3556,
+ 'turnip': 0.2286
 }
 
 PLANTS_RELATION = {
