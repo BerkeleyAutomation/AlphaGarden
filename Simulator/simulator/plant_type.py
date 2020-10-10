@@ -56,9 +56,12 @@ class PlantType:
                     [x, y] = points[i]
                     x = int(round(x))
                     y = int(round(y))
+                    coords.remove((x, y))
                 l = labels[i]
                 plant_type = PLANTS[l]
                 plants.append(Plant.from_preset(plant_type, x, y))
+                self.plant_in_bounds += 1
+                self.plant_centers.append(tuple((x, y)))
 
         else:
             # If using a subset of the plant types defined in plant_presets.py, uncomment and modify the two lines below
