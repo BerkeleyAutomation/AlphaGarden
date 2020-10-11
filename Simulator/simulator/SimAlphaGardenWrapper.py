@@ -165,7 +165,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample),
                        self.garden.get_water_grid(center_to_sample),
-                       self.garden.get_health_grid(center_to_sample)))
+                       self.garden.get_health_grid(center_to_sample))), \
+            np.dstack((self.garden.get_plant_prob_full(),
+                       self.garden.get_water_grid_full(),
+                       self.garden.get_health_grid_full()))
 
     def get_canopy_image(self, center, eval):
         """Get image for canopy cover of the garden and save image to specified directory.
@@ -388,3 +391,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
             Float, radius of plant.
         """
         return self.garden.get_prune_window_greatest_width(center)
+    
+    def get_simulator_state_copy(self):
+        """Get the current stat of all simulator values to be able to restart at the current state.
+        
+        Return:
+            GardenState object.
+        """
+        return self.garden.get_simulator_state_copy()

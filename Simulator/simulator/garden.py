@@ -1,6 +1,7 @@
 import numpy as np
 from heapq import nlargest
 from simulator.logger import Logger, Event
+from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
 from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
@@ -8,9 +9,10 @@ import multiprocessing as mp
 
 
 class Garden:
-    def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=5, init_water_mean=0.4,
-                 init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
+    def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
+                 prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001,
+                 irr_threshold=5, init_water_mean=0.4, init_water_scale=0.1, plant_types=[],
+                 skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
 
         Args:
@@ -34,7 +36,10 @@ class Garden:
         """
 
         #: List of dictionaries: one for each plant type, with plant ids as keys, plant objects as values.
-        self.plants = [{} for _ in range(len(plant_types))]
+        if not garden_state:
+            self.plants = [{} for _ in range(len(plant_types))]
+        else:
+            self.plants = garden_state.plants
 
         self.N = N
         self.M = M
@@ -52,28 +57,39 @@ class Garden:
         health (integer), and set of plants that can get water/light from that location.
         First dimension is horizontal, second is vertical
         """
-        self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
-        self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
-        self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+        if not garden_state:
+            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
+            self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
+            self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+        else:
+            self.grid = garden_state.grid
 
         #: Grid for plant growth state representation.
-        self.plant_grid = np.zeros((N, M, len(plant_types)))
+        if not garden_state:
+            self.plant_grid = np.zeros((N, M, len(plant_types)))
+        else:
+            self.plant_grid = garden_state.plant_grid
         
         #: Grid to hold the plant probabilities of each location, depth is 1 + ... b/c of 'earth'.
-        self.plant_prob = np.zeros((N, M, 1 + len(plant_types)))
+        if not garden_state:
+            self.plant_prob = np.zeros((N, M, 1 + len(plant_types)))
+        else:
+            self.plant_prob = garden_state.plant_prob
 
         #: Grid for plant leaf state representation.
-        self.leaf_grid = np.zeros((N, M, len(plant_types)))
+        if not garden_state:
+            self.leaf_grid = np.zeros((N, M, len(plant_types)))
+        else:
+            self.leaf_grid = garden_state.leaf_grid
 
         #: Grid for plant radius representation.
         self.radius_grid = np.zeros((N, M, 1))
 
         #: Initializes empty lists in grid.
-        for i in range(N):
-            for j in range(M):
-                self.grid[i, j]['nearby'] = set()
-
-        self.plant_locations = {}
+        if not garden_state:
+            for i in range(N):
+                for j in range(M):
+                    self.grid[i, j]['nearby'] = set()
 
         self.step = step
 
@@ -97,14 +113,21 @@ class Garden:
         self.performing_timestep = True
 
         #: Add initial plants to grid.
-        self.curr_id = 0
-        for plant in plants:
-            if skip_initial_germination:
-                plant.current_stage().skip_to_end()
-            self.add_plant(plant)
+        if not garden_state:
+            self.plant_locations = {}
+            self.curr_id = 0
+            for plant in plants:
+                if skip_initial_germination:
+                    plant.current_stage().skip_to_end()
+                self.add_plant(plant)
+        else:
+            self.plant_locations = garden_state.plant_locations
 
         #: Growth map for circular plant growth
-        self.growth_map = self.compute_growth_map()
+        if not garden_state:
+            self.growth_map = self.compute_growth_map()
+        else:
+            self.growth_map = garden_state.growth_map
 
         #: Number of plants deep to consider assigning light to.
         self.num_plants_to_assign = 3
@@ -244,6 +267,7 @@ class Garden:
                 self.perform_timestep_prune(sectors[i])
         self.distribute_light()
         self.distribute_water()
+        print(sum(actions))
         self.grow_plants()
 
         for sector in sectors:
@@ -829,7 +853,7 @@ class Garden:
         """
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
         return self.health_grid
-    #
+
     def get_plant_prob(self, center):
         """ Get padded grid with the plant probabilities of each location in sector.
 
@@ -853,6 +877,14 @@ class Garden:
         
         temp = np.pad(np.copy(self.plant_prob), ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
         return temp[x_low:x_high+1,y_low:y_high,:]
+    
+    def get_plant_prob_full(self):
+        """ Get grid with plant probabilities for entire garden
+
+        Return
+            Array with plant probabilities for entire garden.
+        """
+        return self.plant_prob
 
     def get_cc_per_plant(self):
         """ Get number of grid points per plant type in which the specific plant type is the highest plant.
@@ -871,6 +903,15 @@ class Garden:
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
         return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
+
+    def get_simulator_state_copy(self):
+       """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.
+       
+       Return
+           Stacked array of deep copies of plants, water, health, plant probabilities, leaf and plant types.
+       """
+       return GardenState(self.plants, self.grid, self.plant_grid, self.plant_prob, self.leaf_grid,
+                          self.plant_types, self.plant_locations, self.growth_map)
 
     def show_animation(self):
         """ Helper function for animation."""

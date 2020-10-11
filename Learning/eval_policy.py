@@ -6,7 +6,7 @@ from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillo
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 import simalphagarden
-import simulator.baselines.baseline_policy as baseline_policy
+import simulator.baselines.analytic_policy as analytic_policy
 from net import Net
 from constants import TrainingConstants
 import numpy as np
@@ -16,6 +16,7 @@ import argparse
 import os
 import multiprocessing as mp
 import time
+from simulator.garden import Garden
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tests', type=int, default=1)
@@ -72,6 +73,7 @@ def get_action_net(env, i, center, policy, actions):
     action = torch.argmax(policy(x)).item()
     actions.put((i, action))
     
+''' WILL NOT WORK WITH NEW FULL STATE OBS '''
 def evaluate_learned_policy_multi(env, policy, steps, sector_obs_per_day, trial, save_dir='learned_policy_data/'):
     obs = env.reset()
     for day in range(steps // sector_obs_per_day):
@@ -89,6 +91,7 @@ def evaluate_learned_policy_multi(env, policy, steps, sector_obs_per_day, trial,
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
+''' WILL NOT WORK WITH NEW FULL STATE OBS '''
 def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_policy_data/'):
     obs = env.reset()
     for i in range(steps):
@@ -118,7 +121,7 @@ def get_action(env, i, center, policy, actions):
                     sector_obs_per_day, vectorized=False, eval=True)[0]
     actions.put((i, action))
 
-def evaluate_baseline_policy_multi(env, policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_rows, sector_cols, 
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
                              sector_obs_per_day, trial, save_dir='adaptive_policy_data/'):
     obs = env.reset()
@@ -137,7 +140,7 @@ def evaluate_baseline_policy_multi(env, policy, collection_time_steps, sector_ro
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
     
-def evaluate_baseline_policy_serial(env, policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
                             sector_obs_per_day, trial, save_dir, vis_identifier):
     obs = env.reset()
@@ -181,14 +184,14 @@ def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, 
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_baseline_compare_net(env, baseline_policy, net_policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_time_steps, sector_rows, sector_cols, 
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
                              sector_obs_per_day, trial, save_dir='baseline_compare_net_data/'):
     obs = env.reset()
     for i in range(collection_time_steps):
         # baseline
         cc_vec = env.get_global_cc_vec()
-        action = baseline_policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+        action = analytic_policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                         prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                         sector_obs_per_day, vectorized=False, eval=False)[0]
         
@@ -285,11 +288,11 @@ if __name__ == '__main__':
             if args.multi:
                 env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                     action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
-                evaluate_baseline_policy_multi(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                evaluate_analytic_policy_multi(env, analytic_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
             else:
-                evaluate_baseline_policy_serial(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                evaluate_analytic_policy_serial(env, analytic_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'n':
@@ -308,7 +311,7 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
             
-            evaluate_baseline_compare_net(env, baseline_policy.policy, policy, collection_time_steps,
+            evaluate_baseline_compare_net(env, analytic_policy.policy, policy, collection_time_steps,
                                           sector_rows, sector_cols, prune_window_rows, prune_window_cols,
                                           garden_step, water_threshold, sector_obs_per_day, trial)
         else:

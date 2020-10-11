@@ -5,7 +5,7 @@ import simalphagarden
 import os
 import pathlib
 from file_utils import FileUtils
-import simulator.baselines.baseline_policy as baseline_policy
+import simulator.baselines.analytic_policy as analytic_policy
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
@@ -89,5 +89,5 @@ if __name__ == '__main__':
         data_collection.init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
                                  prune_window_cols, action_low, action_high, obs_low, obs_high,
                                  collection_time_steps, garden_step, num_plant_types, dir_path, seed),
-        baseline_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
+        analytic_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)

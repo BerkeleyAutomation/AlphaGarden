@@ -126,7 +126,8 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     Args
         timestep (int): simulation time step.
         state (tuple of (array, array)): Observed state (Reshaped global canopy cover vector,
-            array containing padded grid values: plant probabilities, water and plant's health each location in sector.
+            array containing padded grid values: plant probabilities, water and plant's health each location in sector,
+            and array containing full observation of the garden for plant probabilities, water and plant health.
         global_cc_vec (array): Global canopy cover.
         sector_rows (int): Row size of a sector.
         sector_cols (int): Column size of a sector.
@@ -143,6 +144,9 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         List with action [int].
 
     """
+    # Get rid of full garden observations
+    state = state[:-1]
+    
     if eval:
         plants_and_water = state
     else:
