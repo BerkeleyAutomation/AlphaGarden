@@ -267,7 +267,6 @@ class Garden:
                 self.perform_timestep_prune(sectors[i])
         self.distribute_light()
         self.distribute_water()
-        print(sum(actions))
         self.grow_plants()
 
         for sector in sectors:
