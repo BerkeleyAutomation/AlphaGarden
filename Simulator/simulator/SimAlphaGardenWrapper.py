@@ -162,10 +162,48 @@ class SimAlphaGardenWrapper(WrapperEnv):
         cc_per_plant = self.garden.get_cc_per_plant()
         # Amount of soil and number of grid points per plant type in which the specific plant type is the highest plant.
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
+        for i in range(len(global_cc_vec)):
+            k  = np.random.randint(-2, 2)
+            global_cc_vec[i] += k
+        plant_prob = self.garden.get_plant_prob(center_to_sample)
+        water_gri = self.garden.get_water_grid(center_to_sample)
+        health_gri = self.garden.get_health_grid(center_to_sample)
+        # water adjustment by -0.3 to 0.3
+  #      max_val, min_val = 0.2, -0.2
+   #     range_size = (max_val - min_val)
+   #     water_adj = (np.random.rand(1) * range_size + min_val)[0]
+   #     for i in range(len(water_gri)):
+   #         for j in range(len(water_gri[0])):
+   #             temp = water_gri[i][j][0] + (np.random.rand(1) * range_size + min_val)[0]
+   #             if temp > 1:
+    #                temp = 1.0
+     #           if temp < 0:
+     #               temp = 0.0
+      #          water_gri[i][j][0] = temp
+
+        # health adjustment by -1 to 1
+    #    for i in range(len(health_gri)):
+     #       for j in range(len(health_gri[0])):
+      #          temp = health_gri[i][j][0] + np.random.randint(-1, 1)
+       #         if temp > 5:
+        #            temp = 5
+         #       if temp < 0:
+          #          temp = 0
+           #     health_gri[i][j][0] = temp
+
+#        for i in range(len(plant_prob)):
+ #           for j in range(len(plant_prob[0])):
+  #              if np.random.rand(1)[0] < 0.02:
+   #                 k = np.random.randint(0, len(plant_prob[i][j] - 1))
+    #                prev = np.argmax(plant_prob[i][j])
+     #               if prev != k:
+      #                  plant_prob[i][j][prev] = 0
+       #                 plant_prob[i][j][k] = 1
+        
         return center_to_sample, global_cc_vec, \
-            np.dstack((self.garden.get_plant_prob(center_to_sample),
-                       self.garden.get_water_grid(center_to_sample),
-                       self.garden.get_health_grid(center_to_sample)))
+            np.dstack((plant_prob,
+                       water_gri,
+                       health_gri))
 
     def get_canopy_image(self, center, eval):
         """Get image for canopy cover of the garden and save image to specified directory.

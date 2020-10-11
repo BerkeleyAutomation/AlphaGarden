@@ -868,9 +868,9 @@ class Garden:
         Return
             Stacked array with state for plant, leaves, water, health of the garden for each point.
         """
-        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2) #0, 1
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2) # 1 5
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid)) #flip bits for leaf, -0.3, 0.3, fix the bounds for everything 
 
     def show_animation(self):
         """ Helper function for animation."""

@@ -22,7 +22,6 @@ class PlantType:
             cols (int): Amount columns for the grid modeling the garden (M in paper).
             sector_rows (int): Row size of a sector.
             sector_cols  (int): Column size of a sector.
-
         Return
             List of plant objects.
         """
