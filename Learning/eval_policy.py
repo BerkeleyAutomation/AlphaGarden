@@ -151,15 +151,16 @@ def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_ro
 def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
                             sector_obs_per_day, trial, save_dir, vis_identifier):
-    wrapper = True
+    wrapper = True # If True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
     actions = []
     obs = env.reset()
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
             print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
             cov, div, a, b = env.get_metrics()
-            print(cov, div)
             vis.get_canopy_image_full(False, vis_identifier)
+            # print("ENV:", env.__dict__)
+            # print("ENV WRAPPER:", env.wrapper_env.__dict__)
         cc_vec = env.get_global_cc_vec()
         if wrapper:
             if i % sector_obs_per_day == 0:
@@ -174,7 +175,7 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
             cov, div, a, b = env.get_metrics()
         actions.append(action)
         obs, rewards, _, _ = env.step(action)
-    print(sum(actions))
+    print(actions)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 

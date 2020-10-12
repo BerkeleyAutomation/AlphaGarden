@@ -58,6 +58,13 @@ def wrapperPolicy(env, timestep, state, global_cc_vec, sector_rows, sector_cols,
         #get state from the new fucntion just made
         copy_state = copy.deepcopy(state) #copy the state
         curr_env = copy_env(env)   #make a copy of env
+        # print("ENV:", env.__dict__)
+        # print("ENV WRAPPER:", env.wrapper_env.__dict__)
+        # print("ENV Garden:", dir(curr_env.wrapper_env.garden))
+        # print("\n COPY_ENV:", curr_env.__dict__)
+        # print("COPY ENV WRAPPER:", curr_env.wrapper_env.__dict__)
+        # print("COPY ENV GARDEN", curr_env.wrapper_env.garden.__dict__)
+        print("CHECK IF SAME", env.wrapper_env.garden.__dict__ == curr_env.wrapper_env.garden.__dict__)
         curr_env.wrapper_env.garden.prune_rate = prune_rates[i] #change the prune_rate inside the copied env
         obs = copy_state
         for j in range(sector_obs_per_day): # for each sector_obs_per_day
@@ -102,16 +109,16 @@ def copy_env(env):
         multi=multi
     )
     
-    copy_env.wrapper_env.num_sectors = (copy_env.wrapper_env.rows * copy_env.wrapper_env.cols) / (copy_env.wrapper_env.sector_rows * copy_env.wrapper_env.sector_cols)
+    copy_env.wrapper_env.num_sectors = (env.wrapper_env.rows * env.wrapper_env.cols) / (env.wrapper_env.sector_rows * env.wrapper_env.sector_cols)
 
-    copy_env.wrapper_env.PlantType = PlantType()  #: :obj:`PlantType`: Available types of Plant objects (modeled).
+    copy_env.wrapper_env.PlantType = copy.deepcopy(env.wrapper_env.PlantType) #: :obj:`PlantType`: Available types of Plant objects (modeled).
     copy_env.wrapper_env.reset()  
     #: Reset simulator.
 
-    #copy_env.wrapper_env.garden =  Garden(garden_state = env.get_simulator_state_copy())
+    # copy_env.wrapper_env.garden =  Garden(garden_state = env.get_simulator_state_copy())
     copy_env.wrapper_env.garden = copy.deepcopy(env.wrapper_env.garden)
 
-    copy_env.wrapper_env.curr_action = env.wrapper_env.curr_action  #: int: Current action selected. 0 = no action, 1 = irrigation, 2 = pruning
+    copy_env.wrapper_env.curr_action = copy.deepcopy(env.wrapper_env.curr_action)  #: int: Current action selected. 0 = no action, 1 = irrigation, 2 = pruning
 
     #: Configuration file parser for reinforcement learning with gym.
     copy_env.wrapper_env.config = configparser.ConfigParser()
@@ -128,20 +135,21 @@ def copy_env(env):
     #: Array of [int,int]: Initial locations without seeds [row, col].
     #: Array of [int,int]: Locations without seeds [row, col] for sectors.
     copy_env.wrapper_env.non_plant_centers = copy.deepcopy(env.wrapper_env.non_plant_centers)
-    copy_env.wrapper_env.centers_to_execute = copy.deepcopy(copy_env.wrapper_env.centers_to_execute)
-    copy_env.wrapper_env.actions_to_execute = copy.deepcopy(copy_env.wrapper_env.actions_to_execute)
+    copy_env.wrapper_env.centers_to_execute = copy.deepcopy(env.wrapper_env.centers_to_execute)
+    copy_env.wrapper_env.actions_to_execute = copy.deepcopy(env.wrapper_env.actions_to_execute)
     #: Array of [int,int]: Locations [row, col] where to perform actions.
     #: List of int: Actions to perform.
     
     #: List of tuples (str, float): Tuple containing plant type it's plant radius.
     #: List of tuples (str, float): Tuple containing plant type it's plant height.
-    copy_env.wrapper_env.plant_radii = copy.deepcopy(copy_env.wrapper_env.plant_radii)
-    copy_env.wrapper_env.plant_heights = copy.deepcopy(copy_env.wrapper_env.plant_heights)
-    copy_env.wrapper_env.dir_path = env.wrapper_env.dir_path
+    copy_env.wrapper_env.plant_radii = copy.deepcopy(env.wrapper_env.plant_radii)
+    copy_env.wrapper_env.plant_heights = copy.deepcopy(env.wrapper_env.plant_heights)
+    copy_env.wrapper_env.dir_path = copy.deepcopy(env.wrapper_env.dir_path)
 
+    copy_env.reward = 0
 
-    copy_env.current_step =  env.current_step
-    copy_env.sector = env.sector
+    copy_env.current_step =  copy.deepcopy(env.current_step)
+    copy_env.sector = copy.deepcopy(env.sector)
     copy_env.curr_img = copy.deepcopy(env.curr_img)
 
     copy_env.global_cc_vec = copy.deepcopy(env.global_cc_vec)
