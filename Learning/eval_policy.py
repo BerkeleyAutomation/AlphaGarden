@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import gym
 import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper

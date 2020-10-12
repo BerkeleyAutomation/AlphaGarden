@@ -47,39 +47,32 @@ def wrapperPolicy(env, timestep, state, global_cc_vec, sector_rows, sector_cols,
         List with action [int].
 
     """
-    # Get rid of full garden observations
-    # state = state[:-1]
-    prune_rates = [0.15]
-    all_actions = [[]] #match the size of prune_rates
-    div_cov_metrics = []
+    prune_rates = [0.15] # prune rates for the adaptive policies
+    all_actions = [[]] # match the size of prune_rates as each array is a set of actions for each policy, 0th prune rate corresponds to 0th array of actions
+    div_cov_metrics = [] # metrics for diversity-coverage for each prune rate
     day = timestep // sector_obs_per_day
-    print(timestep, sector_obs_per_day, day)
   
-    for i in range(len(prune_rates)):
+    # each day process 
+
+    for i in range(len(prune_rates)): # go through each prune rate
         #get state from the new fucntion just made
-        # env reset and pass the garden state for the garden
-        div_cov = 0
-        copy_state = copy.deepcopy(state)
-        #make a copy of env
-        curr_env = copy_env(env)        
-        curr_env.wrapper_env.garden.prune_rate = prune_rates[i]
+        copy_state = copy.deepcopy(state) #copy the state
+        curr_env = copy_env(env)   #make a copy of env
+        curr_env.wrapper_env.garden.prune_rate = prune_rates[i] #change the prune_rate inside the copied env
         obs = copy_state
-        cov, div, water, act = curr_env.get_metrics()
-        for j in range(sector_obs_per_day):
-            cc_vec = curr_env.get_global_cc_vec()
+        for j in range(sector_obs_per_day): # for each sector_obs_per_day
+            cc_vec = curr_env.get_global_cc_vec() #calling the adaptive policy with the specific prune rate for each timestep
             action = analytic_policy.policy(timestep, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                         prune_window_cols, step, water_threshold, num_irr_actions,
                         sector_obs_per_day, vectorized=False)[0]
-            all_actions[i].append(action)
+            all_actions[i].append(action) # add the action
             obs, rewards, _, _ = curr_env.step(action) # feed obs back into analytic policy
-            cov, div, water, act = curr_env.get_metrics()
-        
+        cov, div, water, act = curr_env.get_metrics() #get the cov and div to calculate diversity-coverage
         div_cov = cov[-1] * div[-1]
-        #find a way to get metric for that policy
         div_cov_metrics.append(div_cov)
-    metrics = np.array(div_cov_metrics)
-    best_action = all_actions[np.argmax(metrics)]
-    return best_action
+    metrics = np.array(div_cov_metrics) #change to np array
+    best_action = all_actions[np.argmax(metrics)] #find the best policy and its corresponding set of actions
+    return best_action #return the array of actions for the day for the best policy
 
 
 def copy_env(env):
@@ -154,8 +147,3 @@ def copy_env(env):
     copy_env.global_cc_vec = copy.deepcopy(env.global_cc_vec)
 
     return copy_env
-
-
-   
-
-   

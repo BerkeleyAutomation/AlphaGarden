@@ -1,6 +1,7 @@
 import numpy as np
 from heapq import nlargest
 from simulator.logger import Logger, Event
+from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
 from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
@@ -8,11 +9,11 @@ import multiprocessing as mp
 
 
 class Garden:
-    def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=5, init_water_mean=0.4,
-                 init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
+    def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
+                 prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001,
+                 irr_threshold=5, init_water_mean=0.4, init_water_scale=0.1, plant_types=[],
+                 skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
-
         Args:
             plants (list of plant objects): Plants objects for Garden.
             N (int): Amount rows for the grid modeling the garden (N in paper).
@@ -30,11 +31,13 @@ class Garden:
             skip_initial_germination (bool): Skip initial germination stage.
             animate (bool): Animate simulator run.  Deprecated!
             save (bool): Save experiment plots.  Deprecated!
-
         """
 
         #: List of dictionaries: one for each plant type, with plant ids as keys, plant objects as values.
-        self.plants = [{} for _ in range(len(plant_types))]
+        if not garden_state:
+            self.plants = [{} for _ in range(len(plant_types))]
+        else:
+            self.plants = garden_state.plants
 
         self.N = N
         self.M = M
@@ -52,28 +55,39 @@ class Garden:
         health (integer), and set of plants that can get water/light from that location.
         First dimension is horizontal, second is vertical
         """
-        self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
-        self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
-        self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+        if not garden_state:
+            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
+            self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
+            self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+        else:
+            self.grid = garden_state.grid
 
         #: Grid for plant growth state representation.
-        self.plant_grid = np.zeros((N, M, len(plant_types)))
+        if not garden_state:
+            self.plant_grid = np.zeros((N, M, len(plant_types)))
+        else:
+            self.plant_grid = garden_state.plant_grid
         
         #: Grid to hold the plant probabilities of each location, depth is 1 + ... b/c of 'earth'.
-        self.plant_prob = np.zeros((N, M, 1 + len(plant_types)))
+        if not garden_state:
+            self.plant_prob = np.zeros((N, M, 1 + len(plant_types)))
+        else:
+            self.plant_prob = garden_state.plant_prob
 
         #: Grid for plant leaf state representation.
-        self.leaf_grid = np.zeros((N, M, len(plant_types)))
+        if not garden_state:
+            self.leaf_grid = np.zeros((N, M, len(plant_types)))
+        else:
+            self.leaf_grid = garden_state.leaf_grid
 
         #: Grid for plant radius representation.
         self.radius_grid = np.zeros((N, M, 1))
 
         #: Initializes empty lists in grid.
-        for i in range(N):
-            for j in range(M):
-                self.grid[i, j]['nearby'] = set()
-
-        self.plant_locations = {}
+        if not garden_state:
+            for i in range(N):
+                for j in range(M):
+                    self.grid[i, j]['nearby'] = set()
 
         self.step = step
 
@@ -97,14 +111,21 @@ class Garden:
         self.performing_timestep = True
 
         #: Add initial plants to grid.
-        self.curr_id = 0
-        for plant in plants:
-            if skip_initial_germination:
-                plant.current_stage().skip_to_end()
-            self.add_plant(plant)
+        if not garden_state:
+            self.plant_locations = {}
+            self.curr_id = 0
+            for plant in plants:
+                if skip_initial_germination:
+                    plant.current_stage().skip_to_end()
+                self.add_plant(plant)
+        else:
+            self.plant_locations = garden_state.plant_locations
 
         #: Growth map for circular plant growth
-        self.growth_map = self.compute_growth_map()
+        if not garden_state:
+            self.growth_map = self.compute_growth_map()
+        else:
+            self.growth_map = garden_state.growth_map
 
         #: Number of plants deep to consider assigning light to.
         self.num_plants_to_assign = 3
@@ -132,7 +153,6 @@ class Garden:
 
     def add_plant(self, plant):
         """ Add plants to garden's grid locations.
-
         Args:
             plant: Plants objects for Garden.
         """
@@ -150,13 +170,10 @@ class Garden:
     
     def get_sector_bounds(self, center):
         """ Get bounds of sector from its center location.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
-
         Return:
             Four corner coordinates of sector.
-
         """
         x_low = center[0] - (self.sector_rows // 2)
         y_low = center[1] - (self.sector_cols // 2)
@@ -166,13 +183,10 @@ class Garden:
 
     def get_sector_bounds_no_pad(self, center):
         """Get bounds of sector from its center location.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
-
         Return:
             Four corner coordinates of sector.
-
         """
         x_low = max(0, center[0] - (self.sector_rows // 2))
         y_low = max(0, center[1] - (self.sector_cols // 2))
@@ -183,10 +197,8 @@ class Garden:
     
     def get_prune_bounds(self, center):
         """Get bounds of prune window.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
-
         Return:
             Four corner coordinates of sector.
         """
@@ -198,11 +210,9 @@ class Garden:
     
     def perform_timestep_irr(self, center, irrigation):
         """ Irrigate at given center coordinate.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
             irrigation (int): irrigation amounts
-
         """
         self.irrigation_points = {}
         center = (center[0], center[1])
@@ -212,24 +222,19 @@ class Garden:
     
     def perform_timestep_prune(self, center):
         """ Prune plants in given sector if certain amount of days have past.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center.
-
         """
         if self.timestep >= self.prune_delay:
             self.prune_sector_center(center)
 
     def perform_timestep(self, sectors=[], actions=[]):
         """ Execute actions at given locations then update light, water, growth and health time step of simulation.
-
         Args:
             sectors (Array of [int,int]): Locations [row, col] where to perform actions.
             actions (List of int): Actions to perform.
-
         Return:
             List of updated plant objects.
-
         """
         water_use = 0
         for i, action in enumerate(actions):
@@ -268,7 +273,6 @@ class Garden:
 
     def reset_water(self, water_amt):
         """ Resets all water resource levels to the same amount
-
         Args:
             water_amt: amount of water for location
         """
@@ -276,11 +280,9 @@ class Garden:
 
     def irrigate(self, location, amount):
         """ Updates water levels in grid in response to irrigation, location is (x, y) coordinate tuple.
-
         Args:
             location (Array of [int,int]): Location [row, col] where to perform actions.
             amount (float) amount of water for location.
-
         """
         lower_x = max(0, location[0] - self.irr_threshold)
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
@@ -297,10 +299,8 @@ class Garden:
 
     def get_water_amounts(self, step=5):
         """ Get accumulated water amount for certain window sizes in grid.
-
         Args:
             step (int): window size.
-
         Return:
             Array of tuple: location and water amount in window for grid.
         """
@@ -317,19 +317,16 @@ class Garden:
 
     def enumerate_grid(self, coords=False, x_low=None, y_low=None, x_high=None, y_high=None):
         """ Generator that yields grid information for points within boundary or garden.
-
         Args:
             coords (bool): Flag to yield tuple with grid info and coordinate
             x_low (int): Horizontal low coordinate.
             y_low (int): Vertical low coordinate.
             x_high (int): Horizontal high coordinate.
             y_high (int): Vertical high coordinate.
-
         Yields:
             Grid point information: water levels (float), health (int) and set of plants that have the grid point in its
             radius for window if boundary points are given, for entire grid otherwise.
             Coords flag extends yield with grid point coordinate (int, int).
-
         """
         if x_low and y_low and x_high and y_high:
             for i in range(x_low, x_high + 1):
@@ -342,11 +339,9 @@ class Garden:
 
     def distribute_light(self):
         """ Light allocation.
-
         Note:
             For each plant, the number of grid points visible overhead determines the amount of light it receives,
             while occluded points receive light in an exponentially decaying fashion.
-
         """
         for point in self.enumerate_grid():
             if point['nearby']:
@@ -357,10 +352,8 @@ class Garden:
 
     def distribute_water(self):
         """ Water allocation.
-
         Note:
             The plant uses water from its neighboring grid points to fulfill its growth potential.
-
         """
         # Log desired water levels of each plant before distributing
         for plant_type in self.plants:
@@ -401,13 +394,10 @@ class Garden:
 
     def grow_plant(self, plant):
         """ Compute plants growth vertically and horizontally and update size.
-
         Note:
             Logging key metrics.
-
         Args:
             plant: Plant object.
-
         """
         # next_step = plant.radius // self.step + 1
         # next_line_dist = next_step * self.step
@@ -427,10 +417,8 @@ class Garden:
 
     def update_plant_health(self, center):
         """ Update heath status of plants in sector.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center.
-
         """
         x_low, y_low, x_high, y_high = self.get_sector_bounds_no_pad(center)
         for point in self.enumerate_grid(coords=True, x_low=x_low, y_low=y_low, x_high=x_high, y_high=y_high):
@@ -458,12 +446,10 @@ class Garden:
 
     def update_plant_size(self, plant, upward=None, outward=None):
         """Update plant size after growth, stress or pruning.
-
         Args:
             plant: Plant object.
             upward (float): new vertical growth
             outward (float): new horizontal growth
-
         """
         if upward:
             plant.height += upward
@@ -473,14 +459,11 @@ class Garden:
 
     def update_plant_coverage(self, plant, record_coords_updated=False):
         """ Update leaf coverage of plant on grid for growth or stress.
-
         Args:
             plant: Plant object
             record_coords_updated:
-
         Return:
             List of coordinate tuples which got updated when record_coords_updated flag is set.
-
         """
         distances = np.array(list(zip(*self.growth_map))[0])
         next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
@@ -533,7 +516,6 @@ class Garden:
 
     def compute_plant_cc_dist(self):
         """ Compute number of grid points per plant type in which the specific plant type is the highest plant.
-
         Return
             Array of with number of grid points of highest canopy coverage per plant type.
         """
@@ -552,13 +534,10 @@ class Garden:
 
     def compute_plant_health(self, grid_shape):
         """ Compute health of the plants at each grid point.
-
         Args:
             grid_shape (tuple of (int,int)): Shape of garden grid.
-
         Return:
             Grid shaped array (M,N) with health state of plants.
-
         """
         plant_health_grid = np.empty(grid_shape)
         for point in self.enumerate_grid(coords=True):
@@ -592,11 +571,9 @@ class Garden:
 
     def prune_plant_type(self, center, plant_type_id):
         """ Prune plant by type in sector or garden which is largest, update plant size and coverage.
-
         Args
             center (Array of [int,int]): Location [row, col] of sector center.
             plant_type_id (int): Id of plant type.
-
         Return
             List of plant coordinate tuples which got pruned.
         """
@@ -616,10 +593,8 @@ class Garden:
 
     def get_prune_window_greatest_width(self, center):
         """ Get the radius of the tallest (non occluded) plant inside prune window.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
-
         Return:
             Float, radius of plant.
         """
@@ -640,7 +615,6 @@ class Garden:
     
     def prune_sector_center(self, center):
         """ Prune tallest plants in given sector.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
         """
@@ -671,10 +645,8 @@ class Garden:
 
     def save_water_use(self, amount):
         """ Add water used in time step.
-
         Args
             amount (float): water used per sector
-
         """
         self.water_use.append(amount)
 
@@ -702,7 +674,6 @@ class Garden:
 
     def compute_growth_map(self):
         """ Create growth map for circular plant growth.
-
         Return
                 Tuples of (float, (int,int)) for grow distances and grow points.
         """
@@ -717,10 +688,8 @@ class Garden:
 
     def get_garden_state(self):
         """ Get state matrix of garden.
-
         Return
             Stacked array with grids for plants, leaves, radii, water and heath.
-
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
@@ -728,22 +697,17 @@ class Garden:
 
     def get_radius_grid(self):
         """ Get grid for plant radius representation.
-
         Return
             Array (of garden size) with plant radii (float).
-
         """
         return self.radius_grid
 
     def get_plant_grid(self, center):
         """ Get padded plant gird for sector.
-
         Args
             center (Array of [int,int]): Location [row, col] of sector center.
-
         Return
             Array with plant grid for padded sector.
-
         """
         # TODO still needed?
         row_pad = self.sector_rows // 2
@@ -760,7 +724,6 @@ class Garden:
     
     def get_plant_grid_full(self):
         """ Get grid with plant growth state representation.
-
         Return
              Plant grid of size (row, column, number of plant types) with grow states (int).
         """
@@ -768,13 +731,10 @@ class Garden:
     
     def get_water_grid(self, center):
         """ Get padded water gird for sector.
-
         Args
             center (Array of [int,int]): Location [row, col] of sector center.
-
         Return
             Array with water grid for padded sector.
-
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         row_pad = self.sector_rows // 2
@@ -791,7 +751,6 @@ class Garden:
 
     def get_water_grid_full(self):
         """ Get water grid for entire garden
-
         Return
             Array with water level for entire garden.
         """
@@ -800,13 +759,10 @@ class Garden:
     
     def get_health_grid(self, center):
         """ Get padded health gird for sector.
-
         Args
             center (Array of [int,int]): Location [row, col] of sector center.
-
         Return
             Array with health grid for padded sector.
-
         """
         self.health_grid = np.expand_dims(self.grid['health'], axis=2) 
         row_pad = self.sector_rows // 2
@@ -823,25 +779,20 @@ class Garden:
 
     def get_health_grid_full(self):
         """ Get grid with health states for entire garden
-
         Return
             Array with health states for entire garden.
         """
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
         return self.health_grid
-    #
+
     def get_plant_prob(self, center):
         """ Get padded grid with the plant probabilities of each location in sector.
-
         Note
             Depth is 1 + ... b/c of 'earth'.
-
         Args
             center (Array of [int,int]): Location [row, col] of sector center.
-
         Return
             Array with grid with the plant probabilities of each location for padded sector.
-
         """
         row_pad = self.sector_rows // 2
         col_pad = self.sector_cols // 2 
@@ -853,10 +804,16 @@ class Garden:
         
         temp = np.pad(np.copy(self.plant_prob), ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
         return temp[x_low:x_high+1,y_low:y_high,:]
+    
+    def get_plant_prob_full(self):
+        """ Get grid with plant probabilities for entire garden
+        Return
+            Array with plant probabilities for entire garden.
+        """
+        return self.plant_prob
 
     def get_cc_per_plant(self):
         """ Get number of grid points per plant type in which the specific plant type is the highest plant.
-
         Return
             Array of with number of grid points of highest canopy coverage per plant type.
         """
@@ -864,13 +821,21 @@ class Garden:
 
     def get_state(self):
         """ Get state of the garden for all local and global quantities.
-
         Return
             Stacked array with state for plant, leaves, water, health of the garden for each point.
         """
-        self.water_grid = np.expand_dims(self.grid['water'], axis=2) #0, 1
-        self.health_grid = np.expand_dims(self.grid['health'], axis=2) # 1 5
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid)) #flip bits for leaf, -0.3, 0.3, fix the bounds for everything 
+        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
+        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
+
+    def get_simulator_state_copy(self):
+       """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.
+       
+       Return
+           Stacked array of deep copies of plants, water, health, plant probabilities, leaf and plant types.
+       """
+       return GardenState(self.plants, self.grid, self.plant_grid, self.plant_prob, self.leaf_grid,
+                          self.plant_types, self.plant_locations, self.growth_map)
 
     def show_animation(self):
         """ Helper function for animation."""
@@ -892,9 +857,7 @@ class Garden:
             pickle.dump({'plots': plots, "x_dim": self.N * self.step, "y_dim": self.M * self.step,
                          'coverage': self.coverage, 'diversity': self.diversity},
                         open(path, 'wb'))
-
         else:
             print(
                 "[Garden] Nothing to save. Set save=True when initializing to allow saving info of garden!")
-
     """
