@@ -104,6 +104,9 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_simulator_state_copy(self):
         return self.wrapper_env.get_simulator_state_copy()
+    
+    def set_prune_rate(self, prune_rate):
+        self.wrapper_env.set_prune_rate(prune_rate)
 
     def show_animation(self):
         return self.wrapper_env.show_animation()
