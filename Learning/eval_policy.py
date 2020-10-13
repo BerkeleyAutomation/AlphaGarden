@@ -245,7 +245,7 @@ if __name__ == '__main__':
     os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
 
     rows = 150
-    cols = 300
+    cols = 150
     num_plant_types = PlantType().num_plant_types
     depth = num_plant_types + 3  # +1 for 'earth' type, +1 for water, +1 for health
     sector_rows = 15
@@ -268,7 +268,7 @@ if __name__ == '__main__':
     save_dir = args.output_directory
 
     seed_config_path = '/Users/sebastianoehme/Downloads/seed'
-    randomize_seeds_cords_flag = False
+    randomize_seeds_cords_flag = True
     
     for i in range(args.tests):
         trial = i + 1
