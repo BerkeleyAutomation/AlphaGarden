@@ -21,8 +21,8 @@ import multiprocessing as mp
 import time
 from simulator.garden import Garden
 
-def wrapperPolicy(env, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
-           prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day,
+def wrapperPolicy(env, row, col, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
+           prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day, garden_state,
            vectorized=True, val=False):
     """ Perform baseline policy with pruning and irrigation action.
 
@@ -47,40 +47,84 @@ def wrapperPolicy(env, timestep, state, global_cc_vec, sector_rows, sector_cols,
         List with action [int].
 
     """
-    prune_rates = [0.15] # prune rates for the adaptive policies
-    all_actions = [[]] # match the size of prune_rates as each array is a set of actions for each policy, 0th prune rate corresponds to 0th array of actions
+    prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4] # prune rates for the adaptive policies
     div_cov_metrics = [] # metrics for diversity-coverage for each prune rate
     day = timestep // sector_obs_per_day
+    sectors_center = [] # sectors for 
+    sectors_state = []
   
     # each day process 
 
     for i in range(len(prune_rates)): # go through each prune rate
         #get state from the new fucntion just made
-        copy_state = copy.deepcopy(state) #copy the state
-        curr_env = copy_env(env)   #make a copy of env
-        # print("ENV:", env.__dict__)
-        # print("ENV WRAPPER:", env.wrapper_env.__dict__)
-        # print("ENV Garden:", dir(curr_env.wrapper_env.garden))
-        # print("\n COPY_ENV:", curr_env.__dict__)
-        # print("COPY ENV WRAPPER:", curr_env.wrapper_env.__dict__)
-        # print("COPY ENV GARDEN", curr_env.wrapper_env.garden.__dict__)
-        print("CHECK IF SAME", env.wrapper_env.garden.__dict__ == curr_env.wrapper_env.garden.__dict__)
-        curr_env.wrapper_env.garden.prune_rate = prune_rates[i] #change the prune_rate inside the copied env
-        obs = copy_state
+        garden_copy = copy_garden(garden_state=garden_state, rows=row, cols=col, sector_row= sector_rows, sector_col= sector_cols, prune_win_rows=prune_window_rows, prune_win_cols=prune_window_cols, step=step, prune_rate=prune_rates[i])
+        plant_type_obj = garden_copy.plant_type_obj
+        plant_centers = plant_type_obj.plant_centers
+        non_plant_centers = plant_type_obj.non_plant_centers
+        actions = [] # actions for each prune rate for each day
+        cc_vec = env.get_global_cc_vec() #calling the adaptive policy with the specific prune rate for each timestep
         for j in range(sector_obs_per_day): # for each sector_obs_per_day
-            cc_vec = curr_env.get_global_cc_vec() #calling the adaptive policy with the specific prune rate for each timestep
-            action = analytic_policy.policy(timestep, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+            if i == 0:
+                rand_sector = garden_to_sector(garden_copy, plant_centers, non_plant_centers, row, col, step)
+                sectors_state.append(rand_sector)
+                sectors_center.append(rand_sector[0])
+            else:
+                rand_sector = sectors_state[j]
+            action = analytic_policy.policy(timestep, rand_sector[1:], cc_vec, sector_rows, sector_cols, prune_window_rows,
                         prune_window_cols, step, water_threshold, num_irr_actions,
                         sector_obs_per_day, vectorized=False)[0]
-            all_actions[i].append(action) # add the action
-            obs, rewards, _, _ = curr_env.step(action) # feed obs back into analytic policy
-        cov, div, water, act = curr_env.get_metrics() #get the cov and div to calculate diversity-coverage
+            actions.append(action)
+        garden_copy.perform_timestep(sectors_center, actions)
+        cov = garden_copy.coverage
+        div = garden_copy.diversity
         div_cov = cov[-1] * div[-1]
         div_cov_metrics.append(div_cov)
     metrics = np.array(div_cov_metrics) #change to np array
-    best_action = all_actions[np.argmax(metrics)] #find the best policy and its corresponding set of actions
-    return best_action #return the array of actions for the day for the best policy
+    best_pr = prune_rates[np.argmax(metrics)] #find the best policy and its corresponding set of actions
+    return best_pr
 
+def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows, prune_win_cols, step, prune_rate):
+    garden = Garden(
+               garden_state=garden_state,
+                N=rows,
+                M=cols,
+                sector_rows=sector_row,
+                sector_cols=sector_col,
+                prune_window_rows=prune_win_rows,
+                prune_window_cols=prune_win_cols,
+                irr_threshold=IRR_THRESHOLD,
+                step=step,
+                prune_rate = prune_rate,
+                animate=False) 
+    return garden
+
+def garden_to_sector(garden, plant_centers, non_plant_centers, rows, cols, step):
+
+    #if len(actions_to_execute) <= PlantType.plant_in_bounds and len(plant_centers) > 0:
+    if(np.random.randint(0, 1) == 1):
+        np.random.shuffle(plant_centers)
+        center_to_sample = plant_centers[0]
+        plant_centers = plant_centers[1:]
+    else:
+        np.random.shuffle(non_plant_centers)
+        center_to_sample = non_plant_centers[0]
+        non_plant_centers = non_plant_centers[1:]
+
+    cc_per_plant = garden.get_cc_per_plant()
+    # Amount of soil and number of grid points per plant type in which the specific plant type is the highest plant.
+    global_cc_vec = np.append(rows * cols * step - np.sum(cc_per_plant), cc_per_plant)
+
+    plant_prob = garden.get_plant_prob(center_to_sample)
+    water_gri = garden.get_water_grid(center_to_sample)
+    health_gri = garden.get_health_grid(center_to_sample)
+
+    return center_to_sample, global_cc_vec, \
+        np.dstack((garden.get_plant_prob(center_to_sample),
+                    garden.get_water_grid(center_to_sample),
+                    garden.get_health_grid(center_to_sample))), \
+        np.dstack((garden.get_plant_prob_full(),
+                    garden.get_water_grid_full(),
+                    garden.get_health_grid_full()))
 
 def copy_env(env):
     num_plant_types = PlantType().num_plant_types
@@ -115,8 +159,8 @@ def copy_env(env):
     copy_env.wrapper_env.reset()  
     #: Reset simulator.
 
-    # copy_env.wrapper_env.garden =  Garden(garden_state = env.get_simulator_state_copy())
-    copy_env.wrapper_env.garden = copy.deepcopy(env.wrapper_env.garden)
+    copy_env.wrapper_env.garden =  Garden(garden_state = env.get_simulator_state_copy())
+    # copy_env.wrapper_env.garden = copy.deepcopy(env.wrapper_env.garden)
 
     copy_env.wrapper_env.curr_action = copy.deepcopy(env.wrapper_env.curr_action)  #: int: Current action selected. 0 = no action, 1 = irrigation, 2 = pruning
 

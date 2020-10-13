@@ -453,7 +453,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 prune_window_cols=self.prune_window_cols,
                 irr_threshold=IRR_THRESHOLD,
                 step=self.step,
-                plant_types=self.PlantType.plant_names,
+                plant_type=self.PlantType,
                 animate=False)
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
@@ -465,6 +465,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """Method called by the environment to display animations."""
         self.garden.show_animation()
 
+    def set_prune_rate(self, prune_rate):
+        """Sets the prune rate in the garden.
+        
+        Args:
+            prune_rate (float)
+        """
+        self.garden.set_prune_rate(prune_rate)
 
     def get_metrics(self):
         """Evaluate metrics of garden.

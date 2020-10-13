@@ -10,12 +10,13 @@ import multiprocessing as mp
 
 class Garden:
     def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
-                 prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001,
-                 irr_threshold=5, init_water_mean=0.4, init_water_scale=0.1, plant_types=[],
+                 prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001, prune_rate=PRUNE_RATE,
+                 irr_threshold=5, init_water_mean=0.4, init_water_scale=0.1, plant_type = None,
                  skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
         Args:
             plants (list of plant objects): Plants objects for Garden.
+            garden_state (GardenState): If passed in, the simulator will initialize its state from the passed in state
             N (int): Amount rows for the grid modeling the garden (N in paper).
             M (int): Amount columns for the grid modeling the garden (M in paper).
             sector_rows (int): Row size of a sector.
@@ -24,10 +25,11 @@ class Garden:
             prune_window_cols (int): Column size of pruning window.
             step (int): Distance between adjacent points in grid.
             evaporation_rate (float): Evapotranspiration rate 1 mm per day
+            prunte_rate (float): Prune rate.
             irr_threshold (int): Amount of grid points away from irrigation point that water will spread to.
             init_water_mean (float): Mean of normal distribution for initial water levels.
             init_water_scale (float): Standard deviation of normal distribution for for initial water levels.
-            plant_types (list of str): Names of available plant types.
+            plant_type (PlantType): PlantType object containing plant type information the garden uses.
             skip_initial_germination (bool): Skip initial germination stage.
             animate (bool): Animate simulator run.  Deprecated!
             save (bool): Save experiment plots.  Deprecated!
@@ -35,7 +37,7 @@ class Garden:
 
         #: List of dictionaries: one for each plant type, with plant ids as keys, plant objects as values.
         if not garden_state:
-            self.plants = [{} for _ in range(len(plant_types))]
+            self.plants = [{} for _ in range(len(plant_type.plant_names))]
         else:
             self.plants = garden_state.plants
 
@@ -47,8 +49,13 @@ class Garden:
         self.prune_window_rows = prune_window_rows
         self.prune_window_cols = prune_window_cols
 
-        # TODO: Set this list to be constant
-        self.plant_types = plant_types
+        if not garden_state:
+            self.plant_type_obj = plant_type
+            # TODO: Set this list to be constant
+            self.plant_types = self.plant_type_obj.plant_names
+        else:
+            self.plant_type_obj = garden_state.plant_type
+            self.plant_types = self.plant_type_obj.plant_names
 
         """
         Structured array of grid points. Each point contains its water levels (float)
@@ -64,19 +71,19 @@ class Garden:
 
         #: Grid for plant growth state representation.
         if not garden_state:
-            self.plant_grid = np.zeros((N, M, len(plant_types)))
+            self.plant_grid = np.zeros((N, M, len(plant_type.plant_names)))
         else:
             self.plant_grid = garden_state.plant_grid
         
         #: Grid to hold the plant probabilities of each location, depth is 1 + ... b/c of 'earth'.
         if not garden_state:
-            self.plant_prob = np.zeros((N, M, 1 + len(plant_types)))
+            self.plant_prob = np.zeros((N, M, 1 + len(plant_type.plant_names)))
         else:
             self.plant_prob = garden_state.plant_prob
 
         #: Grid for plant leaf state representation.
         if not garden_state:
-            self.leaf_grid = np.zeros((N, M, len(plant_types)))
+            self.leaf_grid = np.zeros((N, M, len(plant_type.plant_names)))
         else:
             self.leaf_grid = garden_state.leaf_grid
 
@@ -98,7 +105,7 @@ class Garden:
         self.prune_delay = PRUNE_DELAY
 
         #: Proportion of plant radius to decrease by after pruning action.
-        self.prune_rate = PRUNE_RATE 
+        self.prune_rate = prune_rate
 
         '''
         Determines max amount of coverage of one plant type in the garden before that plant is pruned
@@ -180,6 +187,15 @@ class Garden:
         x_high = center[0] + (self.sector_rows // 2)
         y_high = center[1] + (self.sector_cols // 2)
         return x_low, y_low, x_high, y_high 
+
+    def set_prune_rate(self, prune_rate):
+        """ Modifies the garden's prune rate.
+        
+        Args:
+            prune_rate (float)
+        """
+        self.prune_rate = prune_rate
+
 
     def get_sector_bounds_no_pad(self, center):
         """Get bounds of sector from its center location.
@@ -835,7 +851,7 @@ class Garden:
            Stacked array of deep copies of plants, water, health, plant probabilities, leaf and plant types.
        """
        return GardenState(self.plants, self.grid, self.plant_grid, self.plant_prob, self.leaf_grid,
-                          self.plant_types, self.plant_locations, self.growth_map)
+                          self.plant_type_obj, self.plant_locations, self.growth_map)
 
     def show_animation(self):
         """ Helper function for animation."""
