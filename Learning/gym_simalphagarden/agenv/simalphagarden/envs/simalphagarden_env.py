@@ -98,6 +98,12 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_metrics(self):
         return self.wrapper_env.get_metrics()
+
+    def get_simulator_state_copy(self):
+        return self.wrapper_env.get_simulator_state_copy()
+    
+    def set_prune_rate(self, prune_rate):
+        self.wrapper_env.set_prune_rate(prune_rate)
     
     def get_prune_window_greatest_width(self):
         return self.wrapper_env.get_prune_window_greatest_width(self.sector)

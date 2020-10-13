@@ -2,7 +2,6 @@ import copy
 
 class GardenState:
     """State of a garden.
-
         Args:
             plants (list of dictionaries): one for each plant type, with plant ids as keys, plant objects as values.
             grid (np array): structured array of grid points containing water, health and plants
@@ -13,7 +12,6 @@ class GardenState:
             plant_locations (2d array): boolean matrix of where plants are
             growth_map (list of tuples): growth map for circular plant growth
         """
-        
     def __init__(self, plants, grid, plant_grid, plant_prob, leaf_grid, plant_type,
                  plant_locations, growth_map):
         self.plants = copy.deepcopy(plants)
@@ -24,3 +22,4 @@ class GardenState:
         self.plant_type = copy.deepcopy(plant_type)
         self.plant_locations = copy.deepcopy(plant_locations)
         self.growth_map = copy.deepcopy(growth_map)
+        
