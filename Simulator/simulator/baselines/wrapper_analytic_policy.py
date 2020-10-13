@@ -97,7 +97,7 @@ def wrapperPolicy(env, row, col, timestep, state, global_cc_vec, sector_rows, se
     results.sort()
     results = [r[1] for r in results]
         
-    metrics = np.array(div_cov_metrics) #change to np array
+    metrics = np.array(results) #change to np array
     best_pr = prune_rates[np.argmax(metrics)] #find the best policy and its corresponding set of actions
     return best_pr
 
