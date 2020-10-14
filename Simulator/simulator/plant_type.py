@@ -3,6 +3,7 @@ from simulator.plant import Plant
 from simulator.plant_presets import PLANT_TYPES, COMPANION_NEIGHBORHOOD_RADII, PLANTS_RELATION
 from simulator.sim_globals import NUM_PLANTS, NUM_PLANT_TYPES_USED
 import pickle
+import math
 
 
 class PlantType:
@@ -77,8 +78,8 @@ class PlantType:
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
 
-        for plant in plants:
-            cf = 0
+        '''for plant in plants:
+            cf = 0.0
             companionship_plant_count = 0
             for companion_plant in plants:
                 if plant == companion_plant:
@@ -88,8 +89,21 @@ class PlantType:
                 if (plant.row - companion_plant.row) ** 2 + (plant.col - companion_plant.col) ** 2 <= influence_radius ** 2:
                     cf += companionship_factor_list[companion_plant.type]
                     companionship_plant_count += 1
-            plant.companionship_factor = 1 + cf / max(companionship_plant_count, 1)
-
+            plant.companionship_factor = 1.0 + cf / max(companionship_plant_count, 1)'''
+        sum=0
+        for plant in plants:
+            cf = 0.0
+            for companion_plant in plants:
+                if plant == companion_plant:
+                    continue
+                companionship_factor_list = PLANTS_RELATION[plant.type]
+                single_cf = companionship_factor_list[companion_plant.type]
+                exp_decay_factor = math.sqrt((companion_plant.row - plant.row) ** 2 + (companion_plant.col - plant.col) ** 2)
+                # companionship_factor * 1/((euclidian distance i,j))
+                cf += single_cf * (1 / exp_decay_factor)
+            plant.companionship_factor = max(0.0, 1.0 + cf)
+            sum += plant.companionship_factor
+        print(sum)
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 
         return plants
