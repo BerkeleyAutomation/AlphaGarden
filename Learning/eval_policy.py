@@ -208,10 +208,13 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
     print(prune_rates_order)
     print(div_cov)
     print(all_actions)
-    f = open("metrics.txt", "a")
+    dirname = './policy_metrics/'
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    f = open("./policy_metrics/prs.txt", "a")
     f.write("Prune Rates: "+ str(prune_rates_order))
-    f.write("\nActions: " + str(all_actions))
-    f.write("\nDiversity-Coverage: " + str(div_cov))
+    # f.write("\nActions: " + str(all_actions))
+    # f.write("\nDiversity-Coverage: " + str(div_cov))
     f.close()
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
