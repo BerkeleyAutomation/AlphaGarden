@@ -1,4 +1,5 @@
 import os
+
 """
 Global simulator/garden constants. Affects both test run and RL settings
 """
@@ -10,6 +11,8 @@ PRUNE_THRESHOLD = 2
 PRUNE_RATE = 0.15
 NUM_IRR_ACTIONS = 1
 IRR_THRESHOLD = 5  # unit size to calculate irrigation window.
+ROWS = 150
+COLS = 150
 
 NUM_PLANTS = 100
 NUM_PLANT_TYPES_USED = 10       

@@ -38,18 +38,19 @@ class PlantType:
             return sector_rows_half < r < rows - sector_rows_half and sector_cols_half < c < cols - sector_cols_half
         
         coords = [(r, c) for c in range(cols) for r in range(rows)]
-        # coords = coords[len(coords)//2:] + coords[:len(coords)//2]
+        #coords = coords[len(coords)//2:] + coords[:len(coords)//2]
         np.random.shuffle(coords)
-        # counter = 0
+        #counter = 0
         # If using a subset of the plant types defined in plant_presets.py, uncomment and modify the two lines below.
         # self.plant_types = self.plant_types[:]
         # self.num_plant_types = NUM_PLANT_TYPES_USED
-        for _ in range(NUM_PLANTS):
+        for i in range(NUM_PLANTS):
             name, plant = self.plant_types[np.random.randint(0, self.num_plant_types)]
+            # name, plant = self.plant_types[i % self.num_plant_types]
             # while (((coords[counter][0] % 15) != 0) or ((coords[counter][1] % 15) != 0)):
-            #    counter += 1
-            # coord = coords.pop(counter)
-            # counter+=1
+            #   counter += 1
+            #coord = coords.pop(counter)
+            #counter+=1
             coord = coords.pop(0)
             r, c = coord[0], coord[1]
             plants.extend([Plant(r, c, c1=plant['c1'], growth_time=plant['growth_time'],

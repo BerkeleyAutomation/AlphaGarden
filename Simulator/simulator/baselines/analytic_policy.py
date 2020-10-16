@@ -1,5 +1,5 @@
 import numpy as np
-from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED
+from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED, ROWS, COLS
 
 
 def plant_in_area(plants, r, c, w, h, plant_idx):
@@ -26,7 +26,7 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     Args
         global_cc_vec (array): Global canopy cover.
         plants (array): padded grid with the plant probabilities.
-        ector_rows (int): Row size of a sector.
+        sector_rows (int): Row size of a sector.
         sector_cols (int): Column size of a sector.
         prune_window_rows (int): Row size of pruning window.
         prune_window_cols (int): Column size of pruning window.
@@ -47,8 +47,11 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
         global_cc_vec[plant_id] -= prune_window_cc[plant_id] 
     
     proj_plant_cc = np.sum((global_cc_vec / np.sum(global_cc_vec, dtype="float"))[1:])
-    prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
+
+    global_cc_vec[0] += ROWS*COLS/NUM_PLANT_TYPES_USED
+    prob = global_cc_vec / np.sum(global_cc_vec, dtype="float") # We start from 1 because we don't include earth in diversity
     prob = prob[np.where(prob > 0)]
+    global_cc_vec[0] -= ROWS*COLS/NUM_PLANT_TYPES_USED
     entropy = -np.sum(prob * np.log(prob), dtype="float") / np.log(20)
     return proj_plant_cc, entropy
 

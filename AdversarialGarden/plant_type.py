@@ -45,15 +45,15 @@ class PlantType:
         #self.num_plant_types = 5 # for non-invasive
 
         #set-up
-        ratio = 0.3 # ratio of invasive plants to total num plants        
+        ratio = 0.1 # ratio of invasive plants to total num plants        
         num_invasive_plants = int(ratio * NUM_PLANTS)
         num_noninvasive_plants = NUM_PLANTS - num_invasive_plants
 
         # non-invasive species
 
         plants_planted = 0
-        for _ in range(num_noninvasive_plants):
-            name, plant = self.plant_types[np.random.randint(1, self.num_plant_types)] 
+        for _ in range(num_invasive_plants):
+            name, plant = self.plant_types[0]
             coord = coords.pop(0)
             r, c = coord[0], coord[1]
             plants.extend([Plant(r, c, c1=plant['c1'], growth_time=plant['growth_time'],
@@ -63,18 +63,18 @@ class PlantType:
             plants_planted += 1
             self.plant_centers.append(tuple((r, c)))
         potential_locations = list.copy(self.plant_centers)
-        # invasive species
-        for _ in range(num_invasive_plants):
+        # noninvasive species
+        for _ in range(num_noninvasive_plants):
             counter = 0
-            name, plant = self.plant_types[0]
+            name, plant = self.plant_types[np.random.randint(1, self.num_plant_types)]
             random_current_location = np.random.randint(0, len(potential_locations) - 1)
             coord = potential_locations[random_current_location]
             centerr, centerc = coord[0], coord[1]
-            while tuple((r, c)) in self.plant_centers or tuple((r, c)) not in coords:
-                r = centerr + np.random.randint(-2, 2)
-                c = centerc + np.random.randint(-2, 2)
+            while (abs(r - centerr) < 8 or abs(c - centerc) < 8) or tuple((r, c)) in self.plant_centers or tuple((r, c)) not in coords:
+                r = centerr + np.random.randint(-15, 15)
+                c = centerc + np.random.randint(-15, 15)
                 counter += 1
-                if counter > 30:
+                if counter > 50:
                     potential_locations.pop(random_current_location)
                     random_current_location = np.random.randint(0, len(potential_locations) - 1)
                     coord = potential_locations[random_current_location]

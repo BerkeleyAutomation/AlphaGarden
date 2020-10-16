@@ -14,7 +14,7 @@ class GardenState:
         """
 
     def __init__(self, plants, grid, plant_grid, plant_prob, leaf_grid, plant_type,
-                 plant_locations, growth_map):
+                 plant_locations, growth_map, radius_grid, timestep):
         self.plants = copy.deepcopy(plants)
         self.grid = copy.deepcopy(grid)
         self.plant_grid = copy.deepcopy(plant_grid)
@@ -23,4 +23,5 @@ class GardenState:
         self.plant_type = copy.deepcopy(plant_type)
         self.plant_locations = copy.deepcopy(plant_locations)
         self.growth_map = copy.deepcopy(growth_map)
-        
+        self.radius_grid = copy.deepcopy(radius_grid)
+        self.timestep = copy.deepcopy(timestep) 

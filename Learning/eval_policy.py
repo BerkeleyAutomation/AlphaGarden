@@ -3,7 +3,7 @@ import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillow_Visualizer
 from simulator.plant_type import PlantType
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY
 import simalphagarden
 import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
@@ -27,7 +27,7 @@ parser.add_argument('-s', '--seed', type=int, default=0)
 parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l|i] baseline [b], naive baseline [n], learned [l], irrigation [i]')
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
-parser.add_argument('-d', '--days', type=int, default=100)
+parser.add_argument('-d', '--days', type=int, default=72)
 parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
 parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 args = parser.parse_args()
@@ -154,28 +154,65 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
     wrapper = True # If True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
     prune_rates_order = []
     obs = env.reset()
+    div_cov = []
+    all_actions = []
     for i in range(collection_time_steps):
-        if i % sector_obs_per_day == 0: 
-            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
-            cov, div, a, b = env.get_metrics()
-            print(div, cov)
+        if i % sector_obs_per_day == 0:
+            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 72))
+
             vis.get_canopy_image_full(False, vis_identifier)
             wrapper_day_set = True
-        cc_vec = env.get_global_cc_vec()
-        if wrapper and wrapper_day_set:
             garden_state = env.get_simulator_state_copy()
+            # with open('./garden_states/garden_' + str(i // sector_obs_per_day) + '.pkl', 'wb') as f:
+            #     pickle.dump(garden_state, f)
+            
+        cc_vec = env.get_global_cc_vec()
+        if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
             if i % sector_obs_per_day == 0:
-                pr = wrapper_policy.wrapperPolicy(env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
-                            prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                            sector_obs_per_day, garden_state, vectorized=False)
+                pr = 0
+                prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
+                # prune_rates = [0.2, 0.7]
+                covs, divs, cv = [], [], []
+                day_p = (i / sector_obs_per_day) - PRUNE_DELAY
+                w1 = day_p / 50
+                w2 = 1 - w1
+                print(w1, w2)
+                for pr_i in range(len(prune_rates)):
+                    garden_state = env.get_simulator_state_copy()
+                    # garden_state = pickle.load(open('./garden_states/garden_21.pkl', 'rb'))
+                    cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                                prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
+                                sector_obs_per_day, garden_state, prune_rates[pr_i], vectorized=False)
+                    covs.append(cov)
+                    divs.append(div)
+                    cv.append(w2*cov + w1*div)
+                print(cv)
+                print(covs)
+                print(divs)
+                pr = prune_rates[np.argmax(cv)]
+                print(pr)
                 prune_rates_order.append(pr)
                 env.set_prune_rate(pr)
-                wrapper_day_set = False            
+                wrapper_day_set = False           
+                # print(div_cov)
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                     sector_obs_per_day, vectorized=False)[0]
+        all_actions.append(action)
         obs, rewards, _, _ = env.step(action)
+        if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
+            cov, div, water, act = env.get_metrics()
+            div_cov_day = cov[-1] * div[-1]
+            div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
+            print(div_cov)
     print(prune_rates_order)
+    print(div_cov)
+    print(all_actions)
+    f = open("metrics.txt", "a")
+    f.write("Prune Rates: "+ str(prune_rates_order))
+    f.write("\nActions: " + str(all_actions))
+    f.write("\nDiversity-Coverage: " + str(div_cov))
+    f.close()
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -285,7 +322,7 @@ if __name__ == '__main__':
 
 
     rows = 150
-    cols = 300
+    cols = 150 
     num_plant_types = PlantType().num_plant_types
     depth = num_plant_types + 3  # +1 for 'earth' type, +1 for water, +1 for health
     sector_rows = 15

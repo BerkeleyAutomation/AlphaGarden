@@ -6,6 +6,7 @@ from simulator.garden_state import GardenState
 from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 import multiprocessing as mp
+import copy
 
 
 class Garden:
@@ -39,7 +40,7 @@ class Garden:
         if not garden_state:
             self.plants = [{} for _ in range(len(plant_type.plant_names))]
         else:
-            self.plants = garden_state.plants
+            self.plants = copy.deepcopy(garden_state.plants)
 
         self.N = N
         self.M = M
@@ -54,7 +55,7 @@ class Garden:
             # TODO: Set this list to be constant
             self.plant_types = self.plant_type_obj.plant_names
         else:
-            self.plant_type_obj = garden_state.plant_type
+            self.plant_type_obj = copy.deepcopy(garden_state.plant_type)
             self.plant_types = self.plant_type_obj.plant_names
 
         """
@@ -67,28 +68,31 @@ class Garden:
             self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
         else:
-            self.grid = garden_state.grid
+            self.grid = copy.deepcopy(garden_state.grid)
 
         #: Grid for plant growth state representation.
         if not garden_state:
             self.plant_grid = np.zeros((N, M, len(plant_type.plant_names)))
         else:
-            self.plant_grid = garden_state.plant_grid
+            self.plant_grid = copy.deepcopy(garden_state.plant_grid)
         
         #: Grid to hold the plant probabilities of each location, depth is 1 + ... b/c of 'earth'.
         if not garden_state:
             self.plant_prob = np.zeros((N, M, 1 + len(plant_type.plant_names)))
         else:
-            self.plant_prob = garden_state.plant_prob
+            self.plant_prob = copy.deepcopy(garden_state.plant_prob)
 
         #: Grid for plant leaf state representation.
         if not garden_state:
             self.leaf_grid = np.zeros((N, M, len(plant_type.plant_names)))
         else:
-            self.leaf_grid = garden_state.leaf_grid
+            self.leaf_grid = copy.deepcopy(garden_state.leaf_grid)
 
         #: Grid for plant radius representation.
-        self.radius_grid = np.zeros((N, M, 1))
+        if not garden_state:
+            self.radius_grid = np.zeros((N, M, 1))
+        else:
+            self.radius_grid = copy.deepcopy(garden_state.radius_grid)
 
         #: Initializes empty lists in grid.
         if not garden_state:
@@ -114,7 +118,10 @@ class Garden:
         self.prune_threshold = PRUNE_THRESHOLD
 
         #: Time step of simulation.
-        self.timestep = 0
+        if not garden_state:
+            self.timestep = 0
+        else:
+            self.timestep = copy.deepcopy(garden_state.timestep)
         self.performing_timestep = True
 
         #: Add initial plants to grid.
@@ -126,13 +133,13 @@ class Garden:
                     plant.current_stage().skip_to_end()
                 self.add_plant(plant)
         else:
-            self.plant_locations = garden_state.plant_locations
+            self.plant_locations = copy.deepcopy(garden_state.plant_locations)
 
         #: Growth map for circular plant growth
         if not garden_state:
             self.growth_map = self.compute_growth_map()
         else:
-            self.growth_map = garden_state.growth_map
+            self.growth_map = copy.deepcopy(garden_state.growth_map)
 
         #: Number of plants deep to consider assigning light to.
         self.num_plants_to_assign = 3
@@ -253,6 +260,7 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
+        print('before', self.compute_plant_cc_dist())
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], IRRIGATION_AMOUNT)
@@ -266,6 +274,18 @@ class Garden:
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
+        self.performing_timestep = True
+        print('after', self.compute_plant_cc_dist())
+        # b = np.zeros(len(self.plant_types))
+        # self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
+        # for point in self.enumerate_grid(coords=True):
+        #     if point[0]['nearby']:
+        #         tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+        #         b[tallest_type_id] += 1
+        #         self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
+        #     else:
+        #         self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
+        # print('after:', b)
 
         for sector in sectors:
             self.update_plant_health(sector)
@@ -470,7 +490,11 @@ class Garden:
         if upward:
             plant.height += upward
         if outward:
+            # if (outward < 0):
+                # print('before plant:', plant.radius)
             plant.radius += outward
+            # if (outward < 0):
+                # print('after plant:', plant.radius)
         self.radius_grid[plant.row, plant.col, 0] = plant.radius
 
     def update_plant_coverage(self, plant, record_coords_updated=False):
@@ -645,11 +669,38 @@ class Garden:
         for plant in non_occluded_plants:
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
+
+            # if -amount_to_prune < 0:
+            #     a = np.zeros(len(self.plant_types))
+            #     self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
+            #     for point in self.enumerate_grid(coords=True):
+            #         if point[0]['nearby']:
+            #             tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+            #             a[tallest_type_id] += 1
+            #             self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
+            #         else:
+            #             self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
+            #     print('before:', a)
+            
             self.update_plant_size(plant, outward=-amount_to_prune)
+            
             self.update_plant_coverage(plant, record_coords_updated=True)
+            
+            # if -amount_to_prune < 0:
+            #     b = np.zeros(len(self.plant_types))
+            #     self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
+            #     for point in self.enumerate_grid(coords=True):
+            #         if point[0]['nearby']:
+            #             tallest_type_id = max(point[0]['nearby'], key=lambda x: self.plants[x[0]][x[1]].height)[0]
+            #             b[tallest_type_id] += 1
+            #             self.plant_prob[:,:,tallest_type_id+1][point[1][0],point[1][1]] = 1
+            #         else:
+            #             self.plant_prob[:,:,0][point[1][0],point[1][1]] = 1 # point is 'earth'
+            #     print('after:', b)
     
     def save_coverage_and_diversity(self):
         """ Calculate and update normalized entropy for diversity and total plant coverage"""
+        self.performing_timestep = True
         cc_per_plant_type = self.compute_plant_cc_dist()
         total_cc = np.sum(cc_per_plant_type)
         coverage = total_cc / (self.N * self.M)
@@ -851,7 +902,8 @@ class Garden:
            Stacked array of deep copies of plants, water, health, plant probabilities, leaf and plant types.
        """
        return GardenState(self.plants, self.grid, self.plant_grid, self.plant_prob, self.leaf_grid,
-                          self.plant_type_obj, self.plant_locations, self.growth_map)
+                          self.plant_type_obj, self.plant_locations, self.growth_map,
+                          self.radius_grid, self.timestep)
 
     def show_animation(self):
         """ Helper function for animation."""
