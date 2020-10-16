@@ -2,6 +2,7 @@
 import gym
 import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
+from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillow_Visualizer
 from simulator.plant_type import PlantType
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS
 import simalphagarden
@@ -14,6 +15,7 @@ import pickle
 import argparse
 import os
 import multiprocessing as mp
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tests', type=int, default=1)
@@ -139,11 +141,12 @@ def evaluate_baseline_policy_multi(env, policy, collection_time_steps, sector_ro
     
 def evaluate_baseline_policy_serial(env, policy, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                            sector_obs_per_day, trial, save_dir):
+                            sector_obs_per_day, trial, save_dir, vis_identifier):
     obs = env.reset()
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
-            print("Day {}/{}".format(int(i/sector_obs_per_day), 100))
+            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
+            vis.get_canopy_image_full(False, vis_identifier)
         cc_vec = env.get_global_cc_vec()
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                         prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
@@ -164,6 +167,8 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
             # prune = 2 if np.random.random() < 0.01 else 0
 
             env.step(water + prune)
+        vis.get_canopy_image_sector(np.array([7.5,15]),False)
+        # vis.get_canopy_image_full(False)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -266,6 +271,7 @@ if __name__ == '__main__':
     naive_water_freq = 2
     naive_prune_threshold = args.threshold
     save_dir = args.output_directory
+    vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
     seed_config_path = '/Users/sebastianoehme/Downloads/scaled_orig_placement'
     randomize_seeds_cords_flag = True
@@ -275,9 +281,14 @@ if __name__ == '__main__':
         seed = args.seed + i
         
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
+
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
                        randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
-        
+
+        # vis = Matplotlib_Visualizer(env.wrapper_env)
+        # vis = OpenCV_Visualizer(env.wrapper_env)
+        vis = Pillow_Visualizer(env.wrapper_env)
+
         if args.policy == 'b':
             if args.multi:
                 env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
@@ -290,7 +301,7 @@ if __name__ == '__main__':
             else:
                 evaluate_baseline_policy_serial(env, baseline_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial, save_dir)
+                                        sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
