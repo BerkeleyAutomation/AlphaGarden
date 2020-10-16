@@ -90,7 +90,7 @@ class PlantType:
                     cf += companionship_factor_list[companion_plant.type]
                     companionship_plant_count += 1
             plant.companionship_factor = 1.0 + cf / max(companionship_plant_count, 1)'''
-        sum=0
+
         for plant in plants:
             cf = 0.0
             for companion_plant in plants:
@@ -102,8 +102,7 @@ class PlantType:
                 # companionship_factor * 1/((euclidian distance i,j))
                 cf += single_cf * (1 / exp_decay_factor)
             plant.companionship_factor = max(0.0, 1.0 + cf)
-            sum += plant.companionship_factor
-        print(sum)
+
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 
         return plants

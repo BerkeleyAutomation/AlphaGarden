@@ -145,8 +145,9 @@ def evaluate_baseline_policy_serial(env, policy, collection_time_steps, sector_r
     obs = env.reset()
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
-            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
-            vis.get_canopy_image_full(False, vis_identifier)
+            current_day = int(i/sector_obs_per_day) + 1
+            print("Day {}/{}".format(current_day, 100))
+            vis.get_canopy_image_full(False, vis_identifier, current_day)
         cc_vec = env.get_global_cc_vec()
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                         prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
@@ -274,7 +275,7 @@ if __name__ == '__main__':
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
     seed_config_path = '/Users/sebastianoehme/Downloads/scaled_orig_placement'
-    randomize_seeds_cords_flag = True
+    randomize_seeds_cords_flag = False
     
     for i in range(args.tests):
         trial = i + 1

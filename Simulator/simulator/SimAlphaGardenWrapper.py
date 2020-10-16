@@ -15,7 +15,7 @@ import io
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols, seed=None, step=1, dir_path="/", randomize_seed_coords=False,
+                 prune_window_cols, seed=None, step=1, dir_path="", randomize_seed_coords=False,
                  plant_seed_config_file_path=None):
         """AlphaGarden's wrapper for Gym, inheriting basic functions from the WrapperEnv.
 
