@@ -159,6 +159,7 @@ class Garden:
         #:
         self.coverage = []  #: List of float: total canopy coverage w.r.t. the garden size at time step.
         self.diversity = []  #: List of float: the diversity in the garden at time step.
+        self.global_diversity = []
         self.water_use = []  #: List of float: water usage w.r.t sector.
         self.actions = []  #: List of Lists of int: actions per time step.
 
@@ -709,6 +710,13 @@ class Garden:
         diversity = entropy / np.log(len(self.plant_types))  # normalized entropy
         self.coverage.append(coverage)
         self.diversity.append(diversity)
+
+        soil_bias = (self.N * self.M) / len(cc_per_plant_type)
+        global_cc_vec = np.append((self.N * self.M * self.step - np.sum(cc_per_plant_type)) + soil_bias, cc_per_plant_type)
+        global_prob = global_cc_vec[np.nonzero(global_cc_vec)] / (self.N * self.M)
+        global_entropy = np.sum(-global_prob * np.log(global_prob))
+        global_diversity = global_entropy / np.log(len(self.plant_types) + 1)  # normalized entropy
+        self.global_diversity.append(global_diversity)
 
     def save_water_use(self, amount):
         """ Add water used in time step.

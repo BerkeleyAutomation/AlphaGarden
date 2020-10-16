@@ -480,7 +480,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         Return:
             Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
         """
-        return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions
+        return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions, self.garden.global_diversity
 
 
     def get_prune_window_greatest_width(self, center):

@@ -81,9 +81,16 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
                     sector_obs_per_day, vectorized=False)[0]
         actions.append(action)
     # actions = [2 for i in range(100)]
+    print(actions)
     garden_copy.perform_timestep(sectors_center, actions)
     cov = garden_copy.coverage[-1]
     div = garden_copy.diversity[-1]
+    global_div = garden_copy.global_diversity[-1]
+    dirname = './prune_rate_metrics/'
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
+        pickle.dump([cov, div, global_div, actions, w1, w2], f)
     print(prune_rate, cov, div)
     return cov, div
     #     determine = w1*cov[-1] + w2*div[-1]
@@ -139,77 +146,3 @@ def garden_to_sector(garden, plant_centers, non_plant_centers, rows, cols, step)
         np.dstack((garden.get_plant_prob_full(),
                     garden.get_water_grid_full(),
                     garden.get_health_grid_full()))
-
-def copy_env(env):
-    num_plant_types = PlantType().num_plant_types
-    depth = num_plant_types + 3  # +1 for 'earth' type, +1 for water, +1 for health
-    action_low = 0
-    action_high = 1
-    obs_low = 0
-    obs_high = env.wrapper_env.rows * env.wrapper_env.cols
-    multi = False
-    copy_env = gym.make(
-        'simalphagarden-v0',
-        wrapper_env=SimAlphaGardenWrapper(env.wrapper_env.max_time_steps, env.wrapper_env.rows, env.wrapper_env.cols, env.wrapper_env.sector_rows,
-                                          env.wrapper_env.sector_cols, env.wrapper_env.prune_window_rows, env.wrapper_env.prune_window_cols,
-                                          step=env.wrapper_env.step, seed=env.wrapper_env.seed),
-        garden_x=env.wrapper_env.rows,
-        garden_y=env.wrapper_env.cols,
-        garden_z=depth,
-        sector_rows=env.wrapper_env.sector_rows,
-        sector_cols=env.wrapper_env.sector_cols,
-        action_low=action_low,
-        action_high=action_high,
-        obs_low=obs_low,
-        obs_high=obs_high,
-        num_plant_types=num_plant_types,
-        eval=True,
-        multi=multi
-    )
-    
-    copy_env.wrapper_env.num_sectors = (env.wrapper_env.rows * env.wrapper_env.cols) / (env.wrapper_env.sector_rows * env.wrapper_env.sector_cols)
-
-    copy_env.wrapper_env.PlantType = copy.deepcopy(env.wrapper_env.PlantType) #: :obj:`PlantType`: Available types of Plant objects (modeled).
-    copy_env.wrapper_env.reset()  
-    #: Reset simulator.
-
-    copy_env.wrapper_env.garden =  Garden(garden_state = env.get_simulator_state_copy())
-    # copy_env.wrapper_env.garden = copy.deepcopy(env.wrapper_env.garden)
-
-    copy_env.wrapper_env.curr_action = copy.deepcopy(env.wrapper_env.curr_action)  #: int: Current action selected. 0 = no action, 1 = irrigation, 2 = pruning
-
-    #: Configuration file parser for reinforcement learning with gym.
-    copy_env.wrapper_env.config = configparser.ConfigParser()
-    copy_env.wrapper_env.config.read('gym_config/config.ini')
-    
-    #: dict of [int,str]: Amount to water every square in a sector by.
-    copy_env.wrapper_env.irr_actions = {
-        1: MAX_WATER_LEVEL,
-    }
-    
-    copy_env.wrapper_env.plant_centers_original = copy.deepcopy(env.wrapper_env.plant_centers_original)  #: Array of [int,int]: Initial seed locations [row, col].
-    copy_env.wrapper_env.plant_centers = copy.deepcopy(env.wrapper_env.plant_centers) #: Array of [int,int]: Seed locations [row, col] for sectors.
-    copy_env.wrapper_env.non_plant_centers_original = copy.deepcopy(env.wrapper_env.non_plant_centers_original)
-    #: Array of [int,int]: Initial locations without seeds [row, col].
-    #: Array of [int,int]: Locations without seeds [row, col] for sectors.
-    copy_env.wrapper_env.non_plant_centers = copy.deepcopy(env.wrapper_env.non_plant_centers)
-    copy_env.wrapper_env.centers_to_execute = copy.deepcopy(env.wrapper_env.centers_to_execute)
-    copy_env.wrapper_env.actions_to_execute = copy.deepcopy(env.wrapper_env.actions_to_execute)
-    #: Array of [int,int]: Locations [row, col] where to perform actions.
-    #: List of int: Actions to perform.
-    
-    #: List of tuples (str, float): Tuple containing plant type it's plant radius.
-    #: List of tuples (str, float): Tuple containing plant type it's plant height.
-    copy_env.wrapper_env.plant_radii = copy.deepcopy(env.wrapper_env.plant_radii)
-    copy_env.wrapper_env.plant_heights = copy.deepcopy(env.wrapper_env.plant_heights)
-    copy_env.wrapper_env.dir_path = copy.deepcopy(env.wrapper_env.dir_path)
-
-    copy_env.reward = 0
-
-    copy_env.current_step =  copy.deepcopy(env.current_step)
-    copy_env.sector = copy.deepcopy(env.sector)
-    copy_env.curr_img = copy.deepcopy(env.curr_img)
-
-    copy_env.global_cc_vec = copy.deepcopy(env.global_cc_vec)
-
-    return copy_env

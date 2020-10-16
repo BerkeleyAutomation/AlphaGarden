@@ -295,7 +295,7 @@ def save_data(metrics, trial, save_dir):
         os.makedirs(dirname)
     with open(save_dir + 'data_' + str(trial) + '.pkl', 'wb') as f:
         pickle.dump(metrics, f)
-    coverage, diversity, water_use, actions = metrics
+    coverage, diversity, water_use, actions, global_diversity = metrics
     fig, ax = plt.subplots()
     ax.set_ylim([0, 1])
     plt.plot(coverage, label='coverage')
