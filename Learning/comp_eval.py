@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 a_c = np.zeros(100)
 a_d = np.zeros(100)
 
-base = '/Users/sebastianoehme/AlphaGarden/Learning/baseline_policy_dataM05_t10_IA0020_trails_random/'
+base = '/Users/sebastianoehme/AlphaGarden/Learning/baseline_policy_dataM05_t10_IA0020_trails_random_thr/'
 pre = 'data_'
 suf = '.pkl'
 trails = 10
@@ -19,8 +19,8 @@ for i in range(1, trails+1):
 a_c = a_c / trails
 a_d = a_d / trails
 
-print('Avg overage day 20 to 70', round(sum(a_c[20:70])/50, 3))
-print('Avg diversity day 20 to 70', round(sum(a_d[20:70])/50, 3))
+print('Avg coverage day 20 to 70:', round(sum(a_c[20:70])/50, 3))
+print('Avg diversity day 20 to 70:', round(sum(a_d[20:70])/50, 3))
 
 
 fig, ax = plt.subplots()

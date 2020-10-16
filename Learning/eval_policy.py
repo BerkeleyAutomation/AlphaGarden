@@ -267,7 +267,7 @@ if __name__ == '__main__':
     naive_prune_threshold = args.threshold
     save_dir = args.output_directory
 
-    seed_config_path = '/Users/sebastianoehme/Downloads/seed'
+    seed_config_path = '/Users/sebastianoehme/Downloads/scaled_orig_placement'
     randomize_seeds_cords_flag = True
     
     for i in range(args.tests):
