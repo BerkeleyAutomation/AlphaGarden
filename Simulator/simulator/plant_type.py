@@ -37,9 +37,11 @@ class PlantType:
         plants = []
         sector_rows_half = sector_rows // 2
         sector_cols_half = sector_cols // 2
-        PLANTS = ['borage', 'mizuna', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce',
+        # PLANTS = ['borage', 'mizuna', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce',
+        #           'swiss_chard', 'turnip']
+        PLANTS = ['borage', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce', 'arugula',
                   'swiss_chard', 'turnip']
-        
+
         def in_bounds(r, c):
             return sector_rows_half < r < rows - sector_rows_half and sector_cols_half < c < cols - sector_cols_half
         
@@ -52,17 +54,17 @@ class PlantType:
             for i in range(len(points)):
                 if randomize_seed_coords:
                     coord = coords.pop(0)
-                    x, y = coord[0], coord[1]
+                    r, c = coord[0], coord[1]
                 else:
-                    [x, y] = points[i]
-                    x = int(round(x))
-                    y = int(round(y))
-                    coords.remove((x, y))
+                    [c, r] = points[i]
+                    r = int(round(r))
+                    c = int(round(c))
+                    coords.remove((r, c))
                 l = labels[i]
                 plant_type = PLANTS[l]
-                plants.append(Plant.from_preset(plant_type, x, y))
+                plants.append(Plant.from_preset(plant_type, r, c))
                 self.plant_in_bounds += 1
-                self.plant_centers.append(tuple((x, y)))
+                self.plant_centers.append(tuple((r, c)))
 
         else:
             # If using a subset of the plant types defined in plant_presets.py, uncomment and modify the two lines below
@@ -79,17 +81,17 @@ class PlantType:
                 self.plant_centers.append(tuple((r, c)))
 
         '''for plant in plants:
-            cf = 0.0
-            companionship_plant_count = 0
-            for companion_plant in plants:
-                if plant == companion_plant:
-                    continue
-                companionship_factor_list = PLANTS_RELATION[plant.type]
-                influence_radius = COMPANION_NEIGHBORHOOD_RADII[companion_plant.type]
-                if (plant.row - companion_plant.row) ** 2 + (plant.col - companion_plant.col) ** 2 <= influence_radius ** 2:
-                    cf += companionship_factor_list[companion_plant.type]
-                    companionship_plant_count += 1
-            plant.companionship_factor = 1.0 + cf / max(companionship_plant_count, 1)'''
+                    cf = 0.0
+                    companionship_plant_count = 0
+                    for companion_plant in plants:
+                        if plant == companion_plant:
+                            continue
+                        companionship_factor_list = PLANTS_RELATION[plant.type]
+                        influence_radius = COMPANION_NEIGHBORHOOD_RADII[companion_plant.type]
+                        if (plant.row - companion_plant.row) ** 2 + (plant.col - companion_plant.col) ** 2 <= influence_radius ** 2:
+                            cf += companionship_factor_list[companion_plant.type]
+                            companionship_plant_count += 1
+                    plant.companionship_factor = 1.0 + cf / max(companionship_plant_count, 1)'''
 
         for plant in plants:
             cf = 0.0
@@ -98,7 +100,8 @@ class PlantType:
                     continue
                 companionship_factor_list = PLANTS_RELATION[plant.type]
                 single_cf = companionship_factor_list[companion_plant.type]
-                exp_decay_factor = math.sqrt((companion_plant.row - plant.row) ** 2 + (companion_plant.col - plant.col) ** 2)
+                exp_decay_factor = math.sqrt(
+                    (companion_plant.row - plant.row) ** 2 + (companion_plant.col - plant.col) ** 2)
                 # companionship_factor * 1/((euclidian distance i,j))
                 cf += single_cf * (1 / exp_decay_factor)
             plant.companionship_factor = max(0.0, 1.0 + cf)

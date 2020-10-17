@@ -140,7 +140,7 @@ class Pillow_Visualizer(Visualizer):
     def get_canopy_image(self, bounds, dir_path, eval, scale=8, identifier="test", day=0):
         x_low, y_low, x_high, y_high = bounds
         row_scale, col_scale = (self.env.rows // (x_high - x_low)) * scale, (self.env.cols // (y_high - y_low)) * scale
-        image = Image.new('RGB', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255))
+        image = Image.new('RGBA', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
         for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
@@ -149,12 +149,12 @@ class Pillow_Visualizer(Visualizer):
                 self.env.plant_radii.append((plant.type, plant.radius))
                 # print(plant.col, plant.row, plant.radius)
                 # print(plant.color)
-                plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255))
+                plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255), 125)
                 rad = int(col_scale * plant.radius)
                 circle_bounding_box = (plant.col*col_scale - rad, plant.row*row_scale - rad, 
                                 plant.col*col_scale + rad, plant.row*row_scale + rad)
                 draw.ellipse(circle_bounding_box, fill = plant_color)
-        image = image.resize((300,300))
+        image = image.resize((1849,1849))
         if not eval:
             #r = os.urandom(16)
             dir_path = dir_path + "/Pillow/" + identifier + "/"

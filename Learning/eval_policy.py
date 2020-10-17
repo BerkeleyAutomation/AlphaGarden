@@ -173,11 +173,13 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='irr_no_prune_policy_data/'):
+def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir, vis_identifier):
     env.reset()
     for i in range(garden_days):
         water = 1
-        print("Day {}/{}".format(i, garden_days))
+        current_day = i + 1
+        vis.get_canopy_image_full(False, vis_identifier, current_day)
+        print("Day {}/{}".format(current_day, garden_days))
         for j in range(sector_obs_per_day):
             prune = 0
             env.step(water + prune)
@@ -306,7 +308,7 @@ if __name__ == '__main__':
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
-            evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
+            evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, save_dir, vis_identifier)
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
