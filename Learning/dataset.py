@@ -25,7 +25,8 @@ class Dataset(TorchDataset):
         tag = input_cc_fname[:input_cc_fname.rfind('_')] # this should extract only the hash from the cc file name
         input_raw_fname = '{}.npz'.format(tag) # find the raw data that corresponds with the cc by hash
         output = '{}_pr.npy'.format(tag) # do the same thing for the output
-        prune_rate = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4].index(np.load(output))
+        # prune_rate = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4].index(np.load(output))
+        prune_rate = np.load(output)
         state = np.load(input_raw_fname)
         wph = np.transpose(np.dstack((state['plants'], state['water'], state['health'])), (2, 0, 1)).astype(np.float32)
         return (full_img, wph, state['global_cc'].astype(np.float32), prune_rate)

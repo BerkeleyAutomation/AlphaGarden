@@ -46,7 +46,8 @@ class Net(nn.Module):
         self.raw_pool2 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
         self.raw_fc = nn.Linear(37, 4)
         
-        self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
+        # self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
+        self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, 1)
                 
     def forward(self, x):
         cc_sector = F.interpolate(x[0], scale_factor=self.downsample_rate)
