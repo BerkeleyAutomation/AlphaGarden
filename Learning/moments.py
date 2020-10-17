@@ -70,14 +70,13 @@ class Moments:
                     input_sq_mean = np.stack((input_sq_mean, image2_mean), axis=0)
                 input_mean = np.sum(input_mean, axis=0)
                 input_sq_mean = np.sum(input_sq_mean, axis=0)
-        input_std = (input_sq_mean - (input_mean**2))**0.5
         if data_type == 'raw':
-            input_std = (input_sq_mean - (input_mean**2))**0.5
+            input_std = (input_sq_mean - (input_mean**2)).clip(min=0)**0.5
             vec_std = (vec_sq_mean - (vec_mean**2))**0.5
             return vec_mean, input_mean, vec_std, input_std
         else:
-            input_std = (input_sq_mean - (input_mean**2))**0.5
+            input_std = (input_sq_mean - (input_mean**2)).clip(min=0)**0.5
             return input_mean, input_std
 
 if __name__ == "__main__":
-    Moments('/Users/williamwong/Desktop/small')
+    Moments('Generated_data')

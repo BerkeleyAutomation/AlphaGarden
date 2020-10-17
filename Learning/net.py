@@ -36,7 +36,7 @@ class Net(nn.Module):
         self.cc_conv2 = nn.Conv2d(8, 16, stride=1, kernel_size=3, padding=1)
         self.cc_bn2 = nn.BatchNorm2d(16)
         self.cc_pool2 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-        self.cc_fc = nn.Linear(31, 4) 
+        self.cc_fc = nn.Linear(23, 4) 
 
         self.raw_conv1 = nn.Conv2d(in_channels=13, out_channels=16, stride=1, kernel_size=5, padding=2)
         self.raw_bn1 = nn.BatchNorm2d(16)
@@ -44,7 +44,7 @@ class Net(nn.Module):
         self.raw_conv2 = nn.Conv2d(16, 32, stride=1, kernel_size=3, padding=1)
         self.raw_bn2 = nn.BatchNorm2d(32)
         self.raw_pool2 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-        self.raw_fc = nn.Linear(7, 4)
+        self.raw_fc = nn.Linear(37, 4)
         
         self.fc = nn.Linear(TrainingConstants.FLAT_STATE_DIM, TrainingConstants.ACT_DIM)
                 
