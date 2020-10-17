@@ -68,7 +68,7 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     plant_centers = plant_type_obj.plant_centers
     non_plant_centers = plant_type_obj.non_plant_centers
     actions = [] # actions for each prune rate for each day
-    cc_vec = env.get_global_cc_vec() #calling the adaptive policy with the specific prune rate for each timestep
+    cc_vec = env.env_method('get_global_cc_vec')[0] #calling the adaptive policy with the specific prune rate for each timestep
     for j in range(sector_obs_per_day): # for each sector_obs_per_day
         # if i == 0:  #reusing the sectors
         rand_sector = garden_to_sector(garden_copy, plant_centers, non_plant_centers, row, col, step)
@@ -81,7 +81,7 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
                     sector_obs_per_day, vectorized=False)[0]
         actions.append(action)
     # actions = [2 for i in range(100)]
-    print(actions)
+    # print(actions)
     garden_copy.perform_timestep(sectors_center, actions)
     cov = garden_copy.coverage[-1]
     div = garden_copy.diversity[-1]
@@ -91,7 +91,7 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
         os.makedirs(dirname)
     with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
         pickle.dump([cov, div, global_div, actions, w1, w2], f)
-    print(prune_rate, cov, div)
+    # print(prune_rate, cov, div)
     return cov, div
     #     determine = w1*cov[-1] + w2*div[-1]
     #     actual_diversity_coverage = cov[-1]*div[-1]

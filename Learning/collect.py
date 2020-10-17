@@ -1,6 +1,11 @@
 import subprocess
 import argparse
 import os
+from multiprocessing import Pool
+
+def open_proc(dir_idx):
+    args = ('python Learning/data_collection.py' + ' -d' + dir_idx[0] + '/' + ' -s' + str(dir_idx[1]))
+    subprocess.Popen(args, shell=True)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -9,26 +14,19 @@ def main():
     args = parser.parse_args()
     params = vars(args)
 
-    procs = []
+    dir_idxs = []
     for idx in range(int(params['n'])):
-        dir = params['d'] + 'dataset_' + str(idx + 1)
+        dir = params['d'] + '/dataset_' + str(idx // 12000)
         if not os.path.exists(dir):
-            os.mkdir(dir)
+            os.makedirs(dir)
         print('DIR', dir)
-        args = ('python Learning/data_collection.py' + ' -d' + dir + '/' + ' -s' + str(idx))
-        proc = subprocess.Popen(args, shell=True)
-        procs.append(proc)
-
-    i = 0
-    while(len(procs)):
-        i = i % len(procs)
-        if procs[i].poll() is None:
-            i = (i + 1) % len(procs)
-        else:
-            del procs[i]
+        dir_idxs.append((dir, idx))
+    
+    p = Pool(2)
+    p.map(open_proc, dir_idxs)
 
 if __name__ == "__main__":
     import os
-    cpu_cores = [i for i in range(61, 76)] # Cores (numbered 0-11)
+    cpu_cores = [i for i in range(0, 2)] # Cores (numbered 0-11)
     os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
     main()
