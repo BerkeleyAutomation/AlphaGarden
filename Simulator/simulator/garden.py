@@ -111,6 +111,9 @@ class Garden:
         #: Proportion of plant radius to decrease by after pruning action.
         self.prune_rate = prune_rate
 
+        #: Amount to irrigate each grid point.
+        self.irrigation_amount = IRRIGATION_AMOUNT
+
         '''
         Determines max amount of coverage of one plant type in the garden before that plant is pruned
         percentage calculated as self.prune_threshold / number of plant types in the garden.
@@ -205,6 +208,15 @@ class Garden:
         self.prune_rate = prune_rate
 
 
+    def set_irrigation_amount(self, irrigation_amount):
+        """ Modifies the garden's irrigation amount.
+        
+        Args:
+            irrigation_amount (float)
+        """
+        self.irrigation_amount = irrigation_amount
+
+
     def get_sector_bounds_no_pad(self, center):
         """Get bounds of sector from its center location.
         Args:
@@ -264,13 +276,13 @@ class Garden:
         print('before', self.compute_plant_cc_dist())
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
-                self.perform_timestep_irr(sectors[i], IRRIGATION_AMOUNT)
-                water_use += IRRIGATION_AMOUNT
+                self.perform_timestep_irr(sectors[i], self.irrigation_amount)
+                water_use += self.irrigation_amount
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
             elif action == NUM_IRR_ACTIONS + 2:
-                self.perform_timestep_irr(sectors[i], IRRIGATION_AMOUNT)
-                water_use += IRRIGATION_AMOUNT
+                self.perform_timestep_irr(sectors[i], self.irrigation_amount)
+                water_use += self.irrigation_amount
                 self.perform_timestep_prune(sectors[i])
         self.distribute_light()
         self.distribute_water()

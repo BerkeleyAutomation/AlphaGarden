@@ -22,7 +22,7 @@ import time
 from simulator.garden import Garden
 
 def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
-           prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day, garden_state, prune_rate,
+           prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day, garden_state, prune_rate, irrigation_amount,
            vectorized=True, val=False):
     """ Perform baseline policy with pruning and irrigation action.
 
@@ -64,11 +64,12 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     # garden_copy = copy_garden(garden_state=garden_state, rows=row, cols=col, sector_row= sector_rows, sector_col= sector_cols, prune_win_rows=prune_window_rows, prune_win_cols=prune_window_cols, step=step, prune_rate=prune_rates[i])
     np.random.seed(0)
     garden_copy = copy_garden(garden_state=garden_state, rows=row, cols=col, sector_row= sector_rows, sector_col= sector_cols, prune_win_rows=prune_window_rows, prune_win_cols=prune_window_cols, step=step, prune_rate=prune_rate)
+    garden_copy.set_irrigation_amount(irrigation_amount)
     plant_type_obj = garden_copy.plant_type_obj
     plant_centers = plant_type_obj.plant_centers
     non_plant_centers = plant_type_obj.non_plant_centers
     actions = [] # actions for each prune rate for each day
-    cc_vec = env.env_method('get_global_cc_vec')[0] #calling the adaptive policy with the specific prune rate for each timestep
+    cc_vec = env.get_global_cc_vec() #calling the adaptive policy with the specific prune rate for each timestep
     for j in range(sector_obs_per_day): # for each sector_obs_per_day
         # if i == 0:  #reusing the sectors
         rand_sector = garden_to_sector(garden_copy, plant_centers, non_plant_centers, row, col, step)

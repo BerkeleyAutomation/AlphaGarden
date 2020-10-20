@@ -97,26 +97,69 @@ def evaluate_learned_policy_multi(env, policy, steps, sector_obs_per_day, trial,
 
 
 ''' WILL NOT WORK WITH NEW FULL STATE OBS '''
-def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_policy_data/'):
+def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_policy_data/',
+                                   analytic_policy=analytic_policy.policy, sector_rows=15,
+                                   sector_cols=30, prune_window_rows=5, prune_window_cols=5,
+                                   garden_step=1, water_threshold=1.0, sector_obs_per_day=110):
+    wrapper = True
+    prune_rates_order = []
     obs = env.reset()
     for i in range(steps):
-        curr_img = env.get_curr_img()
-        if curr_img is None:
-            sector_img = np.ones((3, 235, 499)) * 255
-        else:
-            sector_img = np.transpose(curr_img, (2, 0, 1))
-            
-        raw = np.transpose(obs[1], (2, 0, 1))
-        global_cc_vec = env.get_global_cc_vec()
-
-
-        sector_img = torch.from_numpy(np.expand_dims(sector_img, axis=0)).float()
-        raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
-        global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
-        x = (sector_img, raw, global_cc_vec)
+        if not wrapper:
+            curr_img = env.get_curr_img()
+            if curr_img is None:
+                sector_img = np.ones((3, 235, 499)) * 255
+            else:
+                sector_img = np.transpose(curr_img, (2, 0, 1))
                 
-        action = torch.argmax(policy(x)).item()
-        obs, rewards, _, _ = env.step(action)
+            raw = np.transpose(obs[1], (2, 0, 1))
+            global_cc_vec = env.get_global_cc_vec()
+
+            sector_img = torch.from_numpy(np.expand_dims(sector_img, axis=0)).float()
+            raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
+            global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
+            x = (sector_img, raw, global_cc_vec)
+                    
+            action = torch.argmax(policy(x)).item()
+            obs, rewards, _, _ = env.step(action)
+        else:
+            if i % sector_obs_per_day == 0:
+                print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 72))
+                vis.get_canopy_image_full(False, vis_identifier)
+                wrapper_day_set = True
+            
+            global_cc_vec = env.get_global_cc_vec()
+            if wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
+                curr_img = env.get_curr_img()
+                if curr_img is None:
+                    full_img = np.ones((3, 235, 499)) * 255
+                else:
+                    full_img = np.transpose(curr_img, (2, 0, 1))
+                    
+                raw = np.transpose(obs[2], (2, 0, 1))
+                
+                full_img = torch.from_numpy(np.expand_dims(full_img, axis=0)).float()
+                raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
+                global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
+                x = (full_img, raw, global_cc_vec)
+
+                pr = policy(x).item()
+                print('Prune Rate Day', str(i // sector_obs_per_day), ':', pr)
+                prune_rates_order.append(pr)
+                env.set_prune_rate(max(0, pr))
+                wrapper_day_set = False
+                
+            cc_vec = env.get_global_cc_vec()
+            action = analytic_policy(i, obs, cc_vec, sector_rows, sector_cols,
+                                     prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                                     NUM_IRR_ACTIONS, sector_obs_per_day, vectorized=False)[0]
+            obs, rewards, _, _ = env.step(action)
+        dirname = './policy_metrics/'
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    f = open("./policy_metrics/prs.txt", "a")
+    f.write("Prune Rates: "+ str(prune_rates_order))
+    f.close()        
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -153,6 +196,7 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
                             sector_obs_per_day, trial, save_dir, vis_identifier):
     wrapper = True # If True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
     prune_rates_order = []
+    irrigation_amounts_order = []
     obs = env.reset()
     div_cov = []
     all_actions = []
@@ -163,43 +207,47 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
             vis.get_canopy_image_full(False, vis_identifier)
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
-            # with open('./garden_states/garden_' + str(i // sector_obs_per_day) + '.pkl', 'wb') as f:
-            #     pickle.dump(garden_state, f)
             
         cc_vec = env.get_global_cc_vec()
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
             if i % sector_obs_per_day == 0:
                 pr = 0
                 prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
-                # prune_rates = [0.2, 0.7]
+                irrigation_amounts = [0.001, 0.0005, 0.00025]
                 covs, divs, cv = [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
                 w1 = day_p / 50
                 w2 = 1 - w1
                 print(w1, w2)
-                for pr_i in range(len(prune_rates)):
-                    garden_state = env.get_simulator_state_copy()
-                    # garden_state = pickle.load(open('./garden_states/garden_21.pkl', 'rb'))
-                    cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
-                                prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                                sector_obs_per_day, garden_state, prune_rates[pr_i], vectorized=False)
-                    covs.append(cov)
-                    divs.append(div)
-                    cv.append(w2*cov + w1*div)
+                for irr_amt in irrigation_amounts:
+                    for pr_i in range(len(prune_rates)):
+                        garden_state = env.get_simulator_state_copy()
+                        cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                                    prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
+                                    sector_obs_per_day, garden_state, prune_rates[pr_i], irr_amt,
+                                    vectorized=False)
+                        covs.append(cov)
+                        divs.append(div)
+                        cv.append((w2*cov + w1*div, irr_amt))
                 print(cv)
                 print(covs)
                 print(divs)
-                pr = prune_rates[np.argmax(cv)]
+                pr = prune_rates[np.argmax([result[0] for result in cv])]
+                ir = cv[np.argmax([result[0] for result in cv])][1]
                 print(pr)
+                print(ir)
                 prune_rates_order.append(pr)
+                irrigation_amounts_order.append(ir)
                 env.set_prune_rate(pr)
-                wrapper_day_set = False           
-                # print(div_cov)
+                env.set_irrigation_amount(ir)
+                wrapper_day_set = False   
+                        
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                     sector_obs_per_day, vectorized=False)[0]
         all_actions.append(action)
         obs, rewards, _, _ = env.step(action)
+        
         if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
             cov, div, water, act, global_div = env.get_metrics()
             div_cov_day = cov[-1] * div[-1]

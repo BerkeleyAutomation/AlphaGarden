@@ -104,6 +104,9 @@ class SimAlphaGardenEnv(gym.Env):
     
     def set_prune_rate(self, prune_rate):
         self.wrapper_env.set_prune_rate(prune_rate)
+
+    def set_irrigation_amount(self, irrigation_amount):
+        self.wrapper_env.set_irrigation_amount(irrigation_amount)
     
     def get_prune_window_greatest_width(self):
         return self.wrapper_env.get_prune_window_greatest_width(self.sector)

@@ -286,7 +286,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
             buf = io.BytesIO()
             fig.savefig(buf, format="rgba", dpi=100, bbox_inches=bbox0)
             buf.seek(0)
-            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(235, 499, -1))
+            # img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(235, 499, -1))
+            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(373, 373, -1))
             img = img[..., :3]
             buf.close()
             plt.close()
@@ -395,9 +396,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
         
         # Save canopy image before performing a time step.
         # if True:
-        sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
-        if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
-        # if self.curr_action >= 0:
+        # sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
+        # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
+        if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
             if not eval:
                 path = out
@@ -477,6 +478,14 @@ class SimAlphaGardenWrapper(WrapperEnv):
             prune_rate (float)
         """
         self.garden.set_prune_rate(prune_rate)
+
+    def set_irrigation_amount(self, irrigation_amount):
+        """Sets the irrigation_amount in the garden.
+        
+        Args:
+            irrigation_amount (float)
+        """
+        self.garden.set_irrigation_amount(irrigation_amount)
 
     def get_metrics(self):
         """Evaluate metrics of garden.
