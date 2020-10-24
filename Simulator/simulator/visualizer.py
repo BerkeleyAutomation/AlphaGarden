@@ -149,7 +149,7 @@ class Pillow_Visualizer(Visualizer):
                 self.env.plant_radii.append((plant.type, plant.radius))
                 # print(plant.col, plant.row, plant.radius)
                 # print(plant.color)
-                plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255), 125)
+                plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255))
                 rad = int(col_scale * plant.radius)
                 circle_bounding_box = (plant.col*col_scale - rad, plant.row*row_scale - rad, 
                                 plant.col*col_scale + rad, plant.row*row_scale + rad)
