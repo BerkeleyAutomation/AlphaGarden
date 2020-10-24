@@ -105,7 +105,7 @@ class PlantType:
                 single_cf = companionship_factor_list[companion_plant.type]
                 exp_decay_factor = (
                     (companion_plant.row - plant.row) ** 2 + (companion_plant.col - plant.col) ** 2)
-                # companionship_factor * 1/((euclidian distance i,j))
+                # companionship_factor * 1/((euclidian distance i,j)^2)
                 cf += single_cf * (1 / exp_decay_factor)
             plant.companionship_factor = max(0.0, 1.0 + cf)
 
