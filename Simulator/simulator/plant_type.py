@@ -39,8 +39,8 @@ class PlantType:
         sector_cols_half = sector_cols // 2
         # PLANTS = ['borage', 'mizuna', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce',
         #           'swiss_chard', 'turnip']
-        # PLANTS = ['borage', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce', 'arugula',
-        #          'swiss_chard', 'turnip']
+        PLANTS = ['borage', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce', 'arugula',
+                  'swiss_chard', 'turnip']
 
         def in_bounds(r, c):
             return sector_rows_half < r < rows - sector_rows_half and sector_cols_half < c < cols - sector_cols_half
@@ -50,9 +50,9 @@ class PlantType:
 
         if plant_seed_config_file_path:
             with open(plant_seed_config_file_path, "rb") as f:
-                #[labels, points] = pickle.load(f) # Atsu's version with numeric label
-                [plant_type, points] = pickle.load(f)
-                plant_type = list(plant_type)
+                [labels, points] = pickle.load(f) # Atsu's version with numeric label
+                #[plant_type, points] = pickle.load(f)
+                #plant_type = list(plant_type)
             for i in range(len(points)):
                 if randomize_seed_coords:
                     coord = coords.pop(0)
@@ -62,10 +62,10 @@ class PlantType:
                     r = int(round(r))
                     c = int(round(c))
                     coords.remove((r, c))
-                #l = labels[i] # Atsu's version with numeric label
-                #plant_type = PLANTS[l] # Atsu's version with numeric label 
-                #plants.append(Plant.from_preset(plant_type, r, c))  # Atsu's version with numeric label
-                plants.append(Plant.from_preset(plant_type[i], r, c))
+                l = labels[i] # Atsu's version with numeric label
+                plant_type = PLANTS[l] # Atsu's version with numeric label
+                plants.append(Plant.from_preset(plant_type, r, c))  # Atsu's version with numeric label
+                #plants.append(Plant.from_preset(plant_type[i], r, c))
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
 
@@ -108,6 +108,7 @@ class PlantType:
                 # companionship_factor * 1/((euclidian distance i,j)^2)
                 cf += single_cf * (1 / exp_decay_factor)
             plant.companionship_factor = max(0.0, 1.0 + cf)
+            print(plant.type, plant.companionship_factor)
 
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 

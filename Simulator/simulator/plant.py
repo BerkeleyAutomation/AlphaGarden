@@ -79,7 +79,8 @@ class Plant:
         if name in PLANT_TYPES:
             p = PLANT_TYPES[name]
             return Plant(row, col, c1=p["c1"], growth_time=p["growth_time"],
-                         color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
+                         color=p["color"], plant_type=p["plant_type"], germination_time=p["germination_time"][0],
+                         germination_scale=p["germination_time"][1], stopping_color=p["stopping_color"],
                          color_step=p["color_step"])
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
