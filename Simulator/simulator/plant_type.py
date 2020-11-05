@@ -48,7 +48,8 @@ class PlantType:
             coord = coords.pop(0)
             r, c = coord[0], coord[1]
             plants.extend([Plant(r, c, c1=plant['c1'], growth_time=plant['growth_time'],
-                                 color=plant['color'], plant_type=name, stopping_color=plant['stopping_color'],
+                                 germination_time=plant['germination_time'], color=plant['color'],
+                                 plant_type=name, stopping_color=plant['stopping_color'],
                                  color_step=plant['color_step'])])
             self.plant_in_bounds += 1
             self.plant_centers.append(tuple((r, c)))

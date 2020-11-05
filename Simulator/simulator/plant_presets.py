@@ -33,7 +33,7 @@ def _compute_from_table_values(
     c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
 
     return {
-        "germination_time": germination_time,
+        "germination_time": (germination_time[0] + germination_time[1]) / 2,
         "k1": k1,
         "k2": k2,
         "c1": c1,
