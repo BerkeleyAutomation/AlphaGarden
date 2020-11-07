@@ -1,0 +1,32 @@
+{
+  "background": "original_0.png",
+  "background_mask": "mask_0.png",
+  "leaves": [
+    ["arugula/01.png", 0], ["arugula/02.png", 0], ["arugula/03.png", 0], ["arugula/04.png", 0], ["arugula/05.png", 0],
+    ["borage/01.png", 1], ["borage/02.png", 1], ["borage/03.png", 1], ["borage/04.png", 1], ["borage/05.png", 1],
+    ["cilantro/01.png", 2], ["cilantro/02.png", 2], ["cilantro/03.png", 2], ["cilantro/04.png", 2], ["cilantro/05.png", 2],
+    ["green-lettuce/01.png", 3], ["green-lettuce/02.png", 3], ["green-lettuce/03.png", 3], ["green-lettuce/04.png", 3], ["green-lettuce/05.png", 3], ["green-lettuce/06.png", 3], 
+    ["kale/01.png", 4], ["kale/02.png", 4], ["kale/03.png", 4], ["kale/04.png", 4], ["kale/05.png", 4],
+    ["radiccio/01.png", 5], ["radiccio/02.png", 5], ["radiccio/03.png", 5], ["radiccio/04.png", 5], ["radiccio/05.png", 5],
+    ["red-lettuce/01.png", 6], ["red-lettuce/02.png", 6], ["red-lettuce/03.png", 6], ["red-lettuce/04.png", 6], ["red-lettuce/05.png", 6],
+    ["sorrel/01.png", 7], ["sorrel/02.png", 7], ["sorrel/03.png", 7], ["sorrel/04.png", 7], ["sorrel/05.png", 7],
+    ["swiss-charge/01.png", 8], ["swiss-charge/02.png", 8], ["swiss-charge/03.png", 8], ["swiss-charge/04.png", 8], ["swiss-charge/05.png", 8],["swiss-charge/06.png", 8],
+    ["turnip/01.png", 9], ["turnip/02.png", 9], ["turnip/03.png", 9], ["turnip/04.png", 9], ["turnip/05.png", 9]
+  ],
+
+  "encodings": {
+      "0": [61, 123, 0],
+      "1": [255, 174, 0],
+      "2": [0, 124, 93],
+      "3": [50, 226, 174],
+      "4": [50, 50, 226],
+      "5": [185, 180, 44],
+      "6": [145, 50, 226],
+      "7": [255, 0, 0],
+      "8": [226, 50, 170],
+      "9": [255, 85, 89]
+    },
+  "iterations": 15,
+  "num_copies": 101,
+  "dim": 512
+}
