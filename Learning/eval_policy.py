@@ -213,7 +213,7 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
             if i % sector_obs_per_day == 0:
                 pr = 0
                 prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
-                irrigation_amounts = [0.001, 0.0005, 0.00025]
+                irrigation_amounts = [0.001]
                 covs, divs, cv = [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
                 w1 = day_p / 50
@@ -228,19 +228,19 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
                                     vectorized=False)
                         covs.append(cov)
                         divs.append(div)
-                        cv.append((w2*cov + w1*div, irr_amt))
+                        cv.append((w2*cov + w1*div, (prune_rates[pr_i], irr_amt)))
                 print(cv)
                 print(covs)
                 print(divs)
-                pr = prune_rates[np.argmax([result[0] for result in cv])]
-                ir = cv[np.argmax([result[0] for result in cv])][1]
+                pr = cv[np.argmax([result[0] for result in cv])][1][0]
+                ir = cv[np.argmax([result[0] for result in cv])][1][1]
                 print(pr)
                 print(ir)
                 prune_rates_order.append(pr)
                 irrigation_amounts_order.append(ir)
                 env.set_prune_rate(pr)
                 env.set_irrigation_amount(ir)
-                wrapper_day_set = False   
+                wrapper_day_set = False
                         
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
