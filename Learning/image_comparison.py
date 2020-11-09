@@ -4,8 +4,6 @@ import numpy as np
 
 filename = '/Users/sebastianoehme/Downloads/time_lapse.mp4'
 vid = imageio.get_reader(filename,  'ffmpeg')
-nums = [10, 287]
-image = vid.get_data(10)
 
 width, height = (3478, 1630)
 left = int(width/2)
