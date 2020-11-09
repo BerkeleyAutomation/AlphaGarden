@@ -1,8 +1,5 @@
 import numpy as np
-from simulator.simulator_params import NUM_X_STEPS, STEP
-
-REAL_GARDEN_WIDTH = 118.11  # garden width in inches
-
+from simulator.sim_globals import STEP
 
 def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2):
     """
@@ -42,8 +39,7 @@ def _compute_from_table_values(
 
     maturation_time (int)       - number of days this plant will live before stopping growth
     """
-    # square to inch ratio to convert simulator size units to real-world units
-    garden_ratio = NUM_X_STEPS / REAL_GARDEN_WIDTH
+
     c2 = 1
     k1, k2 = 0.3, 0.7
     h_0 = 0.1
