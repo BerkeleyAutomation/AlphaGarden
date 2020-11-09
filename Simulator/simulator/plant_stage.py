@@ -66,20 +66,20 @@ class PlantStage:
 
 
 class GerminationStage(PlantStage):
-    def __init__(self, plant, duration_mean, duration_scale, start_height, start_radius, height_scale, radius_scale):
+    def __init__(self, plant, duration, start_height, start_radius, height_scale, radius_scale):
         """ Model of germination stage in bio standard life cycle trajectory.
 
         Args
             plant (obj): plant object.
-            duration_mean (int): Mean of normal distribution for duration for germination stage time.
-            duration_scale (int): Standard deviation of normal distribution for duration for germination stage time.
+            duration (int): Duration for germination stage time.
             start_height (int): Mean of normal distribution for start height in germination stage.
             start_radius (int): Mean of normal distribution for start radius in germination stage.
             height_scale (float): Standard deviation of normal distribution for start height in germination stage.
             radius_scale (float): Standard deviation of normal distribution for start radius in germination stage.
 
         """
-        super().__init__(plant, duration_mean, duration_scale, 0)
+        # Standard deviation of duration is 0 as the duration has already been sampled from a normal distribution in plant_presets.py.
+        super().__init__(plant, duration, 0, 0)
         self.start_height = max(0.1, np.random.normal(start_height, height_scale))
         self.start_radius = max(0.1, np.random.normal(start_radius, radius_scale))
 
@@ -100,15 +100,15 @@ class GerminationStage(PlantStage):
 
 
 class GrowthStage(PlantStage):
-    def __init__(self, plant, duration_mean, duration_scale):
+    def __init__(self, plant, duration):
         """ Model of growth stage in bio standard life cycle trajectory.
 
         Args
             plant (obj): plant object.
-            duration_mean (int): Mean of normal distribution for duration for growth stage time.
-            duration_scale (int): Standard deviation of normal distribution for duration for growth stage time.
+            duration (int): Duration for growth stage time.
         """
-        super().__init__(plant, duration_mean, duration_scale, 1)
+        # Standard deviation of duration is 0 as the duration has already been sampled from a normal distribution in plant_presets.py.
+        super().__init__(plant, duration, 0, 1)
         self.overwatered = False
         self.underwatered = False
         self.recovering = False

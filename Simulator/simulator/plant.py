@@ -4,7 +4,7 @@ from simulator.plant_presets import PLANT_TYPES
 
 class Plant:
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
-                 germination_time=3, germination_scale=1, start_height=1, start_radius=1, height_scale=0.1,
+                 germination_time=3, start_height=1, start_radius=1, height_scale=0.1,
                  radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255)):
         """ Model for plants.
 
@@ -15,11 +15,10 @@ class Plant:
             c2 (float): parameters for how water and light affect growth.
             k1 (float): minimum proportion plant will allocate to upward growth.
             k2 (float): maximum proportion plant will allocate to upward growth.
-            growth_time(int): Mean of normal distribution for duration for growth stage time.
+            growth_time(int): Duration for growth stage time.
             color (tuple of (int,int,int)): color of plant when plotted (must be RGB tuple).
             plant_type(str): plant species (for visualization purposes).
-            germination_time (int): Mean of normal distribution for duration for germination stage time.
-            germination_scale (int): Standard deviation of normal distribution for duration for germination stage time.
+            germination_time (int): Duration for germination stage time.
             start_height (int): Mean of normal distribution for start height in germination stage.
             start_radius (int): Mean of normal distribution for start radius in germination stage.
             height_scale (float): Standard deviation of normal distribution for start height in germination stage.
@@ -53,9 +52,9 @@ class Plant:
         Waiting = WaitingStage(self, 30, 2) if self.type == "invasive" else WaitingStage(self, 10, 2)
         Wilting = WiltingStage(self, 10, 2, 2) if self.type == "invasive" else WiltingStage(self, 20, 2, 2)
         self.stages = [
-            GerminationStage(self, germination_time, germination_scale, start_height, start_radius, height_scale,
+            GerminationStage(self, germination_time, start_height, start_radius, height_scale,
                              radius_scale),
-            GrowthStage(self, growth_time, 2),
+            GrowthStage(self, growth_time),
             Waiting,
             Wilting,
             DeathStage(self)
