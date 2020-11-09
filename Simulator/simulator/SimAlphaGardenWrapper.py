@@ -6,7 +6,7 @@ import configparser
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
-from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD
+from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
@@ -30,14 +30,17 @@ class SimAlphaGardenWrapper(WrapperEnv):
             step (int): Distance between adjacent points in grid.
             dir_path (str): Directory location for saving experiment data.
 
-        """
 
+        """
+        self.max_time_steps = max_time_steps
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.rows = rows
         self.cols = cols
 
+
         #: int: Number of sectors (representing the area observable to the agent at time t) in garden.
         self.num_sectors = (rows * cols) / (sector_rows * sector_cols)
+
 
         self.sector_rows = sector_rows
         self.sector_cols = sector_cols
@@ -96,11 +99,14 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_random_centers(self):
         """Get plant locations and sampled random coordinates without plants.
 
+
         Note:
             TODO: One line on why we sample non_plant sectors.
 
+
         Returns:
             array of plant locations and sampled random coordinates without plants
+
 
         """
         np.random.shuffle(self.non_plant_centers)
@@ -109,13 +115,16 @@ class SimAlphaGardenWrapper(WrapperEnv):
     def get_center_state(self, center, image=True, eval=False):
         """Get state of the sector defined by all local and global quantities.
 
+
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
             image (bool): flag for image generation
             eval (bool): flag for evaluation
 
+
         Returns:
             Image and state associated with the sector if image true, only state otherwise.
+
 
         """
         cc_per_plant = self.garden.get_cc_per_plant()
@@ -155,17 +164,26 @@ class SimAlphaGardenWrapper(WrapperEnv):
             if not multi:
                 self.non_plant_centers = self.non_plant_centers[1:]
 
+
         # Uncomment to make method for 2 plants deterministic
         # center_to_sample = (7, 15) 
         # center_to_sample = (57, 57)
 
+
         cc_per_plant = self.garden.get_cc_per_plant()
         # Amount of soil and number of grid points per plant type in which the specific plant type is the highest plant.
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
+        plant_prob = self.garden.get_plant_prob(center_to_sample)
+        water_gri = self.garden.get_water_grid(center_to_sample)
+        health_gri = self.garden.get_health_grid(center_to_sample)
         return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample),
                        self.garden.get_water_grid(center_to_sample),
-                       self.garden.get_health_grid(center_to_sample)))
+                       self.garden.get_health_grid(center_to_sample))), \
+            np.dstack((self.garden.get_plant_prob_full(),
+                       self.garden.get_water_grid_full(),
+                       self.garden.get_health_grid_full()))
+
 
     def get_canopy_image(self, center, eval):
         """Get image for canopy cover of the garden and save image to specified directory.
@@ -185,8 +203,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         if not eval:
             dir_path = self.dir_path
         self.garden.step = 1
-        x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
-        # x_low, y_low, x_high, y_high = 0, 0, 149, 299
+        # x_low, y_low, x_high, y_high = self.garden.get_sector_bounds(center)
+        x_low, y_low, x_high, y_high = 0, 0, 149, 149 
         fig, ax = plt.subplots()
         ax.set_xlim(y_low, y_high)
         ax.set_ylim(x_low, x_high)
@@ -205,8 +223,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         bbox0 = fig.get_tightbbox(fig.canvas.get_renderer()).padded(0.02)
         if not eval:
             r = os.urandom(16)
-            # file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
-            file_path = dir_path + 'images/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            # file_path = dir_path + 'images/' + ''.join('%02x' % ord(chr(x)) for x in r)
             plt.savefig(file_path + '_cc.png', bbox_inches=bbox0)
             plt.close()
             return file_path
@@ -214,7 +232,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
             buf = io.BytesIO()
             fig.savefig(buf, format="rgba", dpi=100, bbox_inches=bbox0)
             buf.seek(0)
-            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(235, 499, -1))
+            # img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(235, 499, -1))
+            img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(373, 373, -1))
             img = img[..., :3]
             buf.close()
             plt.close()
@@ -296,21 +315,26 @@ class SimAlphaGardenWrapper(WrapperEnv):
         cc_per_plant = self.garden.get_cc_per_plant()
         # Amount of soil and number of grid points per plant type in which the specific plant type is the highest plant.
         global_cc_vec = np.append(self.rows * self.cols * self.step - np.sum(cc_per_plant), cc_per_plant)
-        plant_grid = self.garden.get_plant_prob(center)
-        water_grid = self.garden.get_water_grid(center)
-        health_grid = self.garden.get_health_grid(center)
+        # plant_grid = self.garden.get_plant_prob(center)
+        # water_grid = self.garden.get_water_grid(center)
+        # health_grid = self.garden.get_health_grid(center)
+        plant_grid = self.garden.get_plant_prob_full()
+        water_grid = self.garden.get_water_grid_full()
+        health_grid = self.garden.get_health_grid_full() 
         # action_vec = np.zeros(len(self.irr_actions) + 2) 
         
         # Save canopy image before performing a time step.
         # if True:
-        # if time_step % 100 == 0:
+        # sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
+        # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
         if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
             if not eval:
                 path = out
                 # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
-                action_vec = np.array(action)
-                np.save(path + '_action', action_vec)
+                # action_vec = np.array(action)
+                # np.save(path + '_action', action_vec)
+                np.save(path + '_pr', self.garden.prune_rate)
                 # np.savez(path + '.npz', plants=plant_grid, water=water_grid, global_cc=global_cc_vec, heights=self.plant_heights, radii=self.plant_radii)
                 np.savez(path + '.npz', plants=plant_grid, water=water_grid, health=health_grid, global_cc=global_cc_vec)
             self.plant_heights = []
@@ -359,7 +383,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 prune_window_cols=self.prune_window_cols,
                 irr_threshold=IRR_THRESHOLD,
                 step=self.step,
-                plant_types=self.PlantType.plant_names,
+                plant_type=self.PlantType,
                 animate=False)
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
@@ -370,13 +394,29 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """Method called by the environment to display animations."""
         self.garden.show_animation()
 
+    def set_prune_rate(self, prune_rate):
+        """Sets the prune rate in the garden.
+        
+        Args:
+            prune_rate (float)
+        """
+        self.garden.set_prune_rate(prune_rate)
+
+    def set_irrigation_amount(self, irrigation_amount):
+        """Sets the irrigation_amount in the garden.
+        
+        Args:
+            irrigation_amount (float)
+        """
+        self.garden.set_irrigation_amount(irrigation_amount)
+
     def get_metrics(self):
         """Evaluate metrics of garden.
 
         Return:
             Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
         """
-        return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions
+        return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions, self.garden.global_diversity
 
     def get_prune_window_greatest_width(self, center):
         """Get the radius of the tallest (non occluded) plant inside prune window.
@@ -388,3 +428,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
             Float, radius of plant.
         """
         return self.garden.get_prune_window_greatest_width(center)
+    
+    def get_simulator_state_copy(self):
+        """Get the current stat of all simulator values to be able to restart at the current state.
+        
+        Return:
+            GardenState object.
+        """
+        return self.garden.get_simulator_state_copy()
