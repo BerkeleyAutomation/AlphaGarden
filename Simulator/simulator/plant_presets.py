@@ -39,7 +39,7 @@ def _compute_from_table_values(
 
     maturation_time (int)       - number of days this plant will live before stopping growth
     """
-    # square to inch ratio to convert simulator size units to real-world units
+
     c2 = 1
     k1, k2 = 0.3, 0.7
     h_0 = 0.1
