@@ -276,7 +276,7 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-    seed_config_path = '/Users/sebastianoehme/Downloads/scaled_orig_placement'
+    seed_config_path = '/Users/sebastianoehme/Desktop/scaled_orig_placement'
     randomize_seeds_cords_flag = False
     
     for i in range(args.tests):

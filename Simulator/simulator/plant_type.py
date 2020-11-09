@@ -1,6 +1,6 @@
 import numpy as np
 from simulator.plant import Plant
-from simulator.plant_presets import PLANT_TYPES, COMPANION_NEIGHBORHOOD_RADII, PLANTS_RELATION
+from simulator.plant_presets import PLANT_TYPES, COMPANION_NEIGHBORHOOD_RADII, PLANTS_RELATION, generate_c1_and_growth_time
 from simulator.sim_globals import NUM_PLANTS, NUM_PLANT_TYPES_USED
 import pickle
 import math
@@ -37,8 +37,6 @@ class PlantType:
         plants = []
         sector_rows_half = sector_rows // 2
         sector_cols_half = sector_cols // 2
-        # PLANTS = ['borage', 'mizuna', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce',
-        #           'swiss_chard', 'turnip']
         PLANTS = ['borage', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce', 'arugula',
                   'swiss_chard', 'turnip']
 
@@ -77,8 +75,12 @@ class PlantType:
                 name, plant = self.plant_types[np.random.randint(0, self.num_plant_types)]
                 coord = coords.pop(0)
                 r, c = coord[0], coord[1]
-                plants.extend([Plant(r, c, c1=plant['c1'], growth_time=plant['growth_time'],
-                                     color=plant['color'], plant_type=name, stopping_color=plant['stopping_color'],
+                growth_time, c1, germination_length = generate_c1_and_growth_time(
+                    plant['germination_time'], plant['maturation_time'], plant['r_max'],
+                    plant['start_radius'], plant['k2'], plant['c2'])
+                plants.extend([Plant(r, c, c1=c1, growth_time=growth_time,
+                                     germination_time=germination_length, color=plant['color'],
+                                     plant_type=name, stopping_color=plant['stopping_color'],
                                      color_step=plant['color_step'])])
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
@@ -108,8 +110,6 @@ class PlantType:
                 # companionship_factor * 1/((euclidian distance i,j)^2)
                 cf += single_cf * (1 / exp_decay_factor)
             plant.companionship_factor = max(0.0, 1.0 + cf)
-            print(plant.type, plant.companionship_factor)
-
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 
         return plants
