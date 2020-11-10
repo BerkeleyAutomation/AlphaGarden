@@ -4,7 +4,7 @@ from simulator.plant_presets import PLANT_TYPES
 
 class Plant:
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
-                 germination_time=3, start_height=1, start_radius=1, height_scale=0.1,
+                 germination_time=3, start_height=1, start_radius=1, max_radius=1000, height_scale=0.1,
                  radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255)):
         """ Model for plants.
 
@@ -46,6 +46,8 @@ class Plant:
         self.color_step = color_step
 
         self.type = plant_type
+
+        self.max_radius = max_radius
 
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.

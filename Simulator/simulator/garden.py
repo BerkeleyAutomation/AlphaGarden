@@ -490,7 +490,8 @@ class Garden:
         if upward:
             plant.height += upward
         if outward:
-            plant.radius += outward
+            plant.radius = min(plant.radius + outward, plant.max_radius)
+        print(plant.radius)
         self.radius_grid[plant.row, plant.col, 0] = plant.radius
 
     def update_plant_coverage(self, plant, record_coords_updated=False):
