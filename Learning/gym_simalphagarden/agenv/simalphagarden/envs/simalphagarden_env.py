@@ -50,9 +50,9 @@ class SimAlphaGardenEnv(gym.Env):
     ''' END MULTIPROCESSING METHODS '''
 
     def _next_observation(self):
-        self.sector, self.global_cc_vec, obs = self.wrapper_env.get_state(multi=self.multi)
+        self.sector, self.global_cc_vec, sector_obs, full_obs = self.wrapper_env.get_state(multi=self.multi)
         self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types + 1, 1))
-        return [self.global_cc_vec, obs]
+        return [self.global_cc_vec, sector_obs, full_obs]
 
     def _take_action(self, sector, action, eval=False):
         return self.wrapper_env.take_action(sector, action, self.current_step, eval)
@@ -98,6 +98,15 @@ class SimAlphaGardenEnv(gym.Env):
 
     def get_metrics(self):
         return self.wrapper_env.get_metrics()
+
+    def get_simulator_state_copy(self):
+        return self.wrapper_env.get_simulator_state_copy()
+    
+    def set_prune_rate(self, prune_rate):
+        self.wrapper_env.set_prune_rate(prune_rate)
+
+    def set_irrigation_amount(self, irrigation_amount):
+        self.wrapper_env.set_irrigation_amount(irrigation_amount)
     
     def get_prune_window_greatest_width(self):
         return self.wrapper_env.get_prune_window_greatest_width(self.sector)
@@ -108,3 +117,4 @@ class SimAlphaGardenEnv(gym.Env):
     def render(self, mode='human', close=False):
         print(f'Step: {self.current_step}')
         print(f'Reward: {self.reward}')
+        

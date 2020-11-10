@@ -22,6 +22,10 @@ def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k
     c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
     return growth_time, c1, germination_length
 
+def get_r_max(v):
+    r_max = (v / 2)
+    return r_max
+
 def _compute_from_table_values(
     name="plant", color=(0/255, 128/255, 0/255),
 
@@ -99,9 +103,6 @@ PLANTS_RELATION = {
         "turnip":       {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": -20.0, "swiss_chard": -20.0, "turnip": SRV}
 }
 
-def get_r_max(v):
-    r_max = (v / 2)
-    return r_max
 
 PLANT_TYPES = {
     # removed unknown plant, replaced with invasive species
