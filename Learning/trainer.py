@@ -120,8 +120,17 @@ class Trainer(object):
             global_cc = global_cc.to(self._device)
             target = target.to(self._device)
             self._optimizer.zero_grad()
-            output = self._net((cc_sector, water_plants_health, global_cc))
-            criterion = torch.nn.CrossEntropyLoss()
+            
+            ''' Classification '''
+            # output = self._net((cc_sector, water_plants_health, global_cc))
+            # criterion = torch.nn.CrossEntropyLoss()
+            
+            ''' Regression '''
+            output = self._net((cc_sector, water_plants_health, global_cc)).double()
+            criterion = torch.nn.MSELoss()
+            target = target.unsqueeze(1).double()
+            # print(target, output)
+
             loss = criterion(output, target)
             loss.backward()
             self._optimizer.step()
@@ -154,8 +163,15 @@ class Trainer(object):
                 water_plants_health = water_plants_health.to(self._device)
                 global_cc = global_cc.to(self._device)
                 target = target.to(self._device) 
-                output = self._net((cc_sector, water_plants_health, global_cc))
-                criterion = torch.nn.CrossEntropyLoss()
+                output = self._net((cc_sector, water_plants_health, global_cc)).double()
+
+                ''' Classification '''
+                # criterion = torch.nn.CrossEntropyLoss()
+
+                ''' Regression '''
+                criterion = torch.nn.MSELoss()
+                target = target.unsqueeze(1).double()
+            
                 loss = criterion(output, target)
                 eval_loss += loss.item()
                 eval_losses.append(loss.item())
