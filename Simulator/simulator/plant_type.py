@@ -50,7 +50,7 @@ class PlantType:
             growth_time, c1, germination_length = generate_c1_and_growth_time(
                 plant['germination_time'], plant['maturation_time'], plant['r_max'],
                 plant['start_radius'], plant['k2'], plant['c2'])
-            plants.extend([Plant(r, c, c1=c1, growth_time=growth_time,
+            plants.extend([Plant(r, c, c1=c1, growth_time=growth_time, max_radius=plant['r_max'],
                                  germination_time=germination_length, color=plant['color'],
                                  plant_type=name, stopping_color=plant['stopping_color'],
                                  color_step=plant['color_step'])])

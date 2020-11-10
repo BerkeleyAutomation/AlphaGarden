@@ -4,7 +4,7 @@ from simulator.plant_presets import PLANT_TYPES
 
 class Plant:
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
-                 germination_time=3, start_height=1, start_radius=1, height_scale=0.1,
+                 germination_time=3, start_height=1, start_radius=1, max_radius=1000, height_scale=0.1,
                  radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255)):
         """ Model for plants.
 
@@ -47,6 +47,8 @@ class Plant:
 
         self.type = plant_type
 
+        self.max_radius = max_radius
+
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
         Waiting = WaitingStage(self, 30, 2) if self.type == "invasive" else WaitingStage(self, 10, 2)
@@ -81,7 +83,8 @@ class Plant:
             return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"],
                          color=p["color"], plant_type=p["plant_type"], germination_time=germination_time,
                          germination_scale=germination_scale, start_height=p["start_height"],
-                         start_radius=p["start_radius"], stopping_color=p["stopping_color"], color_step=p["color_step"])
+                         start_radius=p["start_radius"], max_radius=p["r_max"],
+                         stopping_color=p["stopping_color"], color_step=p["color_step"])
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
