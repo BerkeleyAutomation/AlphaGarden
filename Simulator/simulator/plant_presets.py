@@ -39,12 +39,11 @@ def _compute_from_table_values(
 
     maturation_time (int)       - number of days this plant will live before stopping growth
     """
-
     c2 = 1
     k1, k2 = 0.3, 0.7
     h_0 = 0.1
-    r_0 = 0.1 / garden_ratio
-    r_max = seed_spacing / 2 / garden_ratio
+    r_0 = 0.1
+    r_max = seed_spacing / 2
     growth_time, c1, _ = generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2) 
 
     return {
