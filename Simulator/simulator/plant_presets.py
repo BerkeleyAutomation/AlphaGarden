@@ -1,14 +1,31 @@
 import numpy as np
-from simulator.simulator_params import NUM_X_STEPS, STEP
+from simulator.sim_globals import STEP
 
-REAL_GARDEN_WIDTH = 118.11  # garden width in inches
-
+def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2):
+    """
+    Samples a normal distribution for germination and maturation times.  Uses these values to
+    compute an individual plant's growth time and c1 value.
+    
+    germination_time (float, float) - the mean and standard deviation from which to sample a
+                                      germination time from.
+    
+    maturation_time (float , float) - the mean and standard deviation from which to sample a
+                                      maturation time from.
+                                  
+    r_max, r_0, k2, c_2 (float)     - values that are global to a plant type.
+                                      Computed in _compute_from_table_values. 
+    """
+    maturation_length = np.random.normal(maturation_time[0], maturation_time[1])
+    germination_length = np.random.normal(germination_time[0], germination_time[1])
+    growth_time = int(maturation_length - germination_length)
+    c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
+    return growth_time, c1, germination_length
 
 def _compute_from_table_values(
     name="plant", color=(0/255, 128/255, 0/255),
-    germination_time=(0, 1), 
+    germination_time=(3, 1), 
     seed_spacing=1.0,
-    maturation_time=10, 
+    maturation_time=(10, 1), 
     stopping_color=(0, 0, 1),
     color_step=(10/255, 0, 0)
     ):
@@ -22,24 +39,24 @@ def _compute_from_table_values(
 
     maturation_time (int)       - number of days this plant will live before stopping growth
     """
-    # square to inch ratio to convert simulator size units to real-world units
-    garden_ratio = NUM_X_STEPS / REAL_GARDEN_WIDTH
+
     c2 = 1
     k1, k2 = 0.3, 0.7
     h_0 = 0.1
     r_0 = 0.1 / garden_ratio
     r_max = seed_spacing / 2 / garden_ratio
-    growth_time = int(maturation_time - (germination_time[0] + germination_time[1]) / 2)
-    c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
+    growth_time, c1, _ = generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2) 
 
     return {
-        "germination_time": (germination_time[0] + germination_time[1]) / 2,
+        "germination_time": germination_time,
+        "maturation_time": maturation_time,
         "k1": k1,
         "k2": k2,
         "c1": c1,
         "c2": c2,
         "start_radius": r_0,
         "start_height": h_0,
+        "r_max": r_max,
         "growth_time": growth_time,
         "plant_type": name,
         "color": color,
@@ -49,56 +66,56 @@ def _compute_from_table_values(
 
 PLANT_TYPES = {
     # removed unknown plant, replaced with invasive species
-    # "invasive": _compute_from_table_values(name="invasive", color=(255/255, 0/255, 0/255), germination_time=(2, 5),
-    #                                        seed_spacing=40, maturation_time=40, stopping_color=(119/255, 0, 1)),
-    "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
-                                          seed_spacing=9, maturation_time=63, stopping_color=(119/255, 0, 1)),
-    # "bok-choy": _compute_from_table_values(name="bok-choy", color=(86/255, 139/255, 31/255), germination_time=(5, 10),
-    #                                        seed_spacing=6, maturation_time=45, stopping_color=(115/255, 0, 1)),
-    "basil": _compute_from_table_values(name="basil", color=(9/255, 77/255, 10/255), germination_time=(5, 10),
-                                        seed_spacing=9, maturation_time=63, stopping_color=(150/255, 0, 1)),
-    # "lavender": _compute_from_table_values(name="lavender", color=(0, 183/255, 0), germination_time=(14, 21),
-    #                                        seed_spacing=21, maturation_time=145, stopping_color=(120/255, 63/255, 1), color_step=(10/255, -10/255, 0/255)),
-    # "parsley": _compute_from_table_values(name="parsley", color=(142/255, 229/255, 52/255), germination_time=(21, 28),
-    #                                       seed_spacing=10.5, maturation_time=80, stopping_color=(142/255, 0, 1), color_step=(-20/255, 0/255, 0/255)),
-    # "sage": _compute_from_table_values(name="sage", color=(62/255, 159/255, 78/255), germination_time=(10, 21),
-    #                                    seed_spacing=30, maturation_time=730, stopping_color=(132/255, 89/255, 1), color_step=(10/255, -10/255, 0/255)),
-    # "rosemary": _compute_from_table_values(name="rosemary", color=(0, 230/255, 0), germination_time=(15, 25),
-    #                                        seed_spacing=21, maturation_time=183, stopping_color=(140/255, 90/255, 1), color_step=(10/255, -10/255, 0/255)),
-    # "thyme": _compute_from_table_values(name="thyme", color=(101/255, 179/255, 53/255), germination_time=(8, 20),
-    #                                     seed_spacing=21, maturation_time=95, stopping_color=(191/255, 134/255, 1), color_step=(10/255, -5/255, 0/255)),
-    # "chives": _compute_from_table_values(name="chives", color=(58/255, 167/255, 100/255), germination_time=(15, 21),
-    #                                      seed_spacing=7.5, maturation_time=90, stopping_color=(198/255, 0, 1)),
-    "cilantro": _compute_from_table_values(name="cilantro", color=(91/255, 224/255, 54/255), germination_time=(7, 10),
-                                           seed_spacing=4, maturation_time=68, stopping_color=(181/255, 134/255, 1),
+    # "invasive": _compute_from_table_values(name="invasive", color=(255/255, 0/255, 0/255), germination_time=(3.5, 1),
+    #                                        seed_spacing=40, maturation_time=(40, 1), stopping_color=(119/255, 0, 1)),
+    "unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(7.5, 1),
+                                          seed_spacing=9, maturation_time=(63, 1), stopping_color=(119/255, 0, 1)),
+    # "bok-choy": _compute_from_table_values(name="bok-choy", color=(86/255, 139/255, 31/255), germination_time=(7.5, 1),
+    #                                        seed_spacing=6, maturation_time=(45, 1), stopping_color=(115/255, 0, 1)),
+    "basil": _compute_from_table_values(name="basil", color=(9/255, 77/255, 10/255), germination_time=(7.5, 1),
+                                        seed_spacing=9, maturation_time=(63, 1), stopping_color=(150/255, 0, 1)),
+    # "lavender": _compute_from_table_values(name="lavender", color=(0, 183/255, 0), germination_time=(21.5, 1),
+    #                                        seed_spacing=21, maturation_time=(145, 1), stopping_color=(120/255, 63/255, 1), color_step=(10/255, -10/255, 0/255)),
+    # "parsley": _compute_from_table_values(name="parsley", color=(142/255, 229/255, 52/255), germination_time=(24.5, 1),
+    #                                       seed_spacing=10.5, maturation_time=(80, 1), stopping_color=(142/255, 0, 1), color_step=(-20/255, 0/255, 0/255)),
+    # "sage": _compute_from_table_values(name="sage", color=(62/255, 159/255, 78/255), germination_time=(15.5, 1),
+    #                                    seed_spacing=30, maturation_time=(730, 1), stopping_color=(132/255, 89/255, 1), color_step=(10/255, -10/255, 0/255)),
+    # "rosemary": _compute_from_table_values(name="rosemary", color=(0, 230/255, 0), germination_time=(20, 1),
+    #                                        seed_spacing=21, maturation_time=(183, 1), stopping_color=(140/255, 90/255, 1), color_step=(10/255, -10/255, 0/255)),
+    # "thyme": _compute_from_table_values(name="thyme", color=(101/255, 179/255, 53/255), germination_time=(14, 1),
+    #                                     seed_spacing=21, maturation_time=(95, 1), stopping_color=(191/255, 134/255, 1), color_step=(10/255, -5/255, 0/255)),
+    # "chives": _compute_from_table_values(name="chives", color=(58/255, 167/255, 100/255), germination_time=(18, 1),
+    #                                      seed_spacing=7.5, maturation_time=(90, 1), stopping_color=(198/255, 0, 1)),
+    "cilantro": _compute_from_table_values(name="cilantro", color=(91/255, 224/255, 54/255), germination_time=(8.5, 1),
+                                           seed_spacing=4, maturation_time=(68, 1), stopping_color=(181/255, 134/255, 1),
                                            color_step=(10/255, -10/255, 0/255)),
-    # "dill": _compute_from_table_values(name="dill", color=(79/255, 151/255, 66/255), germination_time=(7, 10),
-    #                                    seed_spacing=13.5, maturation_time=70, stopping_color=(189/255, 0, 1)),
-    "fennel": _compute_from_table_values(name="fennel", color=(167/255, 247/255, 77/255), germination_time=(8, 12),
-                                         seed_spacing=11, maturation_time=65, stopping_color=(127/255, 87/255, 1),
+    # "dill": _compute_from_table_values(name="dill", color=(79/255, 151/255, 66/255), germination_time=(8.5, 1),
+    #                                    seed_spacing=13.5, maturation_time=(70, 1), stopping_color=(189/255, 0, 1)),
+    "fennel": _compute_from_table_values(name="fennel", color=(167/255, 247/255, 77/255), germination_time=(10, 1),
+                                         seed_spacing=11, maturation_time=(65, 1), stopping_color=(127/255, 87/255, 1),
                                          color_step=(-5/255, -20/255, 0/255)),
-    "marjoram": _compute_from_table_values(name="marjoram", color=(101/255, 179/255, 53/255), germination_time=(7, 14),
-                                           seed_spacing=8, maturation_time=60, stopping_color=(181/255, 99/255, 1),
+    "marjoram": _compute_from_table_values(name="marjoram", color=(101/255, 179/255, 53/255), germination_time=(10.5, 1),
+                                           seed_spacing=8, maturation_time=(60, 1), stopping_color=(181/255, 99/255, 1),
                                            color_step=(10/255, -10/255, 0/255)),
-    "oregano": _compute_from_table_values(name="oregano", color=(147/255, 199/255, 109/255), germination_time=(8, 14),
-                                          seed_spacing=13.5, maturation_time=88, stopping_color=(122/255, 99/255, 1),
+    "oregano": _compute_from_table_values(name="oregano", color=(147/255, 199/255, 109/255), germination_time=(11, 1),
+                                          seed_spacing=13.5, maturation_time=(88, 1), stopping_color=(122/255, 99/255, 1),
                                           color_step=(-5/255, -10/255, 0/255)),
-    "tarragon": _compute_from_table_values(name="tarragon", color=(117/255, 158/255, 81/255), germination_time=(7, 14),
-                                           seed_spacing=21, maturation_time=60, stopping_color=(152/255, 88/255, 1),
+    "tarragon": _compute_from_table_values(name="tarragon", color=(117/255, 158/255, 81/255), germination_time=(10.5, 1),
+                                           seed_spacing=21, maturation_time=(60, 1), stopping_color=(152/255, 88/255, 1),
                                            color_step=(5/255, -10/255, 0/255)),
     "nastursium": _compute_from_table_values(name="nastursium", color=(142/255, 199/255, 52/255),
-                                             germination_time=(10, 12),
-                                             seed_spacing=11, maturation_time=60, stopping_color=(202/255, 129/255, 1),
+                                             germination_time=(11, 1),
+                                             seed_spacing=11, maturation_time=(60, 1), stopping_color=(202/255, 129/255, 1),
                                              color_step=(10/255, -10/255, 0/255)),
-    "marigold": _compute_from_table_values(name="marigold", color=(117/255, 128/255, 81/255), germination_time=(5, 10),
-                                           seed_spacing=7, maturation_time=50, stopping_color=(177/255, 98/255, 1),
+    "marigold": _compute_from_table_values(name="marigold", color=(117/255, 128/255, 81/255), germination_time=(7.5, 1),
+                                           seed_spacing=7, maturation_time=(50, 1), stopping_color=(177/255, 98/255, 1),
                                            color_step=(10/255, -5/255, 0/255)),
-    # "calendula": _compute_from_table_values(name="calendula", color=(62/255, 129/255, 78/255), germination_time=(7, 10),
-    #                                         seed_spacing=12, maturation_time=50, stopping_color=(182/255, 129/255, 1)),
+    # "calendula": _compute_from_table_values(name="calendula", color=(62/255, 129/255, 78/255), germination_time=(8.5, 1),
+    #                                         seed_spacing=12, maturation_time=(50, 1), stopping_color=(182/255, 129/255, 1)),
     # "radish": _compute_from_table_values(name="radish", color=(91/255, 194/255, 54/255),
-    #                                      germination_time=(3, 10),
-    #                                      seed_spacing=5, maturation_time=28, stopping_color=(171/255, 114/255, 1), color_step=(10/255, -10/255, 0/255)),
+    #                                      germination_time=(6.5, 1),
+    #                                      seed_spacing=5, maturation_time=(28, 1), stopping_color=(171/255, 114/255, 1), color_step=(10/255, -10/255, 0/255)),
     "borage": _compute_from_table_values(name="borage", color=(58/255, 137/255, 100/255),
-                                         germination_time=(5, 15),
-                                         seed_spacing=20, maturation_time=5, stopping_color=(188/255, 137/255, 1))
+                                         germination_time=(10, 1),
+                                         seed_spacing=20, maturation_time=(5, 1), stopping_color=(188/255, 137/255, 1))
 }
