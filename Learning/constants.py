@@ -19,3 +19,4 @@ class TrainingConstants(object):
     NUM_CLASSES = 4
     ACT_DIM = NUM_CLASSES
     FLAT_STATE_DIM = 1291
+    
