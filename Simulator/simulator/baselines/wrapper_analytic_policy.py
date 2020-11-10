@@ -149,8 +149,6 @@ def garden_to_sector(garden, plant_centers, non_plant_centers, rows, cols, step)
     global_cc_vec = np.append(rows * cols * step - np.sum(cc_per_plant), cc_per_plant)
 
     plant_prob = garden.get_plant_prob(center_to_sample)
-    water_gri = garden.get_water_grid(center_to_sample)
-    health_gri = garden.get_health_grid(center_to_sample)
 
     return center_to_sample, global_cc_vec, \
         np.dstack((garden.get_plant_prob(center_to_sample),

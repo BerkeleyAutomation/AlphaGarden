@@ -48,10 +48,10 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
     
     proj_plant_cc = np.sum((global_cc_vec / np.sum(global_cc_vec, dtype="float"))[1:])
 
-    global_cc_vec[0] += ROWS*COLS/NUM_PLANT_TYPES_USED
+    global_cc_vec[0] += ROWS * COLS / NUM_PLANT_TYPES_USED
     prob = global_cc_vec / np.sum(global_cc_vec, dtype="float") # We start from 1 because we don't include earth in diversity
     prob = prob[np.where(prob > 0)]
-    global_cc_vec[0] -= ROWS*COLS/NUM_PLANT_TYPES_USED
+    global_cc_vec[0] -= ROWS * COLS / NUM_PLANT_TYPES_USED
     entropy = -np.sum(prob * np.log(prob), dtype="float") / np.log(20)
     return proj_plant_cc, entropy
 

@@ -3,7 +3,7 @@ import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillow_Visualizer
 from simulator.plant_type import PlantType
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP
 import simalphagarden
 import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
@@ -18,7 +18,6 @@ import multiprocessing as mp
 import time
 from simulator.garden import Garden
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tests', type=int, default=1)
 parser.add_argument('-n', '--net', type=str, default='/')
@@ -27,12 +26,10 @@ parser.add_argument('-s', '--seed', type=int, default=0)
 parser.add_argument('-p', '--policy', type=str, default='ba', help='[b|n|l|i] baseline analytic [ba], baseline wrapper [bw], naive baseline [n], learned [l], irrigation [i]')
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
-parser.add_argument('-d', '--days', type=int, default=72)
+parser.add_argument('-d', '--days', type=int, default=100)
 parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
 parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 args = parser.parse_args()
-
-
 
 def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
              prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
@@ -56,7 +53,6 @@ def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
         multi=multi
     )
     return env
-
 
 def get_action_net(env, i, center, policy, actions):
     curr_img, cc_vec, obs = env.get_center_state(center, need_img=True, multi=True)
@@ -95,8 +91,6 @@ def evaluate_learned_policy_multi(env, policy, steps, sector_obs_per_day, trial,
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-
-''' WILL NOT WORK WITH NEW FULL STATE OBS '''
 def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_policy_data/',
                                    analytic_policy=analytic_policy.policy, sector_rows=15,
                                    sector_cols=30, prune_window_rows=5, prune_window_cols=5,
@@ -163,14 +157,12 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-
 def get_action(env, i, center, policy, actions):
     cc_vec, obs = env.get_center_state(center, need_img=False, multi=True)
     action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                     sector_obs_per_day, vectorized=False, eval=True)[0]
     actions.put((i, action))
-
 
 def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_rows, sector_cols, 
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
@@ -191,7 +183,7 @@ def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_ro
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
     
-def evaluate_analytic_policy_serial(wrapper_sel, env, policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
                             sector_obs_per_day, trial, save_dir, vis_identifier):
     wrapper = wrapper_sel # If wrapper_sel is True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
@@ -203,22 +195,20 @@ def evaluate_analytic_policy_serial(wrapper_sel, env, policy, collection_time_st
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
             print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
-
             vis.get_canopy_image_full(False, vis_identifier)
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
-            
         cc_vec = env.get_global_cc_vec()
-        #The wrapper policy starts after the PRUNE_DELAY
+        # The wrapper policy starts after the PRUNE_DELAY
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
-            # At every new day, the wrapper runs through the day's garden to find the best prune rate and irrigaiton level for that day
+            # At every new day, the wrapper runs through the day's garden to find the best prune rate and irrigation level for that day
             if i % sector_obs_per_day == 0:
                 pr = 0
                 prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
                 irrigation_amounts = [0.001]
                 covs, divs, cv = [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
-                w1 = day_p / 50 #weights are 0 to 1 between days 20 and 70
+                w1 = day_p / 50 # weights are 0 to 1 between days 20 and 70
                 w2 = 1 - w1
                 for irr_amt in irrigation_amounts:
                     for pr_i in range(len(prune_rates)):
@@ -237,37 +227,28 @@ def evaluate_analytic_policy_serial(wrapper_sel, env, policy, collection_time_st
                 env.set_prune_rate(pr)
                 env.set_irrigation_amount(ir)
                 wrapper_day_set = False
-                        
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                     sector_obs_per_day, vectorized=False)[0]
         all_actions.append(action)
         obs, rewards, _, _ = env.step(action)
-        
         if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
             cov, div, water, act, global_div = env.get_metrics()
             div_cov_day = cov[-1] * div[-1]
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
-
     dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
     if not os.path.exists(dirname):    
         os.makedirs(dirname)
     f = open("./policy_metrics/prs.txt", "a")
     f.write("Prune Rates: "+ str(prune_rates_order))
-    # f.write("\nActions: " + str(all_actions))
-    # f.write("\nDiversity-Coverage: " + str(div_cov))
     f.close()
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
-
-
-
 
 def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
-
 
         print("Day {}/{}".format(i, garden_days))
         for _ in range(sector_obs_per_day):
@@ -275,13 +256,11 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
             # prune = 2 if np.random.random() < 0.01 and i % 3 == 0 else 0
             # prune = 2 if np.random.random() < 0.01 else 0
 
-
             env.step(water + prune)
         vis.get_canopy_image_sector(np.array([7.5,15]),False)
         # vis.get_canopy_image_full(False)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
-
 
 def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='irr_no_prune_policy_data/'):
     env.reset()
@@ -293,7 +272,6 @@ def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, 
             env.step(water + prune)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
-
 
 def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_time_steps, sector_rows, sector_cols, 
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
@@ -316,7 +294,6 @@ def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_t
         raw = np.transpose(obs[1], (2, 0, 1))
         global_cc_vec = env.get_global_cc_vec()
 
-
         sector_img = torch.from_numpy(np.expand_dims(sector_img, axis=0)).float()
         raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
         global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
@@ -330,8 +307,6 @@ def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_t
         obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
-
-
 
 def save_data(metrics, trial, save_dir):
     dirname = os.path.dirname(save_dir)
@@ -357,30 +332,25 @@ def save_data(metrics, trial, save_dir):
     plt.savefig(save_dir + 'water_use_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.close()
 
-
-
 if __name__ == '__main__':
     import os
     cpu_cores = [i for i in range(0, 80)] # Cores (numbered 0-11)
     os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
 
-
-    rows = 150
-    cols = 150 
+    rows = ROWS
+    cols = COLS
     num_plant_types = PlantType().num_plant_types
     depth = num_plant_types + 3  # +1 for 'earth' type, +1 for water, +1 for health
-    sector_rows = 15
-    sector_cols = 30
-    prune_window_rows = 5
-    prune_window_cols = 5
-    garden_step = 1
-
+    sector_rows = SECTOR_ROWS
+    sector_cols = SECTOR_COLS
+    prune_window_rows = PRUNE_WINDOW_ROWS
+    prune_window_cols = PRUNE_WINDOW_COLS
+    garden_step = STEP
 
     action_low = 0
     action_high = 1
     obs_low = 0
     obs_high = rows * cols
-
 
     garden_days = args.days
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
@@ -391,12 +361,9 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-
-    
     for i in range(args.tests):
         trial = i + 1
         seed = args.seed + i
-        
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
         # vis = Matplotlib_Visualizer(env.wrapper_env)
@@ -410,7 +377,7 @@ if __name__ == '__main__':
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
             else:
-                evaluate_analytic_policy_serial(False, env, analytic_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                evaluate_analytic_policy_serial(env, analytic_policy.policy, False, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'bw':
@@ -421,7 +388,7 @@ if __name__ == '__main__':
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
             else:
-                evaluate_analytic_policy_serial(True, env, analytic_policy.policy, collection_time_steps, sector_rows, sector_cols,
+                evaluate_analytic_policy_serial(env, analytic_policy.policy, True, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'n':
@@ -436,11 +403,9 @@ if __name__ == '__main__':
             input_raw_mean, input_raw_std = (moments['input_raw_vec_mean'], moments['input_raw_mean']), (
                 moments['input_raw_vec_std'], moments['input_raw_std'])
 
-
             policy = Net(input_cc_mean, input_cc_std, input_raw_mean, input_raw_std)
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
-            
             evaluate_baseline_compare_net(env, analytic_policy.policy, policy, collection_time_steps,
                                           sector_rows, sector_cols, prune_window_rows, prune_window_cols,
                                           garden_step, water_threshold, sector_obs_per_day, trial)
@@ -449,8 +414,6 @@ if __name__ == '__main__':
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
             input_raw_mean, input_raw_std = (moments['input_raw_vec_mean'], moments['input_raw_mean']), (
                 moments['input_raw_vec_std'], moments['input_raw_std'])
-
-
             policy = Net(input_cc_mean, input_cc_std, input_raw_mean, input_raw_std)
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()

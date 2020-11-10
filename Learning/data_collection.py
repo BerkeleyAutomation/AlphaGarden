@@ -9,7 +9,7 @@ import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.plant_type import PlantType
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP
 from stable_baselines.common.vec_env import DummyVecEnv
 import numpy as np
 
@@ -78,15 +78,15 @@ if __name__ == '__main__':
     # import os
     # cpu_cores =  [i for i in range(30, 61)]
     # os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
-    rows = 150
-    cols = 150
+    rows = ROWS
+    cols = COLS
     num_plant_types = PlantType().num_plant_types
     depth = num_plant_types + 3  # +1 for 'earth' type, +1 for water, +1 for health
-    sector_rows = 15
-    sector_cols = 30
-    prune_window_rows = 5
-    prune_window_cols = 5
-    garden_step = 1
+    sector_rows = SECTOR_ROWS
+    sector_cols = SECTOR_COLS
+    prune_window_rows = PRUNE_WINDOW_ROWS
+    prune_window_cols = PRUNE_WINDOW_COLS
+    garden_step = STEP
     
     action_low = 0
     action_high = 1
@@ -115,4 +115,3 @@ if __name__ == '__main__':
                                  collection_time_steps, garden_step, num_plant_types, dir_path, seed),
         analytic_policy.policy, collection_time_steps, sector_rows, sector_cols, prune_window_rows,
         prune_window_cols, garden_step, water_threshold, sector_obs_per_day)
-        

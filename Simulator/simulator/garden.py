@@ -207,7 +207,6 @@ class Garden:
         """
         self.prune_rate = prune_rate
 
-
     def set_irrigation_amount(self, irrigation_amount):
         """ Modifies the garden's irrigation amount.
         
@@ -215,7 +214,6 @@ class Garden:
             irrigation_amount (float)
         """
         self.irrigation_amount = irrigation_amount
-
 
     def get_sector_bounds_no_pad(self, center):
         """Get bounds of sector from its center location.
@@ -229,7 +227,6 @@ class Garden:
         x_high = min(center[0] + (self.sector_rows // 2), self.N-1)
         y_high = min(center[1] + (self.sector_cols // 2), self.M-1)
         return x_low, y_low, x_high, y_high
-    
     
     def get_prune_bounds(self, center):
         """Get bounds of prune window.
@@ -493,11 +490,7 @@ class Garden:
         if upward:
             plant.height += upward
         if outward:
-            # if (outward < 0):
-                # print('before plant:', plant.radius)
             plant.radius += outward
-            # if (outward < 0):
-                # print('after plant:', plant.radius)
         self.radius_grid[plant.row, plant.col, 0] = plant.radius
 
     def update_plant_coverage(self, plant, record_coords_updated=False):
@@ -672,9 +665,7 @@ class Garden:
         for plant in non_occluded_plants:
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
-            
             self.update_plant_size(plant, outward=-amount_to_prune)
-            
             self.update_plant_coverage(plant, record_coords_updated=True)
             
     def save_coverage_and_diversity(self):
@@ -689,7 +680,7 @@ class Garden:
         self.coverage.append(coverage)
         self.diversity.append(diversity)
 
-        soil_bias = (self.N * self.M) / len(cc_per_plant_type)
+        soil_bias = (self.N * self.M) / (len(cc_per_plant_type) + 1)
         global_cc_vec = np.append((self.N * self.M * self.step - np.sum(cc_per_plant_type)) + soil_bias, cc_per_plant_type)
         global_prob = global_cc_vec[np.nonzero(global_cc_vec)] / (self.N * self.M)
         global_entropy = np.sum(-global_prob * np.log(global_prob))
