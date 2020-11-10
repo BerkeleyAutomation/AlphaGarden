@@ -154,14 +154,14 @@ class Pillow_Visualizer(Visualizer):
                 circle_bounding_box = (plant.col*col_scale - rad, plant.row*row_scale - rad, 
                                 plant.col*col_scale + rad, plant.row*row_scale + rad)
                 draw.ellipse(circle_bounding_box, fill = plant_color)
-        image = image.resize((1849,1849))
+        image = image.resize(((600,600)))
         if not eval:
-            #r = os.urandom(16)
+            r = os.urandom(16)
             dir_path = dir_path + "/Pillow/" + identifier + "/"
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
-            #file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
-            file_path = dir_path + str(day)
+            file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
+            #file_path = dir_path + str(day)
             image.save(file_path + '_cc.png')
         else:
             return image

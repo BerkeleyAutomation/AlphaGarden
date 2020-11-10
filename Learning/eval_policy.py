@@ -284,8 +284,7 @@ if __name__ == '__main__':
         seed = args.seed + i
         
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-
-                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
+                       action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
                        randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
 
         # vis = Matplotlib_Visualizer(env.wrapper_env)

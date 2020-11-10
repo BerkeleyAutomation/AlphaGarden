@@ -1,6 +1,6 @@
 import numpy as np
 from simulator.sim_globals import STEP
-SEG_COLORS = True
+SEG_COLORS = False
 
 def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2):
     """
@@ -82,21 +82,6 @@ SEED_SPACING = {
  'arugula': 12,
  'swiss_chard': 13,
  'turnip': 12
-}
-
-
-COMPANION_NEIGHBORHOOD_RADII = {
- 'borage': 15,
- 'mizuna': 10,
- 'sorrel': 12,
- 'cilantro': 7,
- 'radicchio': 9,
- 'kale': 15,
- 'green_lettuce': 12,
- 'red_lettuce': 10,
- 'arugula': 12,
- 'swiss_chard': 14,
- 'turnip': 10
 }
 
 SRV = 0.0

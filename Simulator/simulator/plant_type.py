@@ -1,6 +1,6 @@
 import numpy as np
 from simulator.plant import Plant
-from simulator.plant_presets import PLANT_TYPES, COMPANION_NEIGHBORHOOD_RADII, PLANTS_RELATION, generate_c1_and_growth_time
+from simulator.plant_presets import PLANT_TYPES, PLANTS_RELATION, generate_c1_and_growth_time
 from simulator.sim_globals import NUM_PLANTS, NUM_PLANT_TYPES_USED
 import pickle
 import math
@@ -85,18 +85,6 @@ class PlantType:
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
 
-        '''for plant in plants:
-                    cf = 0.0
-                    companionship_plant_count = 0
-                    for companion_plant in plants:
-                        if plant == companion_plant:
-                            continue
-                        companionship_factor_list = PLANTS_RELATION[plant.type]
-                        influence_radius = COMPANION_NEIGHBORHOOD_RADII[companion_plant.type]
-                        if (plant.row - companion_plant.row) ** 2 + (plant.col - companion_plant.col) ** 2 <= influence_radius ** 2:
-                            cf += companionship_factor_list[companion_plant.type]
-                            companionship_plant_count += 1
-                    plant.companionship_factor = 1.0 + cf / max(companionship_plant_count, 1)'''
 
         for plant in plants:
             cf = 0.0
