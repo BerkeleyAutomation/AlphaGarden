@@ -3,7 +3,6 @@ from simulator.plant import Plant
 from simulator.plant_presets import PLANT_TYPES, PLANTS_RELATION, generate_c1_and_growth_time
 from simulator.sim_globals import NUM_PLANTS, NUM_PLANT_TYPES_USED
 import pickle
-import math
 
 
 class PlantType:

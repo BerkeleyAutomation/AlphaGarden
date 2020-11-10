@@ -6,7 +6,6 @@ from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_
     PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
 import pickle
 import multiprocessing as mp
-import os
 
 
 class Garden:
