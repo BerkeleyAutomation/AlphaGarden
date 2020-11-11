@@ -35,7 +35,7 @@ class PlantStage:
         return max_water
 
     def amount_to_grow(self):
-        """ Placeholder for stage and environment dependant plant growth calculation.
+        """ Placeholder for stage and environment dependent plant growth calculation.
 
         Note:
             OVERRIDE THIS.
@@ -84,7 +84,7 @@ class GerminationStage(PlantStage):
         self.start_radius = max(0.1, np.random.normal(start_radius, radius_scale))
 
     def amount_to_grow(self):
-        """ Calculate germination stage dependant growth of plant.
+        """ Calculate germination stage dependent growth of plant.
 
         Return
             First visible height (float) and radius (float) of plant after germination, no size and radius otherwise.
@@ -127,7 +127,7 @@ class GrowthStage(PlantStage):
         self.new_color = None
 
     def amount_to_grow(self):
-        """ Calculate growth stage dependant growth of plant.
+        """ Calculate growth stage dependent growth of plant.
 
         Return
             amount of height (float) and radius (float) change during growth stage.
@@ -171,7 +171,7 @@ class GrowthStage(PlantStage):
                 self.new_color = self.plant.get_new_color()
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
-        G = self.plant.c1 * self.plant.water_amt
+        G = self.plant.c1 * self.plant.water_amt * self.plant.companionship_factor
         unocc_ratio = self.plant.amount_sunlight / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
         upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
@@ -226,7 +226,7 @@ class WaitingStage(PlantStage):
         self.new_color = None
 
     def amount_to_grow(self):
-        """ Calculate waiting stage dependant growth of plant.
+        """ Calculate waiting stage dependent growth of plant.
 
         Return
             amount of height (float) and radius (float) change of waiting stage.
@@ -328,7 +328,7 @@ class WiltingStage(PlantStage):
         return (1 - self.current_time / self.duration) * healthy_amt
 
     def amount_to_grow(self):
-        """ Calculate wilting stage dependant shrinking of plant.
+        """ Calculate wilting stage dependent shrinking of plant.
 
         Return
             amount of height (float) and radius (float) to shrink wilting plant.

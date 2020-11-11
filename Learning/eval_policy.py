@@ -23,7 +23,7 @@ parser.add_argument('-t', '--tests', type=int, default=1)
 parser.add_argument('-n', '--net', type=str, default='/')
 parser.add_argument('-m', '--moments', type=str, default='/')
 parser.add_argument('-s', '--seed', type=int, default=0)
-parser.add_argument('-p', '--policy', type=str, default='ba', help='[b|n|l|i] baseline analytic [ba], baseline wrapper [bw], naive baseline [n], learned [l], irrigation [i]')
+parser.add_argument('-p', '--policy', type=str, default='ba', help='[ba|bw|n|l|i] baseline analytic [ba], baseline wrapper [bw], naive baseline [n], learned [l], irrigation [i]')
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
 parser.add_argument('-d', '--days', type=int, default=100)
@@ -33,12 +33,14 @@ args = parser.parse_args()
 
 def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
              prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
-             garden_step, num_plant_types, seed, multi=False):
+             garden_step, num_plant_types, seed, multi=False, randomize_seed_coords=False,
+             plant_seed_config_file_path=None):
     env = gym.make(
         'simalphagarden-v0',
         wrapper_env=SimAlphaGardenWrapper(garden_time_steps, rows, cols, sector_rows,
                                           sector_cols, prune_window_rows, prune_window_cols,
-                                          step=garden_step, seed=seed),
+                                          step=garden_step, seed=seed, randomize_seed_coords=randomize_seed_coords,
+                                          plant_seed_config_file_path=plant_seed_config_file_path),
         garden_x=rows,
         garden_y=cols,
         garden_z=depth,
@@ -63,7 +65,6 @@ def get_action_net(env, i, center, policy, actions):
         
     raw = np.transpose(obs, (2, 0, 1))
     global_cc_vec = env.get_global_cc_vec()
-
 
     sector_img = torch.from_numpy(np.expand_dims(sector_img, axis=0)).float()
     raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
@@ -194,8 +195,9 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     all_actions = []
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
-            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
-            vis.get_canopy_image_full(False, vis_identifier)
+            current_day = int(i/sector_obs_per_day) + 1
+            print("Day {}/{}".format(current_day, 100))
+            vis.get_canopy_image_full(False, vis_identifier, current_day)
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
         cc_vec = env.get_global_cc_vec()
@@ -262,11 +264,13 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir='irr_no_prune_policy_data/'):
+def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir, vis_identifier):
     env.reset()
     for i in range(garden_days):
         water = 1
-        print("Day {}/{}".format(i, garden_days))
+        current_day = i + 1
+        vis.get_canopy_image_full(False, vis_identifier, current_day)
+        print("Day {}/{}".format(current_day, garden_days))
         for j in range(sector_obs_per_day):
             prune = 0
             env.step(water + prune)
@@ -361,18 +365,26 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
+    seed_config_path = '/Users/sebastianoehme/Desktop/scaled_orig_placement'
+    randomize_seeds_cords_flag = False
+
     for i in range(args.tests):
         trial = i + 1
         seed = args.seed + i
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
+                       action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
+                       randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
+
         # vis = Matplotlib_Visualizer(env.wrapper_env)
         # vis = OpenCV_Visualizer(env.wrapper_env)
         vis = Pillow_Visualizer(env.wrapper_env)
+
         if args.policy == 'ba':
             if args.multi:
-                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
+                               action_low, action_high, obs_low, obs_high, collection_time_steps, garden_step,
+                               num_plant_types, seed, args.multi, randomize_seed_coords=randomize_seeds_cords_flag,
+                               plant_seed_config_file_path=seed_config_path)
                 evaluate_analytic_policy_multi(env, analytic_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
@@ -382,8 +394,10 @@ if __name__ == '__main__':
                                         sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'bw':
             if args.multi:
-                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
+                               action_low, action_high, obs_low, obs_high, collection_time_steps, garden_step,
+                               num_plant_types, seed, args.multi, randomize_seed_coords=randomize_seeds_cords_flag,
+                               plant_seed_config_file_path=seed_config_path)
                 evaluate_analytic_policy_multi(env, analytic_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial)
@@ -394,7 +408,7 @@ if __name__ == '__main__':
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
-            evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq)
+            evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, save_dir, vis_identifier)
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
@@ -418,8 +432,10 @@ if __name__ == '__main__':
             policy.load_state_dict(torch.load(args.net, map_location=torch.device('cpu')))
             policy.eval()
             if args.multi:
-                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                    action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed, args.multi)
+                env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
+                               action_low, action_high, obs_low, obs_high, collection_time_steps, garden_step,
+                               num_plant_types, seed, args.multi, randomize_seed_coords=randomize_seeds_cords_flag,
+                               plant_seed_config_file_path=seed_config_path)
                 evaluate_learned_policy_multi(env, policy, collection_time_steps, sector_obs_per_day, trial)
             else:
                 evaluate_learned_policy_serial(env, policy, collection_time_steps, trial)

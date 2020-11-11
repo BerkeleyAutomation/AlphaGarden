@@ -43,7 +43,7 @@ class Visualizer(ABC):
         # x_low, y_low, x_high, y_high = 0, 0, 149, 299
         return self.get_canopy_image(bounds, dir_path + 'images/sector/', eval, scale=1, identifier=identifier)
 
-    def get_canopy_image_full(self, eval, identifier="test"):
+    def get_canopy_image_full(self, eval, identifier="test", day=0):
         """Get image for canopy cover of the garden and save image to specified directory.
 
         Note:
@@ -62,7 +62,7 @@ class Visualizer(ABC):
             dir_path = self.env.dir_path
         self.env.garden.step = 1
         bounds = (0, 0, self.env.rows, self.env.cols)
-        return self.get_canopy_image(bounds, dir_path + 'images/full/', eval, identifier=identifier)
+        return self.get_canopy_image(bounds, dir_path + 'images/full/', eval, identifier=identifier, day=day)
 
 class Matplotlib_Visualizer(Visualizer):
     def __init__(self, env):
@@ -137,10 +137,10 @@ class Pillow_Visualizer(Visualizer):
     def __init__(self, env):
         super().__init__(env)
 
-    def get_canopy_image(self, bounds, dir_path, eval, scale=8, identifier="test"):
+    def get_canopy_image(self, bounds, dir_path, eval, scale=8, identifier="test", day=0):
         x_low, y_low, x_high, y_high = bounds
         row_scale, col_scale = (self.env.rows // (x_high - x_low)) * scale, (self.env.cols // (y_high - y_low)) * scale
-        image = Image.new('RGB', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255))
+        image = Image.new('RGBA', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
         for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
@@ -154,13 +154,14 @@ class Pillow_Visualizer(Visualizer):
                 circle_bounding_box = (plant.col*col_scale - rad, plant.row*row_scale - rad, 
                                 plant.col*col_scale + rad, plant.row*row_scale + rad)
                 draw.ellipse(circle_bounding_box, fill = plant_color)
-        image = image.resize((600,300))
+        image = image.resize(((600,600)))
         if not eval:
             r = os.urandom(16)
             dir_path = dir_path + "/Pillow/" + identifier + "/"
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
+            #file_path = dir_path + str(day)
             image.save(file_path + '_cc.png')
         else:
             return image
