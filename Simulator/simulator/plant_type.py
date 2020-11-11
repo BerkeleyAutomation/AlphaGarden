@@ -78,6 +78,7 @@ class PlantType:
                     plant['germination_time'], plant['maturation_time'], plant['r_max'],
                     plant['start_radius'], plant['k2'], plant['c2'])
                 plants.extend([Plant(r, c, c1=c1, growth_time=growth_time,
+                                     max_radius=plant['r_max'], start_radius=plant['start_radius'],
                                      germination_time=germination_length, color=plant['color'],
                                      plant_type=name, stopping_color=plant['stopping_color'],
                                      color_step=plant['color_step'])])

@@ -4,7 +4,7 @@ from simulator.plant_presets import PLANT_TYPES, generate_c1_and_growth_time
 
 class Plant:
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
-                 germination_time=3, start_height=1, start_radius=1, height_scale=0.1,
+                 germination_time=3, start_height=1, start_radius=1, max_radius=1000, height_scale=0.1,
                  radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255)):
         """ Model for plants.
 
@@ -47,6 +47,8 @@ class Plant:
 
         self.type = plant_type
 
+        self.max_radius = max_radius
+        
         self.companionship_factor = 1.0
 
         # The plant will transition through the following series of stages.
@@ -80,8 +82,8 @@ class Plant:
             growth_time, c1, germination_length = generate_c1_and_growth_time(
                 p['germination_time'], p['maturation_time'], p['r_max'],
                 p['start_radius'], p['k2'], p['c2'])
-            return Plant(row, col, c1=c1, growth_time=growth_time,
-                                 germination_time=germination_length,
+            return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
+                         start_radius=p['start_radius'], germination_time=germination_length,
                          color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
                          color_step=p["color_step"])
         else:
