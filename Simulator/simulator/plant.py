@@ -1,5 +1,5 @@
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
-from simulator.plant_presets import PLANT_TYPES
+from simulator.plant_presets import PLANT_TYPES, generate_c1_and_growth_time
 
 
 class Plant:
@@ -48,6 +48,8 @@ class Plant:
         self.type = plant_type
 
         self.max_radius = max_radius
+        
+        self.companionship_factor = 1.0
 
         # The plant will transition through the following series of stages.
         # Its current stage determines how it grows and what resources it needs.
@@ -77,14 +79,13 @@ class Plant:
         """
         if name in PLANT_TYPES:
             p = PLANT_TYPES[name]
-            g_min, g_max = p["germination_time"]
-            germination_time = (g_min + g_max) / 2
-            germination_scale = (g_max - germination_time) / 2
-            return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"],
-                         color=p["color"], plant_type=p["plant_type"], germination_time=germination_time,
-                         germination_scale=germination_scale, start_height=p["start_height"],
-                         start_radius=p["start_radius"], max_radius=p["r_max"],
-                         stopping_color=p["stopping_color"], color_step=p["color_step"])
+            growth_time, c1, germination_length = generate_c1_and_growth_time(
+                p['germination_time'], p['maturation_time'], p['r_max'],
+                p['start_radius'], p['k2'], p['c2'])
+            return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
+                         start_radius=p['start_radius'], germination_time=germination_length,
+                         color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
+                         color_step=p["color_step"])
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
