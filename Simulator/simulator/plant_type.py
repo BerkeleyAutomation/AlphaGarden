@@ -15,8 +15,18 @@ class PlantType:
         self.non_plant_centers = []  #: additional coordinates without plants
         self.plant_in_bounds = 0 #: int: count of plant centers in bound.
 
+<<<<<<< Updated upstream
     def get_plant_seeds(self, seed, rows, cols, sector_rows, sector_cols, randomize_seed_coords=True,
                         plant_seed_config_file_path=None):
+=======
+<<<<<<< Updated upstream
+    def get_random_plants(self, seed, rows, cols, sector_rows, sector_cols):
+=======
+    def get_plant_seeds(self, seed, rows, cols, sector_rows, sector_cols, randomize_seed_coords=True,
+                        plant_seed_config_file_path=None, start_from_germination=True,
+                        existing_data=None):
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         """
         Args
             seed (int): Value for "seeding" numpy's random state generator.
@@ -44,6 +54,27 @@ class PlantType:
         
         coords = [(r, c) for c in range(cols) for r in range(rows)]
         np.random.shuffle(coords)
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+        # If using a subset of the plant types defined in plant_presets.py, uncomment and modify the two lines below.
+        # self.plant_types = self.plant_types[:]
+        # self.num_plant_types = NUM_PLANT_TYPES_USED
+        for _ in range(NUM_PLANTS):
+            name, plant = self.plant_types[np.random.randint(0, self.num_plant_types)]
+            coord = coords.pop(0)
+            r, c = coord[0], coord[1]
+            growth_time, c1, germination_length = generate_c1_and_growth_time(
+                plant['germination_time'], plant['maturation_time'], plant['r_max'],
+                plant['start_radius'], plant['k2'], plant['c2'])
+            plants.extend([Plant(r, c, c1=c1, growth_time=growth_time,
+                                 germination_time=germination_length, color=plant['color'],
+                                 plant_type=name, stopping_color=plant['stopping_color'],
+                                 color_step=plant['color_step'])])
+            self.plant_in_bounds += 1
+            self.plant_centers.append(tuple((r, c)))
+=======
+>>>>>>> Stashed changes
 
         if plant_seed_config_file_path:
             with open(plant_seed_config_file_path, "rb") as f:
@@ -65,7 +96,15 @@ class PlantType:
                 #plants.append(Plant.from_preset(plant_type[i], r, c))
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
+<<<<<<< Updated upstream
 
+=======
+        elif not start_from_germination and existing_data:
+           for plant_type in existing_data:
+               for plant in existing_data[plant_type]:
+                   coord = plant[0]
+                   cur_radius = plant[1]
+>>>>>>> Stashed changes
         else:
             # If using a subset of the plant types defined in plant_presets.py, uncomment and modify the two lines below
             # self.plant_types = self.plant_types[:]
@@ -98,6 +137,10 @@ class PlantType:
                 # companionship_factor * 1/((euclidian distance i,j)^2)
                 cf += single_cf * (1 / exp_decay_factor)
             plant.companionship_factor = max(0.0, 1.0 + cf)
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 
         return plants

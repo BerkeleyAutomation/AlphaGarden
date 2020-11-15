@@ -139,6 +139,7 @@ class Garden:
         else:
             self.plant_locations = copy.deepcopy(garden_state.plant_locations)
 
+        print(self.plants)
         #: Growth map for circular plant growth
         if not garden_state:
             self.growth_map = self.compute_growth_map()
