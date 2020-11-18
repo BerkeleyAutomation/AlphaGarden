@@ -139,7 +139,6 @@ class Garden:
         else:
             self.plant_locations = copy.deepcopy(garden_state.plant_locations)
 
-        print(self.plants)
         #: Growth map for circular plant growth
         if not garden_state:
             self.growth_map = self.compute_growth_map()
@@ -164,12 +163,19 @@ class Garden:
         #:
         self.coverage = []  #: List of float: total canopy coverage w.r.t. the garden size at time step.
         self.diversity = []  #: List of float: the diversity in the garden at time step.
-        self.global_diversity = []
+        self.mme1 = [] #: List of float: the multimodal entropy w/ 1 soil term at time step.
+        self.mme2 = [] #: List of float: the multimodal entropy w/ 2 soil terms at time step.
         self.water_use = []  #: List of float: water usage w.r.t sector.
         self.actions = []  #: List of Lists of int: actions per time step.
 
         # if save:
         # self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
+
+        if garden_state and garden_state.existing_data:
+            for plant_type in self.plants:
+                for plant in plant_type.values():
+                    self.update_plant_coverage(plant)
+            self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
 
     def add_plant(self, plant):
         """ Add plants to garden's grid locations.
@@ -578,7 +584,7 @@ class Garden:
         Return:
             Grid shaped array (M,N) with health state of plants.
         """
-        plant_health_grid = np.empty(grid_shape)
+        plant_health_grid = np.zeros(grid_shape)
         for point in self.enumerate_grid(coords=True):
             coord = point[1]
             if point[0]['nearby']:
@@ -683,12 +689,18 @@ class Garden:
         self.coverage.append(coverage)
         self.diversity.append(diversity)
 
-        soil_bias = (self.N * self.M) / (len(cc_per_plant_type) + 1)
-        global_cc_vec = np.append((self.N * self.M * self.step - np.sum(cc_per_plant_type)) + soil_bias, cc_per_plant_type)
-        global_prob = global_cc_vec[np.nonzero(global_cc_vec)] / (self.N * self.M)
-        global_entropy = np.sum(-global_prob * np.log(global_prob))
-        global_diversity = global_entropy / np.log(len(self.plant_types) + 1)  # normalized entropy
-        self.global_diversity.append(global_diversity)
+        mme_1_global_cc_vec = np.append((self.N * self.M * self.step - np.sum(cc_per_plant_type)), cc_per_plant_type)
+        mme_1_global_prob = mme_1_global_cc_vec[np.nonzero(mme_1_global_cc_vec)] / (self.N * self.M)
+        mme_1_global_entropy = np.sum(-mme_1_global_prob * np.log(mme_1_global_prob))
+        mme_1 = mme_1_global_entropy / np.log(len(self.plant_types) + 1)  # normalized entropy
+        self.mme1.append(mme_1)
+
+        soil = self.N * self.M * self.step - np.sum(cc_per_plant_type)
+        mme_2_global_cc_vec = np.append([soil / 2, soil / 2], cc_per_plant_type)
+        mme_2_global_prob = mme_2_global_cc_vec[np.nonzero(mme_2_global_cc_vec)] / (self.N * self.M)
+        mme_2_global_entropy = np.sum(-mme_2_global_prob * np.log(mme_2_global_prob))
+        mme_2 = mme_2_global_entropy / np.log(len(self.plant_types) + 2)  # normalized entropy
+        self.mme2.append(mme_2)
 
     def save_water_use(self, amount):
         """ Add water used in time step.

@@ -4,18 +4,9 @@ from simulator.plant_presets import PLANT_TYPES, generate_c1_and_growth_time
 
 class Plant:
     def __init__(self, row, col, c1=0.1, c2=1, k1=0.3, k2=0.7, growth_time=25, color=(0, 1, 0), plant_type='basil',
-<<<<<<< Updated upstream
-                 germination_time=3, start_height=1, start_radius=1, max_radius=1000, height_scale=0.1,
-=======
-<<<<<<< Updated upstream
-                 germination_time=3, start_height=1, start_radius=1, height_scale=0.1,
->>>>>>> Stashed changes
-                 radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255)):
-=======
                  germination_time=3, start_height=1, start_radius=1, max_radius=1000, height_scale=0.1,
                  radius_scale=0.1, stopping_color=(1, 0, 1), color_step=(10/255, 0/255, 0/255),
-                 beginning=True):
->>>>>>> Stashed changes
+                 beginning=True, timestep=-1, cur_radius=-1):
         """ Model for plants.
 
         Args
@@ -75,9 +66,11 @@ class Plant:
         ]
         if beginning:
             self.start_from_beginning()
+        else:
+            self.start_from_timestep(timestep, cur_radius)
     
     @staticmethod
-    def from_preset(name, row, col, beginning=True, cur_radius=-1):
+    def from_preset(name, row, col, beginning=True, timestep=-1, cur_radius=-1):
         """ Helper function for serving values for plant parameters and locations, for convenience when testing.
 
         Args
@@ -90,39 +83,20 @@ class Plant:
         """
         if name in PLANT_TYPES:
             p = PLANT_TYPES[name]
-<<<<<<< Updated upstream
-            growth_time, c1, germination_length = generate_c1_and_growth_time(
-                p['germination_time'], p['maturation_time'], p['r_max'],
-                p['start_radius'], p['k2'], p['c2'])
-            return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
-                         start_radius=p['start_radius'], germination_time=germination_length,
-                         color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
-                         color_step=p["color_step"])
-=======
-<<<<<<< Updated upstream
-            g_min, g_max = p["germination_time"]
-            germination_time = (g_min + g_max) / 2
-            germination_scale = (g_max - germination_time) / 2
-            return Plant(row, col, c1=p["c1"], c2=p["c2"], k1=p["k1"], k2=p["k2"], growth_time=p["growth_time"],
-                         color=p["color"], plant_type=p["plant_type"], germination_time=germination_time,
-                         germination_scale=germination_scale, start_height=p["start_height"],
-                         start_radius=p["start_radius"], stopping_color=p["stopping_color"], color_step=p["color_step"])
-=======
             growth_time, c1, germination_length = generate_c1_and_growth_time(
                 p['germination_time'], p['maturation_time'], p['r_max'],
                 p['start_radius'], p['k2'], p['c2'])
             if beginning:
                 return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
-                            germination_time=germination_length,
+                            start_radius=p['start_radius'], germination_time=germination_length,
                             color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
                             color_step=p["color_step"])
             else:
                 return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
-                            germination_time=germination_length,
+                            start_radius=p['start_radius'], germination_time=germination_length,
                             color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
-                            color_step=p["color_step"], beginning=beginning)
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+                            color_step=p["color_step"], beginning=beginning, timestep=timestep,
+                            cur_radius=cur_radius)
         else:
             raise Exception(f"[Plant] ERROR: Could not find preset named '{name}'")
 
@@ -149,6 +123,36 @@ class Plant:
 
         self.stage_index = -1
         self.switch_stage(0)
+
+    def start_from_timestep(self, timestep, cur_radius):
+        """ Initializes plant parameters for estimaged stage given a timestep."""
+        
+        # growth state of plant
+        self.radius = cur_radius
+        self.height = 1
+        
+        # current index of progression in circular growth map
+        self.growth_index = 0
+
+        # number of grid points the plant can absorb light/water from
+        self.num_grid_points = 1
+
+        # resources accumulated per timestep
+        self.amount_sunlight = 0
+        self.water_amt = 0
+        self.water_available = 0
+
+        # whether plant was pruned
+        self.pruned = False
+
+        self.stage_index = -1
+        time_elapsed = 0
+        for i in range(len(self.stages)):
+            time_elapsed += self.stages[i].duration
+            if timestep < time_elapsed:
+                self.stage_index = i
+                break
+        self.switch_stage(self.stage_index) 
 
     def add_sunlight(self, amount):
         """ Allocation of light for plant.

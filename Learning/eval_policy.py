@@ -235,7 +235,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
         all_actions.append(action)
         obs, rewards, _, _ = env.step(action)
         if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
-            cov, div, water, act, global_div = env.get_metrics()
+            cov, div, water, act, mme1, mme2 = env.get_metrics()
             div_cov_day = cov[-1] * div[-1]
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
     dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
@@ -318,11 +318,13 @@ def save_data(metrics, trial, save_dir):
         os.makedirs(dirname)
     with open(save_dir + 'data_' + str(trial) + '.pkl', 'wb') as f:
         pickle.dump(metrics, f)
-    coverage, diversity, water_use, actions, global_diversity = metrics
+    coverage, diversity, water_use, actions, mme1, mme2 = metrics
     fig, ax = plt.subplots()
     ax.set_ylim([0, 1])
-    plt.plot(coverage, label='coverage')
-    plt.plot(diversity, label='diversity')
+    plt.plot(coverage, label='Coverage')
+    plt.plot(diversity, label='Diversity')
+    plt.plot(mme1, label='MME-1')
+    plt.plot(mme2, label='MME-2')
     x = np.arange(len(diversity))
     lower = min(diversity) * np.ones(len(diversity))
     upper = max(diversity) * np.ones(len(diversity))

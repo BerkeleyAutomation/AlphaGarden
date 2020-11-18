@@ -11,6 +11,7 @@ from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, W
 import os
 import random
 import io
+import pickle
 
 
 class SimAlphaGardenWrapper(WrapperEnv):
@@ -380,6 +381,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 step=self.step,
                 plant_type=self.PlantType,
                 animate=False)
+        ''' Uncomment line below to load from a garden file. '''
+        # self.garden, self.PlantType = pickle.load(open("garden_copy.pkl", "rb"))
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
         self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)
@@ -411,7 +414,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         Return:
             Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
         """
-        return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions, self.garden.global_diversity
+        return self.garden.coverage, self.garden.diversity, self.garden.water_use, \
+            self.garden.actions, self.garden.mme1, self.garden.mme2
 
     def get_prune_window_greatest_width(self, center):
         """Get the radius of the tallest (non occluded) plant inside prune window.
