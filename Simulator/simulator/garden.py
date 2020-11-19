@@ -260,7 +260,7 @@ class Garden:
         self.actions.append(actions)
 
         #GROWTH ANALYSIS
-        folder = "textFiles/"
+        folder = "textFiles_fit_c1_r_0_logist/"
         # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
         p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
         b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
@@ -307,7 +307,7 @@ class Garden:
                 elif p_type_ind[p.type] < 5:
                     p_type_ind[p.type] += 1
                 
-                file_list = os.listdir('/Users/mpresten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/textFiles/')
+                file_list = os.listdir('/Users/sebastianoehme/AlphaGarden/Learning/' + folder)
 
                 if file_name not in file_list:
                     fil = open(folder + file_name, "w+")

@@ -171,7 +171,7 @@ class GrowthStage(PlantStage):
                 self.new_color = self.plant.get_new_color()
                 return 0, (self.underwatered_wilting_factor - 1) * self.plant.radius
 
-        G = self.plant.c1 * self.plant.water_amt * self.plant.companionship_factor
+        G = self.plant.c1 * self.plant.water_amt * self.plant.companionship_factor * (1 - (self.plant.radius / self.plant.max_radius))
         unocc_ratio = self.plant.amount_sunlight / self.plant.num_grid_points
         unocc_ratio = min(max(self.plant.k1, unocc_ratio), self.plant.k2)
         upward, outward = (1-unocc_ratio) * G, unocc_ratio * G
