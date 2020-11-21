@@ -16,8 +16,10 @@ def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k
     r_max, r_0, k2, c_2 (float)     - values that are global to a plant type.
                                       Computed in _compute_from_table_values. 
     """
-    maturation_length = np.random.normal(maturation_time[0], maturation_time[1])
-    germination_length = np.random.normal(germination_time[0], germination_time[1])
+    # maturation_length = np.random.normal(maturation_time[0], maturation_time[1])
+    # germination_length = np.random.normal(germination_time[0], germination_time[1])
+    maturation_length = maturation_time[0]
+    germination_length = germination_time[0]
     growth_time = int(maturation_length - germination_length)
     c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
     return growth_time, c1, germination_length
@@ -126,7 +128,7 @@ PLANT_TYPES = {
     # https://www.gardeningknowhow.com/edible/herbs/borage/borage-herb.htm
     "borage": _compute_from_table_values(name="borage", color=[(9 / 255, 77 / 255, 10 / 255),(0.9467, 0.6863, 0.2431)][SEG_COLORS], germination_time=(7, 3),
                                          seed_spacing=SEED_SPACING["borage"], maturation_time=(52,5),
-                                         stopping_color=(150 / 255, 0, 1), r_0=1.4266739, c1=0.1495215567),
+                                         stopping_color=(150 / 255, 0, 1), r_0=1.4266739, c1=0.1), #c1=0.1495215567
     # https://harvesttotable.com/how-to-grow-mizuna/
     # "mizuna": _compute_from_table_values(name="mizuna", color=(91 / 255, 224 / 255, 54 / 255), germination_time=(4, 7),
     #                                      seed_spacing=SEED_SPACING["mizuna"], maturation_time=40,
