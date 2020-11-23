@@ -128,7 +128,7 @@ PLANT_TYPES = {
     # https://www.gardeningknowhow.com/edible/herbs/borage/borage-herb.htm
     "borage": _compute_from_table_values(name="borage", color=[(9 / 255, 77 / 255, 10 / 255),(0.9467, 0.6863, 0.2431)][SEG_COLORS], germination_time=(7, 3),
                                          seed_spacing=SEED_SPACING["borage"], maturation_time=(52,5),
-                                         stopping_color=(150 / 255, 0, 1), r_0=1.4266739, c1=0.1), #c1=0.1495215567
+                                         stopping_color=(150 / 255, 0, 1), r_0=1, c1=0.1242812), #c1=0.1495215567
     # https://harvesttotable.com/how-to-grow-mizuna/
     # "mizuna": _compute_from_table_values(name="mizuna", color=(91 / 255, 224 / 255, 54 / 255), germination_time=(4, 7),
     #                                      seed_spacing=SEED_SPACING["mizuna"], maturation_time=40,
@@ -140,45 +140,45 @@ PLANT_TYPES = {
     "sorrel": _compute_from_table_values(name="sorrel", color=[(167 / 255, 247 / 255, 77 / 255), (0.9294, 0.2, 0.2412)][SEG_COLORS],
                                          germination_time=(15, 4),
                                          seed_spacing=SEED_SPACING["sorrel"], maturation_time=(72,5),
-                                         stopping_color=(127 / 255, 87 / 255, 1), r_0=0.4967179288, c1=0.1180056303),
+                                         stopping_color=(127 / 255, 87 / 255, 1), r_0=1, c1=0.11673833),
     # https://www.burpee.com/gardenadvicecenter/herbs/cilantro/all-about-cilantro/article10222.html
     "cilantro": _compute_from_table_values(name="cilantro", color=[(101 / 255, 179 / 255, 53 / 255), (0.2, 0.4784, 0.3765)][SEG_COLORS],
                                            germination_time=(10, 4),
                                            seed_spacing=SEED_SPACING["cilantro"], maturation_time=(59,5), #66
-                                           stopping_color=(181 / 255, 99 / 255, 1), r_0=1.134236588, c1=0.1303053501),
+                                           stopping_color=(181 / 255, 99 / 255, 1), r_0=1, c1=0.19456016),
     # https://www.growveg.com/plants/us-and-canada/how-to-grow-radicchio/
     "radicchio": _compute_from_table_values(name="radicchio", color=[(147 / 255, 199 / 255, 109 / 255),(0.7333, 0.6980, 0.0934)][SEG_COLORS],
                                             germination_time=(9, 4),
                                             seed_spacing=SEED_SPACING["radicchio"], maturation_time=(55,5), #(61,5)
-                                            stopping_color=(122 / 255, 99 / 255, 1), r_0=1.048245842, c1=0.1376084088),
+                                            stopping_color=(122 / 255, 99 / 255, 1), r_0=1, c1=0.12018962),
     # https://www.superseeds.com/products/dwarf-blue-curled-kale-55-days
     "kale": _compute_from_table_values(name="kale", color=[(117 / 255, 158 / 255, 81 / 255),(0.1137, 0.2588, 0.8510)][SEG_COLORS], germination_time=(7, 3),
                                        seed_spacing=SEED_SPACING["kale"], maturation_time=(53,5), #55
-                                       stopping_color=(152 / 255, 88 / 255, 1), r_0=1.141131474, c1=0.155631148),
+                                       stopping_color=(152 / 255, 88 / 255, 1), r_0=1, c1=0.1296208),
     # https://www.superseeds.com/products/baby-oakleaf-lettuce
     "green_lettuce": _compute_from_table_values(name="green_lettuce", color=[(142 / 255, 199 / 255, 52 / 255),(0.4275, 0.8667, 0.6941)][SEG_COLORS],
                                                 germination_time=(8, 5),
                                                 seed_spacing=SEED_SPACING["green_lettuce"], maturation_time=(52,5),
-                                                stopping_color=(202 / 255, 129 / 255, 1), r_0=0.968603431, c1=0.1438387792),
+                                                stopping_color=(202 / 255, 129 / 255, 1), r_0=1, c1=0.13146827),
     # https://veggieharvest.com/vegetables/lettuce.html
     "red_lettuce": _compute_from_table_values(name="red_lettuce", color=[(117 / 255, 128 / 255, 81 / 255),(0.5098, 0.2784, 0.8549)][SEG_COLORS],
                                               germination_time=(12, 5),
                                               seed_spacing=SEED_SPACING["red_lettuce"], maturation_time=(48,5), #(63,5)
-                                              stopping_color=(177 / 255, 98 / 255, 1), r_0=0.7394973581, c1=0.1596027078),
+                                              stopping_color=(177 / 255, 98 / 255, 1), r_0=1, c1=0.23238034),
     "arugula": _compute_from_table_values(name="arugula", color=[(58 / 255, 167 / 255, 100 / 255), (0.3059, 0.4667, 0.1255)][SEG_COLORS],
                                          germination_time=(8, 4),
                                          seed_spacing=SEED_SPACING["arugula"], maturation_time=(50,5),
-                                          stopping_color=(198 / 255, 0, 1), r_0=1.595835656, c1=0.1630866126),
+                                          stopping_color=(198 / 255, 0, 1), r_0=1, c1=0.15589411),
     # https://gardenerspath.com/plants/vegetables/grow-swiss-chard/#Propagation
     # https://www.superseeds.com/products/peppermint-swiss-chard
     "swiss_chard": _compute_from_table_values(name="swiss_chard", color=[(58 / 255, 137 / 255, 100 / 255), (0.8196, 0.2863, 0.6510)][SEG_COLORS],
                                               germination_time=(7, 3),
                                               seed_spacing=SEED_SPACING["swiss_chard"], maturation_time=(47,5), #(55,5)
-                                              stopping_color=(188 / 255, 137 / 255, 1), r_0=1.5803928, c1=0.1579288245),
+                                              stopping_color=(188 / 255, 137 / 255, 1), r_0=1, c1=0.14194625),
     # rhs.org.uk/advice/grow-your-own/vegetables/turnip
     "turnip": _compute_from_table_values(name="turnip", color=[(0, 230 / 255, 0), (0.9333, 0.3804, 0.3725)][SEG_COLORS], germination_time=(6, 3),
                                          seed_spacing=SEED_SPACING["turnip"], maturation_time=(47,5), #(47,5)
-                                         stopping_color=(140 / 255, 90 / 255, 1), r_0=1.271693885, c1=0.1899877895)
+                                         stopping_color=(140 / 255, 90 / 255, 1), r_0=1, c1=0.15848387)
     # https://www.superseeds.com/products/mint
     #"mint": _compute_from_table_values(name="mint", color=(101 / 255, 179 / 255, 53 / 255), germination_time=(10, 15),
     #                                   seed_spacing=SEED_SPACING["mint"], maturation_time=90,
