@@ -54,7 +54,7 @@ def _compute_from_table_values(
     unoccluded_c1 = c1 / k2
     h_0 = 0.1
     #r_0 = 0.04
-    # r_max = max(1, np.random.normal(MAX_RADIUS[name][0]*2, MAX_RADIUS[name][1]*2))
+    # r_max = max(1, np.random.normal(MAX_RADIUS[name][0], MAX_RADIUS[name][1]))
     r_max = MAX_RADIUS[name][0]
     growth_time = generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2)
 
@@ -80,13 +80,13 @@ MAX_RADIUS = {
  'borage': (60,5), #(60,1) 
  'sorrel': (8,2),
  'cilantro': (20,4),
- 'radicchio': (49,6),#24
- 'kale': (70,7),#35
+ 'radicchio': (53,6),#24
+ 'kale': (65,7),#35
  'green_lettuce': (30,5), #(18,1)
  'red_lettuce': (28,5),#15
  'arugula': (40,5), #(25,1)
  'swiss_chard': (47,5), #27
- 'turnip': (49,6) #31
+ 'turnip': (53,6) #31
 }
 
 
@@ -161,7 +161,7 @@ PLANT_TYPES = {
     "red_lettuce": _compute_from_table_values(name="red_lettuce", color=[(117 / 255, 128 / 255, 81 / 255),(0.5098, 0.2784, 0.8549)][SEG_COLORS],
                                               germination_time=(12, 2),
                                               r_max=MAX_RADIUS["red_lettuce"], maturation_time=(50,5), #(63,5)
-                                              stopping_color=(177 / 255, 98 / 255, 1), r_0=1, c1=0.08),#0.24597908
+                                              stopping_color=(177 / 255, 98 / 255, 1), r_0=1, c1=0.095),#0.24597908
     "arugula": _compute_from_table_values(name="arugula", color=[(58 / 255, 167 / 255, 100 / 255), (0.3059, 0.4667, 0.1255)][SEG_COLORS],
                                          germination_time=(8, 2),
                                          r_max=MAX_RADIUS["arugula"], maturation_time=(52,5), #52
