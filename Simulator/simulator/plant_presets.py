@@ -16,10 +16,10 @@ def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k
     r_max, r_0, k2, c_2 (float)     - values that are global to a plant type.
                                       Computed in _compute_from_table_values. 
     """
-    # maturation_length = np.random.normal(maturation_time[0], maturation_time[1])
-    # germination_length = np.random.normal(germination_time[0], germination_time[1])
-    maturation_length = maturation_time[0]
-    germination_length = germination_time[0]
+    maturation_length = np.random.normal(maturation_time[0], maturation_time[1])
+    germination_length = np.random.normal(germination_time[0], germination_time[1])
+    # maturation_length = maturation_time[0]
+    # germination_length = germination_time[0]
     growth_time = int(maturation_length - germination_length)
     # c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
     return growth_time, None, germination_length
