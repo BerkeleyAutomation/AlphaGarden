@@ -53,9 +53,8 @@ def _compute_from_table_values(
     k1, k2 = 0.3, 0.7
     unoccluded_c1 = c1 / k2
     h_0 = 0.1
-    #r_0 = 0.04
-    # r_max = max(1, np.random.normal(MAX_RADIUS[name][0], MAX_RADIUS[name][1]))
-    r_max = MAX_RADIUS[name][0]
+    r_max = max(1, np.random.normal(MAX_RADIUS[name][0], MAX_RADIUS[name][1]))
+    # r_max = MAX_RADIUS[name][0]
     growth_time = generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2)
 
     return {
@@ -81,7 +80,7 @@ MAX_RADIUS = {
  'sorrel': (8,2),
  'cilantro': (20,4),
  'radicchio': (53,6),#24
- 'kale': (65,7),#35
+ 'kale': (65,7), #35
  'green_lettuce': (30,5), #(18,1)
  'red_lettuce': (28,5),#15
  'arugula': (40,5), #(25,1)
@@ -92,32 +91,31 @@ MAX_RADIUS = {
 
 SRV = 0.0
 
-"""
 PLANTS_RELATION = {
-        "borage":       {"borage": SRV, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 20.0, "arugula": 0.0, "swiss_chard": 20.0, "turnip": 0.0},
+        "borage":       {"borage": SRV, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 10.0, "arugula": 0.0, "swiss_chard": 10.0, "turnip": 0.0},
         "sorrel":       {"borage": 0.0, "sorrel": SRV,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
-        "cilantro":     {"borage":-20.0, "sorrel": 0.0,  "cilantro": SRV, "radicchio": 0.0, "kale":-20.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
-        "radicchio":    {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": SRV, "kale": 0.0, "green_lettuce":-5.0, "red_lettuce":-10.0, "arugula": 0.0, "swiss_chard":-5.0, "turnip": 0.0},
-        "kale":         {"borage":-10.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 10.0, "kale": SRV, "green_lettuce":-10.0, "red_lettuce":-10.0, "arugula":-10.0, "swiss_chard": 0.0, "turnip": 0.0},
-        "green_lettuce":{"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": SRV, "red_lettuce":-10.0, "arugula": 0.0, "swiss_chard": -10.0, "turnip": 0.0},
-        "red_lettuce":  {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio":20.0, "kale":20.0, "green_lettuce":20.0, "red_lettuce": SRV, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
-        "arugula":      {"borage": 0.0, "sorrel": -20.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": -20.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": SRV, "swiss_chard": 0.0, "turnip": 0.0},
+        "cilantro":     {"borage": 10.0, "sorrel": 0.0,  "cilantro": SRV, "radicchio": 0.0, "kale": 10.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
+        "radicchio":    {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": SRV, "kale": 0.0, "green_lettuce":-10.0, "red_lettuce":10.0, "arugula": 0.0, "swiss_chard":10.0, "turnip": 0.0},
+        "kale":         {"borage": 5.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 5.0, "kale": SRV, "green_lettuce": 5.0, "red_lettuce": 5.0, "arugula": 5.0, "swiss_chard": 0.0, "turnip": 0.0},
+        "green_lettuce":{"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": SRV, "red_lettuce": 10.0, "arugula": 0.0, "swiss_chard": 10.0, "turnip": 0.0},
+        "red_lettuce":  {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 10.0, "kale": 10.0, "green_lettuce": 10.0, "red_lettuce": SRV, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
+        "arugula":      {"borage": 0.0, "sorrel": -5.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": -5.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": SRV, "swiss_chard": 0.0, "turnip": 0.0},
         "swiss_chard":  {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": SRV, "turnip": 0.0},
-        "turnip":       {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": -20.0, "swiss_chard": -20.0, "turnip": SRV}
+        "turnip":       {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 10.0, "swiss_chard": 10.0, "turnip": SRV}
 }
-"""
-PLANTS_RELATION = {
-         "borage":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "sorrel":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "cilantro":     {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "radicchio":    {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "kale":         {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "green_lettuce":{"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "red_lettuce":  {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "arugula":      {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "swiss_chard":  {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
-         "turnip":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV}
- }
+
+# PLANTS_RELATION = {
+#          "borage":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "sorrel":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "cilantro":     {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "radicchio":    {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "kale":         {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "green_lettuce":{"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "red_lettuce":  {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "arugula":      {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "swiss_chard":  {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+#          "turnip":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV}
+#  }
 
 
 PLANT_TYPES = {
@@ -150,7 +148,7 @@ PLANT_TYPES = {
                                             stopping_color=(122 / 255, 99 / 255, 1), r_0=1, c1=0.09),#0.13222516
     # https://www.superseeds.com/products/dwarf-blue-curled-kale-55-days
     "kale": _compute_from_table_values(name="kale", color=[(117 / 255, 158 / 255, 81 / 255),(0.1137, 0.2588, 0.8510)][SEG_COLORS], germination_time=(7, 2),
-                                       r_max=MAX_RADIUS["kale"], maturation_time=(60,5), #55
+                                       r_max=MAX_RADIUS["kale"], maturation_time=(55,5), #55
                                        stopping_color=(152 / 255, 88 / 255, 1), r_0=1, c1=0.10), #0.15323942
     # https://www.superseeds.com/products/baby-oakleaf-lettuce
     "green_lettuce": _compute_from_table_values(name="green_lettuce", color=[(142 / 255, 199 / 255, 52 / 255),(0.4275, 0.8667, 0.6941)][SEG_COLORS],
