@@ -215,13 +215,14 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                 for irr_amt in irrigation_amounts:
                     for pr_i in range(len(prune_rates)):
                         garden_state = env.get_simulator_state_copy()
-                        cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                        mme1, mme2 = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                                     sector_obs_per_day, garden_state, prune_rates[pr_i], irr_amt,
                                     vectorized=False)
                         covs.append(cov)
                         divs.append(div)
-                        cv.append((w2*cov + w1*div, (prune_rates[pr_i], irr_amt)))
+                        cv.append((mme1, (prune_rates[pr_i], irr_amt)))
+                        # cv.append((mme2, (prune_rates[pr_i], irr_amt)))
                 pr = cv[np.argmax([result[0] for result in cv])][1][0]
                 ir = cv[np.argmax([result[0] for result in cv])][1][1]
                 prune_rates_order.append(pr)
@@ -238,12 +239,12 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             cov, div, water, act, mme1, mme2 = env.get_metrics()
             div_cov_day = cov[-1] * div[-1]
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
-    dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
-    if not os.path.exists(dirname):    
-        os.makedirs(dirname)
-    f = open("./policy_metrics/prs.txt", "a")
-    f.write("Prune Rates: "+ str(prune_rates_order))
-    f.close()
+    # dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
+    # if not os.path.exists(dirname):    
+    #     os.makedirs(dirname)
+    # f = open("./policy_metrics/prs.txt", "a")
+    # f.write("Prune Rates: "+ str(prune_rates_order))
+    # f.close()
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
