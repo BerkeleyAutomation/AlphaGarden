@@ -86,12 +86,12 @@ class Plant:
                 p['germination_time'], p['maturation_time'], p['r_max'],
                 p['start_radius'], p['k2'], p['c2'])
             if beginning:
-                return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
+                return Plant(row, col, c1=p['c1'], growth_time=growth_time, max_radius=p['r_max'],
                             start_radius=p['start_radius'], germination_time=germination_length,
                             color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
                             color_step=p["color_step"])
             else:
-                return Plant(row, col, c1=c1, growth_time=growth_time, max_radius=p['r_max'],
+                return Plant(row, col, c1=p['c1'], growth_time=growth_time, max_radius=p['r_max'],
                             start_radius=p['start_radius'], germination_time=germination_length,
                             color=p["color"], plant_type=p["plant_type"], stopping_color=p["stopping_color"],
                             color_step=p["color_step"], beginning=beginning, timestep=timestep,

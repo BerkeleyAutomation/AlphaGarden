@@ -321,54 +321,54 @@ class Garden:
         a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
         sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
         t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
-        for d in self.plants:
-            for p in d.values():
-                # print(p.type, p.radius, (p.row, p.col))
+        # for d in self.plants:
+        #     for p in d.values():
+        #         # print(p.type, p.radius, (p.row, p.col))
 
-                if p.type == 'borage':
-                    num = b[p_type_ind[p.type]]
-                if p.type == 'sorrel':
-                    num = s[p_type_ind[p.type]]
-                if p.type == 'cilantro':
-                    num = c[p_type_ind[p.type]]
-                if p.type == 'radicchio':
-                    num = r[p_type_ind[p.type]]
-                if p.type == 'kale':
-                    num = k[p_type_ind[p.type]]
-                if p.type == 'green_lettuce':
-                    num = g[p_type_ind[p.type]]
-                if p.type == 'red_lettuce':
-                    num = rl[p_type_ind[p.type]]
-                if p.type == 'arugula':
-                    num = a[p_type_ind[p.type]]
-                if p.type == 'swiss_chard':
-                    num = sc[p_type_ind[p.type]]
-                if p.type == 'turnip':
-                    num = t[p_type_ind[p.type]]
+        #         if p.type == 'borage':
+        #             num = b[p_type_ind[p.type]]
+        #         if p.type == 'sorrel':
+        #             num = s[p_type_ind[p.type]]
+        #         if p.type == 'cilantro':
+        #             num = c[p_type_ind[p.type]]
+        #         if p.type == 'radicchio':
+        #             num = r[p_type_ind[p.type]]
+        #         if p.type == 'kale':
+        #             num = k[p_type_ind[p.type]]
+        #         if p.type == 'green_lettuce':
+        #             num = g[p_type_ind[p.type]]
+        #         if p.type == 'red_lettuce':
+        #             num = rl[p_type_ind[p.type]]
+        #         if p.type == 'arugula':
+        #             num = a[p_type_ind[p.type]]
+        #         if p.type == 'swiss_chard':
+        #             num = sc[p_type_ind[p.type]]
+        #         if p.type == 'turnip':
+        #             num = t[p_type_ind[p.type]]
 
-                file_name = str(p.type) + str(num) + '.txt'
+        #         file_name = str(p.type) + str(num) + '.txt'
 
-                # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
+        #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
                     
-                if p_type_ind[p.type] == 5:
-                    p_type_ind[p.type] = 0
-                elif p_type_ind[p.type] < 5:
-                    p_type_ind[p.type] += 1
+        #         if p_type_ind[p.type] == 5:
+        #             p_type_ind[p.type] = 0
+        #         elif p_type_ind[p.type] < 5:
+        #             p_type_ind[p.type] += 1
                 
-                file_list = os.listdir('/Users/mpresten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
+        #         file_list = os.listdir('/Users/williamwong/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
 
-                if file_name not in file_list:
-                    fil = open(folder + file_name, "w+")
-                    item = str(p.radius)
-                    fil.write(item)
-                    fil.close()
-                if file_name in file_list:
-                    f = open(folder + file_name, "r")
-                    item = f.read()
-                    fil = open(folder + file_name, "w+")
-                    item = str(item) + ", " + str(p.radius)
-                    fil.write(item)
-                    fil.close()
+        #         if file_name not in file_list:
+        #             fil = open(folder + file_name, "w+")
+        #             item = str(p.radius)
+        #             fil.write(item)
+        #             fil.close()
+        #         if file_name in file_list:
+        #             f = open(folder + file_name, "r")
+        #             item = f.read()
+        #             fil = open(folder + file_name, "w+")
+        #             item = str(item) + ", " + str(p.radius)
+        #             fil.write(item)
+        #             fil.close()
         #END GROWTH ANALYSIS
 
 

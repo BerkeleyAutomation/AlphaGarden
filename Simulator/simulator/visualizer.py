@@ -138,11 +138,9 @@ class Pillow_Visualizer(Visualizer):
         super().__init__(env)
 
     def get_canopy_image(self, bounds, dir_path, eval, scale=8, identifier="test", day=0):
-        # identifier="20201110-205419"
         x_low, y_low, x_high, y_high = bounds
         row_scale, col_scale = (self.env.rows // (x_high - x_low)) * scale, (self.env.cols // (y_high - y_low)) * scale
-        image = Image.new('RGBA', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255, 0))
-        # image = Image.open(dir_path + "/Pillow/" + identifier + "/" + str(day) + '_cc.png')
+        image = Image.new('RGB', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255))
         draw = ImageDraw.Draw(image)
         for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
