@@ -3,7 +3,6 @@ from simulator.plant import Plant
 from simulator.plant_presets import PLANT_TYPES, PLANTS_RELATION, generate_c1_and_growth_time
 from simulator.sim_globals import NUM_PLANTS, NUM_PLANT_TYPES_USED
 import pickle
-import math
 
 
 class PlantType:
@@ -17,7 +16,8 @@ class PlantType:
         self.plant_in_bounds = 0 #: int: count of plant centers in bound.
 
     def get_plant_seeds(self, seed, rows, cols, sector_rows, sector_cols, randomize_seed_coords=True,
-                        plant_seed_config_file_path=None):
+                        plant_seed_config_file_path=None, start_from_germination=True,
+                        existing_data=None, timestep=-1):
         """
         Args
             seed (int): Value for "seeding" numpy's random state generator.
@@ -66,7 +66,15 @@ class PlantType:
                 #plants.append(Plant.from_preset(plant_type[i], r, c))
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
-
+        elif not start_from_germination and existing_data:
+           for plant_type in existing_data:
+               for plant in existing_data[plant_type]:
+                   r, c = plant[0]
+                   cur_radius = plant[1]
+                   plants.append(Plant.from_preset(plant_type, r, c, beginning=False,
+                                                   timestep=timestep, cur_radius=cur_radius)) 
+                   self.plant_in_bounds += 1
+                   self.plant_centers.append(tuple((r, c)))
         else:
             # If using a subset of the plant types defined in plant_presets.py, uncomment and modify the two lines below
             # self.plant_types = self.plant_types[:]
@@ -79,6 +87,7 @@ class PlantType:
                     plant['germination_time'], plant['maturation_time'], plant['r_max'],
                     plant['start_radius'], plant['k2'], plant['c2'])
                 plants.extend([Plant(r, c, c1=c1, growth_time=growth_time,
+                                     max_radius=plant['r_max'], start_radius=plant['start_radius'],
                                      germination_time=germination_length, color=plant['color'],
                                      plant_type=name, stopping_color=plant['stopping_color'],
                                      color_step=plant['color_step'])])

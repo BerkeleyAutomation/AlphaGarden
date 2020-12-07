@@ -24,6 +24,10 @@ def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k
     # c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
     return growth_time, None, germination_length
 
+def get_r_max(v):
+    r_max = (v / 2)
+    return r_max
+
 def _compute_from_table_values(
     name="plant", color=(0/255, 128/255, 0/255),
     germination_time=(3, 1), 
