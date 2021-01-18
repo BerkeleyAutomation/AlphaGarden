@@ -26,3 +26,7 @@ PRUNE_WINDOW_ROWS = 5
 PRUNE_WINDOW_COLS = 5
 
 STEP = 1
+
+SOIL_MOISTURE_SENSOR_POSITIONS = [(103, 103), (49, 96), (108, 59), (1, 2), (1, 0), (1, 1)] # If x coord is negative then sensor is not used
+SOIL_MOISTURE_SENSOR_ACTIVE = [True, True, True, False, False, False]
+GARDEN_START_DATE = 1599580800 # Unix timestamp Sep 8th 4 PM GMT which is Sep 8th 8 AM PST

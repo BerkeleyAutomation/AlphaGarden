@@ -1,9 +1,10 @@
 import numpy as np
 from heapq import nlargest
+import math
 from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
-from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
+from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE, ROWS, COLS
 
 import pickle
 import multiprocessing as mp
@@ -114,6 +115,8 @@ class Garden:
 
         #: Amount to irrigate each grid point.
         self.irrigation_amount = IRRIGATION_AMOUNT
+
+        self.max_water_level = MAX_WATER_LEVEL
 
         '''
         Determines max amount of coverage of one plant type in the garden before that plant is pruned
@@ -405,8 +408,16 @@ class Garden:
                     window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
-            MAX_WATER_LEVEL,
+            self.max_water_level,
             out=self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
+
+    def set_max_water_level(self, max_water_level):
+        """ Modifies the garden's max water level amount.
+        
+        Args:
+            max_water_level (float)
+        """
+        self.max_water_level = max_water_level
 
     def get_water_amounts(self, step=5):
         """ Get accumulated water amount for certain window sizes in grid.
@@ -880,6 +891,22 @@ class Garden:
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         return self.water_grid
+
+    def set_water_grid_full(self, s, s_pos):
+        """ Set water grid for entire garden with soil moisture readings for one sensor. Each sensor has 6 cm minor axis and 8 cm major axis.
+            s_pos is point on the top left of the sensor, where the black wire is pointing south.
+        Return
+            None.
+        """
+        #change water grid
+        h, k = s_pos[0] + 1, s_pos[1] + 2
+        a, b = 3, 4
+        for x in range(s_pos[0] - 2, s_pos[0] + 5):
+            for y in range(s_pos[1] - 2, s_pos[1] + 7):
+                x, y = round(x), round(y)
+                p = ((math.pow((x - h), 2) // math.pow(a, 2)) + (math.pow((y - k), 2) // math.pow(b, 2))) 
+                if (p <= 1 and x >=0 and y>= 0 and x < ROWS and y < COLS):
+                    self.water_grid[x][y] = s
 
     def get_health_grid(self, center):
         """ Get padded health gird for sector.

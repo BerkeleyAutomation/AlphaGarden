@@ -6,7 +6,7 @@ import configparser
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
-from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS
+from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS, IRRIGATION_AMOUNT
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
@@ -60,9 +60,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.config = configparser.ConfigParser()
         self.config.read('gym_config/config.ini')
 
+        self.max_water_level = MAX_WATER_LEVEL
         #: dict of [int,str]: Amount to water every square in a sector by.
         self.irr_actions = {
-            1: MAX_WATER_LEVEL,
+            1: self.max_water_level,
         }
 
         self.plant_centers_original = []  #: Array of [int,int]: Initial seed locations [row, col].
@@ -253,6 +254,15 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """
         return self.garden.get_garden_state()
 
+    def set_water_grid(self, s, s_pos):
+        """Set the water grid for the enviornment from one sensor
+
+        Returns:
+            None.
+
+        """
+        return self.garden.set_water_grid_full(s, s_pos)
+
     def get_radius_grid(self):
         """Get grid for plant radius representation.
 
@@ -334,18 +344,26 @@ class SimAlphaGardenWrapper(WrapperEnv):
             self.plant_heights = []
             self.plant_radii = []
 
-        self.centers_to_execute.append(center)
-        self.actions_to_execute.append(self.curr_action)
+        if self.curr_action == 5 or self.curr_action == 6:
+            self.centers_to_execute = np.copy(self.plant_centers_original)
+            self.actions_to_execute = len(self.plant_centers_original) * [1]
+            if self.curr_action == 6:
+                self.garden.set_irrigation_amount(0.0001)
+        else:
+            self.centers_to_execute.append(center)
+            self.actions_to_execute.append(self.curr_action)
 
-        # We want PERCENT_NON_PLANT_CENTERS of samples to come from non plant centers
-        if len(self.actions_to_execute) < self.PlantType.plant_in_bounds + int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS):
-            if eval:
-                return out, self.get_full_state()
-            return self.get_full_state()
+            # We want PERCENT_NON_PLANT_CENTERS of samples to come from non plant centers
+            if len(self.actions_to_execute) < self.PlantType.plant_in_bounds + int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS):
+                if eval:
+                    return out, self.get_full_state()
+                return self.get_full_state()
 
         # Execute actions only if we have reached the number of actions threshold.
         self.garden.perform_timestep(
             sectors=self.centers_to_execute, actions=self.actions_to_execute)
+        if self.curr_action == 6:
+            self.garden.set_irrigation_amount(IRRIGATION_AMOUNT)
         self.actions_to_execute = []
         self.centers_to_execute = []
         self.plant_centers = np.copy(self.plant_centers_original)
@@ -407,6 +425,15 @@ class SimAlphaGardenWrapper(WrapperEnv):
             irrigation_amount (float)
         """
         self.garden.set_irrigation_amount(irrigation_amount)
+
+    def set_max_water_level(self, max_water_level):
+        """Sets the max_water_level in the garden.
+        
+        Args:
+            max_water_level (float)
+        """
+        self.max_water_level = max_water_level
+        self.garden.set_max_water_level(max_water_level)
 
     def get_metrics(self):
         """Evaluate metrics of garden.
