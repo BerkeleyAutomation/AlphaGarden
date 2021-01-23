@@ -11,7 +11,7 @@ import os
 
 class Garden:
     def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=5, init_water_mean=0.4,
+                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=8, init_water_mean=0.4,
                  init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
 
@@ -348,13 +348,13 @@ class Garden:
             amount (float) amount of water for location.
 
         """
-        lower_x = max(0, location[0] - self.irr_threshold)
-        upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
-        lower_y = max(0, location[1] - self.irr_threshold)
-        upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
-                    self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
-
+        # lower_x = max(0, location[0] - self.irr_threshold)
+        # upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
+        # lower_y = max(0, location[1] - self.irr_threshold)
+        # upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
+        # window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
+        #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
+        window_grid_size = np.pi * (self.irr_threshold**2) / 10000  # in square meters
         gain = 1/32
         # Start from outer radius
         for radius in range(4,9)[::-1]:
