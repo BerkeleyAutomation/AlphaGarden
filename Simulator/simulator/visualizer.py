@@ -11,6 +11,7 @@ import os
 import random
 import io
 from PIL import Image, ImageDraw
+import pickle
 
 
 class Visualizer(ABC):
@@ -138,30 +139,52 @@ class Pillow_Visualizer(Visualizer):
         super().__init__(env)
 
     def get_canopy_image(self, bounds, dir_path, eval, scale=8, identifier="test", day=0):
+        identifier="20210111-122412"
         x_low, y_low, x_high, y_high = bounds
         row_scale, col_scale = (self.env.rows // (x_high - x_low)) * scale, (self.env.cols // (y_high - y_low)) * scale
-        image = Image.new('RGBA', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255, 0))
+        # image = Image.new('RGBA', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255, 0))
+        image = Image.open(dir_path + "/Pillow/" + identifier + "/" + str(day) + '_cc.png')
+        image = image.resize((self.env.cols * col_scale, self.env.rows * row_scale))
         draw = ImageDraw.Draw(image)
-        for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
-                            key=lambda x: x.height, reverse=False):
+        plant_iter = sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
+                            key=lambda x: x.height, reverse=False)
+        # print([p.height for p in plant_iter])
+        ### VARIANCE ###
+        # folder = '/Users/mpresten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/variance/'
+        # file_name = str(day) + '_outer.txt'
+        # if len(str(day)) == 1:
+        #     file_name = '0' + str(day) + '_outer.txt'
+        # all_plants = []
+        ### VARIANCE cls ###
+        for plant in plant_iter:
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
                 self.env.plant_heights.append((plant.type, plant.height))
                 self.env.plant_radii.append((plant.type, plant.radius))
-                # print(plant.col, plant.row, plant.radius)
-                # print(plant.color)
                 plant_color = (int(plant.color[0] * 255),int(plant.color[1] * 255),int(plant.color[2] * 255))
                 rad = int(col_scale * plant.radius)
                 circle_bounding_box = (plant.col*col_scale - rad, plant.row*row_scale - rad, 
                                 plant.col*col_scale + rad, plant.row*row_scale + rad)
-                draw.ellipse(circle_bounding_box, fill = plant_color)
+                draw.ellipse(circle_bounding_box, outline = plant_color)
+                ### VARIANCE ###
+                # file_list = os.listdir(folder)
+                # l = [plant.col*col_scale, plant.row*row_scale, rad, plant_color[0], plant_color[1], plant_color[2]]
+                # all_plants.append(l)
+                ### VARIANCE CLS ###
+        ### VARIANCE ###
+        # fil = open(folder + file_name, "w+")
+        # fil.close()
+        # with open(folder + file_name, "wb") as fp:
+        #     pickle.dump(all_plants, fp)
+        ### VARIANCE cls ###
         image = image.resize(((600,600)))
         if not eval:
             r = os.urandom(16)
             dir_path = dir_path + "/Pillow/" + identifier + "/"
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
-            file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
-            #file_path = dir_path + str(day)
+            # file_path = dir_path + ''.join('%02x' % ord(chr(x)) for x in r)
+            file_path = dir_path + str(day)
             image.save(file_path + '_cc.png')
         else:
             return image
+

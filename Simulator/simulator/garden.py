@@ -354,10 +354,27 @@ class Garden:
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
         window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
                     self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
+
+        gain = 1/32
+        # Start from outer radius
+        for radius in range(4,9)[::-1]:
+            # For each bounding box, check if the cubes are within the radius 
+            #       + add water from outer to center
+            lower_x = max(0, location[0] - radius)
+            upper_x = min(self.grid.shape[0], location[0] + radius + 1)
+            lower_y = max(0, location[1] - radius)
+            upper_y = min(self.grid.shape[1], location[1] + radius + 1)
+            for y in range(lower_y, upper_y):
+                for x in range(lower_x, upper_x):
+                    pt = [x, y]
+                    if np.sqrt((location[0] - pt[0])**2 + (location[1] - pt[1])**2) <= radius:
+                        self.grid[x, y]['water'] += gain * (amount / (window_grid_size * 0.35))
+            gain *= 2
+
         # TODO: add distribution kernel for capillary action and spread of water jet
         # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
-        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount / (
-                    window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
+        # self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount / (
+        #             window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
