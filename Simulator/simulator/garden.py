@@ -469,12 +469,18 @@ class Garden:
                     if plant.amount_sunlight > 0:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
+                        plant.watered_day = self.timestep
                         point['water'] -= water_to_absorb
 
                     plant_types_and_ids.pop(i)
 
             # Water evaporation per square cm (grid point)
-            point['water'] = max(0, point['water'] - 0.01 * 0.01 * self.evaporation_rate)
+            if abs(plant.watered_day - self.timestep) <= 1:
+                evap_rate = 0.052
+            else:
+                evap_rate = 0.011
+
+            point['water'] = max(0, point['water'] - 0.01 * 0.01 * evap_rate)
 
     def grow_plants(self):
         """ Compute growth for each plant and update plant coverage."""
