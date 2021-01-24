@@ -65,10 +65,10 @@ def get_irr_square(grid, center):
         Array with health grid for square around the plant.
 
     """
-    lower_x = center[0] - IRR_THRESHOLD
-    upper_x = center[0] + IRR_THRESHOLD
-    lower_y = center[1] - IRR_THRESHOLD
-    upper_y = center[1] + IRR_THRESHOLD
+    lower_x = max(0, center[0] - IRR_THRESHOLD)
+    upper_x = min(grid.shape[0], center[0] + IRR_THRESHOLD)
+    lower_y = max(0, center[1] - IRR_THRESHOLD)
+    upper_y = min(grid.shape[1], center[1] + IRR_THRESHOLD)
     return grid[lower_x:upper_x, lower_y:upper_y]
     
 def only_dead_plants(health):

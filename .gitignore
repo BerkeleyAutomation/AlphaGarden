@@ -20,3 +20,5 @@ dist/
 build/
 *.egg
 Learning/images/
+Learining/textFiles/
+fixed/

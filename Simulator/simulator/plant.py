@@ -115,6 +115,7 @@ class Plant:
         # resources accumulated per timestep
         self.amount_sunlight = 0
         self.water_amt = 0
+        self.watered_day = 1
         self.water_available = 0
 
         # whether plant was pruned
@@ -197,6 +198,7 @@ class Plant:
         """
         self.amount_sunlight = 0
         self.water_amt = 0
+        self.watered_day = 1
         self.pruned = False
         self.water_available = 0
 
@@ -210,6 +212,7 @@ class Plant:
         self.num_grid_points = 1
         self.amount_sunlight = 0
         self.water_amt = 0
+        self.watered_day = 1
         self.stage_index = -1
         self.switch_stage(0)
 

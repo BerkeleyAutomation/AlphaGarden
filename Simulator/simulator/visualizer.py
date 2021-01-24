@@ -23,18 +23,14 @@ class Visualizer(ABC):
 
     def get_canopy_image_sector(self, center, eval, identifier="test"):
         """Get image for canopy cover of the garden and save image to specified directory.
-
         Note:
             Circle sizes vary for the radii of the plant. Each shade of green in the simulated garden represents
             a different plant type. Stress causes the plants to progressively turn brown.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
             eval (bool): flag for evaluation.
-
         Returns:
             Directory path of saved scenes if eval is False, canopy image otherwise.
-
         """
         if not eval:
             dir_path = self.env.dir_path
@@ -45,18 +41,14 @@ class Visualizer(ABC):
 
     def get_canopy_image_full(self, eval, identifier="test", day=0):
         """Get image for canopy cover of the garden and save image to specified directory.
-
         Note:
             Circle sizes vary for the radii of the plant. Each shade of green in the simulated garden represents
             a different plant type. Stress causes the plants to progressively turn brown.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
             eval (bool): flag for evaluation.
-
         Returns:
             Directory path of saved scenes if eval is False, canopy image otherwise.
-
         """
         if not eval:
             dir_path = self.env.dir_path

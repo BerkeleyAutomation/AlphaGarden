@@ -13,7 +13,7 @@ import copy
 class Garden:
     def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
                  prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001, prune_rate=PRUNE_RATE,
-                 irr_threshold=5, init_water_mean=0.4, init_water_scale=0.1, plant_type = None,
+                 irr_threshold=9, init_water_mean=0.1, init_water_scale=0.04, plant_type = None,
                  skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
         Args:
@@ -278,7 +278,6 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
-        print('before', self.compute_plant_cc_dist())
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
@@ -293,7 +292,6 @@ class Garden:
         self.distribute_water()
         self.grow_plants()
         self.performing_timestep = True
-        print('after', self.compute_plant_cc_dist())
 
         for sector in sectors:
             self.update_plant_health(sector)
@@ -308,19 +306,19 @@ class Garden:
         self.actions.append(actions)
 
         #GROWTH ANALYSIS
-        folder = "textFiles/"
-        # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
-        p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
-        b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
-        s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
-        c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
-        r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
-        k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
-        g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
-        rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
-        a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
-        sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
-        t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
+        # folder = "textFiles/"
+        # # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
+        # p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
+        # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
+        # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
+        # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
+        # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
+        # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
+        # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
+        # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
+        # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
+        # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
+        # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
         # for d in self.plants:
         #     for p in d.values():
         #         # print(p.type, p.radius, (p.row, p.col))
@@ -355,7 +353,7 @@ class Garden:
         #         elif p_type_ind[p.type] < 5:
         #             p_type_ind[p.type] += 1
                 
-        #         file_list = os.listdir('/Users/williamwong/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
+        #         file_list = os.listdir('/Users/mpreseten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
 
         #         if file_name not in file_list:
         #             fil = open(folder + file_name, "w+")
@@ -393,16 +391,34 @@ class Garden:
             location (Array of [int,int]): Location [row, col] where to perform actions.
             amount (float) amount of water for location.
         """
+        # window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
+        #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
+        window_grid_size = np.pi * ((self.irr_threshold/2)**2) / 10000  # in square meters
+        gain = 1/32
+        # Start from outer radius
+        for radius in range(4,9)[::-1]:
+            # For each bounding box, check if the cubes are within the radius 
+            #       + add water from outer to center
+            lower_x = max(0, location[0] - radius)
+            upper_x = min(self.grid.shape[0], location[0] + radius + 1)
+            lower_y = max(0, location[1] - radius)
+            upper_y = min(self.grid.shape[1], location[1] + radius + 1)
+            for y in range(lower_y, upper_y):
+                for x in range(lower_x, upper_x):
+                    pt = [x, y]
+                    if np.sqrt((location[0] - pt[0])**2 + (location[1] - pt[1])**2) <= radius:
+                        self.grid[x, y]['water'] += gain * (amount / (window_grid_size * 0.35))
+            gain *= 2
+
+        # TODO: add distribution kernel for capillary action and spread of water jet
+        # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
+        # self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount / (
+        #             window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
         lower_x = max(0, location[0] - self.irr_threshold)
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
-                    self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
-        # TODO: add distribution kernel for capillary action and spread of water jet
-        # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
-        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount / (
-                    window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
+        
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
@@ -488,12 +504,17 @@ class Garden:
                     if plant.amount_sunlight > 0:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
+                        plant.watered_day = self.timestep
                         point['water'] -= water_to_absorb
 
                     plant_types_and_ids.pop(i)
 
             # Water evaporation per square cm (grid point)
-            point['water'] = max(0, point['water'] - 0.01 * 0.01 * self.evaporation_rate)
+            if abs(plant.watered_day - self.timestep) <= 1:
+                evap_rate = 0.052
+            else:
+                evap_rate = 0.011
+            point['water'] = max(0, point['water'] - 0.01 * 0.01 * evap_rate)
 
     def grow_plants(self):
         """ Compute growth for each plant and update plant coverage."""
