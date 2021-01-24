@@ -393,7 +393,7 @@ class Garden:
         """
         # window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
         #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
-        window_grid_size = np.pi * ((self.irr_threshold/2)**2) / 10000  # in square meters
+        window_grid_size = np.pi * ((self.irr_threshold)**2) / 10000  # in square meters
         gain = 1/32
         # Start from outer radius
         for radius in range(4,9)[::-1]:
@@ -423,6 +423,7 @@ class Garden:
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
             out=self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
+        print(self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
 
     def get_water_amounts(self, step=5):
         """ Get accumulated water amount for certain window sizes in grid.
