@@ -11,8 +11,8 @@ import os
 
 class Garden:
     def __init__(self, plants=[], N=96, M=54, sector_rows=1, sector_cols=1, prune_window_rows=1,
-                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=8, init_water_mean=MAX_WATER_LEVEL,
-                 init_water_scale=0.1, plant_types=[], skip_initial_germination=False, animate=False, save=False):
+                 prune_window_cols=1, step=1, evaporation_rate=0.001, irr_threshold=8, init_water_mean=0.1,
+                 init_water_scale=0.04, plant_types=[], skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
 
         Args:
@@ -341,7 +341,6 @@ class Garden:
         self.grid['water'] = water_amt
 
     def irrigate(self, location, amount):
-        # print('hi')
         """ Updates water levels in grid in response to irrigation, location is (x, y) coordinate tuple.
 
         Args:
