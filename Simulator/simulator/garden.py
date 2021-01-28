@@ -430,6 +430,7 @@ class Garden:
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
             out=self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
+        print(self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
 
     def get_water_amounts(self, step=5):
         """ Get accumulated water amount for certain window sizes in grid.
