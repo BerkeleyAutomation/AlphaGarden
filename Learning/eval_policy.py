@@ -248,6 +248,23 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
+def evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
+                                             save_dir, vis_identifier):
+    obs = env.reset()
+    for i in range(collection_time_steps):
+        if i % sector_obs_per_day == 0:
+            current_day = int(i/sector_obs_per_day) + 1
+            print("Day {}/{}".format(current_day, 100))
+            vis.get_canopy_image_full(False, vis_identifier, current_day)
+        if not (i // sector_obs_per_day) % 2:
+            # Irrigate on odd days.
+            action = 1
+        else:
+            action = 0
+        obs, rewards, _, _ = env.step(action)
+    metrics = env.get_metrics()
+    save_data(metrics, trial, save_dir)
+
 def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
@@ -426,6 +443,9 @@ if __name__ == '__main__':
             evaluate_baseline_compare_net(env, analytic_policy.policy, policy, collection_time_steps,
                                           sector_rows, sector_cols, prune_window_rows, prune_window_cols,
                                           garden_step, water_threshold, sector_obs_per_day, trial)
+        elif args.policy == 'p':
+            evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
+                                                     save_dir, vis_identifier)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']

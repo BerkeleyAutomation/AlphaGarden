@@ -232,7 +232,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
             plt.close()
             return img
 
-    # TODO still needed?
     def plot_water_map(self, folder_path, water_grid, plants):
         plt.axis('off')
         plt.imshow(water_grid[:, :, 0], cmap='Blues', interpolation='nearest')

@@ -66,7 +66,7 @@ class Garden:
         """
         if not garden_state:
             self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
-            self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
+            self.grid['water'] = np.clip(np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape), 0, MAX_WATER_LEVEL)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
         else:
             self.grid = copy.deepcopy(garden_state.grid)
@@ -278,19 +278,26 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
+        irr_cnt = 0
+        pr_cnt = 0
+        combo_cnt = 0
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
+                irr_cnt += 1
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
+                pr_cnt += 1 
             elif action == NUM_IRR_ACTIONS + 2:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
                 self.perform_timestep_prune(sectors[i])
+                combo_cnt += 1
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
+        print(irr_cnt, pr_cnt, combo_cnt)
         self.performing_timestep = True
 
         for sector in sectors:
@@ -393,7 +400,7 @@ class Garden:
         """
         # window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
         #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
-        window_grid_size = np.pi * ((self.irr_threshold/2)**2) / 10000  # in square meters
+        window_grid_size = np.pi * ((self.irr_threshold)**2) / 10000  # in square meters
         gain = 1/32
         # Start from outer radius
         for radius in range(4,9)[::-1]:
