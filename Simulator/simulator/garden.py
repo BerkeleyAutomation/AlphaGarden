@@ -278,26 +278,19 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
-        irr_cnt = 0
-        pr_cnt = 0
-        combo_cnt = 0
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
-                irr_cnt += 1
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
-                pr_cnt += 1 
             elif action == NUM_IRR_ACTIONS + 2:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
                 self.perform_timestep_prune(sectors[i])
-                combo_cnt += 1
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
-        print(irr_cnt, pr_cnt, combo_cnt)
         self.performing_timestep = True
 
         for sector in sectors:
@@ -430,7 +423,6 @@ class Garden:
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
             out=self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
-        print(self.grid[lower_x:upper_x, lower_y:upper_y]['water'])
 
     def get_water_amounts(self, step=5):
         """ Get accumulated water amount for certain window sizes in grid.
