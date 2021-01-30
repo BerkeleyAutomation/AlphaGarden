@@ -191,7 +191,7 @@ def lie_within(c1, c2, offset=50):
 def bfs_circle(path, old_center, radius=100):
     '''Uses BFS and a termination condition to find the plant.'''
     def termination_cond(arr, recent_color_pts, point): 
-        plant_ended = recent_color_pts / len(arr) < .1 and len(arr) > 500
+        plant_ended = recent_color_pts / len(arr) < .1 and distance(point, old_center) > 20
         too_long = distance(point, old_center) > radius
         return plant_ended or too_long
 
@@ -375,8 +375,8 @@ if __name__ == "__main__":
         try:
             # c, r_min = min_COM_radius(cur_img, center, 130)
             # c, r_max = max_COM_radius(cur_img, center, 130)
-            c, r_max = avg_COM_radius(cur_img, center, 130)
-            # c, r_max = bfs_circle(cur_img, center, 130)
+            # c, r_max = avg_COM_radius(cur_img, center, 130)
+            c, r_max = bfs_circle(cur_img, center, 130)
             if r_max == r_max:
                 print(c, r_max)
                 centers.append(c)
@@ -387,6 +387,6 @@ if __name__ == "__main__":
         except ZeroDivisionError:
             print(center)
     draw_circle_sets(cur_img, centers, [max_radii, min_radii, avg_radii], ("w", 'y', 'r'))
-    print("Avg fill ratio: " + str(avg_fill_ratio(centers, max_radii, cur_img)))
-    print("Plant area to circle area ratio: " + str(avg_circle_to_plant_area_ratio(centers, max_radii, cur_img)))
-    print("Avg excluded plant area: " + str(avg_excluded_plant_area(centers, max_radii, cur_img)))
+    # print("Avg fill ratio: " + str(avg_fill_ratio(centers, max_radii, cur_img)))
+    # print("Plant area to circle area ratio: " + str(avg_circle_to_plant_area_ratio(centers, max_radii, cur_img)))
+    # print("Avg excluded plant area: " + str(avg_excluded_plant_area(centers, max_radii, cur_img)))
