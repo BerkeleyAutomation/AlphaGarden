@@ -20,3 +20,8 @@ dist/
 build/
 *.egg
 Learning/images/
+Center-Tracking/figures/
+Center-Tracking/image_not_test/
+Center-Tracking/images/
+
+
