@@ -2,7 +2,7 @@ import numpy as np
 from simulator.sim_globals import STEP
 SEG_COLORS = False
 
-def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2):
+def generate_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2):
     """
     Samples a normal distribution for germination and maturation times.  Uses these values to
     compute an individual plant's growth time and c1 value.
@@ -22,7 +22,7 @@ def generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k
     # germination_length = germination_time[0] - germination_time[1]
     growth_time = int(maturation_length - germination_length)
     # c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
-    return growth_time, None, germination_length
+    return growth_time, germination_length
 
 def get_r_max(v):
     r_max = (v / 2)
@@ -59,7 +59,7 @@ def _compute_from_table_values(
     h_0 = 0.1
     r_max = max(1, np.random.normal(MAX_RADIUS[name][0], MAX_RADIUS[name][1]))
     # r_max = MAX_RADIUS[name][0] + MAX_RADIUS[name][1]
-    growth_time = generate_c1_and_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2)
+    growth_time = generate_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2)
 
     return {
         "germination_time": germination_time,

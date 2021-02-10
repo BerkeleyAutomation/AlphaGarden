@@ -1,5 +1,5 @@
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
-from simulator.plant_presets import PLANT_TYPES, generate_c1_and_growth_time
+from simulator.plant_presets import PLANT_TYPES, generate_growth_time
 
 
 class Plant:
@@ -82,7 +82,7 @@ class Plant:
         """
         if name in PLANT_TYPES:
             p = PLANT_TYPES[name]
-            growth_time, _, germination_length = generate_c1_and_growth_time(
+            growth_time, germination_length = generate_growth_time(
                 p['germination_time'], p['maturation_time'], p['r_max'],
                 p['start_radius'], p['k2'], p['c2'])
             if beginning:
