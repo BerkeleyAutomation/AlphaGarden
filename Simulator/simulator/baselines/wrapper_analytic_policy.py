@@ -83,7 +83,7 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     div = garden_copy.diversity[-1] #to get the most recent day's diversity
     mme1 = garden_copy.mme1[-1]
     mme2 = garden_copy.mme2[-1]
-    global_div = garden_copy.global_diversity[-1] #to get the most recent day's global diversity
+    # global_div = garden_copy.global_diversity[-1] #to get the most recent day's global diversity
     # dirname = './prune_rate_metrics/'
     # if not os.path.exists(dirname):
     #     os.makedirs(dirname)
