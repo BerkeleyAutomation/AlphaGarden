@@ -215,7 +215,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                 for irr_amt in irrigation_amounts:
                     for pr_i in range(len(prune_rates)):
                         garden_state = env.get_simulator_state_copy()
-                        mme1, mme2 = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                        cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                                     sector_obs_per_day, garden_state, prune_rates[pr_i], irr_amt,
                                     vectorized=False)

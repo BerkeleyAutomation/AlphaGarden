@@ -89,7 +89,8 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     #     os.makedirs(dirname)
     # with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
     #     pickle.dump([cov, div, global_div, actions, w1, w2], f)
-    return mme1, mme2 
+    # return mme1, mme2 
+    return cov, div
 
 
 def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows, prune_win_cols, step, prune_rate):
