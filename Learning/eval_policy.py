@@ -207,7 +207,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             if i % sector_obs_per_day == 0:
                 pr = 0
                 prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
-                irrigation_amounts = [0.001]
+                irrigation_amounts = [0.002]
                 covs, divs, cv = [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
                 w1 = day_p / 50 # weights are 0 to 1 between days 20 and 70
@@ -221,7 +221,8 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                                     vectorized=False)
                         covs.append(cov)
                         divs.append(div)
-                        cv.append((mme1, (prune_rates[pr_i], irr_amt)))
+                        cv.append((w1 * div + w2 * cov, (prune_rates[pr_i], irr_amt)))
+                        # cv.append((mme1, (prune_rates[pr_i], irr_amt)))
                         # cv.append((mme2, (prune_rates[pr_i], irr_amt)))
                 pr = cv[np.argmax([result[0] for result in cv])][1][0]
                 ir = cv[np.argmax([result[0] for result in cv])][1][1]
