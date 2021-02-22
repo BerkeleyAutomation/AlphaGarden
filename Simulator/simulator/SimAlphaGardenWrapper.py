@@ -317,9 +317,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         # Save canopy image before performing a time step.
         # if True:
-        # sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
-        # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
-        if self.curr_action >= 0:
+        sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
+        if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
+        # if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
             if not eval:
                 path = out
