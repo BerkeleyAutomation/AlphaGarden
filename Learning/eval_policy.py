@@ -207,7 +207,7 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
     all_actions = []
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
-            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 72))
+            print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 100))
 
             vis.get_canopy_image_full(False, vis_identifier)
             wrapper_day_set = True
@@ -217,7 +217,7 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
             if i % sector_obs_per_day == 0:
                 pr = 0
-                prune_rates = [0.02, 0.05, 0.08, 0.1, 0.16, 0.2, 0.25, 0.3, 0.4]
+                prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
                 irrigation_amounts = [0.001]
                 covs, divs, cv, ent_1s, ent_2s = [], [], [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
@@ -405,7 +405,7 @@ if __name__ == '__main__':
 
     
     for i in range(args.tests):
-        trial = i + 1
+        trial = i + 16
         seed = args.seed + i
         
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
