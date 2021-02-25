@@ -163,8 +163,13 @@ class Garden:
         self.coverage = []  #: List of float: total canopy coverage w.r.t. the garden size at time step.
         self.diversity = []  #: List of float: the diversity in the garden at time step.
         self.global_diversity = []
+        self.entropy_1 = [] #: List of float: the multimodal entropy w/ 1 soil term at time step.
+        self.entropy_2 = [] #: List of float: the multimodal entropy w/ 2 soil terms at time step.
         self.water_use = []  #: List of float: water usage w.r.t sector.
         self.actions = []  #: List of Lists of int: actions per time step.
+        
+        self.prune_coords = dict()
+        self.irr_coords = []
 
         # if save:
             # self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
@@ -255,6 +260,7 @@ class Garden:
         if irrigation > 0:
             self.irrigate(center, irrigation)
             self.irrigation_points[center] = irrigation
+            self.irr_coords.append(center)
     
     def perform_timestep_prune(self, center):
         """ Prune plants in given sector if certain amount of days have past.
@@ -273,7 +279,9 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
-        print('before', self.compute_plant_cc_dist())
+        self.prune_coords = dict()
+        self.irr_coords = []
+        # print('before', self.compute_plant_cc_dist())
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
@@ -288,7 +296,7 @@ class Garden:
         self.distribute_water()
         self.grow_plants()
         self.performing_timestep = True
-        print('after', self.compute_plant_cc_dist())
+        # print('after', self.compute_plant_cc_dist())
         # b = np.zeros(len(self.plant_types))
         # self.plant_prob = np.zeros((self.N, self.M, 1 + len(self.plant_types)))
         # for point in self.enumerate_grid(coords=True):
@@ -315,6 +323,8 @@ class Garden:
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
         # print(self.get_health_grid((57, 57)))
         # print(">>>>>>>>>>>>>>>>>>>")
+
+        pickle.dump([self.prune_coords, self.irr_coords], open("Coords/coords" + str(self.timestep) + ".pkl", "wb"))
 
         self.timestep += 1
         self.performing_timestep = True
@@ -521,6 +531,7 @@ class Garden:
         distances = np.array(list(zip(*self.growth_map))[0])
         next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
         coords_updated = []
+        directions = []
         # Add grid point to “nearby” if it's within plants radius.
         if next_growth_index_plus_1 > plant.growth_index:
             for i in range(plant.growth_index + 1, next_growth_index_plus_1):
@@ -543,13 +554,20 @@ class Garden:
                     if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
                         if record_coords_updated:
                             coords_updated.append(point)
+                            # (prune x?, prune_y?)
+                            dir_tup = [False, False]
+                            if point[0] != plant.row:
+                                dir_tup[0] = True
+                            if point[1] != plant.col:
+                                dir_tup[1] = True
+                            directions.append(tuple(dir_tup))
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove((self.plant_types.index(plant.type), plant.id))
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] -= 1
                         if self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] < 0:
                             raise Exception("Cannot have negative leaf cover")
         plant.growth_index = next_growth_index_plus_1 - 1
-        return coords_updated
+        return coords_updated, directions
 
     def prune_plants(self):
         """ Prune tallest plants that are over threshold."""
@@ -697,7 +715,12 @@ class Garden:
             
             self.update_plant_size(plant, outward=-amount_to_prune)
             
-            self.update_plant_coverage(plant, record_coords_updated=True)
+            coords_updated, dir_tup = self.update_plant_coverage(plant, record_coords_updated=True)
+            coords_dirs = zip(coords_updated, dir_tup)
+            if plant.type in self.prune_coords:
+                self.prune_coords[plant.type].update(coords_dirs)
+            else:
+               self.prune_coords[plant.type] = set(coords_dirs) 
             
             # if -amount_to_prune < 0:
             #     b = np.zeros(len(self.plant_types))
@@ -723,12 +746,25 @@ class Garden:
         self.coverage.append(coverage)
         self.diversity.append(diversity)
 
-        soil_bias = (self.N * self.M) / len(cc_per_plant_type)
+        soil_bias = (self.N * self.M) / len(cc_per_plant_type + 1)
         global_cc_vec = np.append((self.N * self.M * self.step - np.sum(cc_per_plant_type)) + soil_bias, cc_per_plant_type)
         global_prob = global_cc_vec[np.nonzero(global_cc_vec)] / (self.N * self.M)
         global_entropy = np.sum(-global_prob * np.log(global_prob))
         global_diversity = global_entropy / np.log(len(self.plant_types) + 1)  # normalized entropy
         self.global_diversity.append(global_diversity)
+
+        ent_1_global_cc_vec = np.append((self.N * self.M * self.step - np.sum(cc_per_plant_type)), cc_per_plant_type)
+        ent_1_global_prob = ent_1_global_cc_vec[np.nonzero(ent_1_global_cc_vec)] / (self.N * self.M)
+        ent_1_global_entropy = np.sum(-ent_1_global_prob * np.log(ent_1_global_prob))
+        ent_1 = ent_1_global_entropy / np.log(len(self.plant_types) + 1)  # normalized entropy
+        self.entropy_1.append(ent_1)
+
+        soil = self.N * self.M * self.step - np.sum(cc_per_plant_type)
+        ent_2_global_cc_vec = np.append([soil / 2, soil / 2], cc_per_plant_type)
+        ent_2_global_prob = ent_2_global_cc_vec[np.nonzero(ent_2_global_cc_vec)] / (self.N * self.M)
+        ent_2_global_entropy = np.sum(-ent_2_global_prob * np.log(ent_2_global_prob))
+        ent_2 = ent_2_global_entropy / np.log(len(self.plant_types) + 2)  # normalized entropy
+        self.entropy_2.append(ent_2)
 
     def save_water_use(self, amount):
         """ Add water used in time step.

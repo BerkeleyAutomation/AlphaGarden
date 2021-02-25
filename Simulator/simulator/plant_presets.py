@@ -31,7 +31,7 @@ def _compute_from_table_values(
    r_max = seed_spacing / 2 / garden_ratio
    growth_time = int(maturation_time - (germination_time[0] + germination_time[1]) / 2)
    c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
-   print(name, ':', growth_time, c1)
+   # print(name, ':', germination_time[0], maturation_time, r_max, r_0, garden_ratio)
 
    return {
        "germination_time": germination_time,

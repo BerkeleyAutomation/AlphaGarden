@@ -87,12 +87,15 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     cov = garden_copy.coverage[-1]
     div = garden_copy.diversity[-1]
     global_div = garden_copy.global_diversity[-1]
+    ent_1 = garden_copy.entropy_1[-1]
+    ent_2 = garden_copy.entropy_2[-1]
     dirname = './prune_rate_metrics/'
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
         pickle.dump([cov, div, global_div, actions, w1, w2], f)
     # print(prune_rate, cov, div)
+    # return ent_1, ent_2
     return cov, div
     #     determine = w1*cov[-1] + w2*div[-1]
     #     actual_diversity_coverage = cov[-1]*div[-1]

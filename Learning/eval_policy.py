@@ -27,7 +27,7 @@ parser.add_argument('-s', '--seed', type=int, default=0)
 parser.add_argument('-p', '--policy', type=str, default='b', help='[b|n|l|i] baseline [b], naive baseline [n], learned [l], irrigation [i]')
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
-parser.add_argument('-d', '--days', type=int, default=72)
+parser.add_argument('-d', '--days', type=int, default=100)
 parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
 parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 args = parser.parse_args()
@@ -143,7 +143,12 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
                 global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
                 x = (full_img, raw, global_cc_vec)
 
+                # prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
+                # pr = max(0, policy(x).item())
                 pr = policy(x).item()
+                # policy_out = policy(x)
+                # print('Policy out:', policy_out)
+                # pr = prune_rates[torch.argmax(policy_out).item()]
                 print('Prune Rate Day', str(i // sector_obs_per_day), ':', pr)
                 prune_rates_order.append(pr)
                 env.set_prune_rate(max(0, pr))
@@ -157,7 +162,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
         dirname = './policy_metrics/'
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    f = open("./policy_metrics/prs.txt", "a")
+    f = open("./policy_metrics/prs" + str(trial) + ".txt", "a")
     f.write("Prune Rates: "+ str(prune_rates_order))
     f.close()        
     metrics = env.get_metrics()
@@ -194,7 +199,7 @@ def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_ro
 def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
                             sector_obs_per_day, trial, save_dir, vis_identifier):
-    wrapper = True # If True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
+    wrapper = False # If True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
     prune_rates_order = []
     irrigation_amounts_order = []
     obs = env.reset()
@@ -212,13 +217,12 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
             if i % sector_obs_per_day == 0:
                 pr = 0
-                prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
-                irrigation_amounts = [0.001, 0.0005, 0.00025]
-                covs, divs, cv = [], [], []
+                prune_rates = [0.02, 0.05, 0.08, 0.1, 0.16, 0.2, 0.25, 0.3, 0.4]
+                irrigation_amounts = [0.001]
+                covs, divs, cv, ent_1s, ent_2s = [], [], [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
                 w1 = day_p / 50
                 w2 = 1 - w1
-                print(w1, w2)
                 for irr_amt in irrigation_amounts:
                     for pr_i in range(len(prune_rates)):
                         garden_state = env.get_simulator_state_copy()
@@ -249,21 +253,21 @@ def evaluate_analytic_policy_serial(env, policy, collection_time_steps, sector_r
         obs, rewards, _, _ = env.step(action)
         
         if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
-            cov, div, water, act, global_div = env.get_metrics()
+            cov, div, water, act, global_div, ent_1, ent_2, cov_vec = env.get_metrics()
             div_cov_day = cov[-1] * div[-1]
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
-            print(div_cov)
-    print(prune_rates_order)
-    print(div_cov)
-    print(all_actions)
-    dirname = './policy_metrics/'
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-    f = open("./policy_metrics/prs.txt", "a")
-    f.write("Prune Rates: "+ str(prune_rates_order))
+            # print(div_cov)
+    # print(prune_rates_order)
+    # print(div_cov)
+    # print(all_actions)
+    # dirname = './NewMetric/'
+    # if not os.path.exists(dirname):
+    #     os.makedirs(dirname)
+    # f = open("./NewMetric/reg_vnew1/prs.txt", "a")
+    # f.write("Prune Rates: "+ str(prune_rates_order))
     # f.write("\nActions: " + str(all_actions))
     # f.write("\nDiversity-Coverage: " + str(div_cov))
-    f.close()
+    # f.close()
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -346,7 +350,7 @@ def save_data(metrics, trial, save_dir):
         os.makedirs(dirname)
     with open(save_dir + 'data_' + str(trial) + '.pkl', 'wb') as f:
         pickle.dump(metrics, f)
-    coverage, diversity, water_use, actions, global_diversity = metrics
+    coverage, diversity, water_use, actions, global_diversity, ent_1, ent_2, cov_vec = metrics
     fig, ax = plt.subplots()
     ax.set_ylim([0, 1])
     plt.plot(coverage, label='coverage')

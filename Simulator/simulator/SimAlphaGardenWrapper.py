@@ -52,7 +52,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.seed = seed
         self.reset()  #: Reset simulator.
 
-
         self.curr_action = -1  #: int: Current action selected. 0 = no action, 1 = irrigation, 2 = pruning
 
 
@@ -78,6 +77,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
 
         self.dir_path = dir_path
+        
+        self.cov_vecs = []
+        self.cov_vecs.append(self.garden.compute_plant_cc_dist())
         
     def get_state(self, multi=False):
         """Get state of a random sector defined by all local and global quantities.
@@ -271,8 +273,15 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 self.plant_heights.append((plant.type, plant.height))
                 self.plant_radii.append((plant.type, plant.radius))
                 shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
+                # if plant.pruned:
+                #     shape = plt.Rectangle((plant.col * self.garden.step - plant.radius,
+                #                         plant.row * self.garden.step - plant.radius), plant.radius * 2, plant.radius * 2,
+                #                         fc='red', ec='red')
+                # else:
+                #     shape = plt.Circle((plant.col, plant.row) * self.garden.step, plant.radius, color=plant.color)
                 shape_plot = ax.add_artist(shape)
                 shapes.append(shape_plot)
+            # plant.pruned = False
         plt.gca().invert_yaxis()
         bbox0 = fig.get_tightbbox(fig.canvas.get_renderer()).padded(0.02)
         if not eval:
@@ -290,6 +299,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
             img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(373, 373, -1))
             img = img[..., :3]
             buf.close()
+            # r = os.urandom(16)
+            # if ((self.time_step+1) // 110) > 0 and (self.time_step+1) % 110 == 0: 
+            #     file_path = './TEST/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            #     plt.savefig(file_path + '_cc.png', bbox_inches=bbox0)
             plt.close()
             return img
 
@@ -398,6 +411,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # if True:
         # sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
         # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
+        # self.time_step = time_step
         if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
             if not eval:
@@ -416,6 +430,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.actions_to_execute.append(self.curr_action)
             
         # We want PERCENT_NON_PLANT_CENTERS of samples to come from non plant centers
+        # out = ''
         if len(self.actions_to_execute) < self.PlantType.plant_in_bounds + int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS):
             if eval:
                 return out, self.get_full_state()
@@ -424,6 +439,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # Execute actions only if we have reached the number of actions threshold.
         self.garden.perform_timestep(
             sectors=self.centers_to_execute, actions=self.actions_to_execute)
+        # out = self.get_canopy_image(center, eval)
         self.actions_to_execute = []
         self.centers_to_execute = []
         self.plant_centers = np.copy(self.plant_centers_original)
@@ -494,7 +510,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
         Return:
             Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
         """
-        return self.garden.coverage, self.garden.diversity, self.garden.water_use, self.garden.actions, self.garden.global_diversity
+        self.cov_vecs.append(self.garden.compute_plant_cc_dist())
+        return self.garden.coverage, self.garden.diversity, self.garden.water_use, \
+            self.garden.actions, self.garden.global_diversity, self.garden.entropy_1, \
+                self.garden.entropy_2, self.cov_vecs
 
 
     def get_prune_window_greatest_width(self, center):
