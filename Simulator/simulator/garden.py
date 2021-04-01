@@ -278,6 +278,7 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
+        print('garden.py pr', self.prune_rate)
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)

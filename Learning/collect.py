@@ -5,6 +5,7 @@ from simulator.sim_globals import NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, ROWS, C
 from simulator.plant_type import PlantType
 import simulator.baselines.analytic_policy as analytic_policy
 import multiprocessing as mp
+import platform
 from data_collection import DataCollection
 
 def start_proc(dir_seed):
@@ -24,7 +25,7 @@ def start_proc(dir_seed):
     obs_low = 0
     obs_high = rows * cols
 
-    garden_days = 100
+    garden_days = 70 
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 1.0
@@ -51,7 +52,8 @@ def main():
         if not os.path.exists(dir):
             os.mkdir(dir)
         dir_seeds.append((dir, idx + train_offset))
-
+    if platform.system() == "Darwin":
+        mp.set_start_method('spawn')
     pool = mp.Pool(processes=16)
     pool.map(start_proc, dir_seeds)
 

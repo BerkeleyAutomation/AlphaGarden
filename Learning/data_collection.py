@@ -54,9 +54,10 @@ class DataCollection:
                 wrapper_day_set = True
             cc_vec = env.env_method('get_global_cc_vec')[0]
             if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
-                print('wrapper in')
+                # print('wrapper in')
                 if i % sector_obs_per_day == 0:
                     prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
+                    irrigation_amounts = [0.002]
                     cv = []
                     day_p = (i / sector_obs_per_day) - PRUNE_DELAY
                     w1 = day_p / 50
@@ -65,11 +66,11 @@ class DataCollection:
                         garden_state = env.env_method('get_simulator_state_copy')[0]
                         cov, div = wrapper_policy.wrapperPolicy(div_cov, env, ROWS, COLS, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                                    sector_obs_per_day, garden_state, prune_rates[pr_i], vectorized=False)
+                                    sector_obs_per_day, garden_state, prune_rates[pr_i], irrigation_amounts[0], vectorized=False)
                         cv.append(w2*cov + w1*div)
                     pr = prune_rates[np.argmax(cv)]
                     env.env_method('set_prune_rate', pr)
-                    print(pr)
+                    # print(pr)
                     wrapper_day_set = False       
             action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                             prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
@@ -97,7 +98,7 @@ if __name__ == '__main__':
     obs_low = 0
     obs_high = rows * cols
 
-    garden_days = 100
+    garden_days = 70
     sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = 1.0
@@ -113,7 +114,8 @@ if __name__ == '__main__':
     seed = params['s']
     pathlib.Path(dir_path).mkdir(exist_ok=True)
 
-    seed_config_path = '/Users/sebastianoehme/Downloads/seed'
+    # seed_config_path = '/Users/sebastianoehme/Downloads/seed'
+    seed_config_path = None
     randomize_seeds_cords_flag = False
 
     data_collection.evaluate_policy(
