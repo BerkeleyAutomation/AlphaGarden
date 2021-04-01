@@ -88,7 +88,18 @@ def _compute_from_table_values(
 
 SRV = 0.0
 
-MAX_RADIUS = {"fast0_0": (80.0, 0), "fast1_0": (70.5, 0), "fast2_0": (60.0, 0), "fast3_0": (50.5, 0), "fast4_0": (50.0, 0), "slow0_0": (25, 0), "slow1_0": (18, 0), "slow2_0": (26.5, 0), "slow3_0": (15, 0), "slow4_0": (22, 0)}
+MAX_RADIUS = {
+    "fast0_0": (80.0, 0), 
+    "fast1_0": (70.5, 0), 
+    "fast2_0": (60.0, 0), 
+    "fast3_0": (50.5, 0), 
+    "fast4_0": (50.0, 0), 
+    "slow0_0": (25, 0), 
+    "slow1_0": (18, 0), 
+    "slow2_0": (26.5, 0), 
+    "slow3_0": (15, 0), 
+    "slow4_0": (22, 0)
+}
 
 for x in MAX_RADIUS:
     t = MAX_RADIUS[x]
