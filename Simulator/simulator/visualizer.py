@@ -23,18 +23,14 @@ class Visualizer(ABC):
 
     def get_canopy_image_sector(self, center, eval, identifier="test"):
         """Get image for canopy cover of the garden and save image to specified directory.
-
         Note:
             Circle sizes vary for the radii of the plant. Each shade of green in the simulated garden represents
             a different plant type. Stress causes the plants to progressively turn brown.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
             eval (bool): flag for evaluation.
-
         Returns:
             Directory path of saved scenes if eval is False, canopy image otherwise.
-
         """
         if not eval:
             dir_path = self.env.dir_path
@@ -45,24 +41,20 @@ class Visualizer(ABC):
 
     def get_canopy_image_full(self, eval, identifier="test", day=0):
         """Get image for canopy cover of the garden and save image to specified directory.
-
         Note:
             Circle sizes vary for the radii of the plant. Each shade of green in the simulated garden represents
             a different plant type. Stress causes the plants to progressively turn brown.
-
         Args:
             center (Array of [int,int]): Location [row, col] of sector center
             eval (bool): flag for evaluation.
-
         Returns:
             Directory path of saved scenes if eval is False, canopy image otherwise.
-
         """
         if not eval:
             dir_path = self.env.dir_path
         self.env.garden.step = 1
         bounds = (0, 0, self.env.rows, self.env.cols)
-        return self.get_canopy_image(bounds, dir_path + 'images/full/', eval, identifier=identifier, day=day)
+        return self.get_canopy_image(bounds, dir_path + 'fixed/full/', eval, identifier=identifier, day=day)
 
 class Matplotlib_Visualizer(Visualizer):
     def __init__(self, env):
@@ -138,11 +130,9 @@ class Pillow_Visualizer(Visualizer):
         super().__init__(env)
 
     def get_canopy_image(self, bounds, dir_path, eval, scale=8, identifier="test", day=0):
-        # identifier="20201110-205419"
         x_low, y_low, x_high, y_high = bounds
         row_scale, col_scale = (self.env.rows // (x_high - x_low)) * scale, (self.env.cols // (y_high - y_low)) * scale
-        image = Image.new('RGBA', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255, 0))
-        # image = Image.open(dir_path + "/Pillow/" + identifier + "/" + str(day) + '_cc.png')
+        image = Image.new('RGB', (self.env.cols * col_scale, self.env.rows * row_scale), (255, 255, 255))
         draw = ImageDraw.Draw(image)
         for plant in sorted([plant for plant_type in self.env.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):

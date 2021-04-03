@@ -207,7 +207,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             if i % sector_obs_per_day == 0:
                 pr = 0
                 prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
-                irrigation_amounts = [0.001]
+                irrigation_amounts = [0.002]
                 covs, divs, cv = [], [], []
                 day_p = (i / sector_obs_per_day) - PRUNE_DELAY
                 w1 = day_p / 50 # weights are 0 to 1 between days 20 and 70
@@ -221,7 +221,9 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                                     vectorized=False)
                         covs.append(cov)
                         divs.append(div)
-                        cv.append((w2*cov + w1*div, (prune_rates[pr_i], irr_amt)))
+                        cv.append((w1 * div + w2 * cov, (prune_rates[pr_i], irr_amt)))
+                        # cv.append((mme1, (prune_rates[pr_i], irr_amt)))
+                        # cv.append((mme2, (prune_rates[pr_i], irr_amt)))
                 pr = cv[np.argmax([result[0] for result in cv])][1][0]
                 ir = cv[np.argmax([result[0] for result in cv])][1][1]
                 prune_rates_order.append(pr)
@@ -238,12 +240,29 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             cov, div, water, act, mme1, mme2 = env.get_metrics()
             div_cov_day = cov[-1] * div[-1]
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
-    dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
-    if not os.path.exists(dirname):    
-        os.makedirs(dirname)
-    f = open("./policy_metrics/prs.txt", "a")
-    f.write("Prune Rates: "+ str(prune_rates_order))
-    f.close()
+    # dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
+    # if not os.path.exists(dirname):    
+    #     os.makedirs(dirname)
+    # f = open("./policy_metrics/prs.txt", "a")
+    # f.write("Prune Rates: "+ str(prune_rates_order))
+    # f.close()
+    metrics = env.get_metrics()
+    save_data(metrics, trial, save_dir)
+
+def evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
+                                             save_dir, vis_identifier):
+    obs = env.reset()
+    for i in range(collection_time_steps):
+        if i % sector_obs_per_day == 0:
+            current_day = int(i/sector_obs_per_day) + 1
+            print("Day {}/{}".format(current_day, 100))
+            vis.get_canopy_image_full(False, vis_identifier, current_day)
+        if not (i // sector_obs_per_day) % 2:
+            # Irrigate on odd days.
+            action = 1
+        else:
+            action = 0
+        obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -367,8 +386,7 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-    # seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
-    seed_config_path = None
+    seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
     randomize_seeds_cords_flag = False
 
     for i in range(args.tests):
@@ -426,6 +444,9 @@ if __name__ == '__main__':
             evaluate_baseline_compare_net(env, analytic_policy.policy, policy, collection_time_steps,
                                           sector_rows, sector_cols, prune_window_rows, prune_window_cols,
                                           garden_step, water_threshold, sector_obs_per_day, trial)
+        elif args.policy == 'p':
+            evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
+                                                     save_dir, vis_identifier)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']

@@ -4,7 +4,7 @@ from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
 from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
-
+import os
 import pickle
 import multiprocessing as mp
 import copy
@@ -13,7 +13,7 @@ import copy
 class Garden:
     def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
                  prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001, prune_rate=PRUNE_RATE,
-                 irr_threshold=5, init_water_mean=0.4, init_water_scale=0.1, plant_type = None,
+                 irr_threshold=9, init_water_mean=0.1, init_water_scale=0.04, plant_type = None,
                  skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
         Args:
@@ -66,7 +66,7 @@ class Garden:
         """
         if not garden_state:
             self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
-            self.grid['water'] = np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape)
+            self.grid['water'] = np.clip(np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape), 0, MAX_WATER_LEVEL)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
         else:
             self.grid = copy.deepcopy(garden_state.grid)
@@ -168,6 +168,9 @@ class Garden:
         self.water_use = []  #: List of float: water usage w.r.t sector.
         self.actions = []  #: List of Lists of int: actions per time step.
 
+        self.prune_coords = dict() # Coordinates to send the FarmBot to prune.
+        self.irr_coords = [] # List of coordinates to send the FarmBot to irrigate.
+
         # if save:
         # self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
 
@@ -260,6 +263,7 @@ class Garden:
         if irrigation > 0:
             self.irrigate(center, irrigation)
             self.irrigation_points[center] = irrigation
+            self.irr_coords.append(center)
 
     def perform_timestep_prune(self, center):
         """ Prune plants in given sector if certain amount of days have past.
@@ -278,7 +282,8 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
-        print('before', self.compute_plant_cc_dist())
+        self.prune_coords = dict()
+        self.irr_coords = []
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
@@ -293,7 +298,6 @@ class Garden:
         self.distribute_water()
         self.grow_plants()
         self.performing_timestep = True
-        print('after', self.compute_plant_cc_dist())
 
         for sector in sectors:
             self.update_plant_health(sector)
@@ -307,9 +311,81 @@ class Garden:
         self.save_water_use(water_use / len(sectors))
         self.actions.append(actions)
 
+        #GROWTH ANALYSIS
+        # folder = "textFiles/"
+        # # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
+        # p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
+        # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
+        # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
+        # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
+        # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
+        # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
+        # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
+        # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
+        # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
+        # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
+        # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
+        # for d in self.plants:
+        #     for p in d.values():
+        #         # print(p.type, p.radius, (p.row, p.col))
+
+        #         if p.type == 'borage':
+        #             num = b[p_type_ind[p.type]]
+        #         if p.type == 'sorrel':
+        #             num = s[p_type_ind[p.type]]
+        #         if p.type == 'cilantro':
+        #             num = c[p_type_ind[p.type]]
+        #         if p.type == 'radicchio':
+        #             num = r[p_type_ind[p.type]]
+        #         if p.type == 'kale':
+        #             num = k[p_type_ind[p.type]]
+        #         if p.type == 'green_lettuce':
+        #             num = g[p_type_ind[p.type]]
+        #         if p.type == 'red_lettuce':
+        #             num = rl[p_type_ind[p.type]]
+        #         if p.type == 'arugula':
+        #             num = a[p_type_ind[p.type]]
+        #         if p.type == 'swiss_chard':
+        #             num = sc[p_type_ind[p.type]]
+        #         if p.type == 'turnip':
+        #             num = t[p_type_ind[p.type]]
+
+        #         file_name = str(p.type) + str(num) + '.txt'
+
+        #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
+                    
+        #         if p_type_ind[p.type] == 5:
+        #             p_type_ind[p.type] = 0
+        #         elif p_type_ind[p.type] < 5:
+        #             p_type_ind[p.type] += 1
+                
+        #         file_list = os.listdir('/Users/mpreseten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
+
+        #         if file_name not in file_list:
+        #             fil = open(folder + file_name, "w+")
+        #             item = str(p.radius)
+        #             fil.write(item)
+        #             fil.close()
+        #         if file_name in file_list:
+        #             f = open(folder + file_name, "r")
+        #             item = f.read()
+        #             fil = open(folder + file_name, "w+")
+        #             item = str(item) + ", " + str(p.radius)
+        #             fil.write(item)
+        #             fil.close()
+        #END GROWTH ANALYSIS
+
+
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
         # print(self.get_health_grid((57, 57)))
         # print(">>>>>>>>>>>>>>>>>>>")
+
+        # UNCOMMENT FOR REAL->SIM->REAL PIPELINE TO SAVE COORDINATES TO SEND FARMBOT
+        # Save out pruning and irrigation coordinates.
+        coords_dirname = "Coords/"
+        if not os.path.exists(coords_dirname):    
+            os.makedirs(coords_dirname)
+        pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
 
         self.timestep += 1
         self.performing_timestep = True
@@ -328,16 +404,34 @@ class Garden:
             location (Array of [int,int]): Location [row, col] where to perform actions.
             amount (float) amount of water for location.
         """
+        # window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
+        #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
+        window_grid_size = np.pi * ((self.irr_threshold)**2) / 10000  # in square meters
+        gain = 1/32
+        # Start from outer radius
+        for radius in range(4,9)[::-1]:
+            # For each bounding box, check if the cubes are within the radius 
+            #       + add water from outer to center
+            lower_x = max(0, location[0] - radius)
+            upper_x = min(self.grid.shape[0], location[0] + radius + 1)
+            lower_y = max(0, location[1] - radius)
+            upper_y = min(self.grid.shape[1], location[1] + radius + 1)
+            for y in range(lower_y, upper_y):
+                for x in range(lower_x, upper_x):
+                    pt = [x, y]
+                    if np.sqrt((location[0] - pt[0])**2 + (location[1] - pt[1])**2) <= radius:
+                        self.grid[x, y]['water'] += gain * (amount / (window_grid_size * 0.35))
+            gain *= 2
+
+        # TODO: add distribution kernel for capillary action and spread of water jet
+        # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
+        # self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount / (
+        #             window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
         lower_x = max(0, location[0] - self.irr_threshold)
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        window_grid_size = (self.irr_threshold + self.irr_threshold + 1) * (
-                    self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
-        # TODO: add distribution kernel for capillary action and spread of water jet
-        # 0.001m^3/(0.11m * 0.11m * 0.35m) ~ 0,236 %
-        self.grid[lower_x:upper_x, lower_y:upper_y]['water'] += amount / (
-                    window_grid_size * 0.35)  # 0.0121m^2 * 0.35m depth
+        
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
@@ -423,12 +517,17 @@ class Garden:
                     if plant.amount_sunlight > 0:
                         water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
+                        plant.watered_day = self.timestep
                         point['water'] -= water_to_absorb
 
                     plant_types_and_ids.pop(i)
 
             # Water evaporation per square cm (grid point)
-            point['water'] = max(0, point['water'] - 0.01 * 0.01 * self.evaporation_rate)
+            if abs(plant.watered_day - self.timestep) <= 1:
+                evap_rate = 0.052
+            else:
+                evap_rate = 0.011
+            point['water'] = max(0, point['water'] - 0.01 * 0.01 * evap_rate)
 
     def grow_plants(self):
         """ Compute growth for each plant and update plant coverage."""
@@ -513,6 +612,7 @@ class Garden:
         distances = np.array(list(zip(*self.growth_map))[0])
         next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
         coords_updated = []
+        directions = []
         # Add grid point to “nearby” if it's within plants radius.
         if next_growth_index_plus_1 > plant.growth_index:
             for i in range(plant.growth_index + 1, next_growth_index_plus_1):
@@ -535,13 +635,20 @@ class Garden:
                     if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
                         if record_coords_updated:
                             coords_updated.append(point)
+                            dir_tup = [False, False]
+                            # If the point is completely vertical w.r.t a plant, we want to prune on both axes.
+                            if point[0] != plant.row:
+                                dir_tup[0] = True
+                            if point[1] != plant.col:
+                                dir_tup[1] = True
+                            directions.append(tuple(dir_tup))
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove((self.plant_types.index(plant.type), plant.id))
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] -= 1
                         if self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] < 0:
                             raise Exception("Cannot have negative leaf cover")
         plant.growth_index = next_growth_index_plus_1 - 1
-        return coords_updated
+        return coords_updated, directions
 
     def prune_plants(self):
         """ Prune tallest plants that are over threshold."""
@@ -675,7 +782,12 @@ class Garden:
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
             self.update_plant_size(plant, outward=-amount_to_prune)
-            self.update_plant_coverage(plant, record_coords_updated=True)
+            coords_updated, dir_tup = self.update_plant_coverage(plant, record_coords_updated=True)
+            coords_dirs = zip(coords_updated, dir_tup)
+            if plant.type in self.prune_coords:
+                self.prune_coords[plant.type].update(coords_dirs)
+            else:
+               self.prune_coords[plant.type] = set(coords_dirs) 
 
     def save_coverage_and_diversity(self):
         """ Calculate and update normalized entropy for diversity and total plant coverage"""

@@ -81,12 +81,15 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     garden_copy.perform_timestep(sectors_center, actions) # performs one timestep of the garden given the array of actions found from the previous loop
     cov = garden_copy.coverage[-1] #to get the most recent day's coverage
     div = garden_copy.diversity[-1] #to get the most recent day's diversity
-    global_div = garden_copy.global_diversity[-1] #to get the most recent day's global diversity
-    dirname = './prune_rate_metrics/'
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-    with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
-        pickle.dump([cov, div, global_div, actions, w1, w2], f)
+    mme1 = garden_copy.mme1[-1]
+    mme2 = garden_copy.mme2[-1]
+    # global_div = garden_copy.global_diversity[-1] #to get the most recent day's global diversity
+    # dirname = './prune_rate_metrics/'
+    # if not os.path.exists(dirname):
+    #     os.makedirs(dirname)
+    # with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
+    #     pickle.dump([cov, div, global_div, actions, w1, w2], f)
+    # return mme1, mme2 
     return cov, div
 
 
