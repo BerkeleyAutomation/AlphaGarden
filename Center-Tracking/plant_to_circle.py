@@ -284,6 +284,7 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
             extreme_pt = p
     center = (sum_x / len(color_points), sum_y / len(color_points))
     center = ((center[0] + old_center[0]) / 2, (center[1] + old_center[1]) / 2)
+    extreme_pt = max(color_points, key=lambda p: sq_distance(center, p))
     # extrema = get_extrema((round(center[0]), round(center[1])), path, radius)
     # r =  max([distance(center, pt) for pt in extrema])
     # r = distance(extreme_pt, center)

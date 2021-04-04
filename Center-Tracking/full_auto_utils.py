@@ -28,7 +28,7 @@ def logifunc_fix_a(x, k, R):
     return R / (1 + ((R-1)/1) * np.exp(-k*(x)))
 
 def inv_logifunc_fix_a(y, k , r):
-    return (np.log(R-y) - np.log(y(R-1))) / -k
+    return (np.log(r-y) - np.log(y(r-1))) / -k
     
 
 
@@ -96,10 +96,23 @@ def get_model_coeff(model_type: str, plant_name: str = '') -> list:
     return m[plant_name]
 
 
-def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple) -> tuple:
+def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwargs) -> tuple:
     # TODO: add gemination times
+    plant_type = kwargs.get("type", "kale")
     if day == 0:
         return (0, 10)
+    MAX_DIAMETER = {
+        "arugula": 500,
+        "borage": 500,
+        "cilantro": 376,
+        "green-lettuce": 400,
+        "kale": 500,
+        "radiccio": 245,
+        "red-lettuce": 204,
+        "sorrel": 500,
+        "swiss-chard": 376,
+        "turnip": 106
+    }
     # min_coef, max_coef = min_max_model_coefs
     # germ = 10
     # min_rad_cm, max_rad_cm = logifunc_fix_a(
@@ -107,7 +120,7 @@ def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple) -> tup
     # min_rad, max_rad = cm_radius_to_pixels(
     #     min_rad_cm), cm_radius_to_pixels(max_rad_cm)
     # return (min_rad, max_rad)
-    return (20, prev_rad+10)
+    return (30, min(prev_rad+10, MAX_DIAMETER[plant_type]/2))
 
 
 def init_priors(seed_placements: dict) -> dict:

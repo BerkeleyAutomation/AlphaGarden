@@ -19,8 +19,10 @@ def label_circles_BFS(path, show_res=False):
     print("BFS Fit for: "+path)
     priors = get_recent_priors()
     new_circles = {plant_type: [] for plant_type in priors.keys()}
+    # Iterate over each plant type
     for plant_type in priors.keys():
         old_circles = priors[plant_type]
+        # Get radius models
         rad_models = (get_model_coeff("min", plant_type),
                       get_model_coeff("max", plant_type))
         for circle in old_circles:
@@ -42,10 +44,12 @@ def label_circles_BFS(path, show_res=False):
                     r = 0
             except ZeroDivisionError:
                 traceback.print_exc() 
-                r, c, max_p = prev_rad, center, center
+                #TODO ADD WILTING LOGIC
+                r, c, max_p = prev_rad, center, circle["circle"][2]
             new_c["circle"], new_c["days_post_germ"] = (c, r, max_p), day
             computed_type = COLORS_TO_TYPES[find_color(c, get_img(path)[1])[0]]
             new_circles[computed_type if computed_type in new_circles.keys() else "radiccio"].append(new_c)
+
     date = path[path.find("-2")+1:path.find("-2")+7]
     save_priors(new_circles, date)
     circles_dict = save_circles(new_circles, date)
