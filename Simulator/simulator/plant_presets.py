@@ -64,6 +64,7 @@ def _compute_from_table_values(
     r_max = max(1, np.random.normal(MAX_RADIUS[name][0], MAX_RADIUS[name][1]))
     # r_max = MAX_RADIUS[name][0] + MAX_RADIUS[name][1]
     growth_time = generate_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2)
+    print(name, r_max, growth_time)
 
     return {
         "germination_time": germination_time,

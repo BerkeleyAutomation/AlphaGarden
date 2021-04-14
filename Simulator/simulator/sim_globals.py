@@ -11,7 +11,7 @@ PRUNE_RATE = 0.15
 NUM_IRR_ACTIONS = 1
 IRR_THRESHOLD = 9  # unit size to calculate irrigation window.
 
-NUM_PLANTS = 60 
+NUM_PLANTS = 100 
 ROWS = 150
 COLS = 150
 

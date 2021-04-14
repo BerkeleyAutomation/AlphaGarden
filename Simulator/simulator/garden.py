@@ -179,6 +179,8 @@ class Garden:
                 for plant in plant_type.values():
                     self.update_plant_coverage(plant)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+        
+        self.radius_tracker = []
 
     def add_plant(self, plant):
         """ Add plants to garden's grid locations.
@@ -282,12 +284,8 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
-<<<<<<< HEAD
-        print('garden.py pr', self.prune_rate)
-=======
         self.prune_coords = dict()
         self.irr_coords = []
->>>>>>> master
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
@@ -314,6 +312,14 @@ class Garden:
         self.save_coverage_and_diversity()
         self.save_water_use(water_use / len(sectors))
         self.actions.append(actions)
+
+        # for d in self.plants:
+        #     for p in d.values():
+        #         print(p.type, p.radius, (p.row, p.col))
+        #         self.radius_tracker.append(p.radius)
+        #         if self.timestep == 99:
+        #             filename = p.type + "_radius_curve"
+        #             pickle.dump(self.radius_tracker, open(filename + ".pkl", "wb"))
 
         #GROWTH ANALYSIS
         # folder = "textFiles/"
@@ -386,10 +392,10 @@ class Garden:
 
         # UNCOMMENT FOR REAL->SIM->REAL PIPELINE TO SAVE COORDINATES TO SEND FARMBOT
         # Save out pruning and irrigation coordinates.
-        coords_dirname = "Coords/"
-        if not os.path.exists(coords_dirname):    
-            os.makedirs(coords_dirname)
-        pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
+        # coords_dirname = "Coords/"
+        # if not os.path.exists(coords_dirname):    
+        #     os.makedirs(coords_dirname)
+        # pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
 
         self.timestep += 1
         self.performing_timestep = True
