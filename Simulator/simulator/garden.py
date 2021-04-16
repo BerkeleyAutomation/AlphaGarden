@@ -284,6 +284,7 @@ class Garden:
         water_use = 0
         self.prune_coords = dict()
         self.irr_coords = []
+
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
@@ -296,6 +297,8 @@ class Garden:
                 self.perform_timestep_prune(sectors[i])
         self.distribute_light()
         self.distribute_water()
+        self.calculate_vacancy()
+
         self.grow_plants()
         self.performing_timestep = True
 
@@ -309,7 +312,6 @@ class Garden:
         # self.save_step()
         self.save_coverage_and_diversity()
         self.save_water_use(water_use / len(sectors))
-        self.calculate_vacancy()
         self.actions.append(actions)
 
         #GROWTH ANALYSIS
@@ -554,7 +556,6 @@ class Garden:
         self.logger.log(Event.WATER_ABSORBED, plant.id, plant.water_amt)
         self.logger.log(Event.RADIUS_UPDATED, plant.id, plant.radius)
         self.logger.log(Event.HEIGHT_UPDATED, plant.id, plant.height)
-
         plant.reset()
 
         # if prev_radius < next_line_dist and plant.radius >= next_line_dist:
@@ -1043,22 +1044,50 @@ class Garden:
         """
         Computes the vacancy score for a single point on the grid
         """
-        def eucl_dist(x1, y1, x2, y2, radius):
-            return max(0, ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5 - radius)
-
-
-        def vacancy(x, y):
-            minimum_dist = float('inf')
-            for plant_type in self.plants:
-                for key, plant in plant_type.items():
-                    minimum_dist = min(minimum_dist, eucl_dist(x, y, plant.row, plant.col, plant.radius))
-                    if minimum_dist == 0:
-                         return 0
-            return min(minimum_dist, x + 1, self.N - x, y + 1, self.M - y)
 
         indices = np.where(np.all(self.leaf_grid == 0, axis=-1))
         locations = np.vstack((indices[0], indices[1])).T
 
+        def calc_look_ahead(plant):
+            look_ahead = 10 #number of days to look ahead
+            curr_stage = plant.current_stage()
+            first_stage = min(curr_stage.duration - curr_stage.current_time, look_ahead) #time in the first stage
+            second_stage = look_ahead - first_stage #time in the next stage
+            growth = 0
+            if plant.stage_index == 0:
+                 growth += plant.current_stage().start_radius
+            else:
+                growth += curr_stage.amount_to_grow()[1] * first_stage
+            growth += plant.stages[plant.stage_index + 1].amount_to_grow()[1] * second_stage
+
+            return plant.row, plant.col, plant.radius + growth
+
+        plants = []
+        for plant_type in self.plants:
+            for key, plant in plant_type.items():
+                plants.append(calc_look_ahead(plant))
+
         self.grid["vacancy"] = np.zeros((self.N, self.M))
-        for i, j in locations:
-            self.grid["vacancy"][i, j] = vacancy(i, j)
+        with mp.Pool(processes=2) as pool:
+            for i in pool.imap_unordered(vacancy, [[loc, plants, self.N, self.M] for loc in locations]):
+                self.grid["vacancy"][i[1], i[2]] = i[0]
+        # mp.set_start_method('spawn')
+        # processes = [mp.Process(target=vacancy, args=(loc, self.grid["vacancy"], self.plants, self.N, self.M)) for loc in locations]
+        # for p in processes:
+        #     p.start()
+        #
+        # for p in processes:
+        #     p.join()
+
+def vacancy(obj):
+    loc, plants, N, M = obj
+    def eucl_dist(x1, y1, x2, y2, radius):
+        return max(0, ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5 - radius)
+
+    x, y = loc
+    minimum_dist = float('inf')
+    for plant in plants:
+            minimum_dist = min(minimum_dist, eucl_dist(x, y, plant[0], plant[1], plant[2]))
+            if minimum_dist == 0:
+                return 0, x, y
+    return min(minimum_dist, x + 1, N - x, y + 1, M - y), x, y
