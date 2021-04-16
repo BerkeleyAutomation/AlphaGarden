@@ -1048,24 +1048,17 @@ class Garden:
         indices = np.where(np.all(self.leaf_grid == 0, axis=-1))
         locations = np.vstack((indices[0], indices[1])).T
 
-        def calc_look_ahead(plant):
-            look_ahead = 10 #number of days to look ahead
-            curr_stage = plant.current_stage()
-            first_stage = min(curr_stage.duration - curr_stage.current_time, look_ahead) #time in the first stage
-            second_stage = look_ahead - first_stage #time in the next stage
-            growth = 0
-            if plant.stage_index == 0:
-                 growth += plant.current_stage().start_radius
-            else:
-                growth += curr_stage.amount_to_grow()[1] * first_stage
-            growth += plant.stages[plant.stage_index + 1].amount_to_grow()[1] * second_stage
 
-            return plant.row, plant.col, plant.radius + growth
 
-        plants = []
+        base_plants = []
         for plant_type in self.plants:
             for key, plant in plant_type.items():
-                plants.append(calc_look_ahead(plant))
+                base_plants.append(plant)
+
+        plants = []
+        with mp.Pool(processes=2) as pool:
+            for i in pool.imap_unordered(calc_look_ahead, base_plants):
+                plants.append(i)
 
         self.grid["vacancy"] = np.zeros((self.N, self.M))
         with mp.Pool(processes=2) as pool:
@@ -1091,3 +1084,17 @@ def vacancy(obj):
             if minimum_dist == 0:
                 return 0, x, y
     return min(minimum_dist, x + 1, N - x, y + 1, M - y), x, y
+
+def calc_look_ahead(plant):
+    look_ahead = 10 #number of days to look ahead
+    curr_stage = plant.current_stage()
+    first_stage = min(curr_stage.duration - curr_stage.current_time, look_ahead) #time in the first stage
+    second_stage = look_ahead - first_stage #time in the next stage
+    growth = 0
+    if plant.stage_index == 0:
+         growth += plant.current_stage().start_radius
+    else:
+        growth += curr_stage.amount_to_grow()[1] * first_stage
+    growth += plant.stages[plant.stage_index + 1].amount_to_grow()[1] * second_stage
+
+    return plant.row, plant.col, plant.radius + growth
