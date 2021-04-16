@@ -1043,32 +1043,22 @@ class Garden:
         """
         Computes the vacancy score for a single point on the grid
         """
+        def eucl_dist(x1, y1, x2, y2, radius):
+            return max(0, ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5 - radius)
+
+
+        def vacancy(x, y):
+            minimum_dist = float('inf')
+            for plant_type in self.plants:
+                for key, plant in plant_type.items():
+                    minimum_dist = min(minimum_dist, eucl_dist(x, y, plant.row, plant.col, plant.radius))
+                    if minimum_dist == 0:
+                         return 0
+            return min(minimum_dist, x + 1, self.N - x, y + 1, self.M - y)
 
         indices = np.where(np.all(self.leaf_grid == 0, axis=-1))
         locations = np.vstack((indices[0], indices[1])).T
 
-        with mp.Pool(processes=16) as pool:
-            for i in pool.imap_unordered(vacancy, [[loc, self.plants, self.N, self.M] for loc in locations]):
-                self.grid["vacancy"][i[1], i[2]] = i[0]
-
-        # mp.set_start_method('spawn')
-        # processes = [mp.Process(target=vacancy, args=(loc, self.grid["vacancy"], self.plants, self.N, self.M)) for loc in locations]
-        # for p in processes:
-        #     p.start()
-        #
-        # for p in processes:
-        #     p.join()
-
-def vacancy(obj):
-    loc, plants, N, M = obj
-    def eucl_dist(x1, y1, x2, y2, radius):
-        return max(0, ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5 - radius)
-    x, y = loc
-    minimum_dist = float('inf')
-    for plant_type in plants:
-        for key, plant in plant_type.items():
-            minimum_dist = min(minimum_dist, eucl_dist(x, y, plant.row, plant.col, plant.radius))
-            if minimum_dist == 0:
-                return 0
-    # return
-    return min(minimum_dist, x + 1, N - x, y + 1, M - y), x, y
+        self.grid["vacancy"] = np.zeros((self.N, self.M))
+        for i, j in locations:
+            self.grid["vacancy"][i, j] = vacancy(i, j)
