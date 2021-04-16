@@ -7,6 +7,7 @@ from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT
 import simalphagarden
 import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
+import simulator.baselines.dynamic_planting_policy as dynamic_planting_policy
 from net import Net
 from constants import TrainingConstants
 import numpy as np
@@ -215,7 +216,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                 for irr_amt in irrigation_amounts:
                     for pr_i in range(len(prune_rates)):
                         garden_state = env.get_simulator_state_copy()
-                        cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                        cov, div = wrapper_policy.wrapperPolicy(env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                                     sector_obs_per_day, garden_state, prune_rates[pr_i], irr_amt,
                                     vectorized=False)
@@ -246,6 +247,77 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     # f = open("./policy_metrics/prs.txt", "a")
     # f.write("Prune Rates: "+ str(prune_rates_order))
     # f.close()
+    metrics = env.get_metrics()
+    save_data(metrics, trial, save_dir)
+
+def evaluate_dynamic_planting_policy(env, policy, collection_time_steps, sector_rows, sector_cols, 
+                            prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                            sector_obs_per_day, trial, save_dir, vis_identifier):
+    obs = env.reset()
+    all_actions = []
+    new_sector_obs_per_day = -1
+    new_collection_time_steps = 0
+
+    i = 0
+    current_day = 0
+    obs_day_counter = 0
+    planted = 0
+    get_prune_rate = False
+    while i < collection_time_steps:
+        if obs_day_counter == sector_obs_per_day:
+            planted = 0
+            print(new_sector_obs_per_day, new_collection_time_steps)
+            if new_sector_obs_per_day != -1:
+                sector_obs_per_day = new_sector_obs_per_day
+                collection_time_steps += new_collection_time_steps
+                new_collection_time_steps = 0
+            obs_day_counter = 0
+            current_day += 1
+            print("Day {}/{}".format(current_day, 100))
+            vis.get_canopy_image_full(False, vis_identifier, current_day)
+            
+            get_prune_rate = True
+        cc_vec = env.get_global_cc_vec()
+
+        # The wrapper policy starts after the PRUNE_DELAY
+        if get_prune_rate and current_day >= PRUNE_DELAY:
+            # At every new day, the wrapper runs through the day's garden to find the best prune rate and irrigation level for that day
+            if obs_day_counter == 0:
+                pr = 0
+                prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
+                irrigation_amounts = [0.002]
+                mmes = []
+                for irr_amt in irrigation_amounts:
+                    for pr_i in range(len(prune_rates)):
+                        garden_state = env.get_simulator_state_copy()
+                        mme1, _ = wrapper_policy.wrapperPolicy(env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                                    prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
+                                    sector_obs_per_day, garden_state, prune_rates[pr_i], irr_amt,
+                                    vectorized=False, return_mme=True)
+                        mmes.append((mme1, (prune_rates[pr_i], irr_amt)))
+                        # cv.append((mme2, (prune_rates[pr_i], irr_amt)))
+                pr = mmes[np.argmax([result[0] for result in mmes])][1][0]
+                ir = mmes[np.argmax([result[0] for result in mmes])][1][1]
+                env.set_prune_rate(pr)
+                env.set_irrigation_amount(ir)
+                get_prune_rate = False
+        
+        action, new_plants = policy(current_day, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
+                    prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
+                    sector_obs_per_day, vectorized=False, can_plant=planted<5)
+        if new_plants:
+            planted += 1
+        all_actions.append(action)
+        obs, rewards, _, _ = env.step(action)
+        temp_sector_obs_per_day, collection_time_steps_to_add = \
+            env.add_plants(new_plants, garden_days, sector_obs_per_day, collection_time_steps)
+
+        new_sector_obs_per_day = max(new_sector_obs_per_day, temp_sector_obs_per_day)
+        new_collection_time_steps += collection_time_steps_to_add
+            
+        i += 1
+        obs_day_counter += 1
+
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -386,7 +458,8 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-    seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
+    # seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
+    seed_config_path = None
     randomize_seeds_cords_flag = False
 
     for i in range(args.tests):
@@ -424,6 +497,10 @@ if __name__ == '__main__':
                                         sector_obs_per_day, trial)
             else:
                 evaluate_analytic_policy_serial(env, analytic_policy.policy, True, collection_time_steps, sector_rows, sector_cols,
+                                        prune_window_rows, prune_window_cols, garden_step, water_threshold,
+                                        sector_obs_per_day, trial, save_dir, vis_identifier)
+        elif args.policy == 'bp':
+                evaluate_dynamic_planting_policy(env, dynamic_planting_policy.policy, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'n':

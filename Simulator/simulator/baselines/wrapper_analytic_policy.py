@@ -21,9 +21,9 @@ import multiprocessing as mp
 import time
 from simulator.garden import Garden
 
-def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
+def wrapperPolicy(env, row, col, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day, garden_state, prune_rate, irrigation_amount,
-           vectorized=True, val=False):
+           vectorized=True, val=False, return_mme=False):
     """ Perform baseline policy with pruning and irrigation action.
 
     Args
@@ -59,7 +59,9 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     # each day process 
 
     np.random.seed(0)
-    garden_copy = copy_garden(garden_state=garden_state, rows=row, cols=col, sector_row= sector_rows, sector_col= sector_cols, prune_win_rows=prune_window_rows, prune_win_cols=prune_window_cols, step=step, prune_rate=prune_rate)
+    garden_copy = copy_garden(garden_state=garden_state, rows=row, cols=col, sector_row=sector_rows,
+                              sector_col=sector_cols, prune_win_rows=prune_window_rows,
+                              prune_win_cols=prune_window_cols, step=step, prune_rate=prune_rate)
     garden_copy.set_irrigation_amount(irrigation_amount)
     plant_type_obj = garden_copy.plant_type_obj
     plant_centers = plant_type_obj.plant_centers
@@ -73,9 +75,9 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
         sectors_center.append(rand_sector[0])
         # else:
         #     rand_sector = sectors_state[j]
-        action = analytic_policy.policy(timestep, rand_sector[1:], cc_vec, sector_rows, sector_cols, prune_window_rows,
-                    prune_window_cols, step, water_threshold, num_irr_actions,
-                    sector_obs_per_day, vectorized=False)[0]
+        action = analytic_policy.policy(timestep, rand_sector[1:], cc_vec, sector_rows, sector_cols,
+                                        prune_window_rows, prune_window_cols, step, water_threshold,
+                                        num_irr_actions, sector_obs_per_day, vectorized=False)[0]
         actions.append(action)
 
     garden_copy.perform_timestep(sectors_center, actions) # performs one timestep of the garden given the array of actions found from the previous loop
@@ -89,7 +91,8 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     #     os.makedirs(dirname)
     # with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
     #     pickle.dump([cov, div, global_div, actions, w1, w2], f)
-    # return mme1, mme2 
+    if return_mme:
+        return mme1, mme2
     return cov, div
 
 
@@ -156,7 +159,9 @@ def garden_to_sector(garden, plant_centers, non_plant_centers, rows, cols, step)
     return center_to_sample, global_cc_vec, \
         np.dstack((garden.get_plant_prob(center_to_sample),
                     garden.get_water_grid(center_to_sample),
-                    garden.get_health_grid(center_to_sample))), \
+                    garden.get_health_grid(center_to_sample),
+                    garden.get_vacancy_grid(center_to_sample))), \
         np.dstack((garden.get_plant_prob_full(),
                     garden.get_water_grid_full(),
-                    garden.get_health_grid_full()))
+                    garden.get_health_grid_full(),
+                    garden.get_vacancy_grid_full()))

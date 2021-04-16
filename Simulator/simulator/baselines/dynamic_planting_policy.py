@@ -1,6 +1,6 @@
 import numpy as np
-from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED, ROWS, COLS
-
+from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED, ROWS, COLS, DYNAMIC_PLANTING_DELAY
+from numpy import random
 
 def plant_in_area(plants, r, c, w, h, plant_idx):
     """ Check if any plants are within defined area and the total plant probability.
@@ -121,9 +121,9 @@ def overwatered_contribution(health, water):
         w += water[row, col]
     return w
 
-def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
+def policy(day, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day,
-           vectorized=True, eval=False):
+           vectorized=True, eval=False, can_plant=True):
     """ Perform baseline policy with pruning and irrigation action.
 
     Args
@@ -159,11 +159,26 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     plants = plants_and_water[:,:,:-3]
     water_grid = plants_and_water[:,:,-3]
     health = plants_and_water[:,:,-2]
+    vacancy = plants_and_water[:,:,-1]
     
     action = 0
     
+    new_plants = [] # [(type, coord)]
+    # Find areas to plant.
+    if day > DYNAMIC_PLANTING_DELAY and can_plant:
+        # print(np.amax(vacancy))
+        if np.amax(vacancy) >= 8:
+            smallest_plant_type = np.argmin(global_cc_vec[1:])
+            highest_vacancy_location = np.unravel_index(vacancy.argmax(), vacancy.shape)
+            print(np.amax(vacancy), (smallest_plant_type, highest_vacancy_location))
+            new_plants.append((smallest_plant_type, highest_vacancy_location))
+
+    # x = random.rand()
+    # if x < 0.03:
+    #     new_plants.append((1, (3, 5)))
+    
     # Prune
-    if timestep > PRUNE_DELAY * sector_obs_per_day:
+    if day > PRUNE_DELAY:
         prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
         violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}
@@ -180,10 +195,10 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     water_irr_square = get_irr_square(water_grid, center)
     # Don't irrigate if sector only has dead plants, no plants, or wilting plants
     if only_dead_plants(health_irr_square):
-        return [action]
+        return action, new_plants
     # Irrigate
     if has_underwatered(health_irr_square):
-        return [action + 1]
+        return action + 1, new_plants
 
     sector_water = np.sum(water_grid)
     maximum_water_potential = sector_rows * sector_cols * MAX_WATER_LEVEL * step * water_threshold
@@ -192,4 +207,4 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     if sector_water < maximum_water_potential:
         action += 1
     
-    return [action]
+    return action, new_plants

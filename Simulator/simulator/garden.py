@@ -3,11 +3,12 @@ from heapq import nlargest
 from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
-from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
+from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE, DYNAMIC_PLANTING_DELAY
 import os
 import pickle
 import multiprocessing as mp
 import copy
+from PIL import Image, ImageDraw
 
 
 class Garden:
@@ -65,7 +66,7 @@ class Garden:
         First dimension is horizontal, second is vertical
         """
         if not garden_state:
-            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
+            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('vacancy', "i")])
             self.grid['water'] = np.clip(np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape), 0, MAX_WATER_LEVEL)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
         else:
@@ -120,6 +121,12 @@ class Garden:
         percentage calculated as self.prune_threshold / number of plant types in the garden.
         '''
         self.prune_threshold = PRUNE_THRESHOLD
+
+        '''
+        Amount of days to wait after simulation start before planting more seeds after initial seeds
+        have been planted.
+        '''
+        self.dynamic_planting_delay = DYNAMIC_PLANTING_DELAY
 
         #: Time step of simulation.
         if not garden_state:
@@ -212,7 +219,7 @@ class Garden:
 
     def set_prune_rate(self, prune_rate):
         """ Modifies the garden's prune rate.
-        
+
         Args:
             prune_rate (float)
         """
@@ -220,7 +227,7 @@ class Garden:
 
     def set_irrigation_amount(self, irrigation_amount):
         """ Modifies the garden's irrigation amount.
-        
+
         Args:
             irrigation_amount (float)
         """
@@ -273,11 +280,20 @@ class Garden:
         if self.timestep >= self.prune_delay:
             self.prune_sector_center(center)
 
-    def perform_timestep(self, sectors=[], actions=[]):
+    def perform_timestep_plant(self, plant):
+        """ Seeds plants in given locations.
+        Args:
+            plant (Plant object): plant to add.
+        """
+        if self.timestep >= self.dynamic_planting_delay:
+            self.add_plant(plant)
+
+    def perform_timestep(self, sectors=[], actions=[], new_plants=[]):
         """ Execute actions at given locations then update light, water, growth and health time step of simulation.
         Args:
             sectors (Array of [int,int]): Locations [row, col] where to perform actions.
             actions (List of int): Actions to perform.
+            new_plants (Array of (int, (int, int))): New plants and lcoations to seed.
         Return:
             List of updated plant objects.
         """
@@ -294,6 +310,9 @@ class Garden:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
                 self.perform_timestep_prune(sectors[i])
+        print('new_plants:', new_plants)
+        for plant in new_plants:
+            self.perform_timestep_plant(plant)
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
@@ -309,6 +328,7 @@ class Garden:
         # self.save_step()
         self.save_coverage_and_diversity()
         self.save_water_use(water_use / len(sectors))
+        self.calculate_vacancy()
         self.actions.append(actions)
 
         #GROWTH ANALYSIS
@@ -353,12 +373,12 @@ class Garden:
         #         file_name = str(p.type) + str(num) + '.txt'
 
         #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
-                    
+
         #         if p_type_ind[p.type] == 5:
         #             p_type_ind[p.type] = 0
         #         elif p_type_ind[p.type] < 5:
         #             p_type_ind[p.type] += 1
-                
+
         #         file_list = os.listdir('/Users/mpreseten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
 
         #         if file_name not in file_list:
@@ -383,7 +403,7 @@ class Garden:
         # UNCOMMENT FOR REAL->SIM->REAL PIPELINE TO SAVE COORDINATES TO SEND FARMBOT
         # Save out pruning and irrigation coordinates.
         coords_dirname = "Coords/"
-        if not os.path.exists(coords_dirname):    
+        if not os.path.exists(coords_dirname):
             os.makedirs(coords_dirname)
         pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
 
@@ -410,7 +430,7 @@ class Garden:
         gain = 1/32
         # Start from outer radius
         for radius in range(4,9)[::-1]:
-            # For each bounding box, check if the cubes are within the radius 
+            # For each bounding box, check if the cubes are within the radius
             #       + add water from outer to center
             lower_x = max(0, location[0] - radius)
             upper_x = min(self.grid.shape[0], location[0] + radius + 1)
@@ -431,7 +451,7 @@ class Garden:
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        
+
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
@@ -787,7 +807,7 @@ class Garden:
             if plant.type in self.prune_coords:
                 self.prune_coords[plant.type].update(coords_dirs)
             else:
-               self.prune_coords[plant.type] = set(coords_dirs) 
+               self.prune_coords[plant.type] = set(coords_dirs)
 
     def save_coverage_and_diversity(self):
         """ Calculate and update normalized entropy for diversity and total plant coverage"""
@@ -864,7 +884,8 @@ class Garden:
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid, self.health_grid))
+        self.vacancy_grid = np.expand_dims(self.grid['vacancy'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid, self.health_grid, self.vacancy_grid))
 
     def get_radius_grid(self):
         """ Get grid for plant radius representation.
@@ -975,13 +996,41 @@ class Garden:
 
         temp = np.pad(np.copy(self.plant_prob), ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
         return temp[x_low:x_high + 1, y_low:y_high, :]
-    
+
     def get_plant_prob_full(self):
         """ Get grid with plant probabilities for entire garden
         Return
             Array with plant probabilities for entire garden.
         """
         return self.plant_prob
+
+    def get_vacancy_grid(self, center):
+        """ Get padded vacancy gird for sector.
+        Args
+            center (Array of [int,int]): Location [row, col] of sector center.
+        Return
+            Array with vacancy grid for padded sector.
+        """
+        self.vacancy_grid = np.expand_dims(self.grid['vacancy'], axis=2)
+        row_pad = self.sector_rows // 2
+        col_pad = self.sector_cols // 2
+        x_low, y_low, x_high, y_high = self.get_sector_bounds(center)
+        x_low += row_pad
+        y_low += col_pad
+        x_high += row_pad
+        y_high += col_pad
+
+        temp = np.pad(np.copy(self.vacancy_grid), \
+                      ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
+        return temp[x_low:x_high + 1, y_low:y_high, :]
+
+    def get_vacancy_grid_full(self):
+        """ Get vacancy grid for entire garden
+        Return
+            Array with vacancy scores for entire garden.
+        """
+        self.vacancy_grid = np.expand_dims(self.grid['vacancy'], axis=2)
+        return self.vacancy_grid
 
     def get_cc_per_plant(self):
         """ Get number of grid points per plant type in which the specific plant type is the highest plant.
@@ -997,11 +1046,12 @@ class Garden:
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
+        self.vacancy_grid = np.expand_dims(self.grid['vacancy'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid, self.vacancy_grid))
 
     def get_simulator_state_copy(self):
        """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.
-       
+
        Return
            Stacked array of deep copies of plants, water, health, plant probabilities, leaf and plant types.
        """
@@ -1033,3 +1083,30 @@ class Garden:
             print(
                 "[Garden] Nothing to save. Set save=True when initializing to allow saving info of garden!")
     """
+
+    """
+    computes the vacancy score for all points on the grid.
+    """
+
+    def calculate_vacancy(self):
+        """
+        Computes the vacancy score for a single point on the grid
+        """
+        def eucl_dist(x1, y1, x2, y2, radius):
+            return max(0, ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5 - radius)
+
+
+        def vacancy(x, y):
+            minimum_dist = float('inf')
+            for plant_type in self.plants:
+                for key, plant in plant_type.items():
+                    minimum_dist = min(minimum_dist, eucl_dist(x, y, plant.row, plant.col, plant.radius))
+            return min(minimum_dist, x + 1, self.N - x, y + 1, self.M - y)
+
+
+        for i in range(self.N):
+            for j in range(self.M):
+                if np.all(self.leaf_grid[i, j]) != 0:
+                    self.grid["vacancy"][i, j] = 0
+                else:
+                    self.grid["vacancy"][i, j] = vacancy(i, j)

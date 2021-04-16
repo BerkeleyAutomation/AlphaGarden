@@ -114,7 +114,6 @@ class SimAlphaGardenEnv(gym.Env):
     def show_animation(self):
         return self.wrapper_env.show_animation()
 
-    def render(self, mode='human', close=False):
-        print(f'Step: {self.current_step}')
-        print(f'Reward: {self.reward}')
+    def add_plants(self, new_plants, garden_days, sector_obs_per_day, collection_time_steps):
+        return self.wrapper_env.add_plants(self.sector, new_plants, garden_days, sector_obs_per_day, collection_time_steps)
         

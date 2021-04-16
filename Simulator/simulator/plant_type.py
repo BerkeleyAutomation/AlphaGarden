@@ -14,6 +14,7 @@ class PlantType:
         self.plant_centers = []  #: location of plants in garden
         self.non_plant_centers = []  #: additional coordinates without plants
         self.plant_in_bounds = 0 #: int: count of plant centers in bound.
+        self.plants = [] #: Plant objects in garden.
 
     def get_plant_seeds(self, seed, rows, cols, sector_rows, sector_cols, randomize_seed_coords=True,
                         plant_seed_config_file_path=None, start_from_germination=True,
@@ -34,7 +35,7 @@ class PlantType:
         self.non_plant_centers = []
         
         np.random.seed(seed)
-        plants = []
+        self.plants = []
         sector_rows_half = sector_rows // 2
         sector_cols_half = sector_cols // 2
         PLANTS = ['borage', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce', 'arugula',
@@ -62,7 +63,7 @@ class PlantType:
                     coords.remove((r, c))
                 l = labels[i] # Atsu's version with numeric label
                 plant_type = PLANTS[l] # Atsu's version with numeric label
-                plants.append(Plant.from_preset(plant_type, r, c))  # Atsu's version with numeric label
+                self.plants.append(Plant.from_preset(plant_type, r, c))  # Atsu's version with numeric label
                 #plants.append(Plant.from_preset(plant_type[i], r, c))
                 self.plant_in_bounds += 1
                 self.plant_centers.append(tuple((r, c)))
@@ -71,7 +72,7 @@ class PlantType:
                for plant in existing_data[plant_type]:
                    r, c = plant[0]
                    cur_radius = plant[1]
-                   plants.append(Plant.from_preset(plant_type, r, c, beginning=False,
+                   self.plants.append(Plant.from_preset(plant_type, r, c, beginning=False,
                                                    timestep=timestep, cur_radius=cur_radius)) 
                    self.plant_in_bounds += 1
                    self.plant_centers.append(tuple((r, c)))
@@ -86,7 +87,7 @@ class PlantType:
                 growth_time, germination_length = generate_growth_time(
                     plant['germination_time'], plant['maturation_time'], plant['r_max'],
                     plant['start_radius'], plant['k2'], plant['c2'])
-                plants.extend([Plant(r, c, c1=plant['c1'], growth_time=growth_time,
+                self.plants.extend([Plant(r, c, c1=plant['c1'], growth_time=growth_time,
                                      max_radius=plant['r_max'], start_radius=plant['start_radius'],
                                      germination_time=germination_length, color=plant['color'],
                                      plant_type=name, stopping_color=plant['stopping_color'],
@@ -95,9 +96,9 @@ class PlantType:
                 self.plant_centers.append(tuple((r, c)))
 
 
-        for plant in plants:
+        for plant in self.plants:
             cf = 0.0
-            for companion_plant in plants:
+            for companion_plant in self.plants:
                 if plant == companion_plant:
                     continue
                 companionship_factor_list = PLANTS_RELATION[plant.type]
@@ -109,4 +110,17 @@ class PlantType:
             plant.companionship_factor = max(0.0, 1.0 + cf)
         self.non_plant_centers = [c for c in coords if in_bounds(c[0], c[1])]
 
-        return plants
+    def add_plant(self, plant_id, r, c):
+        name, plant = self.plant_types[plant_id]
+        growth_time, germination_length = generate_growth_time(
+            plant['germination_time'], plant['maturation_time'], plant['r_max'],
+            plant['start_radius'], plant['k2'], plant['c2'])
+        plant = Plant(r, c, c1=plant['c1'], growth_time=growth_time,
+                                max_radius=plant['r_max'], start_radius=plant['start_radius'],
+                                germination_time=germination_length, color=plant['color'],
+                                plant_type=name, stopping_color=plant['stopping_color'],
+                                color_step=plant['color_step'])
+        self.plants.extend([plant])
+        self.plant_in_bounds += 1
+        self.plant_centers.append(tuple((r, c)))
+        return plant

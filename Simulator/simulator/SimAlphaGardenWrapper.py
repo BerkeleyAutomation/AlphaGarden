@@ -6,7 +6,7 @@ import configparser
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
-from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS
+from simulator.sim_globals import MAX_WATER_LEVEL, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, DYNAMIC_PLANTING_DELAY
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
@@ -55,6 +55,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.reset()  #: Reset simulator.
 
         self.curr_action = -1  #: int: Current action selected. 0 = no action, 1 = irrigation, 2 = pruning
+        self.new_plants = [] #: Array of (int, (int, int)): Locations to plant new seeds.
 
         #: Configuration file parser for reinforcement learning with gym.
         self.config = configparser.ConfigParser()
@@ -65,9 +66,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             1: MAX_WATER_LEVEL,
         }
 
-        self.plant_centers_original = []  #: Array of [int,int]: Initial seed locations [row, col].
         self.plant_centers = []  #: Array of [int,int]: Seed locations [row, col] for sectors.
-        self.non_plant_centers_original = []  #: Array of [int,int]: Initial locations without seeds [row, col].
         self.non_plant_centers = []  #: Array of [int,int]: Locations without seeds [row, col] for sectors.
 
         self.centers_to_execute = []  #: Array of [int,int]: Locations [row, col] where to perform actions.
@@ -111,7 +110,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """
         np.random.shuffle(self.non_plant_centers)
         return np.concatenate(
-            (self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
+            (self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * len(self.PlantType.plants))]))
 
     def get_center_state(self, center, image=True, eval=False):
         """Get state of the sector defined by all local and global quantities.
@@ -173,10 +172,12 @@ class SimAlphaGardenWrapper(WrapperEnv):
         return center_to_sample, global_cc_vec, \
             np.dstack((self.garden.get_plant_prob(center_to_sample),
                        self.garden.get_water_grid(center_to_sample),
-                       self.garden.get_health_grid(center_to_sample))), \
+                       self.garden.get_health_grid(center_to_sample),
+                       self.garden.get_vacancy_grid(center_to_sample))), \
             np.dstack((self.garden.get_plant_prob_full(),
                        self.garden.get_water_grid_full(),
-                       self.garden.get_health_grid_full()))
+                       self.garden.get_health_grid_full(),
+                       self.garden.get_vacancy_grid_full()))
 
     def get_canopy_image(self, center, eval):
         """Get image for canopy cover of the garden and save image to specified directory.
@@ -287,6 +288,53 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # TODO: update reward calculation for new state
         return 0
 
+    def in_garden(self, x, y):
+        """ Returns whether or not coordinates are in the bounds of the garden.
+        
+        Args:
+            x coordinate to check
+            y coordinate to check
+            
+        Returns:
+            True or False
+        """
+        return x >= 0 and x < ROWS and y >= 0 and y < COLS
+
+    def add_plants(self, center, new_plants, garden_days, sector_obs_per_day, collection_time_steps):
+        """
+        Adds plants to the wrapper's PlantType object and new_plants list.
+        
+        Args:
+            center: sector center that was sampled to obtain new plant coordinates.
+            new_plants: (int, (int, int)) plant id, plant location to add/
+            garden_days: the number of days we are running the simulation for.
+    
+        Returns:
+            recomputed secotr_obs_per_day and collection_time_steps for next day with new number
+                of plants.
+        """
+        if self.garden.timestep >= DYNAMIC_PLANTING_DELAY:
+            # Translate sector coordinates to garden coordinates
+            sector_top_left_x = center[0] - (SECTOR_ROWS // 2)
+            sector_top_left_y = center[1] - (SECTOR_COLS // 2)
+            
+            plants_added = 0
+            for n in new_plants:
+                plant_type = n[0]
+                plant_coords = n[1]
+                plant_x = plant_coords[0] + sector_top_left_x
+                plant_y = plant_coords[1] + sector_top_left_y
+                # We pad the garden with zeros, so only append plants within garden bounds.
+                if self.in_garden(plant_x, plant_y) and (plant_x, plant_y) not in self.PlantType.plant_centers:
+                    self.new_plants.append(self.PlantType.add_plant(plant_type, plant_x, plant_y))
+                    plants_added += 1
+            
+            sector_obs_per_day = int(len(self.PlantType.plants) + self.orig_percent_non_centers)
+            # Return the amount of collection time steps to add.
+            collection_time_steps_to_add = plants_added * (garden_days - (self.garden.timestep + 1))
+            return sector_obs_per_day, collection_time_steps_to_add
+        return sector_obs_per_day, 0
+
     def take_action(self, center, action, time_step, eval=False):
         """Method called by the gym environment to execute an action.
 
@@ -317,7 +365,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         # Save canopy image before performing a time step.
         # if True:
-        # sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
+        # sector_obs_per_day = int(len(self.PlantType.plants) + PERCENT_NON_PLANT_CENTERS * len(self.PlantType.plants))
         # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
         if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
@@ -337,18 +385,20 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.actions_to_execute.append(self.curr_action)
 
         # We want PERCENT_NON_PLANT_CENTERS of samples to come from non plant centers
-        if len(self.actions_to_execute) < self.PlantType.plant_in_bounds + int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS):
+        if len(self.actions_to_execute) < self.prev_plant_in_bounds + self.orig_percent_non_centers:
             if eval:
                 return out, self.get_full_state()
             return self.get_full_state()
 
         # Execute actions only if we have reached the number of actions threshold.
         self.garden.perform_timestep(
-            sectors=self.centers_to_execute, actions=self.actions_to_execute)
+            sectors=self.centers_to_execute, actions=self.actions_to_execute, new_plants=self.new_plants)
         self.actions_to_execute = []
         self.centers_to_execute = []
-        self.plant_centers = np.copy(self.plant_centers_original)
-        self.non_plant_centers = np.copy(self.non_plant_centers_original)
+        self.new_plants = []
+        self.plant_centers = np.copy(self.PlantType.plant_centers)
+        self.non_plant_centers = np.copy(self.PlantType.non_plant_centers)
+        self.prev_plant_in_bounds = self.PlantType.plant_in_bounds
         if eval:
             return out, self.get_full_state()
         return self.get_full_state()
@@ -365,11 +415,12 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def reset(self):
         """Method called by the gym environment to reset the simulator."""
+        self.PlantType.get_plant_seeds(self.seed, self.rows, self.cols, self.sector_rows,
+                                                      self.sector_cols, randomize_seed_coords=self.randomize_seed_coords,
+                                                      plant_seed_config_file_path=self.plant_seed_config_file_path)
         self.garden = \
             Garden(
-                plants=self.PlantType.get_plant_seeds(self.seed, self.rows, self.cols, self.sector_rows,
-                                                      self.sector_cols, randomize_seed_coords=self.randomize_seed_coords,
-                                                      plant_seed_config_file_path=self.plant_seed_config_file_path),
+                plants=self.PlantType.plants,
                 N=self.rows,
                 M=self.cols,
                 sector_rows=self.sector_rows,
@@ -382,10 +433,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 animate=False)
         ''' Uncomment line below to load from a garden file. '''
         # self.garden, self.PlantType = pickle.load(open("garden_copy.pkl", "rb"))
-        self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
-        self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)
         self.non_plant_centers = np.copy(self.PlantType.non_plant_centers)
+        self.prev_plant_in_bounds = self.PlantType.plant_in_bounds
+        self.orig_percent_non_centers = PERCENT_NON_PLANT_CENTERS * len(self.PlantType.plants)
 
     def show_animation(self):
         """Method called by the environment to display animations."""
