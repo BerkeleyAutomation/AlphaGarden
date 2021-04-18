@@ -304,7 +304,7 @@ def evaluate_dynamic_planting_policy(env, policy, collection_time_steps, sector_
         
         action, new_plants = policy(current_day, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                    sector_obs_per_day, vectorized=False, can_plant=planted<5)
+                    sector_obs_per_day, vectorized=False, can_plant=planted<1)
         if new_plants:
             planted += 1
         all_actions.append(action)

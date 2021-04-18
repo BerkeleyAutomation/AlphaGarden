@@ -1101,12 +1101,13 @@ class Garden:
             for plant_type in self.plants:
                 for key, plant in plant_type.items():
                     minimum_dist = min(minimum_dist, eucl_dist(x, y, plant.row, plant.col, plant.radius))
+                    if minimum_dist == 0:
+                         return 0
             return min(minimum_dist, x + 1, self.N - x, y + 1, self.M - y)
 
+        indices = np.where(np.all(self.leaf_grid == 0, axis=-1))
+        locations = np.vstack((indices[0], indices[1])).T
 
-        for i in range(self.N):
-            for j in range(self.M):
-                if np.all(self.leaf_grid[i, j]) != 0:
-                    self.grid["vacancy"][i, j] = 0
-                else:
-                    self.grid["vacancy"][i, j] = vacancy(i, j)
+        self.grid["vacancy"] = np.zeros((self.N, self.M))
+        for i, j in locations:
+            self.grid["vacancy"][i, j] = vacancy(i, j)
