@@ -150,7 +150,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     """
     # Get rid of full garden observations
     if eval:
-        state = state[:-2]
+        state = state[:-1]
         plants_and_water = state
     else:
         plants_and_water = state[1]
