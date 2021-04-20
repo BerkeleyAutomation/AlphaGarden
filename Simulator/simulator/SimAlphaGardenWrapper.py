@@ -6,17 +6,19 @@ import configparser
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
-from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS
+from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS, SECTOR_COLS, SECTOR_ROWS
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
 import io
 import pickle
+import scipy.cluster.hierarchy as hcluster
+from sklearn.neighbors import NearestCentroid
 
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols, seed=None, step=1, dir_path="", randomize_seed_coords=False,
+                 prune_window_cols,adaptive,  seed=None, step=1, dir_path="", randomize_seed_coords=False,
                  plant_seed_config_file_path=None):
         """AlphaGarden's wrapper for Gym, inheriting basic functions from the WrapperEnv.
 
@@ -39,6 +41,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         super(SimAlphaGardenWrapper, self).__init__(max_time_steps)
         self.rows = rows
         self.cols = cols
+        self.adaptive = adaptive
 
         #: int: Number of sectors (representing the area observable to the agent at time t) in garden.
         self.num_sectors = (rows * cols) / (sector_rows * sector_cols)
@@ -75,7 +78,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         self.plant_radii = []  #: List of tuples (str, float): Tuple containing plant type it's plant radius.
         self.plant_heights = []  #: List of tuples (str, float): Tuple containing plant type it's plant height.
-
         self.dir_path = dir_path
 
     def get_state(self, multi=False):
@@ -110,8 +112,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         """
         np.random.shuffle(self.non_plant_centers)
-        return np.concatenate(
-            (self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
+        # TODO: UNCOMMENT FOR NO PLANTS
+        return self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]
+        # return np.concatenate(
+        #     (self.plant_centers, self.non_plant_centers[:int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)]))
 
     def get_center_state(self, center, image=True, eval=False):
         """Get state of the sector defined by all local and global quantities.
@@ -139,6 +143,91 @@ class SimAlphaGardenWrapper(WrapperEnv):
                           self.garden.get_water_grid(center),
                           self.garden.get_health_grid(center)))
 
+    def naive_centroid(self, arr):
+        """ Find the centroid for a set of points
+
+        Args:
+            arr (numpy array of [[int,int], ...]): Set of points to cluster
+        Returns:
+            (1,2) numpy array for the centroid
+        """
+        length = arr.shape[0]
+        sum_x = np.sum(arr[:, 0])
+        sum_y = np.sum(arr[:, 1])
+        return np.array((sum_x/length, sum_y/length)).reshape((1,2))
+
+    def find_point_clusters(self, points, thresh, name = 1):
+        """ Find the Centroids for a given set of points by distance threshold
+
+        Args:
+            points: (numpy array with each element(col,row))): Set of points to cluster
+            thresh (float): Max distance for clustering
+        
+        Returns:
+            numpy array of centers for the clusters
+        """
+        if len(points) > 1:
+            clusters = hcluster.fclusterdata(points, thresh, criterion="distance")
+            unique = len(np.unique(clusters))
+            if unique > 1:
+                clf = NearestCentroid()
+                clf.fit(points,clusters)
+                return clf.centroids_
+            elif unique == 1:
+                return self.naive_centroid(points)
+        elif len(points) == 1:
+            return points
+        return np.empty((0,2),dtype=np.int)
+
+    def cluster_all_plant_centers(self, plants, grow_thresh = 2, germination_thresh = 8, prune_thresh = 2.5):
+        """ Find all centroids for plants and their growing and germination thresholds
+
+        Args:
+            plants: The plants array from a garden instance
+            grow_thresh (float): Maximum distance for plants in the growth stage
+            germination_thresh (float): Maximum distance for points in germination stage
+        
+        Returns:
+            numpy array of optimal centers to water for the given plantset
+        """
+        # Split all the plants into growth and germination for the decision tree process
+        all_plants = [plant for plant_type in plants for plant in plant_type.values()]
+        growth_plants = [plant for plant in all_plants if isinstance(plant.current_stage(), GrowthStage) ]
+        germination_plants = [plant for plant in all_plants if isinstance(plant.current_stage(), GerminationStage)]
+        prune_plants = []        
+        centers = np.empty((0,2), dtype=np.int)
+    
+        # Generate clusters for growing plants
+        growing_plant_coords = np.array([(plant.row,plant.col) for plant in growth_plants])
+        centers =  np.concatenate((centers,
+                self.find_point_clusters(growing_plant_coords, grow_thresh, name = "grow"))).astype(np.int)
+        
+        # Find all germination points that fall within the growth clusters and remove them
+        remove_idx = []
+        for i, p in enumerate(germination_plants):
+            potential = list(map(lambda c: (p.row-c[0])*(p.row-c[0]) + (p.col-c[1])*(p.col-c[1]), centers))
+            if len(potential) > 0 and np.min(potential) <= germination_thresh * germination_thresh:                
+                remove_idx.append(i)
+        germination_plants = np.delete(germination_plants, remove_idx, axis = 0)
+
+        # Generate clusters for remaining germination plants
+        germinating_plant_coords = np.array([(plant.row,plant.col) for plant in germination_plants])
+        centers =  np.concatenate((centers,
+                self.find_point_clusters(germinating_plant_coords, germination_thresh, name = "germ"))).astype(np.int)
+        
+        remove_idx = []
+        for i, p in enumerate(prune_plants):
+            potential = list(map(lambda c: (p.row-c[0])*(p.row-c[0]) + (p.col-c[1])*(p.col-c[1]), centers))
+            if len(potential) > 0 and np.min(potential) <= prune_thresh * prune_thresh:                
+                remove_idx.append(i)
+        prune_plants = np.delete(prune_plants, remove_idx, axis = 0)
+        pruning_plant_coords = np.array([(plant.row,plant.col) for plant in prune_plants])
+        centers =  np.concatenate((centers,
+                self.find_point_clusters(pruning_plant_coords, prune_thresh, name = "prune"))).astype(np.int)
+
+        print(f'cl{len(centers)}')
+        return centers
+
     def get_data_collection_state(self, multi=False):
         """Get state of a random sector defined by all local and global quantities.
 
@@ -151,16 +240,34 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """
         np.random.seed(random.randint(0, 99999999))
         # TODO: don't need plant_in_bounds anymore.  Remove.
-        if len(self.actions_to_execute) <= self.PlantType.plant_in_bounds and len(self.plant_centers) > 0:
-            np.random.shuffle(self.plant_centers)
-            center_to_sample = self.plant_centers[0]
-            if not multi:
-                self.plant_centers = self.plant_centers[1:]
+        if not self.adaptive:
+            if len(self.actions_to_execute) <= self.PlantType.plant_in_bounds and len(self.plant_centers) > 0:
+                np.random.shuffle(self.plant_centers)
+                center_to_sample = self.plant_centers[0]
+                if not multi:
+                    self.plant_centers = self.plant_centers[1:]
+            else:
+                np.random.shuffle(self.non_plant_centers)
+                center_to_sample = self.non_plant_centers[0]
+                if not multi:
+                    self.non_plant_centers = self.non_plant_centers[1:]
         else:
-            np.random.shuffle(self.non_plant_centers)
-            center_to_sample = self.non_plant_centers[0]
-            if not multi:
-                self.non_plant_centers = self.non_plant_centers[1:]
+            if not self.filled_step_plants:
+                self.clusters_timestep = self.cluster_all_plant_centers(self.garden.plants)
+                self.day_steps = len(self.clusters_timestep)
+                self.filled_step_plants = True
+            if len(self.clusters_timestep) > 0:
+                center_to_sample = self.clusters_timestep[0]
+                if not multi:
+                    self.clusters_timestep = self.clusters_timestep[1:]
+                    self.day_steps-=1
+            else:
+                print('debug')
+                self.day_steps = 1
+                np.random.shuffle(self.non_plant_centers)
+                center_to_sample = self.non_plant_centers[0]
+                if not multi:
+                    self.non_plant_centers = self.non_plant_centers[1:]
 
         # Uncomment to make method for 2 plants deterministic
         # center_to_sample = (7, 15) 
@@ -177,8 +284,69 @@ class SimAlphaGardenWrapper(WrapperEnv):
             np.dstack((self.garden.get_plant_prob_full(),
                        self.garden.get_water_grid_full(),
                        self.garden.get_health_grid_full()))
+    def get_used_sectors(self, sec_list):
+        # main_sectors = [(i,j) for i in range(0, SECTOR_ROWS, ROWS) for j in range(0, SECTOR_COLS, COLS)]
+        """
+        Get a set of (x,y) coordinates where the sector_centers are located.
 
-    def get_canopy_image(self, center, eval):
+        Args:
+            sec_list: List of centers_to_execute coordinates
+        
+        Returns:
+            Set of sector centers to use for drawings
+        """
+        used_sec = np.zeros((len(sec_list), 2,2))
+        for i, s in enumerate(sec_list):
+            left_top = (max(0,int(s[0]-SECTOR_ROWS/2)),max(0,int(s[1]-SECTOR_COLS/2)))
+            used_sec[i] = left_top, np.add(left_top,(SECTOR_ROWS,SECTOR_COLS))
+        return used_sec
+    
+    def get_plant_sector_intersection(self, sectors, plants):
+        """
+        Get a list of all the plant locations that are contained within sectors
+
+        Args:
+            sectors: list of (left_top coord, bottom right coord) values representing locations for rectangles
+            plants: list of (x,y) coordinates for plant center locations
+        
+        Returns:
+            List of plant centers contained within sectors
+        """
+        total = set()
+        plants = np.array(plants)
+        for sector in sectors:
+            idx = np.all(np.logical_and(sector[0] <= plants, plants <= sector[1]), axis = 1)
+            total.update([tuple(x) for x in plants[idx]])
+        return total
+
+    def enumerate_sector_locations(self, coords, count = False):
+        """
+        Get a set of sector locations (simple sector count instead of coordinates). 
+        Can also return a dictionary that tells the number of repetitions in centers_to_execute for a sector
+
+        Args:
+            coords: list of coordinates to arrange
+            count (bool): whether to keep track of counts
+
+        Returns:
+            If count is True, returns a dictionary for each coordinate set with key coordinate, value as counts
+            If count is False, returns a set of sector indices
+        """
+        if count:
+            used_sec = {}
+        else:
+            used_sec = set()
+        for s in coords:
+            val = (max(0,(s[0]//SECTOR_ROWS)),max(0,(s[1]//SECTOR_COLS)))
+            if count:
+                if not val in used_sec:
+                    used_sec[val] = []
+                used_sec[val].append(s)
+            else:
+                used_sec.add(val)
+        return used_sec
+
+    def get_canopy_image(self, center, eval, test =False, centers = None):
         """Get image for canopy cover of the garden and save image to specified directory.
 
         Note:
@@ -204,6 +372,14 @@ class SimAlphaGardenWrapper(WrapperEnv):
         ax.set_aspect('equal')
         ax.axis('off')
         shapes = []
+        if test:
+            print(len(self.centers_to_execute))
+        if not centers:
+            centers = self.centers_to_execute
+        for s in centers:
+            shape = plt.Rectangle((max(0,int(s[1]-SECTOR_COLS/2)),max(0,int(s[0]-SECTOR_ROWS/2)))*self.garden.step,SECTOR_COLS,SECTOR_ROWS, color = "#614e94")
+            shape_plot = ax.add_artist(shape)
+            shapes.append(shape_plot)
         for plant in sorted([plant for plant_type in self.garden.plants for plant in plant_type.values()],
                             key=lambda x: x.height, reverse=False):
             if x_low <= plant.row <= x_high and y_low <= plant.col <= y_high:
@@ -218,7 +394,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             r = os.urandom(16)
             file_path = dir_path + '/' + ''.join('%02x' % ord(chr(x)) for x in r)
             # file_path = dir_path + 'images/' + ''.join('%02x' % ord(chr(x)) for x in r)
-            plt.savefig(file_path + '_cc.png', bbox_inches=bbox0)
+            fig.savefig(file_path + '_cc.png', bbox_inches=bbox0)
             plt.close()
             return file_path
         else:
@@ -229,8 +405,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
             img = np.reshape(np.frombuffer(buf.getvalue(), dtype=np.uint8), newshape=(373, 373, -1))
             img = img[..., :3]
             buf.close()
-            plt.close()
-            return img
+            plt.close() 
+            return fig
 
     def plot_water_map(self, folder_path, water_grid, plants):
         plt.axis('off')
@@ -286,8 +462,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # return (cc_coef * total_cc) + (0 * entropy) + water_coef * np.sum(-1 * water_used/action_sum + 1)
         # TODO: update reward calculation for new state
         return 0
-
-    def take_action(self, center, action, time_step, eval=False):
+    def take_action(self, center, action, time_step, eval=False, day_complete = False):
         """Method called by the gym environment to execute an action.
 
         Args:
@@ -317,10 +492,13 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
         # Save canopy image before performing a time step.
         # if True:
-        sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
-        if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
-        # if self.curr_action >= 0:
-            out = self.get_canopy_image(center, eval)
+        # sector_obs_per_day = int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
+        # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
+        self.centers_to_execute.append(center)
+        self.actions_to_execute.append(self.curr_action)
+
+        if self.curr_action >= 0:
+            out = self.get_canopy_image(center, eval, centers=self.centers_to_execute)
             if not eval:
                 path = out
                 # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
@@ -333,22 +511,58 @@ class SimAlphaGardenWrapper(WrapperEnv):
             self.plant_heights = []
             self.plant_radii = []
 
-        self.centers_to_execute.append(center)
-        self.actions_to_execute.append(self.curr_action)
-
         # We want PERCENT_NON_PLANT_CENTERS of samples to come from non plant centers
-        if len(self.actions_to_execute) < self.PlantType.plant_in_bounds + int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS):
+        if not day_complete:
             if eval:
                 return out, self.get_full_state()
             return self.get_full_state()
-
+        self.img_save_out = out
         # Execute actions only if we have reached the number of actions threshold.
+        
+        print(f'fin{len(self.centers_to_execute)}')
+
+        # Calculate before timestep height and radius stats
+        sector_grid_bounds = self.get_used_sectors(self.centers_to_execute)
+        plant_locations = []
+        init_plant_height_rad = np.zeros((ROWS,COLS,2))
+        for types in self.garden.plants:
+            for plant in types.values():
+                loc = (plant.row,plant.col)
+                init_plant_height_rad[loc] = (plant.height, plant.radius)
+        
+        # Perform the timestep
         self.garden.perform_timestep(
             sectors=self.centers_to_execute, actions=self.actions_to_execute)
+
+        # Calculate after timestep percent changes for plant in and out of sectors (radius and height)
+        plant_locations.clear()
+        percent_plant_height_rad = np.zeros((ROWS,COLS,2))
+        for types in self.garden.plants:
+            for plant in types.values():
+                loc = (plant.row,plant.col)
+                plant_locations.append(loc)
+                sub = np.subtract((plant.height,plant.radius),init_plant_height_rad[loc])
+                percent = []
+                for x,vals in enumerate(zip(init_plant_height_rad[loc], sub)):
+                    initial, sub = vals
+                    if initial == 0:
+                        if sub == 0:
+                            percent.append(0)
+                        else:
+                            percent.append(1)
+                    else:
+                        percent.append(sub/initial)
+                percent_plant_height_rad[loc] = percent
+        intersection_plants = self.get_plant_sector_intersection(sector_grid_bounds, plant_locations)
+        growth_sector_plants = np.array([percent_plant_height_rad[coord] for coord in intersection_plants])
+        growth_oos_plants = np.array([percent_plant_height_rad[coord] for coord in set(plant_locations).difference(intersection_plants)])
+        self.growth_rate_sectors.append((growth_sector_plants,growth_oos_plants))
+
         self.actions_to_execute = []
         self.centers_to_execute = []
         self.plant_centers = np.copy(self.plant_centers_original)
         self.non_plant_centers = np.copy(self.non_plant_centers_original)
+        self.filled_step_plants = False
         if eval:
             return out, self.get_full_state()
         return self.get_full_state()
@@ -386,6 +600,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.plant_centers = np.copy(self.PlantType.plant_centers)
         self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)
         self.non_plant_centers = np.copy(self.PlantType.non_plant_centers)
+        self.growth_rate_sectors = []
+        self.filled_step_plants = False
 
     def show_animation(self):
         """Method called by the environment to display animations."""
@@ -407,17 +623,20 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """
         self.garden.set_irrigation_amount(irrigation_amount)
 
-    def get_metrics(self):
+    def get_metrics(self, ret_sector_stat = False):
         """Evaluate metrics of garden.
 
         Return:
             Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
         """
-        return self.garden.coverage, self.garden.diversity, self.garden.water_use, \
-            self.garden.actions, self.garden.mme1, self.garden.mme2
+        ret = [self.garden.coverage, self.garden.diversity, self.garden.water_use, \
+                self.garden.actions, self.garden.mme1, self.garden.mme2]
+        if ret_sector_stat:
+            ret.append(self.growth_rate_sectors)
+        return tuple(ret)
 
     def get_prune_window_greatest_width(self, center):
-        """Get the radius of the tallest (non occluded) plant inside prune window.
+        """Get the radius of the tallest (non occluded) plant insFide prune window.
 
         Args:
             center (Array of [int,int]): Location [row, col] of sector center.

@@ -21,9 +21,12 @@ build/
 *.egg
 Learning/images/
 Learining/textFiles/
+Learning/adaptive_policy_data
+Learning/output
+Learning/policy_metrics
 fixed/
 Center-Tracking/figures/
 Center-Tracking/image_not_test/
 Center-Tracking/images/
-
-
+**/Pillow/
+**dump.json

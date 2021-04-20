@@ -17,6 +17,7 @@ import os
 import multiprocessing as mp
 import time
 from simulator.garden import Garden
+import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tests', type=int, default=1)
@@ -27,18 +28,20 @@ parser.add_argument('-p', '--policy', type=str, default='ba', help='[ba|bw|n|l|i
 parser.add_argument('--multi', action='store_true', help='Enable multiprocessing.')
 parser.add_argument('-l', '--threshold', type=float, default=1.0)
 parser.add_argument('-d', '--days', type=int, default=100)
+parser.add_argument('-c', '--centers', type=int, default=100)
 parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
 parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
+parser.add_argument('--adaptive', action='store_true', help='Use Adaptive Sector Sampling')
 args = parser.parse_args()
 
 def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
              prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
-             garden_step, num_plant_types, seed, multi=False, randomize_seed_coords=False,
+             garden_step, num_plant_types, seed, adaptive, multi=False, randomize_seed_coords=False,
              plant_seed_config_file_path=None):
     env = gym.make(
         'simalphagarden-v0',
         wrapper_env=SimAlphaGardenWrapper(garden_time_steps, rows, cols, sector_rows,
-                                          sector_cols, prune_window_rows, prune_window_cols,
+                                          sector_cols, prune_window_rows, prune_window_cols, adaptive,
                                           step=garden_step, seed=seed, randomize_seed_coords=randomize_seed_coords,
                                           plant_seed_config_file_path=plant_seed_config_file_path),
         garden_x=rows,
@@ -186,21 +189,34 @@ def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_ro
     
 def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                            sector_obs_per_day, trial, save_dir, vis_identifier):
+                            sector_obs_per_day, trial, save_dir, vis_identifier, adaptive):
     wrapper = wrapper_sel # If wrapper_sel is True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
     prune_rates_order = []
     irrigation_amounts_order = []
     obs = env.reset()
     div_cov = []
     all_actions = []
-    for i in range(collection_time_steps):
-        if i % sector_obs_per_day == 0:
-            current_day = int(i/sector_obs_per_day) + 1
+    days = []
+    wrp = env.wrapper_env
+    if adaptive:
+        timesteps = wrp.day_steps
+        days.append(timesteps)
+        day_start = True
+    current_day = 0
+    dt = datetime.datetime.now().strftime("%m%d%Y%H%M%S")
+    i = 0
+    print(sector_obs_per_day)
+    while (timesteps >=0) if adaptive else (i < collection_time_steps):
+        if day_start if adaptive else i%sector_obs_per_day == 0:
+            current_day = (i+1) if adaptive else (i//sector_obs_per_day + 1) #TODO: UNCOMMNET
             print("Day {}/{}".format(current_day, 100))
             vis.get_canopy_image_full(False, vis_identifier, current_day)
+            sectors_list = []
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
+            day_start = False
         cc_vec = env.get_global_cc_vec()
+
         # The wrapper policy starts after the PRUNE_DELAY
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
             # At every new day, the wrapper runs through the day's garden to find the best prune rate and irrigation level for that day
@@ -233,21 +249,52 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                 wrapper_day_set = False
         action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                    sector_obs_per_day, vectorized=False)[0]
+                    sector_obs_per_day, vectorized=False, prune_ready = current_day>PRUNE_DELAY)[0]
         all_actions.append(action)
-        obs, rewards, _, _ = env.step(action)
-        if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
-            cov, div, water, act, mme1, mme2 = env.get_metrics()
+        obs, rewards, _, _ = env.step(action,day_complete = timesteps==0  if adaptive else (i+1) % sector_obs_per_day == 0)
+        try:
+            f = env.wrapper_env.img_save_out
+        except:
+            f = None
+        if f:
+            p = os.path.join(env.wrapper_env.dir_path, "Pillow", "full", "sector", dt)
+            if not os.path.exists(p):
+                os.makedirs(p)
+            f.savefig(os.path.join(p,f'{current_day}_s.png'), bbox_inches = f.get_tightbbox(f.canvas.get_renderer()).padded(0.02))
+            env.wrapper_env.img_save_out = None
+        if (timesteps == 0 and i > 0) if adaptive else (i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False):
+            cov, div, water, act, mme1, mme2, percents = env.get_metrics(ret_sector_stat = True)
+            percent = percents[-1]
+            height_sec = 0 if len(percent[0]) == 0 else np.mean(percent[0][:,0])
+            height_oos = 0 if len(percent[1]) == 0 else np.mean(percent[1][:,0]) 
+            rad_sec =  0 if len(percent[0]) == 0 else np.mean(percent[0][:,1])
+            rad_oos = 0 if len(percent[1]) == 0 else  np.mean(percent[1][:,1]) 
             div_cov_day = cov[-1] * div[-1]
+            # print(f'div: {div[-1]}, cov {cov[-1]}, hsec,oos: {height_sec}, {height_oos}, radsec,oos: {rad_sec}, {rad_oos}')
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
+        if adaptive:
+            timesteps-=1
+            if timesteps < 0:
+                if i == collection_time_steps//sector_obs_per_day - 1:
+                    timesteps = -1
+                    print(days)
+                else:
+                    day_start = True
+                    i+=1
+                    timesteps = wrp.day_steps
+                    days.append(timesteps)
+        else:
+            i+=1
+
+
     # dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
     # if not os.path.exists(dirname):    
     #     os.makedirs(dirname)
     # f = open("./policy_metrics/prs.txt", "a")
     # f.write("Prune Rates: "+ str(prune_rates_order))
     # f.close()
-    metrics = env.get_metrics()
-    save_data(metrics, trial, save_dir)
+    metrics = env.get_metrics(ret_sector_stat = True)
+    save_data(metrics, trial, save_dir, mt = True)
 
 def evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
                                              save_dir, vis_identifier):
@@ -331,13 +378,17 @@ def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_t
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def save_data(metrics, trial, save_dir):
+def save_data(metrics, trial, save_dir, mt = False):
     dirname = os.path.dirname(save_dir)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     with open(save_dir + 'data_' + str(trial) + '.pkl', 'wb') as f:
         pickle.dump(metrics, f)
-    coverage, diversity, water_use, actions, mme1, mme2 = metrics
+    if mt:
+        coverage, diversity, water_use, actions, mme1, mme2, percents = metrics
+    else:
+        coverage, diversity, water_use, actions, mme1, mme2 = metrics
+    
     fig, ax = plt.subplots()
     ax.set_ylim([0, 1])
     plt.plot(coverage, label='Coverage')
@@ -355,6 +406,35 @@ def save_data(metrics, trial, save_dir):
     plt.plot(water_use, label='water use')
     plt.legend()
     plt.savefig(save_dir + 'water_use_' + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
+    if mt:
+        plt.clf()
+        percents = np.array(percents)
+        steps = np.arange(len(percents))
+
+        # Plot Heights
+        height_sec =  np.array([0 if len(percent[0]) == 0 else np.mean(percent[0][:,0]) for percent in percents])
+        height_oos =  np.array([ 0 if len(percent[1]) == 0 else np.mean(percent[1][:,0]) for percent in percents])
+        height_sec_std =  np.array([0 if len(percent[0]) == 0 else np.std(percent[0][:,0]) for percent in percents])
+        height_oos_std =  np.array([0 if len(percent[1]) == 0 else np.std(percent[1][:,0]) for percent in percents])
+        plt.plot(steps, height_sec, label="Sector height")
+        plt.fill_between(steps,height_sec-height_sec_std,height_sec+height_sec_std,alpha=0.1)
+        plt.plot(steps, height_oos, label="OOS height")
+        plt.fill_between(steps,height_oos-height_oos_std,height_oos+height_oos_std,alpha=0.1)
+        plt.legend()
+        plt.savefig(save_dir + "growth_height_" + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
+        plt.clf()
+
+        # Plot Radii
+        rad_sec =  np.array([0 if len(percent[0]) == 0 else np.mean(percent[0][:,1]) for percent in percents])
+        rad_oos =  np.array([0 if len(percent[1]) == 0 else np.mean(percent[1][:,1]) for percent in percents])
+        rad_sec_std = np.array([0 if len(percent[0]) == 0 else np.std(percent[0][:,1]) for percent in percents])
+        rad_oos_std =  np.array([0 if len(percent[1]) == 0 else np.std(percent[1][:,1]) for percent in percents])
+        plt.plot(steps, rad_sec, label="Sector rad")
+        plt.fill_between(steps,rad_sec-rad_sec_std,rad_sec+rad_sec_std,alpha=0.1)
+        plt.plot(steps, rad_oos, label="OOS rad")
+        plt.fill_between(steps,rad_oos-rad_oos_std,rad_oos+rad_oos_std,alpha=0.1)
+        plt.legend()
+        plt.savefig(save_dir + "growth_rad_" + str(trial) + '.png', bbox_inches='tight', pad_inches=0.02)
     plt.close()
 
 if __name__ == '__main__':
@@ -378,7 +458,8 @@ if __name__ == '__main__':
     obs_high = rows * cols
 
     garden_days = args.days
-    sector_obs_per_day = int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
+    sector_obs_per_day = args.centers
+    # int(NUM_PLANTS + PERCENT_NON_PLANT_CENTERS * NUM_PLANTS) #int(PERCENT_NON_PLANT_CENTERS * NUM_PLANTS)
     collection_time_steps = sector_obs_per_day * garden_days  # 210 sectors observed/garden_day * 200 garden_days
     water_threshold = args.water_threshold
     naive_water_freq = 2
@@ -386,14 +467,14 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-    seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
+    seed_config_path = None
     randomize_seeds_cords_flag = False
 
     for i in range(args.tests):
         trial = i + 1
         seed = args.seed + i
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                       action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
+                       action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,args.adaptive,
                        randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
 
         # vis = Matplotlib_Visualizer(env.wrapper_env)
@@ -412,7 +493,7 @@ if __name__ == '__main__':
             else:
                 evaluate_analytic_policy_serial(env, analytic_policy.policy, False, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial, save_dir, vis_identifier)
+                                        sector_obs_per_day, trial, save_dir, vis_identifier, args.adaptive)
         elif args.policy == 'bw':
             if args.multi:
                 env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,

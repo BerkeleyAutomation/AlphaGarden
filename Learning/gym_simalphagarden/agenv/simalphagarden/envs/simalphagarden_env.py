@@ -54,8 +54,8 @@ class SimAlphaGardenEnv(gym.Env):
         self.global_cc_vec = self.global_cc_vec.reshape((self.num_plant_types + 1, 1))
         return [self.global_cc_vec, sector_obs, full_obs]
 
-    def _take_action(self, sector, action, eval=False):
-        return self.wrapper_env.take_action(sector, action, self.current_step, eval)
+    def _take_action(self, sector, action, eval=False, day_complete = False):
+        return self.wrapper_env.take_action(sector, action, self.current_step, eval, day_complete = day_complete)
 
     def get_current_step(self):
         return self.current_step
@@ -69,8 +69,8 @@ class SimAlphaGardenEnv(gym.Env):
     def get_global_cc_vec(self):
         return self.global_cc_vec
     
-    def step(self, action):
-        state = self._take_action(self.sector, action, self.eval)
+    def step(self, action, day_complete = False):
+        state = self._take_action(self.sector, action, self.eval, day_complete=day_complete)
         if self.eval:
             self.curr_img, state = state
         self.reward = self.wrapper_env.reward(state)
@@ -96,8 +96,8 @@ class SimAlphaGardenEnv(gym.Env):
     def get_radius_grid(self):
         return self.wrapper_env.get_radius_grid()
 
-    def get_metrics(self):
-        return self.wrapper_env.get_metrics()
+    def get_metrics(self, **kwargs):
+        return self.wrapper_env.get_metrics(**kwargs)
 
     def get_simulator_state_copy(self):
         return self.wrapper_env.get_simulator_state_copy()

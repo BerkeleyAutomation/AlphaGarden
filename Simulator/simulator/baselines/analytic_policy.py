@@ -123,7 +123,7 @@ def overwatered_contribution(health, water):
 
 def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day,
-           vectorized=True, eval=False):
+           vectorized=True, eval=False, prune_ready = False):
     """ Perform baseline policy with pruning and irrigation action.
 
     Args
@@ -163,7 +163,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     action = 0
     
     # Prune
-    if timestep > PRUNE_DELAY * sector_obs_per_day:
+    if prune_ready:
         prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
         violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}

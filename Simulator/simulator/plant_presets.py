@@ -28,9 +28,6 @@ def get_r_max(v):
     r_max = (v / 2)
     return r_max
 
-
-MAX_RADIUS = {}
-
 def _compute_from_table_values(
     name="plant", color=(0/255, 128/255, 0/255),
     germination_time=(3, 1), 
@@ -39,8 +36,7 @@ def _compute_from_table_values(
     stopping_color=(0, 0, 1),
     color_step=(10/255, 0, 0),
     c1=0.1,
-    r_0=0.04,
-    MAX_RADIUS = MAX_RADIUS
+    r_0=0.04
     ):
     """
     germination_time (int, int) - a range of values in days for the plant's germination time.
@@ -83,39 +79,159 @@ def _compute_from_table_values(
     }
 
 
-
+MAX_RADIUS = {
+ 'borage': (60,5*2), #(60,5) 
+ 'sorrel': (8,2),
+ 'cilantro': (20,4),
+ 'radicchio': (53,6),#24
+ 'kale': (65,7), #35
+ 'green_lettuce': (27,5*2), #(18,1)
+ 'red_lettuce': (28,5),#15
+ 'arugula': (40,5*2), #(25,1)
+ 'swiss_chard': (47,5*2), #27
+ 'turnip': (53,6) #31
+}
 
 
 SRV = 0.0
 
-MAX_RADIUS = {
-    "fast0_0": (80.0, 0), 
-    "fast1_0": (70.5, 0), 
-    "fast2_0": (60.0, 0), 
-    "fast3_0": (50.5, 0), 
-    "fast4_0": (50.0, 0), 
-    "slow0_0": (25, 0), 
-    "slow1_0": (18, 0), 
-    "slow2_0": (26.5, 0), 
-    "slow3_0": (15, 0), 
-    "slow4_0": (22, 0)
-}
+# PLANTS_RELATION = {
+#         "borage":       {"borage": SRV, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 10.0, "arugula": 0.0, "swiss_chard": 10.0, "turnip": 0.0},
+#         "sorrel":       {"borage": 0.0, "sorrel": SRV,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
+#         "cilantro":     {"borage": 10.0, "sorrel": 0.0,  "cilantro": SRV, "radicchio": 0.0, "kale": 10.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
+#         "radicchio":    {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": SRV, "kale": 0.0, "green_lettuce":-10.0, "red_lettuce":10.0, "arugula": 0.0, "swiss_chard":10.0, "turnip": 0.0},
+#         "kale":         {"borage": 5.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 5.0, "kale": SRV, "green_lettuce": 5.0, "red_lettuce": 5.0, "arugula": 5.0, "swiss_chard": 0.0, "turnip": 0.0},
+#         "green_lettuce":{"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": SRV, "red_lettuce": 10.0, "arugula": 0.0, "swiss_chard": 10.0, "turnip": 0.0},
+#         "red_lettuce":  {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 10.0, "kale": 10.0, "green_lettuce": 10.0, "red_lettuce": SRV, "arugula": 0.0, "swiss_chard": 0.0, "turnip": 0.0},
+#         "arugula":      {"borage": 0.0, "sorrel": -5.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": -5.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": SRV, "swiss_chard": 0.0, "turnip": 0.0},
+#         "swiss_chard":  {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 0.0, "swiss_chard": SRV, "turnip": 0.0},
+#         "turnip":       {"borage": 0.0, "sorrel": 0.0,  "cilantro": 0.0, "radicchio": 0.0, "kale": 0.0, "green_lettuce": 0.0, "red_lettuce": 0.0, "arugula": 10.0, "swiss_chard": 10.0, "turnip": SRV}
+# }
 
-for x in MAX_RADIUS:
-    t = MAX_RADIUS[x]
-    MAX_RADIUS[x] = (t[0]*1.5,0)
+PLANTS_RELATION = {
+         "borage":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "sorrel":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "cilantro":     {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "radicchio":    {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "kale":         {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "green_lettuce":{"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "red_lettuce":  {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "arugula":      {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "swiss_chard":  {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV},
+         "turnip":       {"borage": SRV, "sorrel": SRV,  "cilantro": SRV, "radicchio": SRV, "kale": SRV, "green_lettuce": SRV, "red_lettuce": SRV, "arugula": SRV, "swiss_chard": SRV, "turnip": SRV}
+ }
 
-PLANTS_RELATION = {"fast0_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "fast1_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "fast2_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "fast3_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "fast4_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "slow0_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "slow1_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "slow2_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "slow3_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}, "slow4_0": {"fast0_0": SRV, "fast1_0": SRV, "fast2_0": SRV, "fast3_0": SRV, "fast4_0": SRV, "slow0_0": SRV, "slow1_0": SRV, "slow2_0": SRV, "slow3_0": SRV, "slow4_0": SRV}}
 
 PLANT_TYPES = {
-    "fast0_0": _compute_from_table_values(name = 'fast0_0', color= [(9 / 255, 77 / 255, 10 / 255),(0.9467, 0.6863, 0.2431)][SEG_COLORS], germination_time=(3, 0), r_max =(40.0, 0), maturation_time=(20, 0), stopping_color =(150 / 255, 0, 1), r_0 = 1, c1 =0.15, MAX_RADIUS= MAX_RADIUS),
-    "fast1_0": _compute_from_table_values(name = 'fast1_0', color =[(167 / 255, 247 / 255, 77 / 255), (0.9294, 0.2, 0.2412)][SEG_COLORS], germination_time=(7, 0), r_max =(52.5, 0), maturation_time=(35, 0), stopping_color = (127 / 255, 87 / 255, 1), r_0 = 1, c1 = 0.2, MAX_RADIUS= MAX_RADIUS),
-    "fast2_0": _compute_from_table_values(name = 'fast2_0', color= [(101 / 255, 179 / 255, 53 / 255), (0.2, 0.4784, 0.3765)][SEG_COLORS], germination_time=(11, 0), r_max =(65.0, 0), maturation_time=(25, 0), stopping_color = (181 / 255, 99 / 255, 1), r_0 = 1, c1 =0.18, MAX_RADIUS= MAX_RADIUS),
-    "fast3_0": _compute_from_table_values(name = 'fast3_0', color= [(147 / 255, 199 / 255, 109 / 255),(0.7333, 0.6980, 0.0934)][SEG_COLORS], germination_time=(13.0, 0), r_max =(77.5, 0), maturation_time=(30, 0), stopping_color = (122 / 255, 99 / 255, 1), r_0 = 1, c1 =0.13, MAX_RADIUS= MAX_RADIUS),
-    "fast4_0": _compute_from_table_values(name = 'fast4_0', color= [(117 / 255, 158 / 255, 81 / 255),(0.1137, 0.2588, 0.8510)][SEG_COLORS], germination_time=(15, 0), r_max =(90.0, 0), maturation_time=(40.0, 0), stopping_color = (152 / 255, 88 / 255, 1), r_0 = 1, c1 =0.15, MAX_RADIUS= MAX_RADIUS),
-    "slow0_0": _compute_from_table_values(name = 'slow0_0', color= [(142 / 255, 199 / 255, 52 / 255),(0.4275, 0.8667, 0.6941)][SEG_COLORS], germination_time=(16.0, 0), r_max =(5.0, 0), maturation_time=(100.0, 0), stopping_color =(202 / 255, 129 / 255, 1), r_0 = 1, c1 =0.1, MAX_RADIUS= MAX_RADIUS),
-    "slow1_0": _compute_from_table_values(name = 'slow1_0', color= [(117 / 255, 128 / 255, 81 / 255),(0.5098, 0.2784, 0.8549)][SEG_COLORS], germination_time=(21, 0), r_max =(13.75, 0), maturation_time=(125, 0), stopping_color = (177 / 255, 98 / 255, 1), r_0 = 1, c1 =0.06, MAX_RADIUS= MAX_RADIUS),
-    "slow2_0": _compute_from_table_values(name = 'slow2_0', color= [(58 / 255, 167 / 255, 100 / 255), (0.3059, 0.4667, 0.1255)][SEG_COLORS], germination_time=(29, 0), r_max =(22.5, 0), maturation_time=(75.0, 0), stopping_color =(198 / 255, 0, 1), r_0 = 1, c1 =0.04, MAX_RADIUS= MAX_RADIUS),
-    "slow3_0": _compute_from_table_values(name = 'slow3_0', color= [(58 / 255, 137 / 255, 100 / 255), (0.8196, 0.2863, 0.6510)][SEG_COLORS], germination_time=(32, 0), r_max =(25, 0), maturation_time=(150, 0), stopping_color = (188 / 255, 137 / 255, 1), r_0 = 1, c1 =0.05, MAX_RADIUS= MAX_RADIUS),
-    "slow4_0": _compute_from_table_values(name = 'slow4_0', color= [(0, 230 / 255, 0), (0.9333, 0.3804, 0.3725)][SEG_COLORS], germination_time=(30.0, 0), r_max =(30.0, 0), maturation_time=(130.0, 0), stopping_color = (140 / 255, 90 / 255, 1), r_0 = 1, c1 =0.08, MAX_RADIUS= MAX_RADIUS)
+    # removed unknown plant, replaced with invasive species
+    # https://www.gardeningknowhow.com/edible/herbs/borage/borage-herb.htm
+    "borage": _compute_from_table_values(name="borage", color=[(9 / 255, 77 / 255, 10 / 255),(0.9467, 0.6863, 0.2431)][SEG_COLORS], germination_time=(7, 1),
+                                         r_max=MAX_RADIUS["borage"], maturation_time=(55,5),
+                                         stopping_color=(150 / 255, 0, 1), r_0=1, c1=0.09), #c1=0.13847766 #0.09
+    # https://harvesttotable.com/how-to-grow-mizuna/
+    # "mizuna": _compute_from_table_values(name="mizuna", color=(91 / 255, 224 / 255, 54 / 255), germination_time=(4, 7),
+    #                                      seed_spacing=SEED_SPACING["mizuna"], maturation_time=40,
+    #                                      stopping_color=(181 / 255, 134 / 255, 1)),
+    # https://harvesttotable.com/how_to_grow_sorrel/
+    # https://www.superseeds.com/products/sorrel-48-days
+    # https://www.seedaholic.com/sorrel-red-veined.html
+    # https://www.succeedheirlooms.com.au/heirloom-vegetable-seed/heirloom-leaf-vegetable-seeds/sorrel-red-veined.html
+    "sorrel": _compute_from_table_values(name="sorrel", color=[(167 / 255, 247 / 255, 77 / 255), (0.9294, 0.2, 0.2412)][SEG_COLORS],
+                                         germination_time=(15, 2),
+                                         r_max=MAX_RADIUS["sorrel"], maturation_time=(70,5),
+                                         stopping_color=(127 / 255, 87 / 255, 1), r_0=1, c1=0.08),#0.13337204
+    # https://www.burpee.com/gardenadvicecenter/herbs/cilantro/all-about-cilantro/article10222.html
+    "cilantro": _compute_from_table_values(name="cilantro", color=[(101 / 255, 179 / 255, 53 / 255), (0.2, 0.4784, 0.3765)][SEG_COLORS],
+                                           germination_time=(10, 2),
+                                           r_max=MAX_RADIUS["cilantro"], maturation_time=(65,5), #66
+                                           stopping_color=(181 / 255, 99 / 255, 1), r_0=1, c1=0.09), #0.22764992
+    # https://www.growveg.com/plants/us-and-canada/how-to-grow-radicchio/
+    "radicchio": _compute_from_table_values(name="radicchio", color=[(147 / 255, 199 / 255, 109 / 255),(0.7333, 0.6980, 0.0934)][SEG_COLORS],
+                                            germination_time=(9, 2),
+                                            r_max=MAX_RADIUS["radicchio"], maturation_time=(55,5), #(61,5)
+                                            stopping_color=(122 / 255, 99 / 255, 1), r_0=1, c1=0.09),#0.13222516
+    # https://www.superseeds.com/products/dwarf-blue-curled-kale-55-days
+    "kale": _compute_from_table_values(name="kale", color=[(117 / 255, 158 / 255, 81 / 255),(0.1137, 0.2588, 0.8510)][SEG_COLORS], germination_time=(7, 2),
+                                       r_max=MAX_RADIUS["kale"], maturation_time=(55,5), #55
+                                       stopping_color=(152 / 255, 88 / 255, 1), r_0=1, c1=0.1), #0.15323942 #0.1
+    # https://www.superseeds.com/products/baby-oakleaf-lettuce
+    "green_lettuce": _compute_from_table_values(name="green_lettuce", color=[(142 / 255, 199 / 255, 52 / 255),(0.4275, 0.8667, 0.6941)][SEG_COLORS],
+                                                germination_time=(9, 2),
+                                                r_max=MAX_RADIUS["green_lettuce"], maturation_time=(52,5),
+                                                stopping_color=(202 / 255, 129 / 255, 1), r_0=1, c1=0.0875), #0.16064508
+    # https://veggieharvest.com/vegetables/lettuce.html
+    "red_lettuce": _compute_from_table_values(name="red_lettuce", color=[(117 / 255, 128 / 255, 81 / 255),(0.5098, 0.2784, 0.8549)][SEG_COLORS],
+                                              germination_time=(12, 2),
+                                              r_max=MAX_RADIUS["red_lettuce"], maturation_time=(50,5), #(63,5)
+                                              stopping_color=(177 / 255, 98 / 255, 1), r_0=1, c1=0.09),#0.24597908
+    "arugula": _compute_from_table_values(name="arugula", color=[(58 / 255, 167 / 255, 100 / 255), (0.3059, 0.4667, 0.1255)][SEG_COLORS],
+                                         germination_time=(8, 2),
+                                         r_max=MAX_RADIUS["arugula"], maturation_time=(52,5), #52
+                                          stopping_color=(198 / 255, 0, 1), r_0=1, c1=0.105),#0.15589411 #.10
+    # https://gardenerspath.com/plants/vegetables/grow-swiss-chard/#Propagation
+    # https://www.superseeds.com/products/peppermint-swiss-chard
+    "swiss_chard": _compute_from_table_values(name="swiss_chard", color=[(58 / 255, 137 / 255, 100 / 255), (0.8196, 0.2863, 0.6510)][SEG_COLORS],
+                                              germination_time=(7, 2),
+                                              r_max=MAX_RADIUS["swiss_chard"], maturation_time=(50,5), #(55,5)
+                                              stopping_color=(188 / 255, 137 / 255, 1), r_0=1, c1=0.115), #0.17361995 #0.11
+    # rhs.org.uk/advice/grow-your-own/vegetables/turnip
+    "turnip": _compute_from_table_values(name="turnip", color=[(0, 230 / 255, 0), (0.9333, 0.3804, 0.3725)][SEG_COLORS], germination_time=(7, 2),
+                                         r_max=MAX_RADIUS["turnip"], maturation_time=(47,5), #(47,5)
+                                         stopping_color=(140 / 255, 90 / 255, 1), r_0=1, c1=0.11)#0.17786107
+    # https://www.superseeds.com/products/mint
+    #"mint": _compute_from_table_values(name="mint", color=(101 / 255, 179 / 255, 53 / 255), germination_time=(10, 15),
+    #                                   seed_spacing=SEED_SPACING["mint"], maturation_time=90,
+    #                                   stopping_color=(191 / 255, 134 / 255, 1))
+    # "invasive": _compute_from_table_values(name="invasive", color=(255/255, 0/255, 0/255), germination_time=(2, 5),
+    #                                        seed_spacing=40, maturation_time=40, stopping_color=(119/255, 0, 1)),
+    #"unknown": _compute_from_table_values(name="unknown", color=(9/255, 47/255, 10/255), germination_time=(5, 10),
+    #                                      seed_spacing=9, maturation_time=63, stopping_color=(119/255, 0, 1)),
+    # "bok-choy": _compute_from_table_values(name="bok-choy", color=(86/255, 139/255, 31/255), germination_time=(5, 10),
+    #                                        seed_spacing=6, maturation_time=45, stopping_color=(115/255, 0, 1)),
+    #"basil": _compute_from_table_values(name="basil", color=(9/255, 77/255, 10/255), germination_time=(5, 10),
+    #                                    seed_spacing=9, maturation_time=63, stopping_color=(150/255, 0, 1)),
+    # "lavender": _compute_from_table_values(name="lavender", color=(0, 183/255, 0), germination_time=(14, 21),
+    #                                        seed_spacing=21, maturation_time=145, stopping_color=(120/255, 63/255, 1), color_step=(10/255, -10/255, 0/255)),
+    # "parsley": _compute_from_table_values(name="parsley", color=(142/255, 229/255, 52/255), germination_time=(21, 28),
+    #                                       seed_spacing=10.5, maturation_time=80, stopping_color=(142/255, 0, 1), color_step=(-20/255, 0/255, 0/255)),
+    # "sage": _compute_from_table_values(name="sage", color=(62/255, 159/255, 78/255), germination_time=(10, 21),
+    #                                    seed_spacing=30, maturation_time=730, stopping_color=(132/255, 89/255, 1), color_step=(10/255, -10/255, 0/255)),
+    # "rosemary": _compute_from_table_values(name="rosemary", color=(0, 230/255, 0), germination_time=(15, 25),
+    #                                        seed_spacing=21, maturation_time=183, stopping_color=(140/255, 90/255, 1), color_step=(10/255, -10/255, 0/255)),
+    # "thyme": _compute_from_table_values(name="thyme", color=(101/255, 179/255, 53/255), germination_time=(8, 20),
+    #                                     seed_spacing=21, maturation_time=95, stopping_color=(191/255, 134/255, 1), color_step=(10/255, -5/255, 0/255)),
+    # "chives": _compute_from_table_values(name="chives", color=(58/255, 167/255, 100/255), germination_time=(15, 21),
+    #                                      seed_spacing=7.5, maturation_time=90, stopping_color=(198/255, 0, 1)),
+    #"cilantro": _compute_from_table_values(name="cilantro", color=(91/255, 224/255, 54/255), germination_time=(7, 10),
+    #                                       seed_spacing=4, maturation_time=68, stopping_color=(181/255, 134/255, 1),
+    #                                       color_step=(10/255, -10/255, 0/255)),
+    # "dill": _compute_from_table_values(name="dill", color=(79/255, 151/255, 66/255), germination_time=(7, 10),
+    #                                    seed_spacing=13.5, maturation_time=70, stopping_color=(189/255, 0, 1)),
+    #"fennel": _compute_from_table_values(name="fennel", color=(167/255, 247/255, 77/255), germination_time=(8, 12),
+    #                                     seed_spacing=11, maturation_time=65, stopping_color=(127/255, 87/255, 1),
+    #                                     color_step=(-5/255, -20/255, 0/255)),
+    #"marjoram": _compute_from_table_values(name="marjoram", color=(101/255, 179/255, 53/255), germination_time=(7, 14),
+   #                                        seed_spacing=8, maturation_time=60, stopping_color=(181/255, 99/255, 1),
+    #                                       color_step=(10/255, -10/255, 0/255)),
+    #"oregano": _compute_from_table_values(name="oregano", color=(147/255, 199/255, 109/255), germination_time=(8, 14),
+    #                                      seed_spacing=13.5, maturation_time=88, stopping_color=(122/255, 99/255, 1),
+    #                                      color_step=(-5/255, -10/255, 0/255)),
+   # "tarragon": _compute_from_table_values(name="tarragon", color=(117/255, 158/255, 81/255), germination_time=(7, 14),
+    #                                       seed_spacing=21, maturation_time=60, stopping_color=(152/255, 88/255, 1),
+    #                                       color_step=(5/255, -10/255, 0/255)),
+   # "nastursium": _compute_from_table_values(name="nastursium", color=(142/255, 199/255, 52/255),
+   #                                          germination_time=(10, 12),
+   #                                          seed_spacing=11, maturation_time=60, stopping_color=(202/255, 129/255, 1),
+   #                                          color_step=(10/255, -10/255, 0/255)),
+   # "marigold": _compute_from_table_values(name="marigold", color=(117/255, 128/255, 81/255), germination_time=(5, 10),
+   #                                        seed_spacing=7, maturation_time=50, stopping_color=(177/255, 98/255, 1),
+   #                                        color_step=(10/255, -5/255, 0/255)),
+    # "calendula": _compute_from_table_values(name="calendula", color=(62/255, 129/255, 78/255), germination_time=(7, 10),
+    #                                         seed_spacing=12, maturation_time=50, stopping_color=(182/255, 129/255, 1)),
+    # "radish": _compute_from_table_values(name="radish", color=(91/255, 194/255, 54/255),
+    #                                      germination_time=(3, 10),
+    #                                      seed_spacing=5, maturation_time=28, stopping_color=(171/255, 114/255, 1), color_step=(10/255, -10/255, 0/255)),
+    #"borage": _compute_from_table_values(name="borage", color=(58/255, 137/255, 100/255),
+    #                                     germination_time=(5, 15),
+    #                                     seed_spacing=20, maturation_time=5, stopping_color=(188/255, 137/255, 1))
 }
