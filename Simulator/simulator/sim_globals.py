@@ -11,6 +11,7 @@ PRUNE_RATE = 0.15
 NUM_IRR_ACTIONS = 1
 IRR_THRESHOLD = 9  # unit size to calculate irrigation window.
 DYNAMIC_PLANTING_DELAY = 20 # Number of days to wait before beginning dynamic planting.
+SEEDS_PER_DAY = 5 # Maximum number of plants a policy can seed a day during dynamic planting.
 
 NUM_PLANTS = 100 
 ROWS = 150

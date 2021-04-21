@@ -3,7 +3,7 @@ import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillow_Visualizer
 from simulator.plant_type import PlantType
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, SEEDS_PER_DAY
 import simalphagarden
 import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
@@ -304,7 +304,7 @@ def evaluate_dynamic_planting_policy(env, policy, collection_time_steps, sector_
         
         action, new_plants = policy(current_day, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                    sector_obs_per_day, vectorized=False, can_plant=planted<1)
+                    sector_obs_per_day, vectorized=False, can_plant=planted<SEEDS_PER_DAY)
         if new_plants:
             planted += 1
         all_actions.append(action)
