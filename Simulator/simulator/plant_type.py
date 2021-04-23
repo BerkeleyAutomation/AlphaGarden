@@ -1,6 +1,6 @@
 import numpy as np
 from simulator.plant import Plant
-from simulator.plant_presets import PLANT_TYPES, PLANTS_RELATION, generate_growth_time
+from simulator.plant_presets import PLANT_TYPES, PLANTS_RELATION, generate_growth_time, PLANTS
 from simulator.sim_globals import NUM_PLANTS, NUM_PLANT_TYPES_USED
 import pickle
 
@@ -37,8 +37,6 @@ class PlantType:
         plants = []
         sector_rows_half = sector_rows // 2
         sector_cols_half = sector_cols // 2
-        PLANTS = ['borage', 'sorrel', 'cilantro', 'radicchio', 'kale', 'green_lettuce', 'red_lettuce', 'arugula',
-                  'swiss_chard', 'turnip']
 
         def in_bounds(r, c):
             return sector_rows_half < r < rows - sector_rows_half and sector_cols_half < c < cols - sector_cols_half
