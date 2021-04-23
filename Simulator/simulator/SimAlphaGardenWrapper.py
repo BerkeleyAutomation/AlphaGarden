@@ -179,7 +179,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
             return points
         return np.empty((0,2),dtype=np.int)
 
-    def cluster_all_plant_centers(self, plants, grow_thresh = 2, germination_thresh = 8, prune_thresh = 2.5):
+    def cluster_all_plant_centers(self, plants, grow_thresh = 8, germination_thresh = 8, prune_thresh = 2.5):
         """ Find all centroids for plants and their growing and germination thresholds
 
         Args:
