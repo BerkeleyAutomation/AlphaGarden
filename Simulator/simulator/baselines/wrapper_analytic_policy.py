@@ -23,7 +23,7 @@ from simulator.garden import Garden
 
 def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day, garden_state, prune_rate, irrigation_amount,
-           vectorized=True, val=False):
+           vectorized=True, val=False, collect=False):
     """ Perform baseline policy with pruning and irrigation action.
 
     Args
@@ -65,7 +65,10 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     plant_centers = plant_type_obj.plant_centers
     non_plant_centers = plant_type_obj.non_plant_centers
     actions = [] # actions for each prune rate for each day
-    cc_vec = env.get_global_cc_vec()
+    if collect:
+        cc_vec = env.env_method('get_global_cc_vec')[0]
+    else:
+        cc_vec = env.get_global_cc_vec()
     for j in range(sector_obs_per_day): # for each sector_obs_per_day find a sector and act on it with the analytic policy
         # if i == 0:  #reusing the sectors
         rand_sector = garden_to_sector(garden_copy, plant_centers, non_plant_centers, row, col, step)
