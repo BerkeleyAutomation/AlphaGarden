@@ -456,7 +456,7 @@ class Garden:
             radius for window if boundary points are given, for entire grid otherwise.
             Coords flag extends yield with grid point coordinate (int, int).
         """
-        if x_low and y_low and x_high and y_high:
+        if not (x_low is None or y_low is None or x_high is None or y_high is None):
             for i in range(x_low, x_high + 1):
                 for j in range(y_low, y_high + 1):
                     yield (self.grid[i, j], (i, j)) if coords else self.grid[i, j]
