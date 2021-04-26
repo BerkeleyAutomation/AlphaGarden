@@ -194,9 +194,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
         all_plants = [plant for plant_type in plants for plant in plant_type.values()]
         growth_plants = [plant for plant in all_plants if isinstance(plant.current_stage(), GrowthStage) ]
         germination_plants = [plant for plant in all_plants if isinstance(plant.current_stage(), GerminationStage)]
-        prune_plants = []        
+        prune_plants = []
         centers = np.empty((0,2), dtype=np.int)
-    
+        
         # Generate clusters for growing plants
         growing_plant_coords = np.array([(plant.row,plant.col) for plant in growth_plants])
         centers =  np.concatenate((centers,
@@ -260,7 +260,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 center_to_sample = self.clusters_timestep[0]
                 if not multi:
                     self.clusters_timestep = self.clusters_timestep[1:]
-                    self.day_steps-=1
             else:
                 print('debug')
                 self.day_steps = 1

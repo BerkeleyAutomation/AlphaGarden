@@ -23,7 +23,7 @@ from simulator.garden import Garden
 
 def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, sector_rows, sector_cols, prune_window_rows,
            prune_window_cols, step, water_threshold, num_irr_actions, sector_obs_per_day, garden_state, prune_rate, irrigation_amount,
-           vectorized=True, val=False):
+           vectorized=True, val=False, day = None):
     """ Perform baseline policy with pruning and irrigation action.
 
     Args
@@ -49,7 +49,8 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     """
     div_cov_metrics = [] # metrics for diversity-coverage for each prune rate
     determine_met = []
-    day = timestep // sector_obs_per_day
+    if day is None:
+        day = timestep // sector_obs_per_day
     sectors_center = [] # sector coordinates
     sectors_state = [] # sector state, array of other grids
     day_p = day - PRUNE_DELAY

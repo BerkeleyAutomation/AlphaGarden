@@ -207,6 +207,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     i = 0
     print(sector_obs_per_day)
     while (timesteps >=0) if adaptive else (i < collection_time_steps):
+        day_start_wrapper = day_start
         if day_start if adaptive else i%sector_obs_per_day == 0:
             current_day = (i+1) if adaptive else (i//sector_obs_per_day + 1) #TODO: UNCOMMNET
             print("Day {}/{}".format(current_day, 100))
@@ -216,16 +217,16 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             garden_state = env.get_simulator_state_copy()
             day_start = False
         cc_vec = env.get_global_cc_vec()
-
+        
         # The wrapper policy starts after the PRUNE_DELAY
-        if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
+        if wrapper and wrapper_day_set and (current_day > PRUNE_DELAY):
             # At every new day, the wrapper runs through the day's garden to find the best prune rate and irrigation level for that day
-            if i % sector_obs_per_day == 0:
+            if day_start_wrapper  if adaptive else i % sector_obs_per_day == 0:
                 pr = 0
                 prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
                 irrigation_amounts = [0.002]
                 covs, divs, cv = [], [], []
-                day_p = (i / sector_obs_per_day) - PRUNE_DELAY
+                day_p = current_day - PRUNE_DELAY
                 w1 = day_p / 50 # weights are 0 to 1 between days 20 and 70
                 w2 = 1 - w1
                 for irr_amt in irrigation_amounts:
@@ -233,8 +234,8 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                         garden_state = env.get_simulator_state_copy()
                         cov, div = wrapper_policy.wrapperPolicy(div_cov, env, env.wrapper_env.rows, env.wrapper_env.cols, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                                    sector_obs_per_day, garden_state, prune_rates[pr_i], irr_amt,
-                                    vectorized=False)
+                                    wrp.day_steps, garden_state, prune_rates[pr_i], irr_amt,
+                                    vectorized=False, day= current_day-1)
                         covs.append(cov)
                         divs.append(div)
                         cv.append((w1 * div + w2 * cov, (prune_rates[pr_i], irr_amt)))
@@ -506,7 +507,7 @@ if __name__ == '__main__':
             else:
                 evaluate_analytic_policy_serial(env, analytic_policy.policy, True, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial, save_dir, vis_identifier)
+                                        sector_obs_per_day, trial, save_dir, vis_identifier, args.adaptive)
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
