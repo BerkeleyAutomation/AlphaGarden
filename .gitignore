@@ -30,3 +30,5 @@ Center-Tracking/image_not_test/
 Center-Tracking/images/
 **/Pillow/
 **dump.json
+Paths/
+Coords/

@@ -4,7 +4,7 @@ from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
 from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
-
+import os
 import pickle
 import multiprocessing as mp
 import copy
@@ -168,6 +168,9 @@ class Garden:
         self.water_use = []  #: List of float: water usage w.r.t sector.
         self.actions = []  #: List of Lists of int: actions per time step.
 
+        self.prune_coords = dict() # Coordinates to send the FarmBot to prune.
+        self.irr_coords = [] # List of coordinates to send the FarmBot to irrigate.
+
         # if save:
         # self.save_step, self.save_final_step, self.get_plots = setup_saving(self)
 
@@ -260,6 +263,7 @@ class Garden:
         if irrigation > 0:
             self.irrigate(center, irrigation)
             self.irrigation_points[center] = irrigation
+            self.irr_coords.append(center)
 
     def perform_timestep_prune(self, center):
         """ Prune plants in given sector if certain amount of days have past.
@@ -278,7 +282,8 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
-        print('garden.py pr', self.prune_rate)
+        self.prune_coords = dict()
+        self.irr_coords = []
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
@@ -374,6 +379,13 @@ class Garden:
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
         # print(self.get_health_grid((57, 57)))
         # print(">>>>>>>>>>>>>>>>>>>")
+
+        # UNCOMMENT FOR REAL->SIM->REAL PIPELINE TO SAVE COORDINATES TO SEND FARMBOT
+        # Save out pruning and irrigation coordinates.
+        coords_dirname = "Coords/"
+        if not os.path.exists(coords_dirname):    
+            os.makedirs(coords_dirname)
+        pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
 
         self.timestep += 1
         self.performing_timestep = True
@@ -600,6 +612,7 @@ class Garden:
         distances = np.array(list(zip(*self.growth_map))[0])
         next_growth_index_plus_1 = np.searchsorted(distances, plant.radius, side='right')
         coords_updated = []
+        directions = []
         # Add grid point to “nearby” if it's within plants radius.
         if next_growth_index_plus_1 > plant.growth_index:
             for i in range(plant.growth_index + 1, next_growth_index_plus_1):
@@ -622,13 +635,20 @@ class Garden:
                     if 0 <= point[0] < self.grid.shape[0] and 0 <= point[1] < self.grid.shape[1]:
                         if record_coords_updated:
                             coords_updated.append(point)
+                            dir_tup = [False, False]
+                            # If the point is completely vertical w.r.t a plant, we want to prune on both axes.
+                            if point[0] != plant.row:
+                                dir_tup[0] = True
+                            if point[1] != plant.col:
+                                dir_tup[1] = True
+                            directions.append(tuple(dir_tup))
                         plant.num_grid_points -= 1
                         self.grid[point]['nearby'].remove((self.plant_types.index(plant.type), plant.id))
                         self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] -= 1
                         if self.leaf_grid[point[0], point[1], self.plant_types.index(plant.type)] < 0:
                             raise Exception("Cannot have negative leaf cover")
         plant.growth_index = next_growth_index_plus_1 - 1
-        return coords_updated
+        return coords_updated, directions
 
     def prune_plants(self):
         """ Prune tallest plants that are over threshold."""
@@ -762,7 +782,12 @@ class Garden:
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
             self.update_plant_size(plant, outward=-amount_to_prune)
-            self.update_plant_coverage(plant, record_coords_updated=True)
+            coords_updated, dir_tup = self.update_plant_coverage(plant, record_coords_updated=True)
+            coords_dirs = zip(coords_updated, dir_tup)
+            if plant.type in self.prune_coords:
+                self.prune_coords[plant.type].update(coords_dirs)
+            else:
+               self.prune_coords[plant.type] = set(coords_dirs) 
 
     def save_coverage_and_diversity(self):
         """ Calculate and update normalized entropy for diversity and total plant coverage"""

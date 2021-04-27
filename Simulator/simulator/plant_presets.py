@@ -49,10 +49,6 @@ def _compute_from_table_values(
     maturation_time (int)       - number of days this plant will live before stopping growth
     """
 
-    # PLANT_SIZE = {}
-    # for key in MAX_RADIUS:
-    #     PLANT_SIZE[key] = MAX_RADIUS[key]
-
     c2 = 1
     k1, k2 = 0.3, 0.7
     unoccluded_c1 = c1 / k2
@@ -235,3 +231,10 @@ PLANT_TYPES = {
     #                                     germination_time=(5, 15),
     #                                     seed_spacing=20, maturation_time=5, stopping_color=(188/255, 137/255, 1))
 }
+
+PLANT_SIZE = {}
+for key in MAX_RADIUS:
+    PLANT_SIZE[key] = get_r_max(MAX_RADIUS[key][0])
+
+PLANTS = list(PLANT_TYPES.keys())
+COLORS = [PLANT_TYPES[plant]["color"] for plant in PLANT_TYPES]

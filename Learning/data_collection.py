@@ -9,7 +9,7 @@ import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.plant_type import PlantType
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP
+from simulator.sim_globals import *
 from stable_baselines.common.vec_env import DummyVecEnv
 import numpy as np
 
@@ -54,7 +54,6 @@ class DataCollection:
                 wrapper_day_set = True
             cc_vec = env.env_method('get_global_cc_vec')[0]
             if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
-                # print('wrapper in')
                 if i % sector_obs_per_day == 0:
                     prune_rates = [0.05, 0.1, 0.16, 0.2, 0.3, 0.4]
                     irrigation_amounts = [0.002]
@@ -66,11 +65,10 @@ class DataCollection:
                         garden_state = env.env_method('get_simulator_state_copy')[0]
                         cov, div = wrapper_policy.wrapperPolicy(div_cov, env, ROWS, COLS, i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
-                                    sector_obs_per_day, garden_state, prune_rates[pr_i], irrigation_amounts[0], vectorized=False)
+                                    sector_obs_per_day, garden_state, prune_rates[pr_i], IRRIGATION_AMOUNT, vectorized=False, collect=True)
                         cv.append(w2*cov + w1*div)
                     pr = prune_rates[np.argmax(cv)]
                     env.env_method('set_prune_rate', pr)
-                    # print(pr)
                     wrapper_day_set = False       
             action = policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                             prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
@@ -114,7 +112,6 @@ if __name__ == '__main__':
     seed = params['s']
     pathlib.Path(dir_path).mkdir(exist_ok=True)
 
-    # seed_config_path = '/Users/sebastianoehme/Downloads/seed'
     seed_config_path = None
     randomize_seeds_cords_flag = False
 

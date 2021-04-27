@@ -59,6 +59,9 @@ def main():
 
 if __name__ == "__main__":
     import os
+    import platform
+    if platform.system() == "Darwin":
+        mp.set_start_method('spawn')
     cpu_cores = [i for i in range(64, 80)] # Cores (numbered 0-11)
     os.system("taskset -pc {} {}".format(",".join(str(i) for i in cpu_cores), os.getpid()))
     main()
