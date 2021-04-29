@@ -8,6 +8,12 @@ import pickle as pkl
 import os
 from PIL import Image
 import imageio
+from numba import njit
+# from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+# import warnings
+
+# warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+# warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 ############################
 ######### Utility ##########
@@ -98,6 +104,7 @@ def get_model_coeff(model_type: str, plant_name: str = '') -> list:
 
 
 def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwargs) -> tuple:
+    # TODO: add gemination times
     plant_type = kwargs.get("type", "kale")
     if day == 0:
         return (0, 10)
@@ -113,14 +120,14 @@ def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwar
         "swiss-chard": 376,
         "turnip": 106
     }
-    min_coef, max_coef = min_max_model_coefs
-    germ = 10
-    min_rad_cm, max_rad_cm = logifunc_fix_a(
-        germ + day, *min_coef), logifunc_fix_a(germ + day, *max_coef)
-    min_rad, max_rad = cm_radius_to_pixels(
-        min_rad_cm), cm_radius_to_pixels(max_rad_cm)
-    return (min_rad, max_rad)
-    return (30, min(max_rad, MAX_DIAMETER[plant_type]/2))
+    # min_coef, max_coef = min_max_model_coefs
+    # germ = 10
+    # min_rad_cm, max_rad_cm = logifunc_fix_a(
+    #     germ + day, *min_coef), logifunc_fix_a(germ + day, *max_coef)
+    # min_rad, max_rad = cm_radius_to_pixels(
+    #     min_rad_cm), cm_radius_to_pixels(max_rad_cm)
+    # return (min_rad, max_rad)
+    return (30, min(prev_rad+5, MAX_DIAMETER[plant_type]/2))
 
 
 def init_priors(seed_placements: dict) -> dict:
@@ -131,19 +138,13 @@ def init_priors(seed_placements: dict) -> dict:
 def crop_img(path):
     im = Image.open(path)
     width, height = im.size
-    desired_w, desired_h = 3780, 2000
+    desired_w, desired_h = 2000, 3780
     left = 75
     top = height / 5 + 130
     right = width-600
-    bottom = height / 1.2 + 50 
-    mid_x, mid_y = (top + bottom) / 2, (left + right) / 2
-    left = 0
-    right = 3780
-    top = 525
-    bottom = 2525
-    print((left, top, right, bottom))
+    bottom = height / 1.2 + 50
     im1 = im.crop((left, top, right, bottom))
-    # im1.save(psth)
+    # im1.save(psth)  
     print("crop: "+path)
     path = path[path.find("snc"):]
     im1.save(TEST_PATH+"/"+path)
@@ -176,25 +177,24 @@ def get_img(path):
     img_arr = np.asarray(img)
     return img, img_arr
 
-def make_gif(img_path, save_path, **kwargs):
-    images = [imageio.imread(img_path+f) for f in sorted(os.listdir(img_path)) if f[-4:] == ".png"]
-    imageio.mimsave(save_path+".gif", images, duration=kwargs.get("duration", 1))
-
 ###################
 ### BFS Utils #####
 ###################
 
+# @njit
 def not_black(point, img_arr):
     '''Checks that a pixel isn't black'''
     rgb = img_arr[int(point[1])][int(point[0])]
     return rgb[0] > 100 or rgb[1] > 100 or rgb[2] > 100
-
+ 
+# @njit
 def valid_point(point, img_arr, visited = set()):
     '''helper function for find_color'''
     return point[0] >= 0 and point[1] >= 0 \
         and point[0] < img_arr.shape[1] and point[1] < img_arr.shape[0] \
             and point not in visited
 
+# @njit
 def neighbors(point, img_arr, visited):
     '''helper function for find_color'''
     delta = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -221,7 +221,10 @@ def find_color(center, img_arr, color=None):
         temp_rbg = (temp_rbg[0], temp_rbg[1], temp_rbg[2])
         if color == None:
             return temp_rbg in COLORS
-
+        else:
+            return temp_rbg == color
+    if color:
+        return color
     q = [(0, center)]
     while q:
         cur_point = heapq.heappop(q)[1]
@@ -239,12 +242,14 @@ def isolate_color(img, lower_bound, upper_bound):
     true_color_mask = cv2.bitwise_and(img, img, mask=mask)
     return true_color_mask, np.asarray(true_color_mask)
 
+# @njit
 def calculate_color_range(rgb, tolerance):
     '''Returns a tolerance range for the color, because there is some fluxuation'''
     lower_bound = np.array([max(val - tolerance, 0) for val in rgb])
     upper_bound = np.array([min(val + tolerance, 255) for val in rgb])
     return lower_bound, upper_bound
 
+# @njit
 def radial_wilt(cur_rad, **kwargs):
     '''
     Simulates a dying plant, when a plant becomes fully occluded.
@@ -259,8 +264,12 @@ def radial_wilt(cur_rad, **kwargs):
     Return
         (int): the plant's new radius. 
     '''
-    final_radius = kwargs.get("final_radius", 2)
+    final_radius = kwargs.get("final_radius", 5)
     duration = kwargs.get("duration", 10)
     eps = 0 if cur_rad else 10e-10
     wilting_factor = (final_radius / (cur_rad + eps)) ** (1 / duration)
     return cur_rad + ((wilting_factor - 1) * cur_rad)
+
+def make_gif(img_path, save_path, **kwargs):
+    images = [imageio.imread(img_path+f) for f in sorted(os.listdir(img_path)) if f[-4:] == ".png" or f[-4:] == ".jpg"]
+    imageio.mimsave(save_path+".gif", images, duration=kwargs.get("duration", 1))

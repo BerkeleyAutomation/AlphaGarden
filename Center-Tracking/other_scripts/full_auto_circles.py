@@ -4,11 +4,10 @@ from geometry_utils import *
 from center_constants import *
 # from centers_test import *
 from full_auto_utils import *
-from run import *
+# from run import *
 import numpy as np
 import pickle as pkl
 import traceback
-from tqdm import tqdm
 
 
 ############################
@@ -21,7 +20,7 @@ def label_circles_BFS(path, show_res=False):
     priors = get_recent_priors()
     new_circles = {plant_type: [] for plant_type in priors.keys()}
     # Iterate over each plant type
-    for plant_type in tqdm(priors.keys()):
+    for plant_type in priors.keys():
         old_circles = priors[plant_type]
         # Get radius models
         rad_models = (get_model_coeff("min", plant_type),
@@ -44,8 +43,6 @@ def label_circles_BFS(path, show_res=False):
                     prev_rad = radial_wilt(prev_rad)
                 r, c, max_p = abs(prev_rad), center, (center[0]+prev_rad, center[1])
                 # print("Zero div at: " + str(c))
-            if day > r:
-                r = 0
             new_c["circle"], new_c["days_post_germ"] = (c, r, max_p), day
             # computed_type = COLORS_TO_TYPES[find_color(c, get_img(path)[1])[0]]
             new_circles[plant_type].append(new_c)
@@ -54,13 +51,13 @@ def label_circles_BFS(path, show_res=False):
     save_priors(new_circles, date)
     circles_dict = save_circles(new_circles, date)
     if show_res:
-        # show_circs = {key:[] for key in circles_dict.keys()}
-        # for key in new_circles.keys():
-        #     for c in new_circles[key]:
-        #         circle = c["circle"]
-        #         show_circs[key].append((circle[0], circle[1]))
-        #     show_circs[key] = merge_circles(show_circs[key])
-        draw_circles(path, new_circles, True)
+        show_circs = {key:[] for key in circles_dict.keys()}
+        for key in new_circles.keys():
+            for c in new_circles[key]:
+                circle = c["circle"]
+                show_circs[key].append((circle[0], circle[1]))
+            show_circs[key] = merge_circles(show_circs[key])
+        draw_circles(path, show_circs, True)
     return new_circles, circles_dict
 
 
@@ -99,15 +96,19 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
     First the image is cropped according to parameters using on Sept 2020 garden, 
     then the segmentation mask is extract and post-processed. Then, BFS is run with priors, 
     which are the most recent prior stored in center_constants.py/PRIOR_PATH'''
-    if crop:
+    if crop: 
         path = crop_img(path)
     id_ = path[path.find(IMAGE_NAME_PREFIX):path.find(".jpg")]
     print("Extracting Mask: "+path)
-    mask_path = get_img_seg_mask(id_)
-    # mask_path = "./post_process/"+id_+".png"
+    # mask_path = get_img_seg_mask(id_)
+    mask_path = "./post_process/"+id_+".png"
     print("Labelling circles: "+ mask_path)
     return label_circles_BFS(mask_path, True)[1]
 
+    
+ 
 if __name__ == "__main__":
     for f in daily_files("./farmbotsony")[9:]:
         process_image("farmbotsony/" + f, True, True)
+    # for f in daily_files("./post_process"):
+    #     label_circles_BFS("post_process/"+f, True)

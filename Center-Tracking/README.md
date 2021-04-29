@@ -9,11 +9,16 @@
     - CIRCLE_PATH = "./circles/" (where to save the CM circles)
     - PRIOR_PATH = "./priors/" (where to find the priors)
     - TEST_MODEL = './models/MOST_RECENT_MODEL.h5' (replace with most recent model)
-4. Open ```full_auto_circles.py``` and verify that the main reads:     
-```Python    
-for f in daily_files("./farmbotsony"):
-    process_image("farmbotsony/" + f, True, True) 
-```
+4. Open ```full_auto_circles.py``` and verify that the main reads if you want to process a full directory:     
+    -   ```Python    
+        for f in daily_files("./farmbotsony"):
+            process_image("farmbotsony/" + f, True, True) 
+        ```
+    - or 
+        ```Python 
+        process_image("farmbotsony/" + name, True, True) 
+        ```
+        for a single image with name, name. 
 5. Wait! It's gonna take a while from here, but when you come back everything should be processed. 
 
 ### File Structure
