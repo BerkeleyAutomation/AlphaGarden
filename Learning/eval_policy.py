@@ -32,16 +32,17 @@ parser.add_argument('-c', '--centers', type=int, default=100)
 parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
 parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 parser.add_argument('--adaptive', action='store_true', help='Use Adaptive Sector Sampling')
+parser.add_argument('--growth_cluster',  type=int, default=2)
 args = parser.parse_args()
 
 def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
              prune_window_cols, action_low, action_high, obs_low, obs_high, garden_time_steps,
-             garden_step, num_plant_types, seed, adaptive, multi=False, randomize_seed_coords=False,
+             garden_step, num_plant_types, seed, adaptive,growth_cluster =2, multi=False, randomize_seed_coords=False,
              plant_seed_config_file_path=None):
     env = gym.make(
         'simalphagarden-v0',
         wrapper_env=SimAlphaGardenWrapper(garden_time_steps, rows, cols, sector_rows,
-                                          sector_cols, prune_window_rows, prune_window_cols, adaptive,
+                                          sector_cols, prune_window_rows, prune_window_cols, adaptive,growth_cluster = growth_cluster,
                                           step=garden_step, seed=seed, randomize_seed_coords=randomize_seed_coords,
                                           plant_seed_config_file_path=plant_seed_config_file_path),
         garden_x=rows,
@@ -516,7 +517,7 @@ if __name__ == '__main__':
         trial = i + 1
         seed = args.seed + i
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
-                       action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,args.adaptive,
+                       action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,args.adaptive,growth_cluster = args.growth_cluster,
                        randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
 
         # vis = Matplotlib_Visualizer(env.wrapper_env)

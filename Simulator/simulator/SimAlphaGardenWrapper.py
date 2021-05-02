@@ -16,7 +16,7 @@ import simulator.clustering_utils as cluster
 
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
-                 prune_window_cols,adaptive,  seed=None, step=1, dir_path="", randomize_seed_coords=False,
+                 prune_window_cols,adaptive, growth_cluster = 2, seed=None, step=1, dir_path="", randomize_seed_coords=False,
                  plant_seed_config_file_path=None):
         """AlphaGarden's wrapper for Gym, inheriting basic functions from the WrapperEnv.
 
@@ -40,6 +40,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.rows = rows
         self.cols = cols
         self.adaptive = adaptive
+        self.growth_cluster = growth_cluster
 
         #: int: Number of sectors (representing the area observable to the agent at time t) in garden.
         self.num_sectors = (rows * cols) / (sector_rows * sector_cols)
@@ -166,7 +167,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                     self.non_plant_centers = self.non_plant_centers[1:]
         else:
             if not self.filled_step_plants:
-                self.clusters_timestep = cluster.cluster_all_plant_centers(self.garden.plants)
+                self.clusters_timestep = cluster.cluster_all_plant_centers(self.garden.plants, grow_thresh=self.growth_cluster)
                 self.day_steps = len(self.clusters_timestep)
                 self.filled_step_plants = True
             if len(self.clusters_timestep) > 0:
