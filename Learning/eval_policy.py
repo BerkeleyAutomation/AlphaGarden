@@ -207,7 +207,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     dt = datetime.datetime.now().strftime("%m%d%Y%H%M%S")
     i = 0
     print(sector_obs_per_day)
-    while (timesteps >=0) if adaptive else (i < collection_time_steps):
+    while (timesteps >0) if adaptive else (i < collection_time_steps):
         day_start_wrapper = day_start if adaptive else None
         if day_start if adaptive else i%sector_obs_per_day == 0:
             current_day = (i+1) if adaptive else (i//sector_obs_per_day + 1) #TODO: UNCOMMNET
@@ -253,7 +253,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                     prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                     sector_obs_per_day, vectorized=False, prune_ready = current_day>PRUNE_DELAY)[0]
         all_actions.append(action)
-        obs, rewards, _, _ = env.step(action,day_complete = timesteps==0  if adaptive else (i+1) % sector_obs_per_day == 0)
+        obs, rewards, _, _ = env.step(action,day_complete = timesteps==1  if adaptive else (i+1) % sector_obs_per_day == 0)
         try:
             f = env.wrapper_env.img_save_out
         except:
@@ -276,7 +276,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
         if adaptive:
             timesteps-=1
-            if timesteps < 0:
+            if timesteps == 0:
                 if i == collection_time_steps//sector_obs_per_day - 1:
                     timesteps = -1
                     print(days)
