@@ -207,7 +207,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     i = 0
     print(sector_obs_per_day)
     while (timesteps >=0) if adaptive else (i < collection_time_steps):
-        day_start_wrapper = day_start
+        day_start_wrapper = day_start if adaptive else None
         if day_start if adaptive else i%sector_obs_per_day == 0:
             current_day = (i+1) if adaptive else (i//sector_obs_per_day + 1) #TODO: UNCOMMNET
             print("Day {}/{}".format(current_day, 100))
@@ -298,49 +298,90 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     save_data(metrics, trial, save_dir, mt = True)
 
 def evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
-                                             save_dir, vis_identifier):
+                                             save_dir, vis_identifier, adaptive):
     obs = env.reset()
-    for i in range(collection_time_steps):
-        if i % sector_obs_per_day == 0:
-            current_day = int(i/sector_obs_per_day) + 1
+    wrp = env.wrapper_env
+    days = []
+    if adaptive:
+        timesteps = wrp.day_steps
+        days.append(timesteps)
+        day_start = True
+    current_day = 0
+    i = 0
+    while (timesteps >=0) if adaptive else (i < collection_time_steps):
+        if day_start if adaptive else i%sector_obs_per_day == 0:
+            current_day = (i+1) if adaptive else (i//sector_obs_per_day + 1) 
             print("Day {}/{}".format(current_day, 100))
             vis.get_canopy_image_full(False, vis_identifier, current_day)
-        if not (i // sector_obs_per_day) % 2:
+            day_start = False
+        if not current_day - 1 % 2:
             # Irrigate on odd days.
             action = 1
         else:
             action = 0
-        obs, rewards, _, _ = env.step(action)
+        obs, rewards, _, _ = env.step(action, day_complete = timesteps==0  if adaptive else (i+1) % sector_obs_per_day == 0)
+        if adaptive:
+            timesteps-=1
+            if timesteps < 0:
+                if i == collection_time_steps//sector_obs_per_day - 1:
+                    timesteps = -1
+                    print(days)
+                else:
+                    day_start = True
+                    i+=1
+                    timesteps = wrp.day_steps
+                    days.append(timesteps)
+        else:
+            i+=1
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
+def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, adaptive, save_dir='fixed_policy_data/'):
     env.reset()
+    wrp = env.wrapper_env
+    days = []
+    if adaptive:
+        timesteps = wrp.day_steps
+        days.append(timesteps)
     for i in range(garden_days):
         water = 1 if i % freq == 0 else 0
-
         print("Day {}/{}".format(i, garden_days))
-        for _ in range(sector_obs_per_day):
+        temp = timesteps if adaptive else sector_obs_per_day
+        while temp > 0:
             prune = 2 if env.get_prune_window_greatest_width() > prune_thresh and i % 2 == 0 else 0
             # prune = 2 if np.random.random() < 0.01 and i % 3 == 0 else 0
             # prune = 2 if np.random.random() < 0.01 else 0
 
-            env.step(water + prune)
+            env.step(water + prune,day_complete = temp==1)
+            temp -=1
+        if adaptive:
+            timesteps = wrp.day_steps
+            days.append(timesteps)
         vis.get_canopy_image_sector(np.array([7.5,15]),False)
         # vis.get_canopy_image_full(False)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir, vis_identifier):
+def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, freq, save_dir, vis_identifier, adaptive):
     env.reset()
+    wrp = env.wrapper_env
+    days = []
+    if adaptive:
+        timesteps = wrp.day_steps
+        days.append(timesteps)
     for i in range(garden_days):
         water = 1
         current_day = i + 1
         vis.get_canopy_image_full(False, vis_identifier, current_day)
         print("Day {}/{}".format(current_day, garden_days))
-        for j in range(sector_obs_per_day):
+        temp = timesteps if adaptive else sector_obs_per_day
+        while temp > 0:
             prune = 0
-            env.step(water + prune)
+            env.step(water + prune, day_complete = temp==1)
+            temp -= 1
+        if adaptive:
+            timesteps = wrp.day_steps
+            days.append(timesteps)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -509,9 +550,9 @@ if __name__ == '__main__':
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
                                         sector_obs_per_day, trial, save_dir, vis_identifier, args.adaptive)
         elif args.policy == 'n':
-            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
+            evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, args.adaptive, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
-            evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, save_dir, vis_identifier)
+            evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, save_dir, vis_identifier, args.adaptive)
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
@@ -528,7 +569,7 @@ if __name__ == '__main__':
                                           garden_step, water_threshold, sector_obs_per_day, trial)
         elif args.policy == 'p':
             evaluate_irrigate_plant_centers_odd_days(env, collection_time_steps, sector_obs_per_day, trial,
-                                                     save_dir, vis_identifier)
+                                                     save_dir, vis_identifier, args.adaptive)
         else:
             moments = np.load(args.moments)
             input_cc_mean, input_cc_std = moments['input_cc_mean'], moments['input_cc_std']
