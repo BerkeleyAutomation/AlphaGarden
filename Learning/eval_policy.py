@@ -357,7 +357,7 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
         if adaptive:
             timesteps = wrp.day_steps
             days.append(timesteps)
-        vis.get_canopy_image_sector(np.array([7.5,15]),False)
+        # vis.get_canopy_image_sector(np.array([7.5,15]),False)
         # vis.get_canopy_image_full(False)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)

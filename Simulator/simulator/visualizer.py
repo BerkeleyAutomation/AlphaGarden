@@ -35,7 +35,7 @@ class Visualizer(ABC):
         if not eval:
             dir_path = self.env.dir_path
         self.env.garden.step = 1
-        bounds = self.env.garden.get_sector_bounds(center, scale = 1)
+        bounds = self.env.garden.get_sector_bounds(center)
         # x_low, y_low, x_high, y_high = 0, 0, 149, 299
         return self.get_canopy_image(bounds, dir_path + 'images/sector/', eval, scale=1, identifier=identifier)
 
