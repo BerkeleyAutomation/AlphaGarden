@@ -523,7 +523,7 @@ class Garden:
                     plant_types_and_ids.pop(i)
 
             # Water evaporation per square cm (grid point)
-            if abs(plant.watered_day - self.timestep) <= 1:
+            if True: #CHANGED FOR CREATE STATEE abs(plant.watered_day - self.timestep) <= 1
                 evap_rate = 0.052
             else:
                 evap_rate = 0.011
@@ -779,6 +779,7 @@ class Garden:
                 tallest_plant_id = tallest[1]
                 non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
         for plant in non_occluded_plants:
+            print(plant.type, (plant.row, plant.col))
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
             self.update_plant_size(plant, outward=-amount_to_prune)

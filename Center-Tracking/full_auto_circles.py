@@ -110,4 +110,4 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
 
 if __name__ == "__main__":
     for f in daily_files("./farmbotsony")[9:]:
-        process_image("farmbotsony/" + f, True, True)
+        process_image("farmbotsony/" + f, True, False)

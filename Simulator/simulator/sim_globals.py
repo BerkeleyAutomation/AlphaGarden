@@ -16,6 +16,8 @@ ROWS = 150
 COLS = 150
 
 NUM_PLANT_TYPES_USED = 10
+# Defines locations to sample on top of plant centers, used in eval_policy.py: 
+# set to zero to replicate uniform
 PERCENT_NON_PLANT_CENTERS = 0.1
 
 OVERWATERED_THRESHOLD = 100

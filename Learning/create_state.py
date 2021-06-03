@@ -91,18 +91,20 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
     return garden
 
 # INPUT {type: {(x, y), radius}, ..., {}}
-real_data = {
-    'borage': {
-        ((2, 2), 10),
-        ((5, 5), 10),
-    },
-    'sorrel': {
-        ((8, 8), 10),
-        ((11, 11), 10),
-    },
-}
+# real_data = {
+#     'borage': {
+#         ((2, 2), 10),
+#         ((5, 5), 10),
+#     },
+#     'arugula': {
+#         ((60, 60), 10),
+#         ((100, 100), 10),
+#     },
+# }
 
-timestep = 10
+real_data = {'kale': {((42, 70), 23), ((112, 102), 25)}, 'swiss_chard': {((101, 80), 3), ((111, 21), 3)}, 'red_lettuce': {((85, 105), 0), ((55, 98), 0)}, 'cilantro': {((62, 17), 11), ((136, 19), 9)}, 'radicchio': {((85, 26), 18), ((36, 29), 11)}, 'arugula': {((103, 39), 14), ((128, 43), 6)}, 'sorrel': {((24, 81), 0), ((24, 56), 1)}, 'borage': {((74, 78), 18), ((87, 52), 24)}, 'turnip': {((119, 62), 24), ((59, 37), 25)}, 'green_lettuce': {((30, 113), 24), ((125, 25), 24)}}
+
+timestep = 30
 
 plant_type = PlantType()
 plant_types = plant_type.plant_names
@@ -148,3 +150,4 @@ garden_copy = copy_garden(garden_state=garden_state, rows=ROWS, cols=COLS, secto
                           sector_col=SECTOR_COLS, prune_win_rows=PRUNE_WINDOW_ROWS,
                           prune_win_cols=PRUNE_WINDOW_COLS, step=STEP, prune_rate=PRUNE_RATE)
 pickle.dump([garden_copy, plant_type], open("garden_copy.pkl", "wb")) 
+print("SAVED!")
