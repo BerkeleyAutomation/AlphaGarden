@@ -11,9 +11,11 @@ from plant_to_circle import *
 from tqdm import tqdm
 import sys
 
-##############################################################################
-#To Run these scripts push them into the outer Post-Processing-Scripts folder#
-##############################################################################
+'''
+How to run this script: 
+python3 linearity.py {PRIOR_PATH} {MASK_PATH}
+
+'''
 
 def get_plant_type(center, img_arr):
     center = (round(center[0]), round(center[1]))
@@ -129,43 +131,37 @@ def get_max_leaf_centers(prior, mask_path, only_right=False):
 
 
 if __name__ == "__main__":
-    # prior = get_recent_priors("priors/priors210526.p")
-    # circ = prior["borage"][0]
-    # print(circ)
-    # im = cv2.imread("./post_process/snc-21052608141500.png")
-    # im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-    # new_im = correct_image(im, *get_corners(*circ["circle"][:2]))
-    # plt.imshow(new_im)
-    # circ["circle"] = ((0,0), 1000)
-    # pt = get_max_leaf_centers({"hi": [circ]}, "new_im.jpg")[0]
-    # plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
-    # plt.savefig("organs.jpg", bbox_inches = 'tight', pad_inches = 0, dpi=500)
-    # plt.imsave("new_im.jpg" , new_im)
+    # Get priors and image from sysargs
     prior = get_recent_priors(str(sys.argv[1]))
-    # print(prior)
-    img_path = str(sys.argv[2])
-    print(img_path)
-    img, img_arr = get_img(img_path)
+    mask_path = str(sys.argv[2])
+    print(mask_path)
+    mask, _ = get_img(mask_path)
+
+    # This gets the actual overhead image
     # real_path = "input/new_garden/snc-21052608141500.jpg"
-    # real_path = crop_img(real_path)
+    plt.imshow(mask)
+
+    # UNCOMMENT THIS TO PLOT ALL EXTREMA
     # leaf_centers = []
-    plt.imshow(img)
     # for key in tqdm(prior):
     #     for circle in prior[key]:
     #         center, r = circle["circle"][:2]
     #         if center[0] < 1600:
     #             continue
     #         leaf_centers.append(center)
-    #         leaf_centers.extend(get_extrema(center, img_path, 2*r))
+    #         leaf_centers.extend(get_extrema(center, mask_path, 2*r))
     # for pt in leaf_centers:
     #     plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
     # plt.savefig("organs_2.jpg", bbox_inches = 'tight', pad_inches = 0, dpi=500)
-    leaf_centers = get_max_leaf_centers(prior, img_path, True)
+
+    leaf_centers = get_max_leaf_centers(prior, mask_path, True)
     for pt in leaf_centers:
         plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
-    print(leaf_centers)
+    # For debugging 
+    # print(leaf_centers)
     if "prune_points" not in os.listdir("."):
         os.mkdir("prune_points") 
-    save_centers("prune_points/"+sys.argv[1][:-1]+"txt", leaf_centers)
+    circles_file = sys.argv[1][:-1][sys.argv[1][:-1].find("iors/") + 4:]
+    save_centers("prune_points/"+circles_file+"txt", leaf_centers)
     plt.savefig("leaf_center.jpg", bbox_inches = 'tight', pad_inches = 0, dpi=500)
     
