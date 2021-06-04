@@ -76,8 +76,16 @@ def batch_prune(target_list, overhead, rpi_check):
                 fb.update_action("move_rel", (0,0,(-1 * inc) - 1))
 
                 aft_name = recent_rpi_photo(fb)
-                done = check_prune(bef_name, aft_name)
+                chk = check_prune(bef_name, aft_name)
+                print("PRUNE CHECK: ", chk)
+
+                response = input("Enter 'y' if leaf pruned, else 'n': ")
+                if chk == True and response == 'y':
+                    done = True
+
                 inc -= 50
+
+
         else:
             #TODO add functionality to go up and down and prune
             fb.update_action("prune", None)
@@ -117,7 +125,7 @@ def check_prune(bef_rpi, aft_rpi):
     aft_rpi = cv2.imread(image_path, 1)
 
     meth = 'cv2.TM_CCOEFF_NORMED'
-    threshold = 0.5 #threshold for normalized ccoeff if pruned or not
+    threshold = 0.8 #threshold for normalized ccoeff if pruned or not
 
     bef_rpi = bef_rpi.copy()
     aft_rpi = aft_rpi.copy()
