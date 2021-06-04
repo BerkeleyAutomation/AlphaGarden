@@ -1,5 +1,5 @@
 import os
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -322,7 +322,7 @@ def output_prediction_images(id_, model, path):
     label_map2 = label_map2[256:, 256:]
     prescor2 = prescor2[256:, 256:]
 
- 
+
     label = np.full((test_image.shape[0], test_image.shape[1]), 0)
     prescor = np.full((test_image.shape[0], test_image.shape[1]), 0.)
 
@@ -370,7 +370,7 @@ def confidence_cleanup(image_name, day):
         "radiccio": [185, 180, 44], #check
         "red-lettuce": [145, 50, 226], #check
         "sorrel": [255, 0, 0], # check
-        "swiss-charge": [226, 50, 170], #check
+        "swiss-chard": [226, 50, 170], #check
         "turnip": [254, 85, 89] #check
     }
 

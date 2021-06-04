@@ -234,7 +234,7 @@ def confidence_cleanup(image_name, day):
         "radiccio": [185, 180, 44], #check
         "red-lettuce": [145, 50, 226], #check
         "sorrel": [255, 0, 0], # check
-        "swiss-charge": [226, 50, 170], #check
+        "swiss-chard": [226, 50, 170], #check
         "turnip": [254, 85, 89] #check
     }
 

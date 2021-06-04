@@ -42,7 +42,7 @@ TYPES_TO_COLORS = {
     "radicchio": [185, 180, 44], #check
     "red-lettuce": [145, 50, 226], #check
     "sorrel": [255, 0, 0], # check
-    "swiss-charge": [226, 50, 170], #check
+    "swiss-chard": [226, 50, 170], #check
     "turnip": [254, 85, 89] #check
 }
 
@@ -56,7 +56,7 @@ BINARY_ENCODINGS = {
     "radicchio": [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], #check
     "red-lettuce": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], #check
     "sorrel": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0], #check
-    "swiss-charge": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0], #check
+    "swiss-chard": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0], #check
     "turnip": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] #check
 }
 
@@ -70,7 +70,7 @@ LABEL_ENC = {
     "radicchio": 6, #check
     "red-lettuce": 7, #check
     "sorrel": 8, #check
-    "swiss-charge": 9, #check
+    "swiss-chard": 9, #check
     "turnip": 10 #check
 }
 
@@ -98,7 +98,7 @@ TYPES = [
     "radicchio",
     "red-lettuce",
     "sorrel",
-    "swiss-charge",
+    "swiss-chard",
     "turnip"
 ]
 
@@ -106,11 +106,11 @@ IOU_TEST_RATIO = 1.0
 
 ratio = 0.
 
-TEST_PATH = './input'
+TEST_PATH = './cropped'
 IOU_EVAL_FILE = 'iou_eval_file.csv'
 
 TEST_MODEL = './models/model_3_16.h5'
 
-GARDEN_DATE_YEAR = 2020
-GARDEN_DATE_MONTH = 9
+GARDEN_DATE_YEAR = 2021
+GARDEN_DATE_MONTH = 5
 GARDEN_DATE_DAY = 1

@@ -38,10 +38,11 @@ def label_circles_BFS(path, show_res=False):
                 c, max_p = bfs_circle(path, center, max_rad, min_rad, plant_type, taken_circles=new_circles[plant_type])
                 r = abs(distance(c, max_p))
             except ZeroDivisionError:
-                # traceback.print_exc() 
+                # traceback.print_exc()
                 #TODO ADD WILTING LOGIC
                 if day > 10:
-                    prev_rad = radial_wilt(prev_rad)
+                    # prev_rad = radial_wilt(prev_rad)
+                    print("")
                 r, c, max_p = abs(prev_rad), center, (center[0]+prev_rad, center[1])
                 # print("Zero div at: " + str(c))
             if day > r:
@@ -61,6 +62,7 @@ def label_circles_BFS(path, show_res=False):
         #         show_circs[key].append((circle[0], circle[1]))
         #     show_circs[key] = merge_circles(show_circs[key])
         draw_circles(path, new_circles, True)
+    print(new_circles)
     return new_circles, circles_dict
 
 
@@ -86,28 +88,29 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
     '''
     @param path: string representing path of the uncropped image
     @param save_circles: optionally saves circles to center_constants.py/CIRCLE_PATH
-    @return dictionary of circles formatted like: 
+    @return dictionary of circles formatted like:
         {
             "arugula": [
-                ((center_x, center_y), radius (in cm)), 
+                ((center_x, center_y), radius (in cm)),
                 ...
-            ], 
+            ],
             ...
         }
-    
-    Takes uncropped image at path and runs segmentation pipeline on it. 
-    First the image is cropped according to parameters using on Sept 2020 garden, 
-    then the segmentation mask is extract and post-processed. Then, BFS is run with priors, 
+
+    Takes uncropped image at path and runs segmentation pipeline on it.
+    First the image is cropped according to parameters using on Sept 2020 garden,
+    then the segmentation mask is extract and post-processed. Then, BFS is run with priors,
     which are the most recent prior stored in center_constants.py/PRIOR_PATH'''
+    crop = False
     if crop:
         path = crop_img(path)
     id_ = path[path.find(IMAGE_NAME_PREFIX):path.find(".jpg")]
     print("Extracting Mask: "+path)
     mask_path = get_img_seg_mask(id_)
     # mask_path = "./post_process/"+id_+".png"
-    print("Labelling circles: "+ mask_path)
+    print("Labeling circles: "+ mask_path)
     return label_circles_BFS(mask_path, True)[1]
 
 if __name__ == "__main__":
-    for f in daily_files("./farmbotsony")[9:]:
-        process_image("farmbotsony/" + f, True, False)
+    for f in daily_files("./cropped"):
+        process_image("cropped/" + f, True, True)

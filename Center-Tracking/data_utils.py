@@ -43,11 +43,11 @@ def prepare_data(ids, im_width, im_height, test_size, seed=42):
             if typep == 'other':
                 other_indices = np.argwhere(mask[:,:,:] < TYPES_TO_CHANNEL[typep]) # an array containing all the indices that match the pixels
             elif typep == 'nasturtium':
-                if1_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels     
+                if1_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels
             elif typep == 'borage':
-                if2_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels     
+                if2_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels
             elif typep == 'bok_choy':
-                if3_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels     
+                if3_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels
             elif typep == 'plant1':
                 if4_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep][0]] > 230) & (mask[:,:,TYPES_TO_CHANNEL[typep][1]] > 230))
             elif typep == 'plant2':
@@ -69,10 +69,10 @@ def prepare_data(ids, im_width, im_height, test_size, seed=42):
             ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['plant2']
         for type_index in if6_indices:
             ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['plant3']
-        
+
         if (_/len(ids))*100 % 10 == 0:
             print(_)
-            print((_/len(ids))*100) 
+            print((_/len(ids))*100)
 
         # Save images
         X[i] = x_img

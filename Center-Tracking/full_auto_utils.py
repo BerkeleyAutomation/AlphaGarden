@@ -30,7 +30,7 @@ def logifunc_fix_a(x, k, R):
 
 def inv_logifunc_fix_a(y, k , r):
     return (np.log(r-y) - np.log(y(r-1))) / -k
-    
+
 
 
 def get_recent_priors(path=PRIOR_PATH):
@@ -49,13 +49,13 @@ def save_circles(prior: dict, day: str):
 
             }, ...
         ], ...
-    } 
+    }
     to:
     {
         "arugula": [
-            ((center_x, center_y), radius (in cm)), 
+            ((center_x, center_y), radius (in cm)),
             ...
-        ], 
+        ],
         ...
     }
     '''
@@ -109,9 +109,9 @@ def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwar
         "kale": 500,
         "radiccio": 245,
         "red-lettuce": 204,
-        "sorrel": 500,
+        "sorrel": 106,
         "swiss-chard": 376,
-        "turnip": 106
+        "turnip": 500
     }
     min_coef, max_coef = min_max_model_coefs
     germ = 10
@@ -119,8 +119,8 @@ def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwar
         germ + day, *min_coef), logifunc_fix_a(germ + day, *max_coef)
     min_rad, max_rad = cm_radius_to_pixels(
         min_rad_cm), cm_radius_to_pixels(max_rad_cm)
-    return (min_rad, max_rad)
-    return (30, min(max_rad, MAX_DIAMETER[plant_type]/2))
+    # return (min_rad, max_rad)
+    return (50, min(max_rad + 10, MAX_DIAMETER[plant_type]/2))
 
 
 def init_priors(seed_placements: dict) -> dict:
@@ -135,7 +135,7 @@ def crop_img(path):
     left = 75
     top = height / 5 + 130
     right = width-600
-    bottom = height / 1.2 + 50 
+    bottom = height / 1.2 + 50
     mid_x, mid_y = (top + bottom) / 2, (left + right) / 2
     left = 0
     right = 3780
@@ -209,10 +209,10 @@ def neighbors(point, img_arr, visited):
 def find_color(center, img_arr, color=None):
     '''Uses BFS to find the color associated with the current center.
     Assumes color closest to the center is the correct color
-    returns the RGB of the color. 
+    returns the RGB of the color.
     '''
     visited = set()
-    
+
     def distance_to_center(p1):
         return distance(p1, center)
 
@@ -230,7 +230,7 @@ def find_color(center, img_arr, color=None):
             found = img_arr[int(cur_point[1])][int(cur_point[0])]
             return min(COLORS, key = lambda c: sum([abs(c - s) for s,c in zip(c, found)])), cur_point
         for n in neighbors(cur_point, img_arr, visited):
-            heapq.heappush(q, (distance_to_center(n), n))  
+            heapq.heappush(q, (distance_to_center(n), n))
     return (0, 0, 0)
 
 def isolate_color(img, lower_bound, upper_bound):
@@ -257,7 +257,7 @@ def radial_wilt(cur_rad, **kwargs):
         duration(int): the time the plant should take to wilt
 
     Return
-        (int): the plant's new radius. 
+        (int): the plant's new radius.
     '''
     final_radius = kwargs.get("final_radius", 2)
     duration = kwargs.get("duration", 10)

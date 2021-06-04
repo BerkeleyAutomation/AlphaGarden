@@ -5,13 +5,13 @@ from matplotlib.patches import Circle
 import math
 import pickle as pkl
 from scipy.spatial import KDTree
-from itertools import combinations 
-import heapq 
+from itertools import combinations
+import heapq
 from collections import deque
 # from linearity import *
 from center_constants import *
 from geometry_utils import *
-# from centers_test import *
+from centers_test import *
 # from linearity import *
 from full_auto_utils import *
 
@@ -22,7 +22,7 @@ from full_auto_utils import *
 
 def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w"):
     '''Draws the circle that corresponds to the plants with centers and radii
-    circles and radii should have equal length and correspond with eachother 
+    circles and radii should have equal length and correspond with eachother
     '''
     # print(centers, radii)
     img, img_arr = get_img(path)
@@ -33,7 +33,7 @@ def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w"):
         for circle in circles:
             if isinstance(circle, dict):
                 center, radius = circle["circle"][0], circle["circle"][1]
-            else: 
+            else:
                 center, radius = circle[0], circle[1]
             circle1 = Circle((round(center[0]), round(center[1])), radius, color=circle_color, fill=False, lw=2)
             ax.add_patch(circle1)
@@ -49,7 +49,9 @@ def draw_circle_sets(path, centers, list_of_radii, colors):
     ax.imshow(img)
     for radii, color in zip(list_of_radii, colors):
         for center, radius in zip(centers, radii):
-            circle = Circle((round(center[0]), round(center[1])), radius, color=color, fill=False, lw=2)
+            center = center[2]
+            # print(center[0],center[1], radius)
+            circle = Circle((round(center[0]), round(center[1])), radius, color="g", fill=False, lw=2)
             ax.add_patch(circle)
     plt.savefig("./figures/circle_comparison.png")
     plt.show()
@@ -66,7 +68,7 @@ def convert_to_plant_colorspace(old_center, img_arr, img, plant_type):
     # Get the image and array with the color of the center isolated
     plant_img, plant_img_arr = isolate_color(img, lower_bound, upper_bound)
     return plant_img, plant_img_arr
-  
+
 def plant_COM_extreme_points(old_center, img_arr, radius = 100):
     total_x, total_y, count = 0, 0, 0
     max_x, max_y, min_x, min_y = (-float("inf"), -float("inf")), (-float("inf"), -float("inf")), \
@@ -79,9 +81,9 @@ def plant_COM_extreme_points(old_center, img_arr, radius = 100):
             if not_black(cur_p, img_arr):
                 total_x += cur_p[0]
                 total_y += cur_p[1]
-                count += 1    
-                max_x, max_y, min_x, min_y = update_min_max(cur_p, max_x, max_y, min_x, min_y)       
-    return ((total_x / count, total_y / count) if count > 0 else old_center), (max_x, max_y, min_x, min_y)  
+                count += 1
+                max_x, max_y, min_x, min_y = update_min_max(cur_p, max_x, max_y, min_x, min_y)
+    return ((total_x / count, total_y / count) if count > 0 else old_center), (max_x, max_y, min_x, min_y)
 
 def bfs(center, img_arr, termination_cond=lambda arr, recent_color_pts, p: len(arr) > 400, arr_oversided = lambda arr, r: 6.3*r < len(arr)):
     visited = set()
@@ -114,7 +116,7 @@ def bfs(center, img_arr, termination_cond=lambda arr, recent_color_pts, p: len(a
         if termination_cond(recent, recent_color_pts, cur_point):
             return color_pts
         for n in neighbors(cur_point, img_arr, visited):
-            heapq.heappush(q, (distance_to_center(n), n))  
+            heapq.heappush(q, (distance_to_center(n), n))
     return color_pts
 
 def get_models():
@@ -134,10 +136,10 @@ def linearity_score(center, img_arr, radius=100):
 
 def approximate_circle_contour(mask, hull):
     hull = np.squeeze(hull, axis=1)
-    
+
     num_points = len(hull)
     centroid_x, centroid_y = 0, 0
-    
+
     # Find the centroid for the hull.
     for point in hull:
         centroid_x += point[0]
@@ -145,10 +147,10 @@ def approximate_circle_contour(mask, hull):
     centroid_x //= num_points
     centroid_y //= num_points
     centroid = (centroid_x, centroid_y)
-    
+
     l2_dist = lambda pt1, pt2: ((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2) ** 0.5
     l2_dist_higher_order = lambda pt2: lambda pt1: ((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2) ** 0.5
-    
+
     # Find the point that is farthest away from the centroid.
     max_radius_point = max(hull, key=l2_dist_higher_order(centroid))
     max_radius = l2_dist(max_radius_point, centroid)
@@ -206,12 +208,12 @@ def merge_circles(circles):
         new_radius = distance(new_center, small_circle[0]) + small_circle[1]
         return (new_center, new_radius*.9)
 
-    def intersect(c1, c2): 
+    def intersect(c1, c2):
         x1, x2 = c1[0][0], c2[0][0]
         y1, y2 = c1[0][1], c2[0][1]
         r1, r2 = c1[1], c2[1]
         return distance(c1[0], c2[0]) < r1*.9
-    
+
     circles.sort(key=lambda pair: -pair[1])
     circles = set(circles)
     merged = set()
@@ -265,9 +267,9 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
     old_center: prior center
     max_radius: max search distance
     min_radius: min radius for searching
-    
+
     '''
-    def termination_cond(arr, recent_color_pts, point): 
+    def termination_cond(arr, recent_color_pts, point):
         plant_ended = recent_color_pts / len(arr) < .1
         too_long = distance(point, old_center) > max_radius
         too_small = distance(point, old_center) < min_radius
@@ -280,7 +282,7 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
         circ = circ_dict["circle"]
         if int(round(circ[1])) >= 0:
             img = cv2.circle(img, (int(circ[0][0]), int(circ[0][1])), int(round(circ[1])), (0,0,0), -1)
-        
+
 
     color_points = bfs(old_center, np.asarray(img), termination_cond)
     sum_x, sum_y, extreme_pt = 0, 0, old_center
@@ -388,7 +390,7 @@ def avg_fill_ratio(centers, radii, path):
     return sum(color_ratios) / len(color_ratios)
 
 def get_total_plant_area(c, max_r, img_arr, condition = lambda x, y: True):
-    ''' Gets the total plant area based on an optional condition (lambda x, y: f(x,y)) inside of the circle 
+    ''' Gets the total plant area based on an optional condition (lambda x, y: f(x,y)) inside of the circle
     defined by c, max_r'''
     color_count = 0
     c = (round(c[0]), round(c[1]))
@@ -417,8 +419,8 @@ def avg_circle_to_plant_area_ratio(centers, radii, path):
                 if valid_point(cur_p, img_arr) and not_black(cur_p, img_arr):
                     color_count += 1
         color_ratios.append(color_count / (math.pi * r**2))
-    return sum(color_ratios) / len(color_ratios)      
-        
+    return sum(color_ratios) / len(color_ratios)
+
 def avg_excluded_plant_area(centers, radii, path):
     color_ratios = []
     original_img, original_img_arr = get_img(path)
@@ -433,7 +435,7 @@ def avg_excluded_plant_area(centers, radii, path):
             color_ratios.append(excluded_plant / total_plant)
         except ZeroDivisionError:
             continue
-    return sum(color_ratios) / len(color_ratios)    
+    return sum(color_ratios) / len(color_ratios)
 
 def simulate_prune(center, radius, reduction, path):
     original_img, original_img_arr = get_img(path)
@@ -463,14 +465,14 @@ if __name__ == "__main__":
     #         if r_max == r_max:
     #             print(c, r_max)
     #             centers.append(c)
-    #             max_radii.append(r_max) 
+    #             max_radii.append(r_max)
     #             plant_type = COLORS_TO_TYPES[find_color((round(c[0]), round(c[1])), img_arr)[0]]
     #             if plant_type in circles:
     #                 circles[plant_type].append((c, r_max))
     #             else:
     #                 circles[plant_type] = [(c, r_max)]
-    #             # min_radii.append(r_min) 
-    #             # avg_radii.append(r_avg) 
+    #             # min_radii.append(r_min)
+    #             # avg_radii.append(r_avg)
     #     except ZeroDivisionError:
     #         print("Zero div at: " + str(center))
     circles = pkl.load(open( "./priors/OLD/circles.p", "rb" ))
