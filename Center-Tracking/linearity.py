@@ -158,7 +158,7 @@ if __name__ == "__main__":
     for pt in leaf_centers:
         plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
     # For debugging 
-    # print(leaf_centers)
+    print(leaf_centers)
     if "prune_points" not in os.listdir("."):
         os.mkdir("prune_points") 
     circles_file = sys.argv[1][:-1][sys.argv[1][:-1].find("iors/") + 4:]
