@@ -188,8 +188,8 @@ def photo(dir_path):
 
     cname = wget.download(imageurls[mri])
     ### You can modify the new name uisng time of photo or location ###
-    # newname = str(imagexs[mri]) + '_' + str(imageys[mri]) + '_' + str(imagezs[mri]) + '_' + imagetimes[mri] + '.jpg'
-    newname = "recent.jpg"
+    newname = imagetimes[mri] + '_' + str(imagexs[mri]) + '_' + str(imageys[mri]) + '_' + str(imagezs[mri]) + '.jpg'
+    #newname = "recent.jpg"
     os.rename(cname, dir_path + newname)
 
 def dismount_nozzle():
