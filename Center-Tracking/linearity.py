@@ -1,3 +1,4 @@
+from full_auto_utils import crop_img, get_recent_priors
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,19 +8,31 @@ from center_constants import *
 from geometry_utils import *
 from centers_test import *
 from plant_to_circle import *
+from tqdm import tqdm
+import sys
+
+##############################################################################
+#To Run these scripts push them into the outer Post-Processing-Scripts folder#
+##############################################################################
 
 def get_plant_type(center, img_arr):
+    center = (round(center[0]), round(center[1]))
     rgb_center, first_color_pixel = find_color(center, img_arr)
     return COLORS_TO_TYPES[rgb_center]
 
 def get_nearby_contours(contours, center, inverted, radius):
-    nearby = []
-    for cnt in contours:
-        hull = cv2.convexHull(cnt)
-        pair = approximate_circle_contour(inverted, hull)
-        if distance(center, pair[0]) < radius:
-            nearby.append(cnt)
-    return nearby
+    #TODO: SPEEDUP
+    # nearby = []
+    # for cnt in contours:
+    #     # hull = cv2.convexHull(cnt)
+    #     # pair = approximate_circle_contour(inverted, hull)
+    #     pair = np.average(cnt, axis=0)
+    #     # print(pair)
+    #     if distance(center, pair[0]) < radius:
+    #         nearby.append(cnt)
+    # return nearby
+    return list(filter(lambda cnt: distance(center, np.average(cnt[0], axis=0)) < radius, contours))
+
 
 def get_edge_points(center, img, img_arr, radius):
     plant_type = get_plant_type(center, img_arr)
@@ -88,25 +101,71 @@ def get_extrema(center, path, radius=100):
     edges = get_edge_points(center, img, img_arr, radius)
     max_extrema = find_max_extrema(center, img, img_arr, edges, radius)
     extrema = [max_extrema]
-    for i in range(50):
+    for _ in range(50):
         extrema.append(get_next_extrema(center, edges, extrema[-1]))
     return prune_extrema(extrema, radius, center)
 
+def get_leaf_center(extrema, center):
+    return ((extrema[0]*.5 + center[0]*.5), (extrema[1]*.5 + center[1]*.5))
+
+
+def get_max_leaf_centers(prior, mask_path, only_right=False):
+    ''' Returns the center of the leaf the largest leaf of each plant based on get_leaf_center algorithm.
+    Params
+        :prior: Dictonary of each plant type containing prior locations and radii of each plant
+        :mask_path: Path of the mask being used to 
+    Returns
+        :extreme_pts: The leaf centers according to the algorithm
+    '''
+    extreme_pts = []
+    for key in tqdm(prior):
+        for p in prior[key]:
+            center, r = p["circle"][0:2]
+            if only_right and center[0] < 1600:
+                continue
+            extrema = get_extrema(center, mask_path, 1.2*r)
+            extreme_pts.append((center, get_leaf_center(max(extrema, key=lambda p: distance(center, p)), center)))
+    return extreme_pts
+
+
 if __name__ == "__main__":
-    center = (2614, 654)
-    files = daily_files(IMG_DIR)[8:9]
-    img_path = IMG_DIR + "/" + files[0]
+    # prior = get_recent_priors("priors/priors210526.p")
+    # circ = prior["borage"][0]
+    # print(circ)
+    # im = cv2.imread("./post_process/snc-21052608141500.png")
+    # im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+    # new_im = correct_image(im, *get_corners(*circ["circle"][:2]))
+    # plt.imshow(new_im)
+    # circ["circle"] = ((0,0), 1000)
+    # pt = get_max_leaf_centers({"hi": [circ]}, "new_im.jpg")[0]
+    # plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
+    # plt.savefig("organs.jpg", bbox_inches = 'tight', pad_inches = 0, dpi=500)
+    # plt.imsave("new_im.jpg" , new_im)
+    prior = get_recent_priors(str(sys.argv[1]))
+    # print(prior)
+    img_path = str(sys.argv[2])
     print(img_path)
     img, img_arr = get_img(img_path)
-    center, r = bfs_circle(img_path, center, 190)
-    center = (round(center[0]), round(center[1]))
-    extrema = get_extrema(center, img_path, r)
+    # real_path = "input/new_garden/snc-21052608141500.jpg"
+    # real_path = crop_img(real_path)
+    # leaf_centers = []
     plt.imshow(img)
-    plt.plot(center[0], center[1], 'o', color="w")
-    for pt in extrema:
-        plt.plot(pt[0], pt[1], 'o', color="w")
-    plt.show()
-
-
-
+    # for key in tqdm(prior):
+    #     for circle in prior[key]:
+    #         center, r = circle["circle"][:2]
+    #         if center[0] < 1600:
+    #             continue
+    #         leaf_centers.append(center)
+    #         leaf_centers.extend(get_extrema(center, img_path, 2*r))
+    # for pt in leaf_centers:
+    #     plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
+    # plt.savefig("organs_2.jpg", bbox_inches = 'tight', pad_inches = 0, dpi=500)
+    leaf_centers = get_max_leaf_centers(prior, img_path, True)
+    for pt in leaf_centers:
+        plt.plot(pt[0], pt[1], '.', color="w", markersize=4)
+    print(leaf_centers)
+    if "prune_points" not in os.listdir("."):
+        os.mkdir("prune_points") 
+    save_centers("prune_points/"+sys.argv[1][:-1]+"txt", leaf_centers)
+    plt.savefig("leaf_center.jpg", bbox_inches = 'tight', pad_inches = 0, dpi=500)
     

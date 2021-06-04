@@ -14,7 +14,7 @@ import time
 
 def separate_list(target_list):
     x_list, y_list = [], []
-    for i in range(len(target_list)):
+    for i in target_list:
         target, center = i[0], i[1]
         if np.abs(target[0] - center[0]) > np.abs(target[1] - center[1]):
             y_list.append(target)
@@ -27,49 +27,50 @@ def separate_list(target_list):
 def batch_prune(target_list, overhead, rpi_check):
     fb = FarmBotThread()
     actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
+    print("ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     x_list, y_list = separate_list(target_list)
 
-    dismount_nozzle()
-    mount_xPruner()
-    for i in x_list:
-        fb.update_action("move", (i[0] * 10, i[1] * 10,0))
-        if rpi_check:
-            done = False
-            while (done == False):
-                #go down z cm prune and come back up
-                bef_name = recent_rpi_photo(fb)
+    # dismount_nozzle()
+    # mount_xPruner()
+    # for i in x_list:
+    #     fb.update_action("move", (i[0] * 10, i[1] * 10,0))
+    #     if rpi_check:
+    #         done = False
+    #         while (done == False):
+    #             #go down z cm prune and come back up
+    #             bef_name = recent_rpi_photo(fb)
         
-                fb.update_action("prune", None)
+    #             fb.update_action("prune", None)
 
-                aft_name = recent_rpi_photo(fb)
-                done = check_prune(bef_name, aft_name)
-        else:
-            #TODO add functionality to go up and down and prune
-            fb.update_action("prune", None)
-        #prune action
+    #             aft_name = recent_rpi_photo(fb)
+    #             done = check_prune(bef_name, aft_name)
+    #     else:
+    #         #TODO add functionality to go up and down and prune
+    #         fb.update_action("prune", None)
+    #     #prune action
 
-    dismount_xPruner()
-    mount_yPruner()
+    # dismount_xPruner()
+    # mount_yPruner()
 
-    for i in y_list:
-        fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 40,0))    #y requires offset
-        if rpi_check:
-            done = False
-            while (done == False):
-                #go down z cm prune and come back up
-                bef_name = recent_rpi_photo(fb)
+    # for i in y_list:
+    #     fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 40,0))    #y requires offset
+    #     if rpi_check:
+    #         done = False
+    #         while (done == False):
+    #             #go down z cm prune and come back up
+    #             bef_name = recent_rpi_photo(fb)
         
-                fb.update_action("prune", None)
+    #             fb.update_action("prune", None)
 
-                aft_name = recent_rpi_photo(fb)
-                done = check_prune(bef_name, aft_name)
-        else:
-            #TODO add functionality to go up and down and prune
-            fb.update_action("prune", None)
-        #prune action
+    #             aft_name = recent_rpi_photo(fb)
+    #             done = check_prune(bef_name, aft_name)
+    #     else:
+    #         #TODO add functionality to go up and down and prune
+    #         fb.update_action("prune", None)
+    #     #prune action
 
-    dismount_yPruner()
-    mount_nozzle()
+    # dismount_yPruner()
+    # mount_nozzle()
 
     return None
 
