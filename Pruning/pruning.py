@@ -29,7 +29,8 @@ def batch_prune(target_list, overhead, rpi_check):
     actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
     print("ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     x_list, y_list = separate_list(target_list)
-
+    print("x_list: ", x_list)
+    print("y_list: ", y_list)
     # dismount_nozzle()
     # mount_xPruner()
     # for i in x_list:
