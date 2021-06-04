@@ -207,7 +207,7 @@ def farmbot_target_approach(fb, target_point, overhead_image):
 
 def separate_list(target_list):
     x_list, y_list = [], []
-    for i in range(len(target_list)):
+    for i in target_list:
         target, center = i[0], i[1]
         if np.abs(target[0] - center[0]) > np.abs(target[1] - center[1]):
             y_list.append(target)
