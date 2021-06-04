@@ -11,14 +11,15 @@ from thread import FarmBotThread
 import argparse
 import time
 
-def local_image_preprocess(local_image):
+def local_image_preprocess(local_image, sf=0.7438):
     #array of the preprocessed local image
-    resize_local(local_image) #rotate and rescale
+    local_path = resize_local(local_image, sf) #rotate and rescale
 
     cwd = os.getcwd()
-    image_path  = os.path.join(cwd, "rpi_images", local_image + "_resized.jpg")
+    image_path  = os.path.join(cwd, "rpi_images", local_image + "_" + str(sf) + "_resized.jpg")
     src = cv2.imread(image_path, 1)
-    return src
+
+    return src, local_path
 
 def overhead_image_preprocess(overhead_image):
     #array of the preprocessed overhead image
@@ -34,19 +35,16 @@ def find_local_in_overhead(local_image, overhead_image, target):
     
     #preprocess the overhead image and the raspberry pi local image
     local_name = local_image
-    local_image = local_image_preprocess(local_image)
+    
     overhead_image = overhead_image_preprocess(overhead_image)
 
-
-    img = local_image
-    img2 = img.copy()
+    
     template = overhead_image
     w, h = template.shape[:2][::-1]
 
     meth = 'cv2.TM_CCOEFF_NORMED'
     #150 x 100 y
 
-    img = img2.copy()
     method = eval(meth)
 
     # Apply template Matching
@@ -55,31 +53,50 @@ def find_local_in_overhead(local_image, overhead_image, target):
     targetpx_y = round(target[1] * 11.9) + 72
     error = [44, 20] #the border around the target to constrain the region of interest
 
+    best_sf = 1
+    best_max_val = 0
+    best_max_loc = None
     sf = 11.9 #scale factor for overhead image ex. 11.9 px = 1 cm
 
-    res = cv2.matchTemplate(img, template.astype(np.uint8) ,method)
+    for scale in np.linspace(0.5, 0.85, 50)[::-1]:
+        img, rpi_path_d = local_image_preprocess(local_image, scale)
+        img2 = img.copy()
+        img = img2.copy()
+        r = img.shape[1] / float(img.shape[1])
 
-    masked_res = np.zeros(res.shape)
-    res_x_lower = int(targetpx_x - img.shape[0]/2 - int(error[0]*sf/2))
-    res_x_lower = res_x_lower if res_x_lower >=0 else 0
-    res_x_upper = int(targetpx_x - img.shape[0]/2 + int(error[0]*sf/2))
-    res_x_upper = res_x_upper if res_x_upper <=masked_res.shape[1] else masked_res.shape[1]
 
-    res_y_lower = int(targetpx_y - img.shape[1]/2 - int(error[1]*sf/2))
-    res_y_lower = res_y_lower if res_y_lower >=0 else 0
-    res_y_upper = int(targetpx_y - img.shape[1]/2 + int(error[1]*sf/2))
-    res_y_upper = res_y_upper if res_y_upper <=masked_res.shape[0] else masked_res.shape[0]
+        res = cv2.matchTemplate(img, template.astype(np.uint8) ,method)
 
-    masked_res[res_y_lower:res_y_upper, res_x_lower:res_x_upper] = res[res_y_lower:res_y_upper, res_x_lower:res_x_upper]
-    
-    #cv2.imwrite("Masked_res.png", masked_res)
-    
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(masked_res)
-    print(max_val, max_loc)
-    
+        masked_res = np.zeros(res.shape)
+        res_x_lower = int(targetpx_x - img.shape[0]/2 - int(error[0]*sf/2))
+        res_x_lower = res_x_lower if res_x_lower >=0 else 0
+        res_x_upper = int(targetpx_x - img.shape[0]/2 + int(error[0]*sf/2))
+        res_x_upper = res_x_upper if res_x_upper <=masked_res.shape[1] else masked_res.shape[1]
 
-    top_left = max_loc
+        res_y_lower = int(targetpx_y - img.shape[1]/2 - int(error[1]*sf/2))
+        res_y_lower = res_y_lower if res_y_lower >=0 else 0
+        res_y_upper = int(targetpx_y - img.shape[1]/2 + int(error[1]*sf/2))
+        res_y_upper = res_y_upper if res_y_upper <=masked_res.shape[0] else masked_res.shape[0]
+
+        masked_res[res_y_lower:res_y_upper, res_x_lower:res_x_upper] = res[res_y_lower:res_y_upper, res_x_lower:res_x_upper]
+            
+        _, max_val, _, max_loc = cv2.minMaxLoc(masked_res)
+
+        print(max_val, max_loc, scale)
+
+        if max_val > best_max_val:
+            best_max_val = max_val
+            best_max_loc = max_loc
+            best_sf = scale
+
+        os.remove(rpi_path_d)
+        
+
+    top_left = best_max_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
+    img, _ = local_image_preprocess(local_image, best_sf)
+    img2 = img.copy()
+    img = img2.copy()
 
     cv2.rectangle(img,top_left, bottom_right, 255, 2)
 
@@ -91,22 +108,22 @@ def find_local_in_overhead(local_image, overhead_image, target):
     plt.suptitle(meth)
     #plt.show()
     
-    (tH, tW) = local_image.shape[:2]
+    (tH, tW) = img.shape[:2]
 
-    (startX, startY) = (int(max_loc[0]), int(max_loc[1]))
-    (endX, endY) = (int(max_loc[0] + tW), int(max_loc[1] + tH))
+    (startX, startY) = (int(best_max_loc[0]), int(best_max_loc[1]))
+    (endX, endY) = (int(best_max_loc[0] + tW), int(best_max_loc[1] + tH))
     # draw a bounding box around the detected result and display the image
     cv2.rectangle(template, (startX, startY), (endX, endY), (0, 0, 255), 2)
 
     x_px = (startX + endX) / 2 - 102
     y_px = (startY + endY) / 2 - 72
-    pred_pt = (round(274.66 - x_px/11.9), round(y_px/11.9))
+    pred_pt = (round(274.66 - x_px/sf), round(y_px/sf))
 
 
     cv2.imwrite(local_name[:-5] + "_" + str(pred_pt) + ".png", template)
     cv2.waitKey(0)
 
-    #(274.66, 0) cm in overhead is (130, 100) px
+    #(274.66, 0) cm in overhead is (102, 72) px
 
     #Overhead image has 1 cm = 11.9 px
 
@@ -153,20 +170,21 @@ def crop_overhead(overhead_image):
         im = correct_image(im, (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
         plt.imsave(image_path  + "_cropped.jpg", im)
 
-def resize_local(local_image):
+def resize_local(local_image, scale_factor=0.7438):
+    # Default scale_factor empirically determined from px to cm calculations from local and overhead images
     cwd = os.getcwd()
     image_path  = os.path.join(cwd, "rpi_images", local_image)
     img = cv2.imread(image_path, 1)
     img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE) #rotate to align with overhead image
      
-    scale_factor = 0.7438 # Determined from px to cm calculations from local and overhead images
     width = int(img.shape[1] * scale_factor)
     height = int(img.shape[0] * scale_factor)
     dim = (width, height)
     
     # resize image
     resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA) # for shrinking INTER_AREA preferred
-    plt.imsave(image_path  + "_resized.jpg", resized)
+    plt.imsave(image_path  + "_" + str(scale_factor) + "_resized.jpg", resized)
+    return image_path  + "_" + str(scale_factor) + "_resized.jpg"
 
 def farmbot_target_approach(fb, target_point, overhead_image):
     #have farmbot apporach the target within same local image
@@ -205,17 +223,6 @@ def farmbot_target_approach(fb, target_point, overhead_image):
     
     return tuple((coord_x, coord_y))
 
-def separate_list(target_list):
-    x_list, y_list = [], []
-    for i in range(len(target_list)):
-        target, center = i[0], i[1]
-        if np.abs(target[0] - center[0]) > np.abs(target[1] - center[1]):
-            y_list.append(target)
-        else:
-            x_list.append(target)
-
-    return x_list, y_list
-
 def batch_target_approach(fb, target_list, overhead):
     actual_farmbot_coord = []
     for i in range(len(target_list)):
@@ -227,7 +234,7 @@ def batch_target_approach(fb, target_list, overhead):
 
     return actual_farmbot_coord
 
-def crop_o_px_to_cm(x_px, y_px):
+def crop_o_px_to_cm(x_px, y_px, sf):
     pred_pt = (round(274.66 - (x_px - 102)/11.9), round((y_px - 72)/11.9))
     return pred_pt
 
@@ -252,5 +259,3 @@ def curr_pos_from_local(fb, overhead_image, target):
 
     pt = find_local_in_overhead(local_name, overhead_image, target)
     return pt
-
-    
