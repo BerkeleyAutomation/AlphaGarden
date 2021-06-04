@@ -56,7 +56,7 @@ class MyHandler:
         self.bot = None
 
     def update(self, action, coords):
-        assert action in ['prune', 'move', 'photo'], "Not in list of actions"
+        assert action in ['prune', 'move', 'photo', 'move_rel'], "Not in list of actions"
         self.action = action
         self.coords = coords
         self.execute()  
@@ -72,15 +72,19 @@ class MyHandler:
                 request_id = self.bot.move_absolute(x=x, y=y, z=z)
                 print("MOVE_ABS REQUEST ID: " + request_id)
 
+        elif self.action == 'move_rel':
+            request_id = self.bot.move_relative(self.coords[0],self.coords[1],self.coords[2])
+            print("TOGGLE PIN REQUEST ID: " + request_id)
+
         elif self.action == 'prune':
             request_id = self.bot.toggle_pin(48)
             print("TOGGLE PIN REQUEST ID: " + request_id)
-            request_id = self.bot.move_relative(0,0,-390)
-            print("MOVE_REL REQUEST ID: " + request_id)
-            request_id = self.bot.move_relative(0,0, 389)
-            print("MOVE_REL REQUEST ID: " + request_id)
-            request_id = self.bot.toggle_pin(48)
-            print("TOGGLE PIN REQUEST ID: " + request_id)
+            # request_id = self.bot.move_relative(0,0,-390)
+            # print("MOVE_REL REQUEST ID: " + request_id)
+            # request_id = self.bot.move_relative(0,0, 389)
+            # print("MOVE_REL REQUEST ID: " + request_id)
+            # request_id = self.bot.toggle_pin(48)
+            # print("TOGGLE PIN REQUEST ID: " + request_id)
 
         elif self.action == 'photo':
             request_id = self.bot.take_photo()

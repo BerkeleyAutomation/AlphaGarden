@@ -31,44 +31,59 @@ def batch_prune(target_list, overhead, rpi_check):
     x_list, y_list = separate_list(target_list)
     print("x_list: ", x_list)
     print("y_list: ", y_list)
+
     # dismount_nozzle()
     # mount_xPruner()
-    # for i in x_list:
-    #     fb.update_action("move", (i[0] * 10, i[1] * 10,0))
-    #     if rpi_check:
-    #         done = False
-    #         while (done == False):
-    #             #go down z cm prune and come back up
-    #             bef_name = recent_rpi_photo(fb)
-        
-    #             fb.update_action("prune", None)
 
-    #             aft_name = recent_rpi_photo(fb)
-    #             done = check_prune(bef_name, aft_name)
-    #     else:
-    #         #TODO add functionality to go up and down and prune
-    #         fb.update_action("prune", None)
-    #     #prune action
+    for i in x_list:
+        fb.update_action("move", (i[0] * 10, i[1] * 10,0))
+        if rpi_check:
+            done = False
+            inc = -250
+            while (done == False):
+                #go down z cm prune and come back up
+                bef_name = recent_rpi_photo(fb)
+        
+                fb.update_action("prune", None)
+                fb.update_action("move_rel", (0,0,inc))
+                fb.update_action("move_rel", (0,0,(-1 * inc) - 1))
+
+                aft_name = recent_rpi_photo(fb)
+                done = check_prune(bef_name, aft_name)
+                inc -= 50
+        else:
+            #TODO add functionality to go up and down and prune
+            fb.update_action("prune", None)
+            fb.update_action("move_rel", (0,0,-390))
+            fb.update_action("move_rel", (0,0, 388))
+
+        #prune action
 
     # dismount_xPruner()
     # mount_yPruner()
 
-    # for i in y_list:
-    #     fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 40,0))    #y requires offset
-    #     if rpi_check:
-    #         done = False
-    #         while (done == False):
-    #             #go down z cm prune and come back up
-    #             bef_name = recent_rpi_photo(fb)
+    for i in y_list:
+        fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 40,0))    #y requires offset
+        if rpi_check:
+            done = False
+            inc = -250
+            while (done == False):
+                #go down z cm prune and come back up
+                bef_name = recent_rpi_photo(fb)
         
-    #             fb.update_action("prune", None)
+                fb.update_action("prune", None)
+                fb.update_action("move_rel", (0,0,inc))
+                fb.update_action("move_rel", (0,0,(-1 * inc) - 1))
 
-    #             aft_name = recent_rpi_photo(fb)
-    #             done = check_prune(bef_name, aft_name)
-    #     else:
-    #         #TODO add functionality to go up and down and prune
-    #         fb.update_action("prune", None)
-    #     #prune action
+                aft_name = recent_rpi_photo(fb)
+                done = check_prune(bef_name, aft_name)
+                inc -= 50
+        else:
+            #TODO add functionality to go up and down and prune
+            fb.update_action("prune", None)
+            fb.update_action("move_rel", (0,0,-390))
+            fb.update_action("move_rel", (0,0, 388))
+        #prune action
 
     # dismount_yPruner()
     # mount_nozzle()
@@ -114,7 +129,7 @@ def check_prune(bef_rpi, aft_rpi):
     res = cv2.matchTemplate(bef_rpi, aft_rpi.astype(np.uint8), method)
 
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    print(max_val, max_loc)
+    print("MAX_VAL: ", max_val)
     prune = True if max_val < threshold else False
     return prune
 
