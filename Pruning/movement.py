@@ -234,7 +234,7 @@ def batch_target_approach(fb, target_list, overhead):
 
     return actual_farmbot_coord
 
-def crop_o_px_to_cm(x_px, y_px, sf):
+def crop_o_px_to_cm(x_px, y_px):
     pred_pt = (round(274.66 - (x_px - 102)/11.9), round((y_px - 72)/11.9))
     return pred_pt
 
