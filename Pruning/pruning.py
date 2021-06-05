@@ -26,18 +26,24 @@ def separate_list(target_list):
 
 def batch_prune(target_list, overhead, rpi_check):
     fb = FarmBotThread()
-    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
-    print("ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
-    x_list, y_list = separate_list(target_list)
-    print("x_list: ", x_list)
-    print("y_list: ", y_list)
+    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
+    # print("ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
+    # x_list, y_list = separate_list(target_list)
+    # print("x_list: ", x_list)
+    # print("y_list: ", y_list)
+
+    x_list = [(96,73), (60, 45), (73,65)]
+    y_list = [(74,65),(83,101), (69,97), (94,98), (18,58)]
 
     # dismount_nozzle()
-    # mount_xPruner()
+    # mount_yPruner()
+    response = input("Enter 'y' after MOUNTING yPruner.")
 
-    for i in x_list:
-        fb.update_action("move", (i[0] * 10, i[1] * 10,0))
-        if rpi_check:
+    for i in y_list:
+        response = input()
+        fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 70,0))    #y requires offset
+        response = input("Enter 'y' when READY to prune.")
+        if False: #rpi_check:
             done = False
             inc = -250
             while (done == False):
@@ -47,24 +53,32 @@ def batch_prune(target_list, overhead, rpi_check):
                 fb.update_action("prune", None)
                 fb.update_action("move_rel", (0,0,inc))
                 fb.update_action("move_rel", (0,0,(-1 * inc) - 1))
+                fb.update_action("prune", None)
 
                 aft_name = recent_rpi_photo(fb)
-                done = check_prune(bef_name, aft_name)
+                chk = check_prune(bef_name, aft_name)
+                print("--PRUNE CHECK--: ", chk)
+
+                response = input("Enter 'y' if leaf pruned, else 'n': ")
+                if response == 'y':
+                    done = True
                 inc -= 50
+
         else:
             #TODO add functionality to go up and down and prune
             fb.update_action("prune", None)
             fb.update_action("move_rel", (0,0,-390))
-            fb.update_action("move_rel", (0,0, 388))
+            fb.update_action("move_rel", (0,0, 389))
+            fb.update_action("prune", None)
 
-        #prune action
+    # dismount_yPruner()
+    # mount_xPruner()
+    response = input("Enter 'y' after pruner is SWITCHED.")
 
-    # dismount_xPruner()
-    # mount_yPruner()
-
-    for i in y_list:
-        fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 40,0))    #y requires offset
-        if rpi_check:
+    for i in x_list:
+        fb.update_action("move", (i[0] * 10, i[1] * 10,0))
+        response = input("Enter 'y' when READY to prune.")
+        if False: # rpi_check: (can't use servo'ing with xPruner bc it blocks camera)
             done = False
             inc = -250
             while (done == False):
@@ -74,27 +88,25 @@ def batch_prune(target_list, overhead, rpi_check):
                 fb.update_action("prune", None)
                 fb.update_action("move_rel", (0,0,inc))
                 fb.update_action("move_rel", (0,0,(-1 * inc) - 1))
+                fb.update_action("prune", None)
 
                 aft_name = recent_rpi_photo(fb)
                 chk = check_prune(bef_name, aft_name)
                 print("PRUNE CHECK: ", chk)
 
                 response = input("Enter 'y' if leaf pruned, else 'n': ")
-                if chk == True and response == 'y':
+                if chk and response == 'y':
                     done = True
-
                 inc -= 50
-
-
         else:
             #TODO add functionality to go up and down and prune
             fb.update_action("prune", None)
             fb.update_action("move_rel", (0,0,-390))
-            fb.update_action("move_rel", (0,0, 388))
-        #prune action
+            fb.update_action("move_rel", (0,0, 389))
+            fb.update_action("prune", None)
 
-    # dismount_yPruner()
-    # mount_nozzle()
+    dismount_xPruner()
+    mount_nozzle()
 
     return None
 
@@ -150,7 +162,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     #print(get_points(im)) #Find Points to crop in overhead image
-    target_list = [((2481.782258064516, 923.8887096774195), (2000, 900)), ((2250.383064516129, 678.4653225806451), (2100, 600)), ((3098.8467741935483, 1337.6024193548387), (3000, 1000))]
+    # target_list = [((2481.782258064516, 923.8887096774195), (2000, 900)), ((2250.383064516129, 678.4653225806451), (2100, 600)), ((3098.8467741935483, 1337.6024193548387), (3000, 1000))]
+    target_list = [((2192.1348713372863, 1033.2203931840422), (2051.2697426745726, 766.4407863680847)), ((2646.372097874638, 677.2447216554123), (2762.744195749276, 475.4894433108245)), ((2469.969855260587, 922.4155430868436), (2405.9397105211738, 680.8310861736873)), ((2469.4256064016004, 993.9150318829708), (2579.8512128032007, 965.8300637659415)), ((2358.408583699892, 1373.3575856917587), (2478.817167399784, 1297.7151713835174)), ((2533.076888573078, 1331.9534684904738), (2850.1537771461562, 1248.9069369809476)), ((2211.2047908751406, 1345.0958580073393), (2084.409581750281, 1262.1917160146788)), ((3174.827852473074, 860.0234503457663), (2972.6557049461485, 877.0469006915325))]
 
     batch_prune(target_list, args.overhead, args.rpi_check_prune)
     
