@@ -58,7 +58,7 @@ def find_local_in_overhead(local_image, overhead_image, target):
     best_max_loc = None
     sf = 11.9 #scale factor for overhead image ex. 11.9 px = 1 cm
 
-    for scale in np.linspace(0.5, 0.85, 50)[::-1]:
+    for scale in np.linspace(0.5, 0.85, 15)[::-1]:
         img, rpi_path_d = local_image_preprocess(local_image, scale)
         img2 = img.copy()
         img = img2.copy()
