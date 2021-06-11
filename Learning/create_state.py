@@ -117,7 +117,7 @@ plant_objs = plant_type.get_plant_seeds(0, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS,
 plants = [{} for _ in range(len(plant_types))]
 
 grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
-grid['water'] = np.random.normal(0.4, 0.1, grid['water'].shape)
+grid['water'] = np.random.normal(0.3, 0.1, grid['water'].shape)
 for i in range(ROWS):
     for j in range(COLS):
         grid[i, j]['nearby'] = set()
