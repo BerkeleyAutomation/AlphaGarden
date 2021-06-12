@@ -8,6 +8,7 @@ from run import *
 import numpy as np
 import pickle as pkl
 import traceback
+from constants import *
 from tqdm import tqdm
 
 
@@ -112,5 +113,9 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
     return label_circles_BFS(mask_path, True)[1]
 
 if __name__ == "__main__":
+    print("Running Segmentation + Center Tracking")
+    print("Garden year: {} Garden month: {} Garden day: {}".format(GARDEN_DATE_YEAR, GARDEN_DATE_Month, GARDEN_DATE_Day))
+    print("Using Segmentation Model: {}".format(TEST_MODEL))
+    print("Combining images via: {}".format(SHIFT))
     for f in daily_files("./cropped"):
         process_image("cropped/" + f, True, True)
