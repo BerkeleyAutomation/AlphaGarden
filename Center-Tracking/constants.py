@@ -114,3 +114,5 @@ TEST_MODEL = './models/model_3_16.h5'
 GARDEN_DATE_YEAR = 2021
 GARDEN_DATE_MONTH = 5
 GARDEN_DATE_DAY = 1
+
+SHIFT = 'confidence'
