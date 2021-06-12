@@ -113,9 +113,11 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
     return label_circles_BFS(mask_path, True)[1]
 
 if __name__ == "__main__":
+    print("=" * 20)
     print("Running Segmentation + Center Tracking")
-    print("Garden year: {} Garden month: {} Garden day: {}".format(GARDEN_DATE_YEAR, GARDEN_DATE_Month, GARDEN_DATE_Day))
+    print("Garden year: {} Garden month: {} Garden day: {}".format(GARDEN_DATE_YEAR, GARDEN_DATE_MONTH, GARDEN_DATE_DAY))
     print("Using Segmentation Model: {}".format(TEST_MODEL))
     print("Combining images via: {}".format(SHIFT))
+    print("=" * 20)
     for f in daily_files("./cropped"):
         process_image("cropped/" + f, True, True)
