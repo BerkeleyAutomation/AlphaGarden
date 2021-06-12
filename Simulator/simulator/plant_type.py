@@ -72,7 +72,7 @@ class PlantType:
                    r, c = plant[0]
                    cur_radius = plant[1]
                    plants.append(Plant.from_preset(plant_type, r, c, beginning=False,
-                                                   timestep=timestep, cur_radius=cur_radius)) 
+                                                  timestep=timestep, cur_radius=cur_radius)) 
                    self.plant_in_bounds += 1
                    self.plant_centers.append(tuple((r, c)))
         else:

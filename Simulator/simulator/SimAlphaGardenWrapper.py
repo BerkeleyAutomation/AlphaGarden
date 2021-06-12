@@ -6,7 +6,7 @@ import configparser
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
-from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS, IRRIGATION_AMOUNT
+from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS, IRRIGATION_AMOUNT, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_MOISTURE_SENSOR_POSITIONS
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
@@ -256,12 +256,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def set_water_grid(self, s, s_pos):
         """Set the water grid for the enviornment from one sensor
-
         Returns:
             None.
-
         """
         return self.garden.set_water_grid_full(s, s_pos)
+
 
     def get_radius_grid(self):
         """Get grid for plant radius representation.
@@ -332,6 +331,9 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # if ((time_step // sector_obs_per_day) >= PRUNE_DELAY) and time_step % sector_obs_per_day == 0:
         if self.curr_action >= 0:
             out = self.get_canopy_image(center, eval)
+            r = os.urandom(16)
+            path = 'water/' + ''.join('%02x' % ord(chr(x)) for x in r)
+            self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
             if not eval:
                 path = out
                 # self.plot_water_map(path, self.garden.get_water_grid_full(), self.garden.get_plant_grid_full())
@@ -344,11 +346,11 @@ class SimAlphaGardenWrapper(WrapperEnv):
             self.plant_heights = []
             self.plant_radii = []
 
-        if self.curr_action == 5 or self.curr_action == 6:
-            self.centers_to_execute = np.copy(self.plant_centers_original)
-            self.actions_to_execute = len(self.plant_centers_original) * [1]
-            if self.curr_action == 6:
-                self.garden.set_irrigation_amount(0.0001)
+        if self.curr_action == 5:
+            #self.centers_to_execute = np.copy(self.plant_centers_original)
+            active = [i for i, x in enumerate(SOIL_MOISTURE_SENSOR_ACTIVE) if x]
+            self.centers_to_execute = [SOIL_MOISTURE_SENSOR_POSITIONS[i] for i in active]
+            self.actions_to_execute = len(self.centers_to_execute) * [1]
         else:
             self.centers_to_execute.append(center)
             self.actions_to_execute.append(self.curr_action)
@@ -362,8 +364,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # Execute actions only if we have reached the number of actions threshold.
         self.garden.perform_timestep(
             sectors=self.centers_to_execute, actions=self.actions_to_execute)
-        if self.curr_action == 6:
-            self.garden.set_irrigation_amount(IRRIGATION_AMOUNT)
         self.actions_to_execute = []
         self.centers_to_execute = []
         self.plant_centers = np.copy(self.plant_centers_original)
@@ -426,6 +426,16 @@ class SimAlphaGardenWrapper(WrapperEnv):
         """
         self.garden.set_irrigation_amount(irrigation_amount)
 
+    def get_metrics(self):
+        """Evaluate metrics of garden.
+
+        Return:
+            Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
+        """
+        return self.garden.coverage, self.garden.diversity, self.garden.water_use, \
+            self.garden.actions, self.garden.mme1, self.garden.mme2
+
+
     def set_max_water_level(self, max_water_level):
         """Sets the max_water_level in the garden.
         
@@ -435,14 +445,6 @@ class SimAlphaGardenWrapper(WrapperEnv):
         self.max_water_level = max_water_level
         self.garden.set_max_water_level(max_water_level)
 
-    def get_metrics(self):
-        """Evaluate metrics of garden.
-
-        Return:
-            Lists of: Garden Coverage, Garden Diversity, Garden's water use, performed actions.
-        """
-        return self.garden.coverage, self.garden.diversity, self.garden.water_use, \
-            self.garden.actions, self.garden.mme1, self.garden.mme2
 
     def get_prune_window_greatest_width(self, center):
         """Get the radius of the tallest (non occluded) plant inside prune window.

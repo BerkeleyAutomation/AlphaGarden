@@ -7,6 +7,9 @@ from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT
 import simalphagarden
 import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
+import simulator.baselines.wrapper_analytic_policy as wrapper_policy
+import soil_moisture as sm
+from simulator.soil_moisture import save_water_grid
 from net import Net
 from constants import TrainingConstants
 import numpy as np
@@ -36,7 +39,6 @@ parser.add_argument('-d', '--days', type=int, default=100)
 parser.add_argument('-w', '--water_threshold', type=float, default=1.0)
 parser.add_argument('-o', '--output_directory', type=str, default='policy_metrics/')
 parser.add_argument('-sm', type=bool, default=False)
-
 args = parser.parse_args()
 
 def init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows,
@@ -192,293 +194,15 @@ def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_ro
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def getDeviceReadingsMostRecent():
-    buffer = 1800 # 1/2 hour buffer for querying the logger again
-    user = "mpresten@berkeley.edu"
-    user_password = "AlphaGard3n"
-    device_serial_number = "z6-08807"
-    device_password = "24453-30317"
-    ip = "zentracloud.com"
-    utc_time = datetime.now(timezone.utc)
-    
-    create = False
-    utc_timestamp = utc_time.timestamp()    
-    most_recent = round(utc_timestamp)
-    if (os.path.exists("soil_moisture.txt")):
-        f = open("soil_moisture.txt", "r")
-        t = f.readline()
-        s = f.readline()
-        slist = f.readline()
-        f.close()
-    else:
-        create = True
-    if (create or ((int(t) + buffer) < most_recent)) :
-        first = True
-        count = 0
-        while (first or json.dumps(readings_json['device']['timeseries']) == "[]"):
-            response = urlopen('https://' + ip + '/api/v1/readings'
-                                + '?' + "user=" + user
-                                + '&' + "user_password=" + user_password
-                                + '&' + "sn=" + device_serial_number
-                                + '&' + "device_password=" + device_password
-                                + '&' + "start_time=" + str(most_recent - count)
-                                )
-            readings_str = response.read()
-            readings_json = json.loads(readings_str)
-            first = False
-            count += 1800
-        # Readings are now contained in the 'readings_json' Python dictionary
-
-        print("once")
-        # Examples of accessing data
-        time = int(float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][0])))
-        s1 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][3][0]['value']))
-        s2 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][4][0]['value']))
-        s3 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][5][0]['value']))
-        s4 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][6][0]['value']))
-        s5 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][7][0]['value']))
-        s6 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][-1][8][0]['value']))
-        slist = [s1, s2, s3, s4, s5, s6]
-
-        if (os.path.exists("soil_moisture.txt")):
-            os.remove("soil_moisture.txt")
-
-        f = open("soil_moisture.txt", "w")
-        f.write(str(most_recent)) # time when the logger was pinged not when the measurements were taken
-        f.write("\nSoil Readings: \n" + str(slist))
-        f.write("\nThe Actual Time the Readings were Taken: " + str(time))
-        f.close()
-    else:
-        slist = json.loads(slist)
-        s1 = float(json.dumps(slist[0]))
-        s2 = float(json.dumps(slist[1]))
-        s3 = float(json.dumps(slist[2]))
-        s4 = float(json.dumps(slist[3]))
-        s5 = float(json.dumps(slist[4]))
-        s6 = float(json.dumps(slist[5]))
-
-    return s1, s2, s3, s4, s5, s6
-
-def getDeviceReadings(current_day):
-    user = "mpresten@berkeley.edu"
-    user_password = "AlphaGard3n"
-    device_serial_number = "z6-08807"
-    device_password = "24453-30317"
-    ip = "zentracloud.com"
-    create = False
-    utc_time = datetime.now(timezone.utc)
-    utc_timestamp = utc_time.timestamp()
-    current_time = round(utc_timestamp)
-    most_recent = current_day * 86400 + GARDEN_START_DATE
-    slist = None
-    if (most_recent > current_time):
-        return None, None, None, None, None, None
-
-    if (os.path.exists("policy_metrics/soil_moisture.txt")):
-        f = open("policy_metrics/soil_moisture.txt", "r")
-        slist = f.readline()
-        f.close()
-        slist = json.loads(slist)   
-
-    if (slist == None or str(most_recent) not in slist):
-        temp = {}
-        response = urlopen('https://' + ip + '/api/v1/readings'
-                            + '?' + "user=" + user
-                            + '&' + "user_password=" + user_password
-                            + '&' + "sn=" + device_serial_number
-                            + '&' + "device_password=" + device_password
-                            + '&' + "start_time=" + str(most_recent)
-                            )
-        readings_str = response.read()
-        readings_json = json.loads(readings_str)
-        # Readings are now contained in the 'readings_json' Python dictionary
-        # Examples of accessing data
-        time = int(float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][0])))
-        s1 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][3][0]['value']))
-        s2 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][4][0]['value']))
-        s3 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][5][0]['value']))
-        s4 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][6][0]['value']))
-        s5 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][7][0]['value']))
-        s6 = float(json.dumps(readings_json['device']['timeseries'][0]['configuration']['values'][0][8][0]['value']))
-        print(most_recent, time)
-        temp[most_recent] = [s1, s2, s3, s4, s5, s6]
-        if (os.path.exists("policy_metrics/soil_moisture.txt")):
-            os.remove("policy_metrics/soil_moisture.txt")
-        f = open("policy_metrics/soil_moisture.txt", "w")
-        
-        if slist == None:
-            json.dump(temp, f)
-        else:
-            slist.update(temp)
-            json.dump(slist, f)
-        
-        f.close()
-        
-    else:
-        s1 = float(json.dumps(slist[str(most_recent)][0]))
-        s2 = float(json.dumps(slist[str(most_recent)][1]))
-        s3 = float(json.dumps(slist[str(most_recent)][2]))
-        s4 = float(json.dumps(slist[str(most_recent)][3]))
-        s5 = float(json.dumps(slist[str(most_recent)][4]))
-        s6 = float(json.dumps(slist[str(most_recent)][5]))
-
-    return s1, s2, s3, s4, s5, s6
-
-def averagedReadings(water_grid, s_pos):
-    readings = []
-    water_grid[s_pos[0]][s_pos[1]]
-    h, k = s_pos[0] + 1, s_pos[1] + 2
-    a, b = 3, 4
-    for x in range(s_pos[0] - 2, s_pos[0] + 5):
-        for y in range(s_pos[1] - 2, s_pos[1] + 7):
-            x, y = round(x), round(y)
-            p = ((math.pow((x - h), 2) // math.pow(a, 2)) + (math.pow((y - k), 2) // math.pow(b, 2))) 
-            if (p <= 1 and x >=0 and y>= 0 and x < ROWS and y < COLS):
-               readings.append(water_grid[x][y])
-    print(s_pos, readings)
-    return sum(readings)/len(readings)
-
-def augment_soil_moisture_map(env, trial, current_day, s1_avg, s2_avg, s3_avg, s4_avg, s5_avg, s6_avg, s1_pavg, s2_pavg, s3_pavg, s4_pavg, s5_pavg, s6_pavg):
-    water_grid = env.get_garden_state()[:, :, -2]
-    start_buffer = 3 # number of days after the start of the garden that the sensors are sending accurate moisture levels
-    end_buffer = 30 # number of days before the end of the garden that the sensors are sending accurate moisture levels
-
-    s1, s2, s3, s4, s5, s6 = getDeviceReadings(current_day)
-    
-    s1_pos = SOIL_MOISTURE_SENSOR_POSITIONS[0]
-    s2_pos = SOIL_MOISTURE_SENSOR_POSITIONS[1]
-    s3_pos = SOIL_MOISTURE_SENSOR_POSITIONS[2]
-    s4_pos = SOIL_MOISTURE_SENSOR_POSITIONS[3]
-    s5_pos = SOIL_MOISTURE_SENSOR_POSITIONS[4]
-    s6_pos = SOIL_MOISTURE_SENSOR_POSITIONS[5]
-
-    s1_error, s2_error, s3_error, s4_error, s5_error, s6_error = None, None, None, None, None, None
-    s1_perror, s2_perror, s3_perror, s4_perror, s5_perror, s6_perror = None, None, None, None, None, None
-    s1_sim, s2_sim, s3_sim, s4_sim, s5_sim, s6_sim = None, None, None, None, None, None
-    #calculating absolute and percent error
-    #percent error = |(actual - expected)/expected| where expected = sensor measurement, actual = val in sim
-    f = open("policy_metrics/water_grid_error_ " + str(trial) + ".txt", "a")
-    if s1 == None or current_day < start_buffer or current_day > 100 - end_buffer:
-        f.write("\nDay " + str(current_day) + ":")
-        f.write("\n\tActual Reading: ")
-        f.write("\n\t\tS1: None S2: None S3: None S4: None S5: None S6: None")
-        f.write("\n\tValue in Sim: ")
-        f.write("\n\t\tS1: " + str(s1_sim) + " S2: " + str(s2_sim) + " S3: "  + str(s3_sim) + " S4: " + str(s4_sim) + " S5: " + str(s5_sim) + " S6: " + str(s6_sim))
-        f.write("\n\tAbsolute Error: ")
-        f.write("\n\t\tS1 Error: " + str(s1_error) + " S2 Error: " + str(s2_error) + " S3 Error: "  + str(s3_error) + " S4 Error: " + str(s4_error) + " S5 Error: " + str(s5_error) + " S6 Error: " + str(s6_error))
-        f.write("\n\tPercent Error: ")
-        f.write("\n\t\tS1 Error: " + str(s1_perror) + " S2 Error: " + str(s2_perror) + " S3 Error: "  + str(s3_perror) + " S4 Error: " + str(s4_perror) + " S5 Error: " + str(s5_perror) + " S6 Error: " + str(s6_perror))
-
-        if current_day == 100:
-            s1_a, s1_pa = None, None
-            s2_a, s2_pa = None, None
-            s3_a, s3_pa = None, None
-            s4_a, s4_pa = None, None
-            s5_a, s5_pa = None, None
-            s6_a, s6_pa = None, None
-            if len(s1_avg) != 0:
-                s1_a, s1_pa  = sum(s1_avg)/len(s1_avg), sum(s1_pavg)/len(s1_pavg)
-            if len(s2_avg) != 0:
-                s2_a, s2_pa  = sum(s2_avg)/len(s2_avg), sum(s2_pavg)/len(s2_pavg)
-            if len(s3_avg) != 0:
-                s3_a, s3_pa  = sum(s3_avg)/len(s3_avg), sum(s3_pavg)/len(s3_pavg)
-            if len(s4_avg) != 0:
-                s4_a, s4_pa  = sum(s4_avg)/len(s4_avg), sum(s4_pavg)/len(s4_pavg)
-            if len(s5_avg) != 0:
-                s5_a, s5_pa  = sum(s5_avg)/len(s5_avg), sum(s5_pavg)/len(s5_pavg)
-            if len(s6_avg) != 0:
-                s6_a, s6_pa  = sum(s6_avg)/len(s6_avg), sum(s6_pavg)/len(s6_pavg)
-            f.write("\n\nAverage Absolute Error: ")
-            f.write("\n\t\tS1: " + str(s1_a) + " S2: " + str(s2_a) + " S3: "  + str(s3_a) + " S4: " + str(s4_a) + " S5: " + str(s5_a) + " S6: " + str(s6_a))
-            f.write("\nAverage Percent Error: ")
-            f.write("\n\t\tS1: " + str(s1_pa) + " S2: " + str(s2_pa) + " S3: "  + str(s3_pa) + " S4: " + str(s4_pa) + " S5: " + str(s5_pa) + " S6: " + str(s6_pa))        
-        return None
-
-    m = max(s1, s2, s3, s4, s5, s6)
-    if SOIL_MOISTURE_SENSOR_ACTIVE[0]:
-        s1_sim = averagedReadings(water_grid, s1_pos)
-        s1_error = abs(s1_sim - s1)
-        s1_perror = abs((s1_sim - s1)/s1) * 100
-        s1_avg.append(s1_error)
-        s1_pavg.append(s1_perror)
-        env.wrapper_env.set_water_grid(s1, s1_pos)
-    else:
-        s1 = None
-
-    if SOIL_MOISTURE_SENSOR_ACTIVE[1]:
-        s2_sim = averagedReadings(water_grid, s2_pos)
-        s2_error = abs(s2_sim - s2)
-        s2_perror = abs((s2_sim - s2)/s2) * 100
-        s2_avg.append(s2_error)
-        s2_pavg.append(s2_perror)
-        env.wrapper_env.set_water_grid(s2, s2_pos)
-    else:
-        s2 = None
-    if SOIL_MOISTURE_SENSOR_ACTIVE[2]:
-        s3_sim = averagedReadings(water_grid, s3_pos)
-        s3_error = abs(s3_sim - s3)
-        s3_perror = abs((s3_sim - s3)/s3) * 100
-        s3_avg.append(s3_error)
-        s3_pavg.append(s3_perror)
-        env.wrapper_env.set_water_grid(s3, s3_pos)
-    else:
-        s3 = None
-    if SOIL_MOISTURE_SENSOR_ACTIVE[3]:
-        s4_sim = averagedReadings(water_grid, s4_pos)
-        s4_error = abs(s4_sim - s4)
-        s4_perror = abs((s4_sim - s4)/s4) * 100
-        s4_avg.append(s4_error)
-        s4_pavg.append(s4_perror)
-        env.wrapper_env.set_water_grid(s4, s4_pos)
-    else:
-        s4 = None
-    if SOIL_MOISTURE_SENSOR_ACTIVE[4]:
-        s5_sim = averagedReadings(water_grid, s5_pos)
-        s5_error = abs(s5_sim - s5)
-        s5_perror = abs((s5_sim - s5)/s5) * 100
-        s5_avg.append(s5_error)
-        s5_pavg.append(s5_perror)
-        env.wrapper_env.set_water_grid(s5, s5_pos)
-    else:
-        s5 = None
-    if SOIL_MOISTURE_SENSOR_ACTIVE[5]:
-        s6_sim = averagedReadings(water_grid, s6_pos)
-        s6_error = abs(s6_sim - s6)
-        s6_perror = abs((s6_sim - s6)/s6) * 100
-        s6_avg.append(s6_error)
-        s6_pavg.append(s6_perror)
-        env.wrapper_env.set_water_grid(s6, s6_pos)
-    else:
-        s6 = None
-
-    f.write("\nDay " + str(current_day) + ":")
-    f.write("\n\tActual Reading: ")
-    f.write("\n\t\tS1: " + str(s1) + " S2: " + str(s2) + " S3: "  + str(s3) + " S4: " + str(s4) + " S5: " + str(s5) + " S6: " + str(s6))
-    f.write("\n\tValue in Sim: ")
-    f.write("\n\t\tS1: " + str(s1_sim) + " S2: " + str(s2_sim) + " S3: "  + str(s3_sim) + " S4: " + str(s4_sim) + " S5: " + str(s5_sim) + " S6: " + str(s6_sim))
-    f.write("\n\tAbsolute Error: ")
-    f.write("\n\t\tS1 Error: " + str(s1_error) + " S2 Error: " + str(s2_error) + " S3 Error: "  + str(s3_error) + " S4 Error: " + str(s4_error) + " S5 Error: " + str(s5_error) + " S6 Error: " + str(s6_error))
-    f.write("\n\tPercent Error: ")
-    f.write("\n\t\tS1 Error: " + str(s1_perror) + " S2 Error: " + str(s2_perror) + " S3 Error: "  + str(s3_perror) + " S4 Error: " + str(s4_perror) + " S5 Error: " + str(s5_perror) + " S6 Error: " + str(s6_perror))
-
-    if current_day == 100:
-        f.write("\n\nAverage Absolute Error: ")
-        f.write("\n\t\tS1: " + str(sum(s1_avg)/len(s1_avg)) + " S2: " + str(sum(s2_avg)/len(s2_avg)) + " S3: "  + str(sum(s3_avg)/len(s3_avg)) + " S4: " + str(sum(s4_avg)/len(s4_avg)) + " S5: " + str(sum(s5_avg)/len(s5_avg)) + " S6: " + str(sum(s6_avg)/len(s6_avg)))
-        f.write("\nAverage Percent Error: ")
-        f.write("\n\t\tS1: " + str(sum(s1_pavg)/len(s1_pavg)) + " S2: " + str(sum(s2_pavg)/len(s2_pavg)) + " S3: "  + str(sum(s3_pavg)/len(s3_pavg)) + " S4: " + str(sum(s4_pavg)/len(s4_pavg)) + " S5: " + str(sum(s5_pavg)/len(s5_pavg)) + " S6: " + str(sum(s6_pavg)/len(s6_pavg)))
-    return m
-
 def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_steps, sector_rows, sector_cols, 
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                            sector_obs_per_day, trial, save_dir, vis_identifier, soil_moisture_reading):
+                            sector_obs_per_day, trial, save_dir, vis_identifier):
     wrapper = wrapper_sel # If wrapper_sel is True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
     prune_rates_order = []
     irrigation_amounts_order = []
     obs = env.reset()
     div_cov = []
     all_actions = []
-    s1_avg, s2_avg, s3_avg, s4_avg, s5_avg, s6_avg = [], [], [], [], [], []
-    s1_pavg, s2_pavg, s3_pavg, s4_pavg, s5_pavg, s6_pavg = [], [], [], [], [], []
     for i in range(collection_time_steps):
         if i % sector_obs_per_day == 0:
             current_day = int(i/sector_obs_per_day) + 1
@@ -486,8 +210,6 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             vis.get_canopy_image_full(False, vis_identifier, current_day)
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
-            if soil_moisture_reading:
-                augment_soil_moisture_map(env, trial, current_day, s1_avg, s2_avg, s3_avg, s4_avg, s5_avg, s6_avg, s1_pavg, s2_pavg, s3_pavg, s4_pavg, s5_pavg, s6_pavg)
         cc_vec = env.get_global_cc_vec()
         # The wrapper policy starts after the PRUNE_DELAY
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
@@ -536,6 +258,38 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
+def evaluate_only_irrigation_single_policy(env, garden_days, sector_obs_per_day, trial, save_dir, vis_identifier, soil_moisture_reading):
+    env.reset()
+    error_dict = {"s1_avg": [], "s2_avg": [], "s3_avg": [],"s4_avg": [],"s5_avg": [],"s6_avg": [], \
+        "s1_pavg": [], "s2_pavg": [], "s3_pavg": [],"s4_pavg": [],"s5_pavg": [],"s6_pavg": []} #errors for all moisture sensors
+    freq = 1 #frequency of irrigation in days
+    #ma = 0
+    for i in range(garden_days):
+        current_day = i + 1
+        if current_day % freq == 0:
+            water = 5 #special irrigation action used to water certiain locations with a particular frequency
+            prune = 0 #no pruning
+        print("Day {}/{}".format(current_day, garden_days))
+        vis.get_canopy_image_full(False, vis_identifier, current_day)
+        s1_pos = SOIL_MOISTURE_SENSOR_POSITIONS[0]
+        water_grid = env.get_garden_state()[:, :, -2]
+        save_water_grid(water_grid, current_day, "start_day")
+        #s1_sim = sm.averagedReadings(water_grid, s1_pos)
+
+        env.step(water + prune)
+        water_grid = env.get_garden_state()[:, :, -2]
+        save_water_grid(water_grid, current_day, "end_day")
+
+        #if soil_moisture_reading:
+        #    water_grid = env.get_garden_state()[:, :, -2]
+        #    m = sm.augment_soil_moisture_map(water_grid, trial, current_day, args.days, s1_avg, s2_avg, s3_avg, s4_avg, s5_avg, s6_avg, s1_pavg, s2_pavg, s3_pavg, s4_pavg, s5_pavg, s6_pavg)
+            # if m is not None:
+            #     ma = max(m, ma)
+            #     env.wrapper_env.set_max_water_level(ma)
+    metrics = env.get_metrics()
+    save_data(metrics, trial, save_dir)
+
+
 def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, prune_thresh, save_dir='fixed_policy_data/'):
     env.reset()
     for i in range(garden_days):
@@ -550,31 +304,6 @@ def evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, freq, pru
             env.step(water + prune)
         vis.get_canopy_image_sector(np.array([7.5,15]),False)
         # vis.get_canopy_image_full(False)
-    metrics = env.get_metrics()
-    save_data(metrics, trial, save_dir)
-
-def evaluate_only_irrigation_policy(env, garden_days, sector_obs_per_day, trial, save_dir, vis_identifier, soil_moisture_reading):
-    env.reset()
-    s1_avg, s2_avg, s3_avg, s4_avg, s5_avg, s6_avg = [], [], [], [], [], []
-    s1_pavg, s2_pavg, s3_pavg, s4_pavg, s5_pavg, s6_pavg = [], [], [], [], [], []
-    ma = 0
-    for i in range(garden_days):
-        current_day = i + 1
-        if current_day % 2 == 0:
-            water = 5
-        else:
-            water = 6
-        print("Day {}/{}".format(current_day, garden_days))
-        if soil_moisture_reading:
-            m = augment_soil_moisture_map(env, trial, current_day, s1_avg, s2_avg, s3_avg, s4_avg, s5_avg, s6_avg, s1_pavg, s2_pavg, s3_pavg, s4_pavg, s5_pavg, s6_pavg)
-            # if m is not None:
-            #     ma = max(m, ma)
-            #     env.wrapper_env.set_max_water_level(ma)
-        print(env.wrapper_env.max_water_level)
-        vis.get_canopy_image_full(False, vis_identifier, current_day)
-        prune = 0
-        
-        env.step(water + prune)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -682,6 +411,7 @@ if __name__ == '__main__':
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
     seed_config_path = '/home/satvik/autolab/scaled_orig_placement'
+    #seed_config_path = None
     randomize_seeds_cords_flag = False
 
     for i in range(args.tests):
@@ -707,7 +437,7 @@ if __name__ == '__main__':
             else:
                 evaluate_analytic_policy_serial(env, analytic_policy.policy, False, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial, save_dir, vis_identifier, args.sm)
+                                        sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'bw':
             if args.multi:
                 env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols,
@@ -720,13 +450,13 @@ if __name__ == '__main__':
             else:
                 evaluate_analytic_policy_serial(env, analytic_policy.policy, True, collection_time_steps, sector_rows, sector_cols,
                                         prune_window_rows, prune_window_cols, garden_step, water_threshold,
-                                        sector_obs_per_day, trial, save_dir, vis_identifier, args.sm)
+                                        sector_obs_per_day, trial, save_dir, vis_identifier)
         elif args.policy == 'n':
             evaluate_fixed_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, naive_prune_threshold, save_dir='fixed_policy_data_thresh_' + str(args.threshold) + '/')
         elif args.policy == 'i':
             evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, trial, naive_water_freq, save_dir, vis_identifier)
-        elif args.policy == 'x':
-            evaluate_only_irrigation_policy(env, garden_days, sector_obs_per_day, trial, save_dir, vis_identifier, args.sm)
+        elif args.policy == 's':
+            evaluate_only_irrigation_single_policy(env, garden_days, sector_obs_per_day, trial, save_dir, vis_identifier, args.sm)
         elif args.policy == 'c':
             env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                 action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed)
