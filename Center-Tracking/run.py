@@ -80,4 +80,4 @@ if not os.path.isdir("post_process"):
 
 
 def get_img_seg_mask(id_):
-    return output_prediction_images(id_, model_unet, TEST_PATH, SHIFT)
+    return output_prediction_images(id_, model_unet, TEST_PATH)
