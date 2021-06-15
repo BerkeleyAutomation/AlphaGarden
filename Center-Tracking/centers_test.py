@@ -12,6 +12,7 @@ import os
 # import seaborn as sns
 from center_constants import *
 from geometry_utils import *
+import pickle as pkl
 
 
 
@@ -153,6 +154,15 @@ def save_centers(path, centers):
         for listitem in centers:
             f.write('%s\n' % str(listitem))
 
+def save_keyPoint(im, path, centers):
+    ''' Create figure for key points'''
+    for i in centers:
+        x,y = int(i[1][0]), int(i[1][1]) 
+        im = cv2.circle(im, (x,y), radius=20, color=(255, 0, 0), thickness=-1)
+        x,y = int(i[0][0]), int(i[0][1]) 
+        im = cv2.circle(im, (x,y), radius=20, color=(0, 0, 255), thickness=-1)
+    plt.imsave(path, im)
+
 def read_centers(path):
     '''get centers from text file'''
     centers = []
@@ -161,8 +171,6 @@ def read_centers(path):
             cur_center = line[:-1]
             centers.append(eval(cur_center))
     return centers
-
-
 
 def calculate_error(predicted, actual):
     errors = []

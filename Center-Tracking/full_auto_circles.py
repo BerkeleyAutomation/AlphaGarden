@@ -54,7 +54,7 @@ def label_circles_BFS(path, show_res=False):
 
     date = path[path.find("-2")+1:path.find("-2")+7]
     save_priors(new_circles, date)
-    circles_dict = save_circles(new_circles, date)
+    circles_dict, type_dic = save_circles(new_circles, date)
     if show_res:
         # show_circs = {key:[] for key in circles_dict.keys()}
         # for key in new_circles.keys():
@@ -63,9 +63,9 @@ def label_circles_BFS(path, show_res=False):
         #         show_circs[key].append((circle[0], circle[1]))
         #     show_circs[key] = merge_circles(show_circs[key])
         draw_circles(path, new_circles, True)
-    print(new_circles)
-    return new_circles, circles_dict
-
+    # print("LONG DICTIONARY: ")
+    # print(new_circles)
+    return circles_dict, type_dic
 
 def label_circles_contours(path, show_res=False):
     print("Contour Fit for: " + path)
@@ -110,7 +110,7 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
     mask_path = get_img_seg_mask(id_)
     # mask_path = "./post_process/"+id_+".png"
     print("Labeling circles: "+ mask_path)
-    return label_circles_BFS(mask_path, True)[1]
+    return label_circles_BFS(mask_path, True)
 
 if __name__ == "__main__":
 #     print("=" * 20)

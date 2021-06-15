@@ -26,14 +26,14 @@ def separate_list(actual_coords, target_list):
 
 def batch_prune(target_list, overhead, rpi_check):
     fb = FarmBotThread()
-    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
-    # print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
-    # x_list, y_list = separate_list(actual_farmbot_coords, target_list)
-    # print("--x_list: ", x_list)
-    # print("--y_list: ", y_list)
+    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
+    print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
+    x_list, y_list = separate_list(actual_farmbot_coords, target_list)
+    print("--x_list: ", x_list)
+    print("--y_list: ", y_list)
 
-    x_list = [(58, 21), (66, 108), (34, 103.9), (99, 79), (34, 71), (13.4, 102)] # (99, 68)
-    y_list = [] #(90, 55), (56, 77)
+    # x_list = [(58, 21), (66, 108), (34, 103.9), (99, 79), (34, 71), (13.4, 102)] # (99, 68)
+    # y_list = [] #(90, 55), (56, 77)
 
     # x_list = [(96,73), (60, 45), (73,65)]
     # y_list = [] #(74,65),(83,101), (69,97), (94,98), (18,58)
@@ -160,13 +160,13 @@ def check_prune(i, bef_rpi, aft_rpi):
 
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
     print("MAX_VAL: ", max_val)
-    # file_name = "threshold.txt"
-    # f = open(cwd + '/' + file_name, "r")
-    # item = f.read()
-    # fil = open(cwd + '/' + file_name, "w+")
-    # item = str(item) + "[" + str(i) + ", " + str(max_val) + "]"
-    # fil.write(item)
-    # fil.close()
+    file_name = "threshold.txt"
+    f = open(cwd + '/' + file_name, "r")
+    item = f.read()
+    fil = open(cwd + '/' + file_name, "w+")
+    item = str(item) + "[" + str(i) + ", " + str(max_val) + "]"
+    fil.write(item)
+    fil.close()
 
     prune = True if max_val < threshold else False
     return prune

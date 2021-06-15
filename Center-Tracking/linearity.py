@@ -123,7 +123,7 @@ def get_max_leaf_centers(prior, mask_path, only_right=False):
     for key in tqdm(prior):
         for p in prior[key]:
             center, r = p["circle"][0:2]
-            if only_right and center[0] < 1600:
+            if only_right and center[0] < 1630: #Value to be tuned to dictate each half of garden
                 continue
             extrema = get_extrema(center, mask_path, 1.2*r)
             extreme_pts.append((center, get_leaf_center(max(extrema, key=lambda p: distance(center, p)), center)))

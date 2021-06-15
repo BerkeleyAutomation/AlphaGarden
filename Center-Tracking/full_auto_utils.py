@@ -59,14 +59,31 @@ def save_circles(prior: dict, day: str):
         ...
     }
     '''
-    circles_dict = {k: [] for k in prior.keys()}
-    for key in prior.keys():
-        for c in prior[key]:
-            circle = c["circle"]
-            circles_dict[key].append((pixels_to_cm(circle[0]), distance(pixels_to_cm(circle[0]), pixels_to_cm(circle[2]))))
-    pkl.dump(circles_dict, open(CIRCLE_PATH+day+"_cirlces.p", "wb"))
-    return circles_dict
-
+    type_dic = {}
+    new_dic = {}
+    x_fc = (282/3478)
+    y_fc = (133/1630)
+    
+    for k in list(prior.keys()):
+        print(k)
+        temp = set()
+        for i in prior[k]:
+            if i['circle'][0][0] > 1650:
+                type_dic[int(282 - i['circle'][0][0] * x_fc) + int(i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
+                print(i['circle'][0])
+                temp.add(((int(282 - i['circle'][0][0] * x_fc), int(i['circle'][0][1] * y_fc)), int(i['circle'][1]/10))) #change first int ind
+        if k == 'green-lettuce':
+            new_dic['green_lettuce'] = temp
+        elif k == 'red-lettuce':
+            new_dic['red_lettuce'] = temp
+        elif k == 'swiss-chard':
+            new_dic['swiss_chard'] = temp
+        else:
+            new_dic[k] = temp
+    pkl.dump(new_dic, open(CIRCLE_PATH+day+"_circles.p", "wb"))
+    print("FINAL DICTIONARY: ")
+    print(new_dic)
+    return new_dic, type_dic
 
 def save_priors(new_prior: dict, day: str) -> None:
     '''Saves new priors based on new circles

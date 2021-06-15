@@ -154,7 +154,7 @@ def sensitive_map(truth_label_map,label_map,scor):
   return dmap
 
 
-def output_prediction_images(id_, model, path, shift='original'):
+def output_prediction_images(id_, model, path, shift='confidence'):
 
     date1 = date(GARDEN_DATE_YEAR, GARDEN_DATE_MONTH, GARDEN_DATE_DAY)
     date2 = date(2000 + int(id_[4:6]), int(id_[6:8]), int(id_[8:10]))

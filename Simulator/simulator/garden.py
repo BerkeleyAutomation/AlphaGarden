@@ -8,7 +8,7 @@ import os
 import pickle
 import multiprocessing as mp
 import copy
-
+import pickle as pkl
 
 class Garden:
     def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
@@ -779,7 +779,15 @@ class Garden:
                 tallest_plant_id = tallest[1]
                 non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
         for plant in non_occluded_plants:
-            print(plant.type, (plant.row, plant.col))
+            #For auto pruning
+            time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+            if self.timestep == time: #REMOVE DAYS
+                print(plant.type, (plant.row, plant.col), plant.row + plant.col)
+                curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
+                if (plant.row + plant.col) not in curr_l:
+                    curr_l.append(plant.row + plant.col)
+                    pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
+            #end auto pruning
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
             self.update_plant_size(plant, outward=-amount_to_prune)
