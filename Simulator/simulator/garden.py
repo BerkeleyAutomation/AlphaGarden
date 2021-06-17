@@ -3,7 +3,8 @@ from heapq import nlargest
 from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
-from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
+from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE, ROWS, COLS, SOIL_MOISTURE_SENSOR_ACTIVE
+from simulator.soil_moisture import augment_soil_moisture_map, determine_avg_gain, determine_evap_rate, initial_water_value
 import os
 import pickle
 import multiprocessing as mp
@@ -65,9 +66,10 @@ class Garden:
         First dimension is horizontal, second is vertical
         """
         if not garden_state:
-            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
+            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
             self.grid['water'] = np.clip(np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape), 0, MAX_WATER_LEVEL)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+            self.grid['last_watered'] = np.zeros(self.grid['last_watered'].shape)
         else:
             self.grid = copy.deepcopy(garden_state.grid)
 
@@ -282,6 +284,10 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
+
+        for point in self.enumerate_grid(): #add one day to last watered
+            point['last_watered'] += 1
+
         self.prune_coords = dict()
         self.irr_coords = []
         for i, action in enumerate(actions):
@@ -294,6 +300,10 @@ class Garden:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
                 self.perform_timestep_prune(sectors[i])
+
+        # if any(SOIL_MOISTURE_SENSOR_ACTIVE):
+        #     self.measure_error_irrigation_only() #measures the error in irrigation right after irrigating the centers
+
         self.distribute_light()
         self.distribute_water()
         self.grow_plants()
@@ -408,6 +418,22 @@ class Garden:
         #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
         window_grid_size = np.pi * ((self.irr_threshold)**2) / 10000  # in square meters
         gain = 1/32
+
+        if any(SOIL_MOISTURE_SENSOR_ACTIVE):
+            if self.timestep == 0:
+                center_points_gain = 0.046 #from experiments in May TASE
+            else:
+                center_points_gain = determine_avg_gain(self.timestep+1) #determines the gain
+        else:
+            k = 1 #scaling factor to account for water loss from drainage and etc., determined experimentally
+            center_points_gain = (amount / (window_grid_size * 0.2)) * k #.2 m of soil depth
+
+
+        #Sample the Gaussian to for gain for center points that are directly watered
+        mu, sigma = center_points_gain, 0.0054 # mean and standard deviation(from experiments in May TASE) for Gaussian
+        s = max(0, np.random.normal(mu, sigma, 1)) #max gain
+
+
         # Start from outer radius
         for radius in range(4,9)[::-1]:
             # For each bounding box, check if the cubes are within the radius 
@@ -420,7 +446,8 @@ class Garden:
                 for x in range(lower_x, upper_x):
                     pt = [x, y]
                     if np.sqrt((location[0] - pt[0])**2 + (location[1] - pt[1])**2) <= radius:
-                        self.grid[x, y]['water'] += gain * (amount / (window_grid_size * 0.35))
+                        self.grid[x, y]['water'] += gain * s
+                        self.grid[x, y]['last_watered'] = 0
             gain *= 2
 
         # TODO: add distribution kernel for capillary action and spread of water jet
@@ -515,7 +542,8 @@ class Garden:
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
                     if plant.amount_sunlight > 0:
-                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
+                        k = 1 #k is a scaling factor for the plant uptake
+                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points) * k
                         plant.water_amt += water_to_absorb
                         plant.watered_day = self.timestep
                         point['water'] -= water_to_absorb
@@ -523,11 +551,27 @@ class Garden:
                     plant_types_and_ids.pop(i)
 
             # Water evaporation per square cm (grid point)
-            if True: #CHANGED FOR CREATE STATEE abs(plant.watered_day - self.timestep) <= 1
-                evap_rate = 0.052
+            # if True: #CHANGED FOR CREATE STATEE abs(plant.watered_day - self.timestep) <= 1
+            #     evap_rate = 0.052
+            # else:
+            #     evap_rate = 0.011
+            # point['water'] = max(0, point['water'] - 0.01 * 0.01 * evap_rate)
+            evap_rate_dict = {0:0.042, 1:0.01} #key:day since watered, value: experimentally determined evaporation rate for that day
+            if any(SOIL_MOISTURE_SENSOR_ACTIVE):
+                if self.timestep == 0:
+                    evap_rate_dict = {0:0.042, 1:0.01}
+                else:
+                    evap_rate_dict = determine_evap_rate(self.timestep+1) #TODO fix this function to return dictionary
             else:
-                evap_rate = 0.011
-            point['water'] = max(0, point['water'] - 0.01 * 0.01 * evap_rate)
+                evap_rate_dict = {0:0.042, 1:0.01} 
+
+            idx = point['last_watered'] if point['last_watered'] < len(evap_rate_dict) else len(evap_rate_dict) - 1
+            evap_rate = evap_rate_dict[idx] #evap rate for point according to last watered
+
+            mu, sigma = evap_rate, 0.0048 # mean and standard deviation(from experiments in May TASE) for Gaussian
+            s = max(0, np.random.normal(mu, sigma, 1)) #max gain
+
+            point['water'] = max(0, point['water'] - s)
 
     def grow_plants(self):
         """ Compute growth for each plant and update plant coverage."""
@@ -873,7 +917,8 @@ class Garden:
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid, self.health_grid))
+        self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.last_watered_grid, self.water_grid, self.health_grid))
 
     def get_radius_grid(self):
         """ Get grid for plant radius representation.
