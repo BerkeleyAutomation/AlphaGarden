@@ -56,7 +56,7 @@ class MyHandler:
         self.bot = None
 
     def update(self, action, coords):
-        assert action in ['prune', 'move', 'photo', 'move_rel'], "Not in list of actions"
+        assert action in ['prune', 'move', 'photo', 'move_rel', 'water'], "Not in list of actions"
         self.action = action
         self.coords = coords
         self.execute()  
@@ -89,6 +89,13 @@ class MyHandler:
         elif self.action == 'photo':
             request_id = self.bot.take_photo()
             print("PHOTO REQUEST ID: " + request_id)
+
+        elif self.action == 'water':
+            request_id = self.bot.toggle_pin(8)
+            print("WATER ON REQUEST ID: " + request_id)
+            time.sleep(2.409)
+            request_id = self.bot.toggle_pin(8)
+            print("WATER OFF REQUEST ID: " + request_id)
 
     # The callback is passed a FarmBot instance, plus an MQTT
     # client object (see Paho MQTT docs to learn more).

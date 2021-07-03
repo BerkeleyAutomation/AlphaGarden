@@ -50,11 +50,15 @@ class Visualizer(ABC):
         Returns:
             Directory path of saved scenes if eval is False, canopy image otherwise.
         """
+        
         if not eval:
             dir_path = self.env.dir_path
+        else:
+            dir_path = os.getcwd()
+        print(dir_path)
         self.env.garden.step = 1
         bounds = (0, 0, self.env.rows, self.env.cols)
-        return self.get_canopy_image(bounds, dir_path + 'fixed/full/', eval, identifier=identifier, day=day)
+        return self.get_canopy_image(bounds, dir_path + 'Learning/images/full', eval, identifier=identifier, day=day)
 
 class Matplotlib_Visualizer(Visualizer):
     def __init__(self, env):
