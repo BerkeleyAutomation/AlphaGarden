@@ -55,18 +55,19 @@ def auto_irrigate_withsim():
     
     return
 
-def watergrid_oneday_lookahead(timestep):
+def watergrid_oneday_lookahead(timestep=0):
     #load garden state
-    os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
+    #os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
+    os.system('python3 ../Learning/create_state.py')
     time.sleep(2)
     os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
+    timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
 
     with open('./policy_metrics/auto_irrigate/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
         sectors = pickle.load(f)
         print(len(sectors), sectors)
 
     fb = FarmBotThread()
-    print(sectors)
 
     for i in sectors:
         print((int(i[0]) * 10, int(i[1]) * 10,0))
@@ -75,10 +76,12 @@ def watergrid_oneday_lookahead(timestep):
 
         fb.update_action("move", (farmbotx, farmboty,0)) #sim to farmbot coord * scaling factor
         time.sleep(100) 
+        fb.update_action("water", None) 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--timestep', type=int, default=0)
-    args = parser.parse_args()
-    watergrid_oneday_lookahead(args.timestep)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('-t', '--timestep', type=int, default=0)
+    # args = parser.parse_args()
+    #watergrid_oneday_lookahead(args.timestep)
+    watergrid_oneday_lookahead()
 
