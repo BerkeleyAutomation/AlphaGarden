@@ -19,8 +19,7 @@ import time
 from PIL import Image, ImageOps
 import sys
 
-GARDEN_START_DATE = 1620401400
-
+GARDEN_START_DATE = 1625526000
 
 def auto_irrigate_withsim():
     #convert sectors to farmbot coordinates
@@ -55,7 +54,7 @@ def auto_irrigate_withsim():
     
     return
 
-def watergrid_oneday_lookahead(timestep=0):
+def watergrid_oneday_lookahead(sim2FB, timestep=0):
     #load garden state
     #os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
     os.system('python3 ../Learning/create_state.py')
@@ -71,17 +70,28 @@ def watergrid_oneday_lookahead(timestep=0):
 
     for i in sectors:
         print((int(i[0]) * 10, int(i[1]) * 10,0))
-        farmbotx = int(i[0] * 10 * (145/150))
-        farmboty = int(i[1] * 10 * (137/150))
+        farmbotx = sim2FB[i[0] + i[1]][0]
+        farmboty = sim2FB[i[0] + i[1]][1]
 
         fb.update_action("move", (farmbotx, farmboty,0)) #sim to farmbot coord * scaling factor
-        time.sleep(100) 
+        time.sleep(60) 
         fb.update_action("water", None) 
+
+    fb.update_action("move", (0,0,0))
 
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
     # parser.add_argument('-t', '--timestep', type=int, default=0)
     # args = parser.parse_args()
     #watergrid_oneday_lookahead(args.timestep)
-    watergrid_oneday_lookahead()
+    f = sys.argv[1]
+    if f == 'r':
+        sim2FB = {45.0: (1245, 993), 40.0: (1153, 1119), 108.0: (1153, 551), 82.0: (1126, 793), 150.0: (1062, 283), 91.0: (860, 960), 185.0: (778, 250), 142.0: (604, 768), 114.0: (549, 1052), 225.0: (549, 125), 191.0: (512, 442), 134.0: (311, 1102), 194.0: (265, 643), 242.0: (265, 242), 156.0: (146, 1069), 173.0: (119, 952)}
+    elif f == 'l':
+        sim2FB = {45.0: (1501, 993), 40.0: (1593, 1119), 108.0: (1593, 551), 82.0: (1620, 793), 150.0: (1684, 283), 91.0: (1885, 960), 185.0: (1968, 250), 142.0: (2142, 768), 114.0: (2197, 1052), 225.0: (2197, 125), 191.0: (2233, 442), 134.0: (2435, 1102), 194.0: (2481, 643), 242.0: (2481, 242), 156.0: (2600, 1069), 173.0: (2627, 952)}
+    else:
+        print("ERROR, specify 'r' or 'l'")
+
+    watergrid_oneday_lookahead(sim2FB)
+
 

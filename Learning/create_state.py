@@ -107,10 +107,8 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 #     },
 # }
 
-# real_data = {'kale': {((42, 70), 23), ((112, 102), 25)}, 'swiss_chard': {((101, 80), 3), ((111, 21), 3)}, 'red_lettuce': {((85, 105), 0), ((55, 98), 0)}, 'cilantro': {((62, 17), 11), ((136, 19), 9)}, 'radicchio': {((85, 26), 18), ((36, 29), 11)}, 'arugula': {((103, 39), 14), ((128, 43), 6)}, 'sorrel': {((24, 81), 0), ((24, 56), 1)}, 'borage': {((74, 78), 18), ((87, 52), 24)}, 'turnip': {((119, 62), 24), ((59, 37), 25)}, 'green_lettuce': {((30, 113), 24), ((125, 25), 24)}}
-# real_data = {'red_lettuce': {((112, 19), 9), ((96, 83), 9)}, 'kale': {((40, 71), 25), ((112, 102), 25)}, 'radicchio': {((81, 21), 14), ((32, 29), 3)}, 'cilantro': {((136, 16), 8), ((66, 16), 8)}, 'swiss_chard': {((81, 105), 25), ((50, 101), 25)}, 'green_lettuce': {((29, 114), 12), ((122, 24), 12)}, 'borage': {((72, 78), 24), ((86, 55), 25)}, 'turnip': {((115, 62), 25), ((57, 38), 25)}, 'arugula': {((133, 41), 10), ((103, 34), 15)}, 'sorrel': {((24, 81), 0), ((24, 56), 3)}}
-real_data = {'swiss_chard': {((48, 103), 0), ((78, 107), 0)}, 'cilantro': {((66, 16), 0), ((137, 16), 0)}, 'sorrel': {((24, 81), 0), ((24, 56), 0)}, 'red_lettuce': {((97, 82), 0), ((112, 19), 0)}, 'green_lettuce': {((29, 114), 0), ((121, 23), 0)}, 'turnip': {((116, 62), 0), ((57, 38), 0)}, 'radicchio': {((82, 21), 0), ((32, 29), 0)}, 'arugula': {((103, 33), 0), ((134, 40), 0)}, 'kale': {((40, 71), 0), ((113, 103), 0)}, 'borage': {((86, 55), 0), ((70, 79), 0)}}
-#real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic.p", "rb")) #update path
+real_data = {'cilantro': {((137.0, 36.0), 0), ((14.0, 31.0), 0)}, 'green_lettuce': {((24.0, 16.0), 0), ((116.0, 18.0), 0)}, 'radicchio': {((90.0, 24.0), 0), ((24.0, 84.0), 0)}, 'swiss_chard': {((27.0, 55.0), 0), ((121.0, 121.0), 0)}, 'turnip': {((84.0, 58.0), 0), ((34.0, 116.0), 0)}, 'kale': {((56.0, 35.0), 0), ((94.0, 97.0), 0)}, 'borage': {((65.0, 120.0), 0), ((121.0, 73.0), 0)}, 'red_lettuce': {((90.0, 135.0), 0), ((134.0, 22.0), 0)}}
+# real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic.p", "rb")) #update path
 
 #timestep = args.timestep
 timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
