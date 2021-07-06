@@ -1,4 +1,4 @@
-from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, PRUNE_RATE, IRR_THRESHOLD
+from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, PRUNE_RATE, IRR_THRESHOLD, SIDE
 from simulator.plant_presets import PLANT_TYPES
 from simulator.plant_type import PlantType
 from simulator.garden_state import GardenState
@@ -111,7 +111,7 @@ real_data = {'cilantro': {((137, 36), 0), ((14, 31), 0)}, 'green_lettuce': {((24
 # real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic.p", "rb")) #update path
 
 #timestep = args.timestep
-timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+timestep = 1#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
 
 plant_type = PlantType()
 plant_types = plant_type.plant_names
@@ -122,8 +122,8 @@ plant_objs = plant_type.get_plant_seeds(0, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS,
 plants = [{} for _ in range(len(plant_types))]
 
 grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
-grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape) if timestep == 0 else pickle.load(open("policy_metrics/water_grid/water_grid_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
-grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int) if timestep == 0 else pickle.load(open("policy_metrics/water_grid/last_watered_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/water_grid_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/last_watered_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
 
 for i in range(ROWS):
     for j in range(COLS):
