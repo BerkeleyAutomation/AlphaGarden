@@ -1,4 +1,4 @@
-from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, PRUNE_RATE, IRR_THRESHOLD
+from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, PRUNE_RATE, IRR_THRESHOLD, SIDE
 from simulator.plant_presets import PLANT_TYPES
 from simulator.plant_type import PlantType
 from simulator.garden_state import GardenState
@@ -107,11 +107,11 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 #     },
 # }
 
-real_data = {'cilantro': {((137.0, 36.0), 0), ((14.0, 31.0), 0)}, 'green_lettuce': {((24.0, 16.0), 0), ((116.0, 18.0), 0)}, 'radicchio': {((90.0, 24.0), 0), ((24.0, 84.0), 0)}, 'swiss_chard': {((27.0, 55.0), 0), ((121.0, 121.0), 0)}, 'turnip': {((84.0, 58.0), 0), ((34.0, 116.0), 0)}, 'kale': {((56.0, 35.0), 0), ((94.0, 97.0), 0)}, 'borage': {((65.0, 120.0), 0), ((121.0, 73.0), 0)}, 'red_lettuce': {((90.0, 135.0), 0), ((134.0, 22.0), 0)}}
-# real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic.p", "rb")) #update path
+real_data = {'cilantro': {((137, 36), 0), ((14, 31), 0)}, 'green_lettuce': {((24, 16), 0), ((116, 18), 0)}, 'radicchio': {((90, 24), 0), ((24, 84), 0)}, 'swiss_chard': {((27, 55), 0), ((121, 121), 0)}, 'turnip': {((84, 58), 0), ((34, 116), 0)}, 'kale': {((56, 35), 0), ((94, 97), 0)}, 'borage': {((65, 120), 0), ((121, 73), 0)}, 'red_lettuce': {((90, 135), 0), ((134, 22), 0)}}
+#real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic.p", "rb")) #update path
 
 #timestep = args.timestep
-timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+timestep = 1#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
 
 plant_type = PlantType()
 plant_types = plant_type.plant_names
@@ -122,8 +122,8 @@ plant_objs = plant_type.get_plant_seeds(0, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS,
 plants = [{} for _ in range(len(plant_types))]
 
 grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
-grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape) if timestep == 0 else pickle.load(open("policy_metrics/water_grid/water_grid_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
-grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int) if timestep == 0 else pickle.load(open("policy_metrics/water_grid/last_watered_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/water_grid_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/last_watered_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
 
 for i in range(ROWS):
     for j in range(COLS):

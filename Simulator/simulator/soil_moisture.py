@@ -1,6 +1,6 @@
 import gym
 import torch
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_MOISTURE_SENSOR_POSITIONS, GARDEN_START_DATE
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_MOISTURE_SENSOR_POSITIONS, GARDEN_START_DATE, SIDE
 import simalphagarden
 from net import Net
 from constants import TrainingConstants
@@ -161,9 +161,9 @@ def getDeviceReadings(current_day, adjust=0):
     return s1, s2, s3, s4, s5, s6
 
 def save_water_grid(water_grid, current_day, purpose="", last_watered=None, only_viz=False, viz_purp = ""):
-    os.makedirs('./policy_metrics/water_grid', exist_ok=True)
+    os.makedirs('./policy_metrics/water_grid_' + SIDE, exist_ok=True)
     if not only_viz:
-        np.savetxt("policy_metrics/water_grid/water_grid_" + str(current_day) + purpose + ".txt", np.array(water_grid), fmt="%f")
+        np.savetxt("policy_metrics/water_grid_"+ SIDE +"/water_grid_" + str(current_day) + purpose + ".txt", np.array(water_grid), fmt="%f")
     grid = water_grid/0.3 * 255 #normalized by max water threshold which is 0.3
     array = np.zeros((150, 150, 3), dtype=np.uint8)
     array[:, :, 2] = grid
@@ -171,15 +171,15 @@ def save_water_grid(water_grid, current_day, purpose="", last_watered=None, only
     img2 = img.resize((600, 600), Image.ANTIALIAS)
     img2 = ImageOps.expand(img2,border=300,fill='white')
     if not only_viz:
-        img2.save("policy_metrics/water_grid/water_grid_viz_" + str(current_day) + purpose + ".png")
+        img2.save("policy_metrics/water_grid_"+ SIDE +"/water_grid_viz_" + str(current_day) + purpose + ".png")
     else:
-        img2.save("policy_metrics/water_grid/water_grid_viz_" + str(current_day) + viz_purp + ".png")
+        img2.save("policy_metrics/water_grid_"+ SIDE +"/water_grid_viz_" + str(current_day) + viz_purp + ".png")
 
     if not only_viz:
-        with open('policy_metrics/water_grid/water_grid_' + str(current_day) + purpose + '.pkl', 'wb') as f:
+        with open('policy_metrics/water_grid_'+ SIDE +'/water_grid_' + str(current_day) + purpose + '.pkl', 'wb') as f:
             pickle.dump(water_grid, f)
         
-        with open('policy_metrics/water_grid/last_watered_' + str(current_day) + purpose + '.pkl', 'wb') as g:
+        with open('policy_metrics/water_grid_'+ SIDE +'/last_watered_' + str(current_day) + purpose + '.pkl', 'wb') as g:
             pickle.dump(last_watered, g)
 
     return
@@ -370,12 +370,12 @@ def determine_current_gain(day):
 
     maxval = [max(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True]
     try:
-        x = pickle.load(open('./policy_metrics/water_maxval.pkl', 'rb')) #for plants with on the same day
+        x = pickle.load(open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'rb')) #for plants with on the same day
         x.append(maxval)
-        pickle.dump(x, open('./policy_metrics/water_maxval.pkl', 'wb'))
+        pickle.dump(x, open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'wb'))
     except (OSError, IOError) as e:
         val = [maxval]
-        pickle.dump(val, open('./policy_metrics/water_maxval.pkl', 'wb'))
+        pickle.dump(val, open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'wb'))
 
     return np.mean([maxval[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
 
@@ -385,7 +385,7 @@ def determine_avg_gain(day):
     prev_day_gain = 0
     if day > 0:
         try:
-            x = pickle.load(open('./policy_metrics/water_avg_gain.pkl', 'rb')) #cache the calculation for each plant for the same day
+            x = pickle.load(open('./policy_metrics/water_avg_gain_'+ SIDE +'.pkl', 'rb')) #cache the calculation for each plant for the same day
             if day in x.keys():
                 return x[day]
             prev_day_gain = x[day-1]
@@ -398,16 +398,16 @@ def determine_avg_gain(day):
             gain = determine_current_gain(i)
             prev_gains.append(gain)
         if i == day:
-            fil = open('./policy_metrics/water_gain.txt', 'w+')
+            fil = open('./policy_metrics/water_gain_'+ SIDE +'.txt', 'w+')
             try:
-                x = pickle.load(open('./policy_metrics/water_gain.pkl', 'rb'))
+                x = pickle.load(open('./policy_metrics/water_gain_'+ SIDE +'.pkl', 'rb'))
                 x.append(gain)
                 os.remove('./policy_metrics/water_gain.pkl')
-                pickle.dump(x, open('./policy_metrics/water_gain.pkl', 'wb'))
+                pickle.dump(x, open('./policy_metrics/water_gain_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(x) + "\n")
             except (OSError, IOError) as e:
                 val = [gain]
-                pickle.dump(val, open('./policy_metrics/water_gain.pkl', 'wb'))
+                pickle.dump(val, open('./policy_metrics/water_gain_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(val) + "\n")
     gain = np.mean(prev_gains)
 
@@ -415,12 +415,12 @@ def determine_avg_gain(day):
         gain = prev_day_gain
         print("Over max change from previous: ", np.mean(prev_gains), gain)
     try:
-        x = pickle.load(open('./policy_metrics/water_avg_gain.pkl', 'rb')) #for plants with on the same day
+        x = pickle.load(open('./policy_metrics/water_avg_gain_'+ SIDE +'.pkl', 'rb')) #for plants with on the same day
         x[day] = gain
-        pickle.dump(x, open('./policy_metrics/water_avg_gain.pkl', 'wb'))
+        pickle.dump(x, open('./policy_metrics/water_avg_gain_'+ SIDE +'.pkl', 'wb'))
     except (OSError, IOError) as e:
         val = {day:gain}
-        pickle.dump(val, open('./policy_metrics/water_avg_gain.pkl', 'wb'))
+        pickle.dump(val, open('./policy_metrics/water_avg_gain_'+ SIDE +'.pkl', 'wb'))
 
     return gain
 
@@ -428,7 +428,7 @@ def determine_curr_loss(day):
     """ Determines average gain from the soil moisture sensors within a six hour window around the time associated with GARDEN_START_DATE for a single day.
     """
     s_list = [[], [], [], [], [], []]
-    x = pickle.load(open('./policy_metrics/water_maxval.pkl', 'rb'))
+    x = pickle.load(open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'rb'))
     max_val = x[-1]
     print(max_val)
     for i in range(61200, 82800, 3600):
@@ -449,7 +449,7 @@ def determine_evap_rate(day):
     prev_day_loss = {0:0, 1: 0.013}
     if day > 0:
         try:
-            x = pickle.load(open('./policy_metrics/water_avg_loss.pkl', 'rb'))
+            x = pickle.load(open('./policy_metrics/water_avg_loss_'+ SIDE +'.pkl', 'rb'))
             if day in x.keys():
                 return x[day]
             prev_day_loss = x[day-1]
@@ -462,16 +462,16 @@ def determine_evap_rate(day):
             loss = determine_curr_loss(i)
             prev_losses.append(loss)
         if i == day:
-            fil = open('./policy_metrics/water_loss.txt', 'w+')
+            fil = open('./policy_metrics/water_loss_'+ SIDE +'.txt', 'w+')
             try:
-                x = pickle.load(open('./policy_metrics/water_loss.pkl', 'rb')) #water_loss is day to day loss and water_avg_loss is the running average loss that the irrigate function sees
+                x = pickle.load(open('./policy_metrics/water_loss_'+ SIDE +'.pkl', 'rb')) #water_loss is day to day loss and water_avg_loss is the running average loss that the irrigate function sees
                 x.append(loss)
-                os.remove('./policy_metrics/water_loss.pkl')
-                pickle.dump(x, open('./policy_metrics/water_loss.pkl', 'wb'))
+                os.remove('./policy_metrics/water_loss_'+ SIDE +'.pkl')
+                pickle.dump(x, open('./policy_metrics/water_loss_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(x) + "\n")
             except (OSError, IOError) as e:
                 val = [loss]
-                pickle.dump(val, open('./policy_metrics/water_loss.pkl', 'wb'))
+                pickle.dump(val, open('./policy_metrics/water_loss_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(val) + "\n")
 
     loss = {0:np.mean(prev_losses), 1: 0.013} #From soil moisture data May 26 8:30 to May 27 to 8:30
@@ -479,12 +479,12 @@ def determine_evap_rate(day):
         loss = prev_day_loss
 
     try:
-        x = pickle.load(open('./policy_metrics/water_avg_loss.pkl', 'rb'))
+        x = pickle.load(open('./policy_metrics/water_avg_loss_'+ SIDE +'.pkl', 'rb'))
         x[day] = loss
-        pickle.dump(x, open('./policy_metrics/water_avg_loss.pkl', 'wb'))
+        pickle.dump(x, open('./policy_metrics/water_avg_loss_'+ SIDE +'.pkl', 'wb'))
     except (OSError, IOError) as e:
         val = {day:loss}
-        pickle.dump(val, open('./policy_metrics/water_avg_loss.pkl', 'wb'))
+        pickle.dump(val, open('./policy_metrics/water_avg_loss_'+ SIDE +'.pkl', 'wb'))
     
     return loss 
 
@@ -500,7 +500,7 @@ def initial_water_value():
 
 
 def save_sectors(sectors, timestep):
-    os.makedirs('./policy_metrics/auto_irrigate', exist_ok=True)
+    os.makedirs('./policy_metrics/auto_irrigate_' + SIDE, exist_ok=True)
 
-    with open('./policy_metrics/auto_irrigate/watered_sectors' + '_' + str(timestep) + '.pkl','wb') as f:
+    with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','wb') as f:
         pickle.dump(sectors, f)

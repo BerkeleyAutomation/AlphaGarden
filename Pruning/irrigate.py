@@ -20,6 +20,7 @@ from PIL import Image, ImageOps
 import sys
 
 GARDEN_START_DATE = 1625526000
+SIDE = None
 
 def auto_irrigate_withsim():
     #convert sectors to farmbot coordinates
@@ -60,24 +61,25 @@ def watergrid_oneday_lookahead(sim2FB, timestep=0):
     os.system('python3 ../Learning/create_state.py')
     time.sleep(2)
     os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
-    timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
+    timestep = 1#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
 
-    with open('./policy_metrics/auto_irrigate/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
+    with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
         sectors = pickle.load(f)
         print(len(sectors), sectors)
 
     fb = FarmBotThread()
-
+    sorted_sectors = sorted(sectors, key=lambda x: x[0])#sectors sorted by increasing x
+    print(sorted_sectors)
     for i in sectors:
         print((int(i[0]) * 10, int(i[1]) * 10,0))
         farmbotx = sim2FB[i[0] + i[1]][0]
         farmboty = sim2FB[i[0] + i[1]][1]
 
         fb.update_action("move", (farmbotx, farmboty,0)) #sim to farmbot coord * scaling factor
-        time.sleep(60) 
+        time.sleep(30) 
         fb.update_action("water", None) 
 
-    fb.update_action("move", (0,0,0))
+    #fb.update_action("move", (0,0,0))
 
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
@@ -87,11 +89,13 @@ if __name__ == "__main__":
     f = sys.argv[1]
     if f == 'r':
         sim2FB = {45.0: (1245, 993), 40.0: (1153, 1119), 108.0: (1153, 551), 82.0: (1126, 793), 150.0: (1062, 283), 91.0: (860, 960), 185.0: (778, 250), 142.0: (604, 768), 114.0: (549, 1052), 225.0: (549, 125), 191.0: (512, 442), 134.0: (311, 1102), 194.0: (265, 643), 242.0: (265, 242), 156.0: (146, 1069), 173.0: (119, 952)}
+        SIDE = "right"
     elif f == 'l':
+        SIDE = "left"
         sim2FB = {45.0: (1501, 993), 40.0: (1593, 1119), 108.0: (1593, 551), 82.0: (1620, 793), 150.0: (1684, 283), 91.0: (1885, 960), 185.0: (1968, 250), 142.0: (2142, 768), 114.0: (2197, 1052), 225.0: (2197, 125), 191.0: (2233, 442), 134.0: (2435, 1102), 194.0: (2481, 643), 242.0: (2481, 242), 156.0: (2600, 1069), 173.0: (2627, 952)}
     else:
         print("ERROR, specify 'r' or 'l'")
 
-    watergrid_oneday_lookahead(sim2FB)
+    watergrid_oneday_lookahead(sim2FB, f)
 
 
