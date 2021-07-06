@@ -40,8 +40,8 @@ if __name__ == "__main__":
     circles/<yy><mm><dd>_circles.p          --> dictionary for plant centers/radius
     plants_to_prune.p                       --> list of plants to prune from sim
     sim_prune/                              --> past plants to prune [ADD CODE IN GARDEN.PY]
-
     '''
+    
 
     print("------------------------------CENTER TRACKING-----------------------------------")
     f = sys.argv[1]
@@ -64,28 +64,28 @@ if __name__ == "__main__":
     pkl.dump([], open("plants_to_prune.p", "wb"))
 
     print("------------------------------LINEARITY-----------------------------------------")
-    prior = get_recent_priors(cwd + "/priors/priors" + f[4:10] + ".p")
-    mask_path = str(cwd + "/post_process/" + f[:-4] + ".png")
-    mask, _ = get_img(mask_path)
+    # prior = get_recent_priors(cwd + "/priors/priors" + f[4:10] + ".p")
+    # mask_path = str(cwd + "/post_process/" + f[:-4] + ".png")
+    # mask, _ = get_img(mask_path)
 
-    # This gets the actual overhead image
-    # real_path = "input/new_garden/snc-21052608141500.jpg"
+    # # This gets the actual overhead image
+    # # real_path = "input/new_garden/snc-21052608141500.jpg"
 
-    leaf_centers = get_max_leaf_centers(prior, mask_path, True)
+    # leaf_centers = get_max_leaf_centers(prior, mask_path, True)
 
-    print("LEAF CENTERS: (center, target)")
-    print(leaf_centers)
+    # print("LEAF CENTERS: (center, target)")
+    # print(leaf_centers)
 
-    print("FILTERED LEAF CENTERS: (center, target)")
-    type_dic = pkl.load(open("current_type_dic.p", "rb"))
-    plants_to_prune = pkl.load(open("plants_to_prune.p", "rb"))
-    filtered = process_targets(leaf_centers, type_dic, plants_to_prune)
-    print(filtered)
+    # print("FILTERED LEAF CENTERS: (center, target)")
+    # type_dic = pkl.load(open("current_type_dic.p", "rb"))
+    # plants_to_prune = pkl.load(open("plants_to_prune.p", "rb"))
+    # filtered = process_targets(leaf_centers, type_dic, plants_to_prune)
+    # print(filtered)
 
-    save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_filtered.png", filtered)
-    save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_all.png", leaf_centers)
+    # save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_filtered.png", filtered)
+    # save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_all.png", leaf_centers)
 
-    pkl.dump(filtered, open("current_pts" + ".p", "wb"))
-    pkl.dump(filtered, open(cwd + "/prune_points/" + f[4:10] + "_target.p", "wb"))
+    # pkl.dump(filtered, open("current_pts" + ".p", "wb"))
+    # pkl.dump(filtered, open(cwd + "/prune_points/" + f[4:10] + "_target.p", "wb"))
 
 

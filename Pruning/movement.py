@@ -10,6 +10,7 @@ from control import start, MyHandler, mount_xPruner, mount_yPruner, dismount_xPr
 from thread import FarmBotThread
 import argparse
 import time
+import pickle as pkl
 
 def local_image_preprocess(local_image, sf=0.7438):
     #array of the preprocessed local image
@@ -58,7 +59,7 @@ def find_local_in_overhead(local_image, overhead_image, target):
     best_max_loc = None
     sf = 11.9 #scale factor for overhead image ex. 11.9 px = 1 cm
 
-    for scale in np.linspace(0.5, 0.85, 15)[::-1]:
+    for scale in np.linspace(0.4, 0.85, 15)[::-1]:
         img, rpi_path_d = local_image_preprocess(local_image, scale)
         img2 = img.copy()
         img = img2.copy()
@@ -190,6 +191,7 @@ def farmbot_target_approach(fb, target_point, overhead_image):
     #have farmbot apporach the target within same local image
     epsilon = 1 # the threshold needed to satisfy the closeness requirement
     fb.update_action("move", (target_point[0] * 10, target_point[1] * 10,0))
+    time.sleep(30)
 
     curr_pos = curr_pos_from_local(fb, overhead_image, target_point)#get from local image
         
@@ -205,7 +207,14 @@ def farmbot_target_approach(fb, target_point, overhead_image):
         print(diff_x, diff_y)
         coord_x += int(np.sign(diff_x) * min(3, np.abs(diff_x)))
         coord_y += int(np.sign(diff_y) * min(3, np.abs(diff_y)))
+        # Cap to limit movement error
+        coord_x = min(coord_x, 274)
+        coord_x = max(0, coord_x)
+        coord_y = min(coord_y, 125)
+        coord_y = max(0, coord_y)
+
         fb.update_action("move", (coord_x * 10, coord_y * 10,0))
+        time.sleep(3)
 
         curr_pos = curr_pos_from_local(fb, overhead_image, target_point)#get from local image
         count += 1
@@ -227,11 +236,10 @@ def batch_target_approach(fb, target_list, overhead):
     actual_farmbot_coord = []
     for i in range(len(target_list)):
         #convert target point
-        target_point = crop_o_px_to_cm(target_list[i][0][0], target_list[i][0][1]) #assuming each point is (target point, center)
+        target_point = crop_o_px_to_cm(target_list[i][1][0], target_list[i][1][1]) #assuming each point is (center point, target)
         act_pt = farmbot_target_approach(fb, target_point, overhead)
         actual_farmbot_coord.append(act_pt)
-    print(actual_farmbot_coord)
-
+        pkl.dump(actual_farmbot_coord, open("actual_coords.p", "wb"))
     return actual_farmbot_coord
 
 def crop_o_px_to_cm(x_px, y_px):

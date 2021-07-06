@@ -36,6 +36,7 @@ def inv_logifunc_fix_a(y, k , r):
 def get_recent_priors(path=PRIOR_PATH):
     if path == PRIOR_PATH:
         path = str(path) + str(daily_files(path, False)[-1])
+        # path = str(path) + "priors210613.p"
     print(path)
     return pkl.load(open(path, "rb"))
 
