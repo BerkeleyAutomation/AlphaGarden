@@ -55,29 +55,43 @@ def auto_irrigate_withsim():
     
     return
 
-def watergrid_oneday_lookahead(sim2FB, timestep=0):
+def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     #load garden state
     #os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
     os.system('python3 ../Learning/create_state.py')
     time.sleep(2)
     os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
-    timestep = 1#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
+    timestep = 2#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
 
     with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
         sectors = pickle.load(f)
         print(len(sectors), sectors)
 
     fb = FarmBotThread()
-    sorted_sectors = sorted(sectors, key=lambda x: x[0])#sectors sorted by increasing x
-    print(sorted_sectors)
-    for i in sectors:
-        print((int(i[0]) * 10, int(i[1]) * 10,0))
-        farmbotx = sim2FB[i[0] + i[1]][0]
-        farmboty = sim2FB[i[0] + i[1]][1]
 
-        fb.update_action("move", (farmbotx, farmboty,0)) #sim to farmbot coord * scaling factor
-        time.sleep(30) 
-        fb.update_action("water", None) 
+    ratio_x = 1373.3/150 #mm/plant_loc : 2746.6 -> 1373.3
+    ratio_y = 1252.8/150 #mm/plant_loc
+    sectors_fb = []
+    for i in sectors:
+        if (i[0] + i[1]) not in sim2FB.keys() and side == 'r':
+            sectors_fb.append((int((150 - i[0])*ratio_x), int((150 - i[1])*ratio_y)))
+        elif (i[0] + i[1]) not in sim2FB.keys() and side == 'l':
+            sectors_fb.append((int(i[0]*ratio_x+1373.3), int((150 - i[1])*ratio_y)))
+        else:
+            sectors_fb.append((sim2FB[i[0] + i[1]][0], sim2FB[i[0] + i[1]][1]))
+
+    # sectors_fb = [(sim2FB[i[0] + i[1]][0], sim2FB[i[0] + i[1]][1]) for i in sectors]
+    sorted_sectors_fb = sorted(sectors_fb, key=lambda x: x[0])#sectors sorted by increasing x
+    print(sorted_sectors_fb)
+    for i in sorted_sectors_fb:
+        print(i[0], i[1])
+
+        fb.update_action("move", (i[0], i[1], 0)) #sim to farmbot coord * scaling factor
+        time.sleep(20) 
+        fb.update_action("water", None)
+        time.sleep(5)
+        # fb.update_action("water", None)
+        # time.sleep(1)
 
     #fb.update_action("move", (0,0,0))
 
@@ -94,7 +108,7 @@ if __name__ == "__main__":
         SIDE = "left"
         sim2FB = {45.0: (1501, 993), 40.0: (1593, 1119), 108.0: (1593, 551), 82.0: (1620, 793), 150.0: (1684, 283), 91.0: (1885, 960), 185.0: (1968, 250), 142.0: (2142, 768), 114.0: (2197, 1052), 225.0: (2197, 125), 191.0: (2233, 442), 134.0: (2435, 1102), 194.0: (2481, 643), 242.0: (2481, 242), 156.0: (2600, 1069), 173.0: (2627, 952)}
     else:
-        print("ERROR, specify 'r' or 'l'")
+        print("----ERROR, specify 'r' or 'l'")
 
     watergrid_oneday_lookahead(sim2FB, f)
 
