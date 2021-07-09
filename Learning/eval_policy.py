@@ -387,8 +387,8 @@ if __name__ == '__main__':
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
     # seed_config_path = '/home/satvik/autolab/placement_20.p'
-    # seed_config_path = '/Users/mpresten/Desktop/AlphaGarden/placement_20.p'
-    seed_config_path = None
+    seed_config_path = '/Users/mpresten/Desktop/AlphaGarden/placement_20.p'
+    # seed_config_path = None
 
     randomize_seeds_cords_flag = False
 
