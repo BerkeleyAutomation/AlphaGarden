@@ -1,0 +1,39 @@
+{
+  "background": "train/original_2.jpg",
+  "background_mask": "train/original_2.png",
+  "leaves": [
+    ["borage/01.png", 1], ["borage/02.png", 1], ["borage/03.png", 1], ["borage/04.png", 1], ["borage/05.png", 1],
+    ["cilantro/01.png", 2], ["cilantro/02.png", 2], ["cilantro/03.png", 2], ["cilantro/04.png", 2], ["cilantro/05.png", 2],
+    ["green-lettuce/01.png", 3], ["green-lettuce/02.png", 3], ["green-lettuce/03.png", 3], ["green-lettuce/04.png", 3], ["green-lettuce/05.png", 3],
+    ["kale/01.png", 4], ["kale/02.png", 4], ["kale/03.png", 4], ["kale/04.png", 4], ["kale/05.png", 4],
+    ["radiccio/01.png", 5], ["radiccio/02.png", 5], ["radiccio/03.png", 5], ["radiccio/04.png", 5], ["radiccio/05.png", 5],
+    ["red-lettuce/01.png", 6], ["red-lettuce/02.png", 6], ["red-lettuce/03.png", 6], ["red-lettuce/04.png", 6], ["red-lettuce/05.png", 6],
+    ["swiss-charge/01.png", 8], ["swiss-charge/02.png", 8], ["swiss-charge/03.png", 8], ["swiss-charge/04.png", 8], ["swiss-charge/05.png", 8],
+    ["turnip/01.png", 9], ["turnip/02.png", 9], ["turnip/03.png", 9], ["turnip/04.png", 9], ["turnip/05.png", 9]
+  ],
+
+  "convert_leaf_name": {
+    "borage": 0,
+    "cilantro": 1,
+    "green-lettuce": 2,
+    "kale": 3,
+    "radiccio": 4,
+    "red-lettuce": 5,
+    "swiss-charge": 6,
+    "turnip": 7
+  },
+
+  "encodings": {
+      "0": [255, 174, 0],
+      "1": [0, 124, 93],
+      "2": [50, 226, 174],
+      "3": [50, 50, 226],
+      "4": [185, 180, 44],
+      "5": [145, 50, 226],
+      "6": [226, 50, 170],
+      "7": [255, 85, 89]
+    },
+  "iterations": 15,
+  "num_copies": 101,
+  "dim": 512
+}
