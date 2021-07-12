@@ -123,7 +123,7 @@ PLANT_TYPES = {
     # https://www.gardeningknowhow.com/edible/herbs/borage/borage-herb.htm
     "borage": _compute_from_table_values(name="borage", color=[(9 / 255, 77 / 255, 10 / 255),(0.9467, 0.6863, 0.2431)][SEG_COLORS], germination_time=(7, 1),
                                          r_max=MAX_RADIUS["borage"], maturation_time=(55,5),
-                                         stopping_color=(150 / 255, 0, 1), r_0=1, c1=.43), #c1=0.13847766 #0.09
+                                         stopping_color=(150 / 255, 0, 1), r_0=1, c1=.432), #c1=0.13847766 #0.09
     # https://harvesttotable.com/how-to-grow-mizuna/
     # "mizuna": _compute_from_table_values(name="mizuna", color=(91 / 255, 224 / 255, 54 / 255), germination_time=(4, 7),
     #                                      seed_spacing=SEED_SPACING["mizuna"], maturation_time=40,
