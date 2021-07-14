@@ -32,13 +32,24 @@ def inv_logifunc_fix_a(y, k , r):
     return (np.log(r-y) - np.log(y(r-1))) / -k
 
 
-
-def get_recent_priors(path=PRIOR_PATH):
+# sides : b, l, r -> both, left, right
+def get_recent_priors(path=PRIOR_PATH, side = 'b'):
     if path == PRIOR_PATH:
         path = str(path) + str(daily_files(path, False)[-1])
-        # path = str(path) + "priors210613.p"
-    print(path)
-    return pkl.load(open(path, "rb"))
+    plant_centers_both = pkl.load(open(path, "rb"))
+    plants_left = {}
+    plants_right = {}
+    for plant_type in plant_centers_both.keys():
+        for circle in plant_centers_both[plant_type]:
+            if circle['circle'][0][0] > 1683:
+                plants_right[plant_type] = plants_right.get(plant_type, []) + [circle]
+            else:
+                plants_left[plant_type] = plants_left.get(plant_type, []) + [circle]
+    if side == 'l':
+        return plants_left
+    if side == 'r':
+        return plants_right
+    return plants_left, plants_right
 
 
 def save_circles(prior: dict, day: str):
