@@ -434,7 +434,6 @@ def determine_curr_loss(day):
     s_list = [[], [], [], [], [], []]
     x = pickle.load(open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'rb'))
     max_val = x[-1]
-    print(max_val)
     for i in range(61200, 82800, 3600):
         if day * 86400 + GARDEN_START_DATE + i >= GARDEN_START_DATE:
             s1, s2, s3, s4, s5, s6 = getDeviceReadings(day, i)
