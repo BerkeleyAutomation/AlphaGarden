@@ -33,5 +33,5 @@ STEP = 1
 SOIL_MOISTURE_SENSOR_POSITIONS = [(96, 72), (35, 111), (0, 0), (0, 0), (21, 138), (0, 0)]
 SOIL_MOISTURE_SENSOR_ACTIVE = [False, False, False, False, False, False] # 1 2 3 4 5 6 sensor order
 #GARDEN_START_DATE = 1613854800 # Unix timestamp Feb 20th 9 PM GMT which is Feb 20th 1 PM PST
-GARDEN_START_DATE = 1625526000 #Third cycle (7/5/21)
+GARDEN_START_DATE = 1625526000 #Third cycle (7/5/21), when to query soil moisture
 SIDE = "left"

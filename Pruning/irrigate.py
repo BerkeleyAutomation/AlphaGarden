@@ -61,7 +61,7 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     os.system('python3 ../Learning/create_state.py ' + side)
     time.sleep(2)
     os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
-    timestep = 9#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
+    timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
 
     with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
         sectors = pickle.load(f)
