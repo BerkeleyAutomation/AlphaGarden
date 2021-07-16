@@ -12,11 +12,11 @@ NUM_IRR_ACTIONS = 1
 IRR_THRESHOLD = 9  # unit size to calculate irrigation window.
 SOIL_DEPTH = 0.2 #meters
 
-NUM_PLANTS = 20 #-----CHANGE
+NUM_PLANTS = 16 #-----CHANGE
 ROWS = 150
 COLS = 150
 
-NUM_PLANT_TYPES_USED = 10 #----CHANGE
+NUM_PLANT_TYPES_USED = 8 #----CHANGE
 # Defines locations to sample on top of plant centers, used in eval_policy.py: 
 # set to zero to replicate uniform
 PERCENT_NON_PLANT_CENTERS = 0.1

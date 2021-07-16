@@ -33,9 +33,17 @@ def inv_logifunc_fix_a(y, k , r):
 
 
 # sides : b, l, r -> both, left, right
-def get_recent_priors(path=PRIOR_PATH, side = 'b'):
+def get_recent_priors(path=PRIOR_PATH, side='b'):
+    print(path)
     if path == PRIOR_PATH:
+        if side == 'r':
+            folder = 'right/'
+        elif side == 'l':
+            folder = 'left/'
+        path += folder
         path = str(path) + str(daily_files(path, False)[-1])
+
+    print("PATH: ", path)
     plant_centers_both = pkl.load(open(path, "rb"))
     plants_left = {}
     plants_right = {}
@@ -51,8 +59,10 @@ def get_recent_priors(path=PRIOR_PATH, side = 'b'):
         return plants_right
     return plants_left, plants_right
 
+def dist(x1, y1, x2, y2):
+    return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
-def save_circles(prior: dict, day: str):
+def save_circles(prior: dict, day: str, side: str):
     '''Converts:
     {
         "arugula": [
@@ -71,19 +81,48 @@ def save_circles(prior: dict, day: str):
         ...
     }
     '''
+    if side == 'r':
+        folder = 'right/'
+    elif side == 'l':
+        folder = 'left/'
     type_dic = {}
     new_dic = {}
-    x_fc = (282/3478)
-    y_fc = (133/1630)
-    
+    x_fc = (300/3478) #282
+    y_fc = (150/1630) #133
+    coordinate_transfer = {'cilantro': [(137, 36), (14, 31)], 'green-lettuce': [(24, 16), (116, 18)], 'radicchio': [(90, 24), (24, 84)], 'swiss-chard': [(27, 55), (121, 121)], 'turnip': [(84, 58), (34, 116)], 'kale': [(56, 35), (94, 97)], 'borage': [(65, 120), (121, 73)], 'red-lettuce': [(90, 135), (134, 22)]}
     for k in list(prior.keys()):
         print(k)
         temp = set()
         for i in prior[k]:
-            if i['circle'][0][0] > 1650:
-                type_dic[int(282 - i['circle'][0][0] * x_fc) + int(i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
+            # if i['circle'][0][0] > 1683:
+            if side == 'r':
+                type_dic[int(i['circle'][0][0] * x_fc - 140) + int(150 - i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
                 print(i['circle'][0])
-                temp.add(((int(282 - i['circle'][0][0] * x_fc), int(i['circle'][0][1] * y_fc)), int(i['circle'][1]/10))) #change first int ind
+                radius = int(i['circle'][1]/10)
+                item = (int(i['circle'][0][0] * x_fc - 140), int(150 - i['circle'][0][1] * y_fc))
+                found = False
+                for c in coordinate_transfer[k]:
+                    if dist(item[0], item[1], c[0], c[1]) <= 20:
+                        item = c
+                        found = True
+                        continue
+                if not found:
+                    print("----MISSED MY MARK -----", k, item)
+                temp.add((item, radius)) #change first int ind
+            elif side == 'l':
+                type_dic[int(150 - i['circle'][0][0] * x_fc) + int(150 - i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
+                print(i['circle'][0])
+                radius = int(i['circle'][1]/10)
+                item = (int(150 - i['circle'][0][0] * x_fc), int(150 - i['circle'][0][1] * y_fc))
+                found = False
+                for c in coordinate_transfer[k]:
+                    if dist(item[0], item[1], c[0], c[1]) <= 20:
+                        item = c
+                        found = True
+                        continue
+                if not found:
+                    print("----MISSED MY MARK -----", k, item)
+                temp.add((item, radius)) #change first int ind
         if k == 'green-lettuce':
             new_dic['green_lettuce'] = temp
         elif k == 'red-lettuce':
@@ -92,12 +131,13 @@ def save_circles(prior: dict, day: str):
             new_dic['swiss_chard'] = temp
         else:
             new_dic[k] = temp
-    pkl.dump(new_dic, open(CIRCLE_PATH+day+"_circles.p", "wb"))
+
+    pkl.dump(new_dic, open(CIRCLE_PATH+folder+day+"_circles.p", "wb"))
     print("FINAL DICTIONARY: ")
     print(new_dic)
     return new_dic, type_dic
 
-def save_priors(new_prior: dict, day: str) -> None:
+def save_priors(new_prior: dict, day: str, side: str) -> None:
     '''Saves new priors based on new circles
     Structure of priors:
     {
@@ -109,7 +149,12 @@ def save_priors(new_prior: dict, day: str) -> None:
         ], ...
     }
     '''
-    pkl.dump(new_prior, open(PRIOR_PATH+"priors"+day+".p", "wb"))
+    if side == 'r':
+        folder = 'right/'
+    elif side == 'l':
+        folder = 'left/'
+
+    pkl.dump(new_prior, open(PRIOR_PATH+folder+"priors"+day+".p", "wb"))
 
 
 def get_model_coeff(model_type: str, plant_name: str = '') -> list:

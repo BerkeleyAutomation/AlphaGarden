@@ -54,9 +54,10 @@ class MyHandler:
 
         self.CLIENT = None
         self.bot = None
+        self.read = False
 
     def update(self, action, coords):
-        assert action in ['prune', 'move', 'photo', 'move_rel', 'water'], "Not in list of actions"
+        assert action in ['prune', 'move', 'photo', 'move_rel', 'water', 'read_pin'], "Not in list of actions"
         self.action = action
         self.coords = coords
         self.execute()  
@@ -89,7 +90,13 @@ class MyHandler:
             print("WATER REQUEST ID: " + request_id)
             time.sleep(2.409)
             request_id = self.bot.toggle_pin(8)
-            print("WATER OFF REQUEST ID: " + request_id)            
+            print("WATER OFF REQUEST ID: " + request_id)
+
+        elif self.action == 'read_pin':
+            pin = self.coords
+            request_id = self.bot.read_pin(pin)
+            self.read = True
+            # print("PIN #" + str(pin) + ": " + str(request_id))            
 
     # The callback is passed a FarmBot instance, plus an MQTT
     # client object (see Paho MQTT docs to learn more).
@@ -120,6 +127,9 @@ class MyHandler:
         # which returns an (x, y, z) tuple of the device's
         # last known position:
         print("Current position: (%.2f, %.2f, %.2f)" % bot.position())
+        if self.read:
+            self.read = False
+            print("STATE: ", state)
 
         # A less convenient method would be to access the state
         # tree directly:

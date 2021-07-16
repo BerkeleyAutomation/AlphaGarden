@@ -20,11 +20,16 @@ from full_auto_utils import *
 #####################################
 
 
-def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w"):
+def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w", side=None):
     '''Draws the circle that corresponds to the plants with centers and radii
     circles and radii should have equal length and correspond with eachother
     '''
     # print(centers, radii)
+    if side == 'r':
+        folder = 'right/'
+    elif side == 'l':
+        folder = 'left/'
+
     img, img_arr = get_img(path)
     fig, ax = plt.subplots()
     ax.imshow(img)
@@ -38,7 +43,7 @@ def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w"):
             circle1 = Circle((round(center[0]), round(center[1])), radius, color=circle_color, fill=False, lw=2)
             ax.add_patch(circle1)
     if save_no_show:
-        plt.savefig("./figures/"+path[path.find("snc"):])
+        plt.savefig("./figures/"+folder+path[path.find("snc"):])
     else:
         plt.show()
 

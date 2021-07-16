@@ -17,9 +17,9 @@ from tqdm import tqdm
 ############################
 
 
-def label_circles_BFS(path, show_res=False):
+def label_circles_BFS(path, show_res=False, side=None):
     print("BFS Fit for: "+path)
-    priors = get_recent_priors()
+    priors = get_recent_priors(path=PRIOR_PATH, side=side)
     new_circles = {plant_type: [] for plant_type in priors.keys()}
     # Iterate over each plant type
     for plant_type in tqdm(priors.keys()):
@@ -53,8 +53,8 @@ def label_circles_BFS(path, show_res=False):
             new_circles[plant_type].append(new_c)
 
     date = path[path.find("-2")+1:path.find("-2")+7]
-    save_priors(new_circles, date)
-    circles_dict, type_dic = save_circles(new_circles, date)
+    save_priors(new_circles, date, side)
+    circles_dict, type_dic = save_circles(new_circles, date, side)
     if show_res:
         # show_circs = {key:[] for key in circles_dict.keys()}
         # for key in new_circles.keys():
@@ -62,7 +62,7 @@ def label_circles_BFS(path, show_res=False):
         #         circle = c["circle"]
         #         show_circs[key].append((circle[0], circle[1]))
         #     show_circs[key] = merge_circles(show_circs[key])
-        draw_circles(path, new_circles, True)
+        draw_circles(path, new_circles, True, side=side)
     # print("LONG DICTIONARY: ")
     # print(new_circles)
     return circles_dict, type_dic
@@ -85,7 +85,7 @@ def label_circles_contours(path, show_res=False):
 ######### Public ###########
 ############################
 
-def process_image(path: str, save_circles: bool = False, crop: bool = False) -> dict:
+def process_image(path: str, save_circles: bool = False, crop: bool = False, side: str = None) -> dict:
     '''
     @param path: string representing path of the uncropped image
     @param save_circles: optionally saves circles to center_constants.py/CIRCLE_PATH
@@ -110,7 +110,7 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False) -> 
     mask_path = get_img_seg_mask(id_)
     # mask_path = "./post_process/"+id_+".png"
     print("Labeling circles: "+ mask_path)
-    return label_circles_BFS(mask_path, True)
+    return label_circles_BFS(mask_path, True, side)
 
 if __name__ == "__main__":
 #     print("=" * 20)

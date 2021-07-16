@@ -6,10 +6,11 @@ from simulator.garden import Garden
 import numpy as np
 import argparse
 import pickle
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--timestep', type=int, default=0)
-args = parser.parse_args()
+import sys
+# parser = argparse.ArgumentParser()
+# parser.add_argument('-s', '--side', type=int, default=0)
+# args = parser.parse_args()
+side = sys.argv[1]
 
 ''' From garden.py '''
 def compute_growth_map():
@@ -107,11 +108,10 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 #     },
 # }
 
-real_data = {'cilantro': {((137, 36), 0), ((14, 31), 0)}, 'green_lettuce': {((24, 16), 0), ((116, 18), 0)}, 'radicchio': {((90, 24), 0), ((24, 84), 0)}, 'swiss_chard': {((27, 55), 0), ((121, 121), 0)}, 'turnip': {((84, 58), 0), ((34, 116), 0)}, 'kale': {((56, 35), 0), ((94, 97), 0)}, 'borage': {((65, 120), 0), ((121, 73), 0)}, 'red_lettuce': {((90, 135), 0), ((134, 22), 0)}}
-# real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic.p", "rb")) #update path
-
-#timestep = args.timestep
-timestep = 4#pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+# real_data = {'cilantro': {((137, 36), 0), ((14, 31), 0)}, 'green_lettuce': {((24, 16), 0), ((116, 18), 0)}, 'radicchio': {((90, 24), 0), ((24, 84), 0)}, 'swiss_chard': {((27, 55), 0), ((121, 121), 0)}, 'turnip': {((84, 58), 0), ((34, 116), 0)}, 'kale': {((56, 35), 0), ((94, 97), 0)}, 'borage': {((65, 120), 0), ((121, 73), 0)}, 'red_lettuce': {((90, 135), 0), ((134, 22), 0)}}
+real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic_"+side+".p", "rb")) #update path
+print("LOADED: ", side)
+timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #9
 
 plant_type = PlantType()
 plant_types = plant_type.plant_names

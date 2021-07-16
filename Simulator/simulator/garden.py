@@ -328,66 +328,66 @@ class Garden:
         self.actions.append(actions)
 
         # GROWTH ANALYSIS
-        folder = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Learning/textFiles/'
-        # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
-        p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
-        # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
-        # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
-        # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
-        # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
-        # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
-        # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
-        # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
-        # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
-        # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
-        # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
-        for d in self.plants:
-            for p in d.values():
-                # print(p.type, p.radius, (p.row, p.col))
-                if p.type == 'borage':
-                    num = p_type_ind[p.type]
-                if p.type == 'sorrel':
-                    num = p_type_ind[p.type]
-                if p.type == 'cilantro':
-                    num = p_type_ind[p.type]
-                if p.type == 'radicchio':
-                    num = p_type_ind[p.type]
-                if p.type == 'kale':
-                    num = p_type_ind[p.type]
-                if p.type == 'green_lettuce':
-                    num = p_type_ind[p.type]
-                if p.type == 'red_lettuce':
-                    num = p_type_ind[p.type]
-                if p.type == 'arugula':
-                    num = p_type_ind[p.type]
-                if p.type == 'swiss_chard':
-                    num = p_type_ind[p.type]
-                if p.type == 'turnip':
-                    num = p_type_ind[p.type]
+        # folder = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Learning/textFiles/'
+        # # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
+        # p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
+        # # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
+        # # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
+        # # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
+        # # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
+        # # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
+        # # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
+        # # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
+        # # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
+        # # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
+        # # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
+        # for d in self.plants:
+        #     for p in d.values():
+        #         # print(p.type, p.radius, (p.row, p.col))
+        #         if p.type == 'borage':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'sorrel':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'cilantro':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'radicchio':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'kale':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'green_lettuce':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'red_lettuce':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'arugula':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'swiss_chard':
+        #             num = p_type_ind[p.type]
+        #         if p.type == 'turnip':
+        #             num = p_type_ind[p.type]
 
-                file_name = str(p.type) + str(num) + '.txt'
+        #         file_name = str(p.type) + str(num) + '.txt'
 
-                # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
+        #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
                     
-                if p_type_ind[p.type] == 1:
-                    p_type_ind[p.type] = 0
-                elif p_type_ind[p.type] < 1:
-                    p_type_ind[p.type] += 1
+        #         if p_type_ind[p.type] == 1:
+        #             p_type_ind[p.type] = 0
+        #         elif p_type_ind[p.type] < 1:
+        #             p_type_ind[p.type] += 1
 
-                # print(os.getcwd())                
-                file_list = os.listdir(folder)
-                if file_name not in file_list:
-                    fil = open(folder + file_name, "w+")
-                    item = str(p.radius)
-                    fil.write(item)
-                    fil.close()
-                if file_name in file_list:
-                    f = open(folder + file_name, "r")
-                    item = f.read()
-                    fil = open(folder + file_name, "w+")
-                    item = str(item) + ", " + str(p.radius)
-                    fil.write(item)
-                    fil.close()
+        #         # print(os.getcwd())                
+        #         file_list = os.listdir(folder)
+        #         if file_name not in file_list:
+        #             fil = open(folder + file_name, "w+")
+        #             item = str(p.radius)
+        #             fil.write(item)
+        #             fil.close()
+        #         if file_name in file_list:
+        #             f = open(folder + file_name, "r")
+        #             item = f.read()
+        #             fil = open(folder + file_name, "w+")
+        #             item = str(item) + ", " + str(p.radius)
+        #             fil.write(item)
+        #             fil.close()
         #END GROWTH ANALYSIS
 
 
