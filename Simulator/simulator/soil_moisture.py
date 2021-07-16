@@ -1,6 +1,6 @@
 import gym
 import torch
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_MOISTURE_SENSOR_POSITIONS, GARDEN_START_DATE, SIDE
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_MOISTURE_SENSOR_POSITIONS, GARDEN_START_DATE, SIDE, IRRIGATE_BUFFER
 import simalphagarden
 from net import Net
 from constants import TrainingConstants
@@ -368,7 +368,8 @@ def determine_current_gain(day):
             s_list[4].append(s5)
             s_list[5].append(s6)
 
-    maxval = [max(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True]
+
+    maxval = [max(s_list[i]) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True else 0 for i in range(6)]
     try:
         x = pickle.load(open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'rb')) #for plants with on the same day
         x.append(maxval)
@@ -376,8 +377,10 @@ def determine_current_gain(day):
     except (OSError, IOError) as e:
         val = [maxval]
         pickle.dump(val, open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'wb'))
-
-    return np.mean([maxval[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
+    gain = np.mean([maxval[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
+    if day < IRRIGATE_BUFFER:
+        gain = 0.046
+    return gain
 
 def determine_avg_gain(day):
     """ Determines average gain from the soil moisture sensors within a six hour window around the time associated with GARDEN_START_DATE for days until the current day.
@@ -393,22 +396,23 @@ def determine_avg_gain(day):
             pass
 
     prev_gains = []
-    for i in range(day-2, day+1): #sliding 3 day mean for weather purposes
+    for i in range(day-4, day-1): #sliding 3 day mean for weather purposes
         if i >= 0:
             gain = determine_current_gain(i)
             prev_gains.append(gain)
-        if i == day:
+        if i == day-2:
             fil = open('./policy_metrics/water_gain_'+ SIDE +'.txt', 'w+')
             try:
                 x = pickle.load(open('./policy_metrics/water_gain_'+ SIDE +'.pkl', 'rb'))
                 x.append(gain)
-                os.remove('./policy_metrics/water_gain.pkl')
+                os.remove('./policy_metrics/water_gain_' + SIDE +'.pkl')
                 pickle.dump(x, open('./policy_metrics/water_gain_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(x) + "\n")
             except (OSError, IOError) as e:
                 val = [gain]
                 pickle.dump(val, open('./policy_metrics/water_gain_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(val) + "\n")
+            fil.close()
     gain = np.mean(prev_gains)
 
     if day > 2 and (prev_day_gain * (1 + MAX_CHANGE) < gain or prev_day_gain * (1 - MAX_CHANGE) > gain): #if sensor fails there are no radical changes to water grid
@@ -425,7 +429,7 @@ def determine_avg_gain(day):
     return gain
 
 def determine_curr_loss(day):
-    """ Determines average gain from the soil moisture sensors within a six hour window around the time associated with GARDEN_START_DATE for a single day.
+    """ Determines loss from the soil moisture sensors within a six hour window around the time associated with GARDEN_START_DATE for a single day.
     """
     s_list = [[], [], [], [], [], []]
     x = pickle.load(open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'rb'))
@@ -441,7 +445,10 @@ def determine_curr_loss(day):
             s_list[4].append(s5)
             s_list[5].append(s6) 
 
-    return np.mean([max_val[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
+    loss = np.mean([max_val[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
+    if day < IRRIGATE_BUFFER:
+        loss = 0.042 #first day loss from TASE
+    return loss
 
 def determine_evap_rate(day):
     """ Determines the evaporation rate for days until the current day.
@@ -457,11 +464,11 @@ def determine_evap_rate(day):
             pass
 
     prev_losses = []
-    for i in range(day-2, day+1): #sliding 3 day mean for weather purposes
+    for i in range(day-4, day-1): #sliding 3 day mean for weather purposes
         if i >= 0:
             loss = determine_curr_loss(i)
             prev_losses.append(loss)
-        if i == day:
+        if i == day-2:
             fil = open('./policy_metrics/water_loss_'+ SIDE +'.txt', 'w+')
             try:
                 x = pickle.load(open('./policy_metrics/water_loss_'+ SIDE +'.pkl', 'rb')) #water_loss is day to day loss and water_avg_loss is the running average loss that the irrigate function sees
@@ -473,7 +480,8 @@ def determine_evap_rate(day):
                 val = [loss]
                 pickle.dump(val, open('./policy_metrics/water_loss_'+ SIDE +'.pkl', 'wb'))
                 fil.write(str(val) + "\n")
-
+            fil.close()
+    
     loss = {0:np.mean(prev_losses), 1: 0.013} #From soil moisture data May 26 8:30 to May 27 to 8:30
     if day > 2 and (prev_day_loss[0] * (1 + MAX_CHANGE) < loss[0] or prev_day_loss[0] * (1 - MAX_CHANGE) > loss[0]): #if sensor fails there are no radical changes to water grid
         loss = prev_day_loss
