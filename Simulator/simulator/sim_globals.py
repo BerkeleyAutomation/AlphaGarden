@@ -31,7 +31,8 @@ PRUNE_WINDOW_COLS = 5
 STEP = 1
 
 SOIL_MOISTURE_SENSOR_POSITIONS = [(96, 72), (35, 111), (0, 0), (0, 0), (21, 138), (0, 0)]
-SOIL_MOISTURE_SENSOR_ACTIVE = [False, False, False, False, False, False] # 1 2 3 4 5 6 sensor order
+SOIL_MOISTURE_SENSOR_ACTIVE = [True, False, False, False, True, False] # 1 2 3 4 5 6 sensor order
+IRRIGATE_BUFFER = 8
 #GARDEN_START_DATE = 1613854800 # Unix timestamp Feb 20th 9 PM GMT which is Feb 20th 1 PM PST
-GARDEN_START_DATE = 1626285600 #(7/14/21, 11 AM) when to query soil moisture
-SIDE = "right"
+GARDEN_START_DATE = 1625508000 #Third cycle (7/5/21 11AM PST), when to query soil moisture
+SIDE = "left"
