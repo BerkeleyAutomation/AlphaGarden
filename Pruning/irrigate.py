@@ -86,10 +86,10 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     for i in sorted_sectors_fb:
         print(i[0], i[1])
 
-        # fb.update_action("move", (i[0], i[1], 0)) #sim to farmbot coord * scaling factor
-        # time.sleep(20) 
-        # fb.update_action("water", None)
-        # time.sleep(5)
+        fb.update_action("move", (i[0], i[1], 0)) #sim to farmbot coord * scaling factor
+        time.sleep(20) 
+        fb.update_action("water", None)
+        time.sleep(5)
 
     #fb.update_action("move", (0,0,0))
 
