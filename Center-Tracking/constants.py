@@ -99,7 +99,7 @@ ratio = 0.
 TEST_PATH = './cropped'
 IOU_EVAL_FILE = 'iou_eval_file.csv'
 
-TEST_MODEL = './models/model_3_16.h5'
+TEST_MODEL = './models/curr_model.h5'
 
 GARDEN_DATE_YEAR = 2021
 GARDEN_DATE_MONTH = 7
