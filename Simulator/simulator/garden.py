@@ -328,66 +328,66 @@ class Garden:
         self.actions.append(actions)
 
         # GROWTH ANALYSIS
-        # folder = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Learning/textFiles/'
-        # # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
-        # p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
-        # # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
-        # # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
-        # # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
-        # # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
-        # # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
-        # # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
-        # # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
-        # # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
-        # # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
-        # # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
-        # for d in self.plants:
-        #     for p in d.values():
-        #         # print(p.type, p.radius, (p.row, p.col))
-        #         if p.type == 'borage':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'sorrel':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'cilantro':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'radicchio':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'kale':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'green_lettuce':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'red_lettuce':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'arugula':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'swiss_chard':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'turnip':
-        #             num = p_type_ind[p.type]
+        folder = '/home/satvik/autolab/AlphaGarden/Learning/textFiles/'
+        # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
+        p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
+        # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
+        # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
+        # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
+        # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
+        # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
+        # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
+        # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
+        # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
+        # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
+        # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
+        for d in self.plants:
+            for p in d.values():
+                # print(p.type, p.radius, (p.row, p.col))
+                if p.type == 'borage':
+                    num = p_type_ind[p.type]
+                if p.type == 'sorrel':
+                    num = p_type_ind[p.type]
+                if p.type == 'cilantro':
+                    num = p_type_ind[p.type]
+                if p.type == 'radicchio':
+                    num = p_type_ind[p.type]
+                if p.type == 'kale':
+                    num = p_type_ind[p.type]
+                if p.type == 'green_lettuce':
+                    num = p_type_ind[p.type]
+                if p.type == 'red_lettuce':
+                    num = p_type_ind[p.type]
+                if p.type == 'arugula':
+                    num = p_type_ind[p.type]
+                if p.type == 'swiss_chard':
+                    num = p_type_ind[p.type]
+                if p.type == 'turnip':
+                    num = p_type_ind[p.type]
 
-        #         file_name = str(p.type) + str(num) + '.txt'
+                file_name = str(p.type) + str(num) + '.txt'
 
-        #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
+                # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
                     
-        #         if p_type_ind[p.type] == 1:
-        #             p_type_ind[p.type] = 0
-        #         elif p_type_ind[p.type] < 1:
-        #             p_type_ind[p.type] += 1
+                if p_type_ind[p.type] == 1:
+                    p_type_ind[p.type] = 0
+                elif p_type_ind[p.type] < 1:
+                    p_type_ind[p.type] += 1
 
-        #         # print(os.getcwd())                
-        #         file_list = os.listdir(folder)
-        #         if file_name not in file_list:
-        #             fil = open(folder + file_name, "w+")
-        #             item = str(p.radius)
-        #             fil.write(item)
-        #             fil.close()
-        #         if file_name in file_list:
-        #             f = open(folder + file_name, "r")
-        #             item = f.read()
-        #             fil = open(folder + file_name, "w+")
-        #             item = str(item) + ", " + str(p.radius)
-        #             fil.write(item)
-        #             fil.close()
+                # print(os.getcwd())                
+                file_list = os.listdir(folder)
+                if file_name not in file_list:
+                    fil = open(folder + file_name, "w+")
+                    item = str(p.radius)
+                    fil.write(item)
+                    fil.close()
+                if file_name in file_list:
+                    f = open(folder + file_name, "r")
+                    item = f.read()
+                    fil = open(folder + file_name, "w+")
+                    item = str(item) + ", " + str(p.radius)
+                    fil.write(item)
+                    fil.close()
         #END GROWTH ANALYSIS
 
 
@@ -430,9 +430,8 @@ class Garden:
             else:
                 center_points_gain = determine_avg_gain(self.timestep+1) #determines the gain
         else:
-            k = 1 #scaling factor to account for water loss from drainage and etc., determined experimentally
+            k = 1.175 #scaling factor to account for water loss from drainage and etc., determined experimentally
             center_points_gain = (amount / (window_grid_size * SOIL_DEPTH)) * k #.2 m of soil depth
-
 
         #Sample the Gaussian to for gain for center points that are directly watered
         mu, sigma = center_points_gain, 0.0054 # mean and standard deviation(from experiments in May TASE) for Gaussian
@@ -549,11 +548,11 @@ class Garden:
                     # and give as close to that as possible
                     
                     if plant.amount_sunlight > 0:
-                        k = 1 #k is a scaling factor for the plant uptake
-                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points) * k
+                        k = 1/15 #k is a scaling factor for the plant uptake
+                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points) 
                         plant.water_amt += water_to_absorb
                         plant.watered_day = self.timestep
-                        point['water'] -= water_to_absorb
+                        point['water'] -= water_to_absorb * k
 
                     # if temp != test_plant.water_amt:
                     #     print(test_plant, test_plant.water_amt, "\n")
@@ -561,7 +560,7 @@ class Garden:
 
             # Water evaporation per square cm (grid point)
             evap_rate_dict = {0:0.042, 1:0.01} #key:day since watered, value: experimentally determined evaporation rate for that day
-            evap_rate_std = {0:0.0048, 1:0.0001}
+            evap_rate_std = {0:0.0028, 1:0.001} #adjusted
             if any(SOIL_MOISTURE_SENSOR_ACTIVE):
                 if self.timestep == 0:
                     evap_rate_dict = {0:0.042, 1:0.01}

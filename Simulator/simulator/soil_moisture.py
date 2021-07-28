@@ -378,7 +378,7 @@ def determine_current_gain(day):
         val = [maxval]
         pickle.dump(val, open('./policy_metrics/water_maxval_'+ SIDE +'.pkl', 'wb'))
     gain = np.mean([maxval[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
-    if day < IRRIGATE_BUFFER:
+    if day < IRRIGATE_BUFFER or gain < 0.01:
         gain = 0.046
     return gain
 
@@ -445,7 +445,7 @@ def determine_curr_loss(day):
             s_list[5].append(s6) 
 
     loss = np.mean([max_val[i] - min(s_list[i]) for i in range(6) if SOIL_MOISTURE_SENSOR_ACTIVE[i] == True])
-    if day < IRRIGATE_BUFFER:
+    if day < IRRIGATE_BUFFER or loss < 0.01:
         loss = 0.042 #first day loss from TASE
     return loss
 
