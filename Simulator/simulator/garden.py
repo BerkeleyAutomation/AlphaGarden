@@ -560,7 +560,7 @@ class Garden:
 
             # Water evaporation per square cm (grid point)
             evap_rate_dict = {0:0.042, 1:0.01} #key:day since watered, value: experimentally determined evaporation rate for that day
-            evap_rate_std = {0:0.0028, 1:0.001} #adjusted
+            evap_rate_std = {0:0.0048, 1:0.0001} #adjusted
             if any(SOIL_MOISTURE_SENSOR_ACTIVE):
                 if self.timestep == 0:
                     evap_rate_dict = {0:0.042, 1:0.01}
