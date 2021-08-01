@@ -22,9 +22,9 @@ TYPES_TO_COLORS = {
     "cilantro": [1, 124, 93],
     "green-lettuce": [50, 226, 174],
     "kale": [49, 49, 226],
-    "radiccio": [185, 180, 42],
+    "radicchio": [185, 180, 42],
     "red-lettuce": [145, 50, 226],
-    "swiss-charge": [226, 50, 170],
+    "swiss-chard": [226, 50, 170],
     "turnip": [254, 85, 89]
 }
 

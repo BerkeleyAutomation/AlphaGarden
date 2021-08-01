@@ -57,7 +57,7 @@ class MyHandler:
         self.read = False
 
     def update(self, action, coords):
-        assert action in ['prune', 'move', 'photo', 'move_rel', 'water', 'read_pin'], "Not in list of actions"
+        assert action in ['prune', 'move', 'photo', 'move_rel', 'water', 'read_pin', 'servo'], "Not in list of actions"
         self.action = action
         self.coords = coords
         self.execute()  
@@ -93,10 +93,17 @@ class MyHandler:
             print("WATER OFF REQUEST ID: " + request_id)
 
         elif self.action == 'read_pin':
+            print("NOT IMPLEMENTED")
             pin = self.coords
             request_id = self.bot.read_pin(pin)
             self.read = True
-            # print("PIN #" + str(pin) + ": " + str(request_id))            
+            # print("PIN #" + str(pin) + ": " + str(request_id))
+
+        elif self.action == 'servo':
+            # Pin 11 = orientation, pin 6 = vertiical/horiztonal
+            pin, angle = self.coords[0], self.coords[1]
+            request_id = self.bot.set_servo_angle(pin, angle)
+            print("SERVO REQUEST ID: " + request_id)
 
     # The callback is passed a FarmBot instance, plus an MQTT
     # client object (see Paho MQTT docs to learn more).

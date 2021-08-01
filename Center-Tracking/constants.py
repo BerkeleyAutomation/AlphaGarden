@@ -7,7 +7,7 @@ MODEL_PATH = './models'
 IM_WIDTH = 512
 IM_HEIGHT = 512
 
-N_CLASSES = 11
+N_CLASSES = 9
 BATCH_SIZE = 32
 N_EPOCHS = 125
 
@@ -50,9 +50,9 @@ BINARY_ENCODINGS = {
     "cilantro": [0, 0, 1, 0, 0, 0, 0, 0, 0],
     "green-lettuce": [0, 0, 0, 1, 0, 0, 0, 0, 0],
     "kale": [0, 0, 0, 0, 1, 0, 0, 0, 0],
-    "radiccio": [0, 0, 0, 0, 0, 1, 0, 0, 0],
+    "radicchio": [0, 0, 0, 0, 0, 1, 0, 0, 0],
     "red-lettuce": [0, 0, 0, 0, 0, 0, 1, 0, 0],
-    "swiss-charge": [0, 0, 0, 0, 0, 0, 0, 1, 0],
+    "swiss-chard": [0, 0, 0, 0, 0, 0, 0, 1, 0],
     "turnip": [0, 0, 0, 0, 0, 0, 0, 0, 1]
 }
 
