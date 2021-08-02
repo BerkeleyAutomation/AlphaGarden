@@ -22,3 +22,4 @@ import sys
 if __name__ == '__main__':
 	fb = FarmBotThread()
 	fb.update_action('read_pin', 8)
+	time.sleep(20)

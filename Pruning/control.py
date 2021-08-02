@@ -4,6 +4,7 @@ import json
 import time
 import wget
 import os
+import pickle as pkl
 
 # Before we begin, we must download an access token from the
 # API. To avoid copy/pasting passwords, it is best to create
@@ -54,7 +55,7 @@ class MyHandler:
 
         self.CLIENT = None
         self.bot = None
-        self.read = False
+        self.read = None
 
     def update(self, action, coords):
         assert action in ['prune', 'move', 'photo', 'move_rel', 'water', 'read_pin', 'servo'], "Not in list of actions"
@@ -93,11 +94,13 @@ class MyHandler:
             print("WATER OFF REQUEST ID: " + request_id)
 
         elif self.action == 'read_pin':
-            print("NOT IMPLEMENTED")
             pin = self.coords
             request_id = self.bot.read_pin(pin)
-            self.read = True
-            # print("PIN #" + str(pin) + ": " + str(request_id))
+            if pin == 8:
+                self.read = 'read_water.p'
+            elif pin == 54: 
+                self.read = 'read_depth.p'
+            print("PIN #" + str(pin) + ": " + str(request_id))
 
         elif self.action == 'servo':
             # Pin 11 = orientation, pin 6 = vertiical/horiztonal
@@ -127,16 +130,18 @@ class MyHandler:
         # only as an example.
 
         # print("NEW BOT STATE TREE AVAILABLE:")
-        # print(state)
+        if self.read:
+            if self.read == 'read_depth.p':
+                pkl.dump(depth_sensor(state['pins']['54']['value']), open('./data/' + self.read, 'wb'))
+            elif self.read == 'read_water.p':
+                pkl.dump(state['pins']['8']['value'], open('./data/' + self.read, 'wb'))
+            self.read = False
 
         # Since the state tree is very large, we offer
         # convenience helpers such as `bot.position()`,
         # which returns an (x, y, z) tuple of the device's
         # last known position:
         print("Current position: (%.2f, %.2f, %.2f)" % bot.position())
-        if self.read:
-            self.read = False
-            print("STATE: ", state)
 
         # A less convenient method would be to access the state
         # tree directly:
@@ -213,6 +218,12 @@ def photo(dir_path):
     newname = imagetimes[mri] + '_' + str(imagexs[mri]) + '_' + str(imageys[mri]) + '_' + str(imagezs[mri]) + '.jpg'
     #newname = "recent.jpg"
     os.rename(cname, dir_path + newname)
+
+def depth_sensor(vol):
+    # 184 - 55 cm
+    # 314 - 25 cm
+    # 458 - 15 cm
+    return (-0.1446163673788062 * vol) + 77.7510824047129
 
 def dismount_nozzle():
     # Position Correctly, Move into slot, Disconnect
