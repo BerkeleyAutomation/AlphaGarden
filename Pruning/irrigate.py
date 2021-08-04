@@ -94,14 +94,14 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
         #Check if water is still on, if it is turn it off
         fb.update_action("read_pin", 8)
         time.sleep(2)
-        value = pkl.load(open('./data/read_water.p'), 'rb')
+        value = pickle.load(open('./data/read_water.p', 'rb'))
         if value:
             fb.update_action("water", None)
 
     #Check if water is still on, if it is turn it off
     fb.update_action("read_pin", 8)
     time.sleep(2)
-    value = pkl.load(open('./data/read_water.p'), 'rb')
+    value = pickle.load(open('./data/read_water.p', 'rb'))
     if value:
         fb.update_action("water", None)
     if side == 'l':

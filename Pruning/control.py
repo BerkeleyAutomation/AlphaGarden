@@ -58,7 +58,7 @@ class MyHandler:
         self.read = None
 
     def update(self, action, coords):
-        assert action in ['prune', 'move', 'photo', 'move_rel', 'water', 'read_pin', 'servo'], "Not in list of actions"
+        assert action in ['prune_radial', 'move', 'photo', 'move_rel', 'water', 'read_pin', 'servo', 'prune_scissor'], "Not in list of actions"
         self.action = action
         self.coords = coords
         self.execute()  
@@ -78,7 +78,7 @@ class MyHandler:
             request_id = self.bot.move_relative(self.coords[0],self.coords[1],self.coords[2])
             print("TOGGLE PIN REQUEST ID: " + request_id)
 
-        elif self.action == 'prune':
+        elif self.action == 'prune_radial':
             request_id = self.bot.toggle_pin(48)
             print("TOGGLE PIN REQUEST ID: " + request_id)
 
