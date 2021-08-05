@@ -4,6 +4,10 @@ import torch
 from constants import *
 from data_utils import *
 from run_utils import *
+#Delete this
+from full_auto_utils import *
+from location_segmentation import *
+#To this
 from keras.models import Model, load_model
 from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
@@ -80,4 +84,9 @@ if not os.path.isdir("post_process"):
 
 
 def get_img_seg_mask(id_):
+    #Delete this 
+    if False: #set to true
+        prior = get_recent_priors()
+        return loc_bias_with_shift(model_unet, TEST_PATH + '/' + id_, priors)
+    # To this
     return output_prediction_images(id_, model_unet, TEST_PATH)
