@@ -194,7 +194,7 @@ def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwar
     min_rad, max_rad = cm_radius_to_pixels(
         min_rad_cm), cm_radius_to_pixels(max_rad_cm)
     # return (min_rad, max_rad)
-    return (50, min(max_rad + 10, MAX_DIAMETER[plant_type]/2))
+    return (50, MAX_DIAMETER[plant_type]/2)
 
 
 def init_priors(seed_placements: dict) -> dict:
