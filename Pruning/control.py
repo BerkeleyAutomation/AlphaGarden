@@ -5,6 +5,7 @@ import time
 import wget
 import os
 import pickle as pkl
+import numpy as np
 
 # Before we begin, we must download an access token from the
 # API. To avoid copy/pasting passwords, it is best to create
@@ -95,10 +96,12 @@ class MyHandler:
 
         elif self.action == 'read_pin':
             pin = self.coords
-            request_id = self.bot.read_pin(pin)
             if pin == 8:
+                request_id = self.bot.read_pin(pin)
                 self.read = 'read_water.p'
             elif pin == 54: 
+                print('--------')
+                request_id = self.bot.read_pin(pin, pin_mode='analog')
                 self.read = 'read_depth.p'
             print("PIN #" + str(pin) + ": " + str(request_id))
 
@@ -107,6 +110,17 @@ class MyHandler:
             pin, angle = self.coords[0], self.coords[1]
             request_id = self.bot.set_servo_angle(pin, angle)
             print("SERVO REQUEST ID: " + request_id)
+
+        elif self.action == 'prune_scissor':
+            request_id = self.bot.set_servo_angle(5, 180)
+            time.sleep(4.68)
+            request_id = self.bot.set_servo_angle(5, 90)
+            time.sleep(0.5)
+            request_id = self.bot.set_servo_angle(5, 0)
+            time.sleep(4.3)
+            request_id = self.bot.set_servo_angle(5, 90)
+            time.sleep(0.5)
+            print("TOGGLE SERVO STOP ID: " + request_id)
 
     # The callback is passed a FarmBot instance, plus an MQTT
     # client object (see Paho MQTT docs to learn more).
@@ -220,10 +234,16 @@ def photo(dir_path):
     os.rename(cname, dir_path + newname)
 
 def depth_sensor(vol):
-    # 184 - 55 cm
-    # 314 - 25 cm
-    # 458 - 15 cm
-    return (-0.1446163673788062 * vol) + 77.7510824047129
+    # 688 - 10 cm
+    # 368 - 20 cm
+    # 285 - 30 cm
+    # 240 - 40 cm
+    # 199 - 50 cm
+    x = np.array([688, 368, 285, 240, 199])
+    y = np.array([10, 20, 30, 40, 50])
+    z = np.polyfit(x,y,3)
+    p = np.poly1d(z)
+    return p(vol)
 
 def dismount_nozzle():
     # Position Correctly, Move into slot, Disconnect
