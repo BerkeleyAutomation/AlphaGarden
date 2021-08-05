@@ -113,6 +113,7 @@ def test_loc_bias_seg(model, image_name, prior_loc):
     show_test_truth_prediction(labels_to_colors(labels), "test_img_augmented.png")
 
 def loc_bias_with_shift(model, image_name, prior_loc):
+    
     priors = pkl.load(open(prior_loc, "rb"))
     test_image = cv2.cvtColor(cv2.imread(image_name), cv2.COLOR_BGR2RGB)
 
@@ -146,5 +147,5 @@ def loc_bias_with_shift(model, image_name, prior_loc):
             elif label_map1[i][j] < label_map2[i][j]:
                 label[i][j] = label_map2[i][j]
                 prescor[i][j] = prescor2[i][j]
-    show_test_truth_prediction(labels_to_colors(labels), 'post_process/' + image_name + '.png')
+    show_test_truth_prediction(labels_to_colors(label), 'post_process/' + image_name + '.png')
     #combine the two images together using major vote / confidence metric
