@@ -205,8 +205,8 @@ def farmbot_target_approach(fb, target_point, overhead_image):
         diff_y = int(target_point[1] - curr_y)  #increment with a vector
 
         print(diff_x, diff_y)
-        coord_x += int(np.sign(diff_x) * min(3, np.abs(diff_x)))
-        coord_y += int(np.sign(diff_y) * min(3, np.abs(diff_y)))
+        coord_x += int(np.sign(diff_x) * min(4, np.abs(diff_x)))
+        coord_y += int(np.sign(diff_y) * min(4, np.abs(diff_y)))
         # Cap to limit movement error
         coord_x = min(coord_x, 274)
         coord_x = max(0, coord_x)

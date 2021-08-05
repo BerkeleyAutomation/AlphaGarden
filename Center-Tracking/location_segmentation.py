@@ -112,7 +112,7 @@ def test_loc_bias_seg(model, image_name, prior_loc):
     labels = scores_to_labels(scores_augmented)
     show_test_truth_prediction(labels_to_colors(labels), "test_img_augmented.png")
 
-def loc_bias_with_shift(model, name, path prior_loc):
+def loc_bias_with_shift(model, name, prior_loc):
 
     image_name = path + '/' + name
 
