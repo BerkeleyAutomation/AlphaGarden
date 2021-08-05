@@ -87,6 +87,6 @@ def get_img_seg_mask(id_):
     #Delete this 
     if False: #set to true
         prior = get_recent_priors()
-        return loc_bias_with_shift(model_unet, TEST_PATH + '/' + id_, priors)
+        return loc_bias_with_shift(model_unet, id_, TEST_PATH, priors)
     # To this
     return output_prediction_images(id_, model_unet, TEST_PATH)
