@@ -41,7 +41,7 @@ def get_recent_priors(path=PRIOR_PATH, side='b'):
         elif side == 'l':
             folder = 'left/'
         path += folder
-        path = str(path) + str(daily_files(path, False)[-1])
+        path = str(path) + str(daily_files(path, False)[-2])
 
     print("PATH: ", path)
     plant_centers_both = pkl.load(open(path, "rb"))
@@ -96,13 +96,14 @@ def save_circles(prior: dict, day: str, side: str):
         for i in prior[k]:
             # if i['circle'][0][0] > 1683:
             if side == 'r':
-                type_dic[int(i['circle'][0][0] * x_fc - 140) + int(150 - i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
+                # type_dic[int(i['circle'][0][0] * x_fc - 140) + 2 * int(150 - i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
                 print(i['circle'][0])
                 radius = int(i['circle'][1]/10)
                 item = (int(i['circle'][0][0] * x_fc - 140), int(150 - i['circle'][0][1] * y_fc))
                 found = False
                 for c in coordinate_transfer[k]:
                     if dist(item[0], item[1], c[0], c[1]) <= 20:
+                        type_dic[c[0] + 2 * c[1]] = i['circle'][0][0]
                         item = c
                         found = True
                         continue
@@ -110,13 +111,14 @@ def save_circles(prior: dict, day: str, side: str):
                     print("----MISSED MY MARK -----", k, item)
                 temp.add((item, radius)) #change first int ind
             elif side == 'l':
-                type_dic[int(150 - i['circle'][0][0] * x_fc) + int(150 - i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
+                # type_dic[int(150 - i['circle'][0][0] * x_fc) + 2 * int(150 - i['circle'][0][1] * y_fc)] = i['circle'][0][0] # = x_coord
                 print(i['circle'][0])
                 radius = int(i['circle'][1]/10)
                 item = (int(150 - i['circle'][0][0] * x_fc), int(150 - i['circle'][0][1] * y_fc))
                 found = False
                 for c in coordinate_transfer[k]:
                     if dist(item[0], item[1], c[0], c[1]) <= 20:
+                        type_dic[c[0] + 2 * c[1]] = i['circle'][0][0]
                         item = c
                         found = True
                         continue

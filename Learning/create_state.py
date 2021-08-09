@@ -108,9 +108,10 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 #     },
 # }
 
-# real_data = {'cilantro': {((137, 36), 0), ((14, 31), 0)}, 'green_lettuce': {((24, 16), 0), ((116, 18), 0)}, 'radicchio': {((90, 24), 0), ((24, 84), 0)}, 'swiss_chard': {((27, 55), 0), ((121, 121), 0)}, 'turnip': {((84, 58), 0), ((34, 116), 0)}, 'kale': {((56, 35), 0), ((94, 97), 0)}, 'borage': {((65, 120), 0), ((121, 73), 0)}, 'red_lettuce': {((90, 135), 0), ((134, 22), 0)}}
+# real_data = {'cilantro': {((137, 36), 30), ((14, 31), 30)}, 'green_lettuce': {((24, 16), 30), ((116, 18), 30)}, 'radicchio': {((90, 24), 30), ((24, 84), 40)}, 'swiss_chard': {((27, 55), 40), ((121, 121), 40)}, 'turnip': {((84, 58), 40), ((34, 116), 40)}, 'kale': {((56, 35), 40), ((94, 97), 40)}, 'borage': {((65, 120), 40), ((121, 73), 40)}, 'red_lettuce': {((90, 135), 40), ((134, 22), 40)}}
 real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic_"+side+".p", "rb")) #update path
 print("LOADED: ", side)
+print(real_data)
 timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #9
 
 plant_type = PlantType()
@@ -158,5 +159,5 @@ garden_state = GardenState(plants, grid, plant_grid, plant_prob, leaf_grid, plan
 garden_copy = copy_garden(garden_state=garden_state, rows=ROWS, cols=COLS, sector_row=SECTOR_ROWS,
                           sector_col=SECTOR_COLS, prune_win_rows=PRUNE_WINDOW_ROWS,
                           prune_win_cols=PRUNE_WINDOW_COLS, step=STEP, prune_rate=PRUNE_RATE)
-pickle.dump([garden_copy, plant_type], open("garden_copy.pkl", "wb")) 
+pickle.dump([garden_copy, plant_type], open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "wb")) 
 print("SAVED!")

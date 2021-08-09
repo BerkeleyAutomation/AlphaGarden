@@ -187,10 +187,12 @@ def resize_local(local_image, scale_factor=0.7438):
     plt.imsave(image_path  + "_" + str(scale_factor) + "_resized.jpg", resized)
     return image_path  + "_" + str(scale_factor) + "_resized.jpg"
 
-def farmbot_target_approach(fb, target_point, overhead_image):
+def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
     #have farmbot apporach the target within same local image
     epsilon = 1 # the threshold needed to satisfy the closeness requirement
-    fb.update_action("move", (target_point[0] * 10, target_point[1] * 10,0))
+    max_y = (125-abs(y_offset))
+    # print("HERE: ", max_y)
+    fb.update_action("move", (target_point[0] * 10, min(target_point[1] * 10, max_y*10), 0)) #target_point[1] * 10,0))
     time.sleep(30)
 
     curr_pos = curr_pos_from_local(fb, overhead_image, target_point)#get from local image
@@ -210,7 +212,9 @@ def farmbot_target_approach(fb, target_point, overhead_image):
         # Cap to limit movement error
         coord_x = min(coord_x, 274)
         coord_x = max(0, coord_x)
-        coord_y = min(coord_y, 125)
+        if coord_y > (125-abs(y_offset)):
+            print("------CAPPED------")
+        coord_y = min(coord_y, (125-abs(y_offset))) #125
         coord_y = max(0, coord_y)
 
         fb.update_action("move", (coord_x * 10, coord_y * 10,0))
@@ -232,12 +236,12 @@ def farmbot_target_approach(fb, target_point, overhead_image):
     
     return tuple((coord_x, coord_y))
 
-def batch_target_approach(fb, target_list, overhead):
+def batch_target_approach(fb, target_list, overhead, y_offset):
     actual_farmbot_coord = []
     for i in range(len(target_list)):
         #convert target point
         target_point = crop_o_px_to_cm(target_list[i][1][0], target_list[i][1][1]) #assuming each point is (center point, target)
-        act_pt = farmbot_target_approach(fb, target_point, overhead)
+        act_pt = farmbot_target_approach(fb, target_point, overhead, y_offset[i])
         actual_farmbot_coord.append(act_pt)
         pkl.dump(actual_farmbot_coord, open("actual_coords.p", "wb"))
     return actual_farmbot_coord

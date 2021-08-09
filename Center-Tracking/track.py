@@ -64,6 +64,8 @@ if __name__ == "__main__":
     pkl.dump([], open("plants_to_prune.p", "wb"))
 
     print("------------------------------LINEARITY-----------------------------------------")
+    # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
+
     # prior = get_recent_priors(cwd + "/priors/priors" + f[4:10] + ".p")
     # mask_path = str(cwd + "/post_process/" + f[:-4] + ".png")
     # mask, _ = get_img(mask_path)

@@ -146,37 +146,42 @@ def perpendiculars(target_list):
 def batch_prune_scissors(target_list, overhead, rpi_check):
     pos_x, pos_y = 110, 50
     ang_sf = (pos_x-pos_y)/90
-    fb = FarmBotThread()
-    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
-    actual_farmbot_coords = [(79, 49)]
-    # print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
-    height_fb_clearance = 8 #cm from top of farmbot
+    sci_rad = 14
     angles = perpendiculars(target_list)
+    offset = [-1 *sci_rad*math.sin(angle*math.pi/180) - 1 for angle in angles]
+
+    fb = FarmBotThread()
+    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
+    # actual_farmbot_coords = [(209, 17), (251, 68)]
+    print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
+    height_fb_clearance = 8 #cm from top of farmbot
 
     for cur_point, angle in zip(actual_farmbot_coords, angles):
         mod_angle = (angle - 90) * ang_sf + pos_y if angle > 90 else pos_y - ang_sf * (90 - angle)
-        print("CURR PT, MOD_ANGLE: ", cur_point, mod_angle)
+        print("---CURR PT, MOD_ANGLE: ", cur_point, mod_angle)
+
+        fb.update_action("servo", (11, mod_angle)) #move scissors to corrected angle according to real-life contraints
+        time.sleep(2)
+
+        print("---TIME TO CALC DEPTH")
         dsensor_adjusted = tuple((cur_point[0] - 1.5, cur_point[1])) #depth sensor offset
         fb.update_action("move", (dsensor_adjusted[0] * 10, dsensor_adjusted[1] * 10,0))
-        time.sleep(10)
+        time.sleep(40)
+        print("---DONE SLEEPING")
         z = get_depth(fb)
         time.sleep(2)
-        print("---depth: ", z)
+        print("---Depth: ", z)
+        z = min(z, 40)
 
         fb.update_action("move_rel", (15, 0,0)) #reset to account for depth sensor
         time.sleep(10)
 
-        print(mod_angle)
-        fb.update_action("servo", (11, mod_angle)) #move scissors to corrected angle according to real-life contraints
-        time.sleep(2)
-
-        sci_rad = 13
         scissors_offset = (sci_rad*math.cos(angle*math.pi/180) + 2, -1 *sci_rad*math.sin(angle*math.pi/180) - 1) #scissor offset
         print("---Scissor offset: ", (scissors_offset[0] * 10, scissors_offset[1]*10,0))
         fb.update_action("move_rel", (scissors_offset[0] * 10, scissors_offset[1]*10,0)) #perform scissors offset
         response = input("===== Enter 'y' when READY to prune.")
 
-        fb.update_action("move_rel", (0, 0, (z * -10)+ 40))#move to z position from the depth sensor after setting up the scissors
+        fb.update_action("move_rel", (0, 0, (z * -10)+ 50))#move to z position from the depth sensor after setting up the scissors
         time.sleep(90)
         print("---TIME TO CUT")
         done = False
@@ -194,7 +199,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             while (done == False):
                 fb.update_action("prune_scissor", None) #prune with angle
                 time.sleep(11)
-                fb.update_action("move_rel", (0, 0, (z * 10) - 40.5))#move to z position from the depth sensor after setting up the scissors
+                fb.update_action("move_rel", (0, 0, (z * 10) - 50.5))#move to z position from the depth sensor after setting up the scissors
                 time.sleep(90)
                 done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
                 print("CHECK: ", done)
@@ -205,7 +210,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
 def prune_check_sensor(fb, prev_depth, origi_pos, scissors_offset):
     #use origi_pos to check the depth with consistent offset
     fb.update_action("move", (origi_pos[0] * 10, origi_pos[1] * 10,0))
-    time.sleep(10)
+    time.sleep(15)
     print(origi_pos)
     fraction = .7
     curr_depth = get_depth(fb)
@@ -298,7 +303,13 @@ if __name__ == "__main__":
     # target_list = [[(2404.649193548387, 734.5620967741932), (2180.262096774193, 734.5620967741932)]] # should be a y cut
     # target_list = [[(2397.637096774193, 695.9955645161285), (2404.649193548387, 955.44314516129)]] #should be a an x cut
     # target_list = [[(2411.6612903225805, 717.0318548387093), (2236.358870967742, 909.8645161290319)]] #scissors should point towards neg x pos y
-    target_list = [[(2373.094758064516, 727.5499999999995), (2586.963709677419, 937.9129032258061)]] #scissors should point towards pos x pos y 
+    # target_list = [[(2373.094758064516, 727.5499999999995), (2586.963709677419, 937.9129032258061)]] #scissors should point towards pos x pos y 
+
+    #borage
+    # target_list = [((961.7344893566133, 404.5748624730926), (849, 383)), ((419.1007083074557, 913.2629979593647), (381, 961))]
+    #kale and turnip
+    target_list = [((671.3921207335263, 696.0703255242609), (452, 701))] # ((1083.3915387737638, 1209.318982634356), (1088, 1049)), ((1329.521974901467, 446.7697818589884), (1206,628))
+
 
     #110, 50, 0, 90
     # first = [((2418.9024915528416, 708.3370823083476), (2236.951245776421, 771.1685411541738)), ((2614.5830485467905, 1059.5356036410094), (2520.791524273395, 950.7678018205047)), ((2092.8935432563703, 1282.7822196370712), (2210.946771628185, 1397.8911098185356))]
