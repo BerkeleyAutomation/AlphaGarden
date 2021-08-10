@@ -144,13 +144,6 @@ class MyHandler:
         # only as an example.
 
         # print("NEW BOT STATE TREE AVAILABLE:")
-        if self.read:
-            if self.read == 'read_depth.p':
-                pkl.dump(depth_sensor(state['pins']['54']['value']), open('./data/' + self.read, 'wb'))
-            elif self.read == 'read_water.p':
-                pkl.dump(state['pins']['8']['value'], open('./data/' + self.read, 'wb'))
-            self.read = False
-
         # Since the state tree is very large, we offer
         # convenience helpers such as `bot.position()`,
         # which returns an (x, y, z) tuple of the device's
@@ -169,6 +162,12 @@ class MyHandler:
     # `message` attribute, though other attributes do exist.
     def on_log(self, bot, log):
         print("New message from FarmBot: " + log['message'])
+        if self.read:
+            if self.read == 'read_depth.p':
+                pkl.dump(depth_sensor(int(str.split(log['message'])[5])), open('./data/' + self.read, 'wb'))
+            elif self.read == 'read_water.p':
+                pkl.dump(water_value(str.split(log['message'])[5]), open('./data/' + self.read, 'wb'))
+            self.read = False
 
     # When a response succeeds, the `on_response` callback
     # fires. This callback is passed a FarmBot object, as well
@@ -244,6 +243,12 @@ def depth_sensor(vol):
     z = np.polyfit(x,y,3)
     p = np.poly1d(z)
     return p(vol)
+
+def water_value(inp):
+    if inp == 'OFF':
+        return 0
+    else:
+        return 1
 
 def dismount_nozzle():
     # Position Correctly, Move into slot, Disconnect

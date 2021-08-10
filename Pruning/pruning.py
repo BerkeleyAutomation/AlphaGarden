@@ -144,9 +144,9 @@ def perpendiculars(target_list):
     return angles
 
 def batch_prune_scissors(target_list, overhead, rpi_check):
-    pos_x, pos_y = 110, 50
+    pos_x, pos_y = 110, 47 #47
     ang_sf = (pos_x-pos_y)/90
-    sci_rad = 14
+    sci_rad = 13
     angles = perpendiculars(target_list)
     offset = [-1 *sci_rad*math.sin(angle*math.pi/180) - 1 for angle in angles]
 
@@ -194,7 +194,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
                 done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
         else:
             #radial cut with certain angle
-            fb.update_action("servo", (6, 42)) #determine the pin
+            fb.update_action("servo", (6, 38)) #determine the pin
             time.sleep(2)
             while (done == False):
                 fb.update_action("prune_scissor", None) #prune with angle

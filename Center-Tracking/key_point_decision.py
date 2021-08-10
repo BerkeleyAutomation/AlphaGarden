@@ -1,6 +1,9 @@
 import numpy as np
 import os
 import pickle as pkl
+import cv2
+import matplotlib.pyplot as plt
+
 
 class SelectPoint:
 
@@ -41,11 +44,17 @@ class SelectPoint:
                 Center from prune_data
                 Target from leaves in prune_data
             """
+            x_fc = (3478/282) # (pixel/cm)
+            threshold = 20 * x_fc # 40 cm
+
+            leaves = [plant['leaves'] for plant in self.prune_data]
             out = []
             #First map sim to real (key)
             #then choose out of leaves that is closest to value
             closest_plant = self.choose_point()
+            count = 0
             for k,v in closest_plant.items():
+                # print(k, v)
                 new_k = k[:-3]
                 x = int(k[-3:])
                 index = 0
@@ -53,17 +62,20 @@ class SelectPoint:
                     if x in c:
                         break
                     index += 1
-                pixel_center = self.coord[new_k][index]
-
-                for i 
-
-
-            final_data = []
-            for i in self.prune_data:
-                p_type = plant['plant_type']
-                center = plant['mask_center']
-                leaves = plant['leaves']           
-                final_data.append((center, ))
+                pixel_center_init = self.coord[new_k][index]
+                data_center = self.prune_data[count]['mask_center']
+                leaves = self.prune_data[count]['leaves']
+                # print(pixel_center_init, data_center)                
+                closest_item = None
+                closest_value = np.inf 
+                for leaf in leaves:
+                    if self.distance(leaf, v) < closest_value:
+                        closest_value = self.distance(leaf, v)
+                        closest_item = tuple(leaf)
+                        print(closest_item)
+                out.append((data_center, closest_item))
+                count +=1
+            return out
 
         def choose_point(self):
             """
@@ -196,12 +208,38 @@ class SelectPoint:
                     output[plant + c] = area
             return output
 
+def plot_center(im, coords):
+    for i in coords:
+        x,y = int(i[1][0]), int(i[1][1])
+        im = cv2.circle(im, (x,y), radius=20, color=(255, 0, 0), thickness=-1)
+        x,y = int(i[0][0]), int(i[0][1])
+        im = cv2.circle(im, (x,y), radius=20, color=(0, 0, 255), thickness=-1)
+    return im
+
+# def plot_center(im, coords):
+#     for i in coords:
+#         x,y = int(i[1][0]), int(i[1][1])
+#         im = cv2.circle(im, (x,y), radius=20, color=(255, 0, 0), thickness=-1)
+#         for c in i[1]
+#         x,y = int(i[0][0]), int(i[0][1])
+#         im = cv2.circle(im, (x,y), radius=20, color=(0, 0, 255), thickness=-1)
+#     return im
+
 if __name__ == "__main__":
     data = pkl.load(open("/Users/mpresten/Downloads/data.pkl", 'rb'))
     p = SelectPoint(data, 'r')
-    out = p.choose_point()
-    print(out)
-                        
+    target_list = p.center_target()                        
 
+    dirs = '/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/'
+    im_name = 'snc-21080618520000.jpg'
+    path = dirs + im_name
+    im = cv2.imread(path)
+    new_im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+
+    out = plot_center(new_im, target_list)
+    plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
+
+    # out = plot_center(new_im, target_list)
+    # plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
 
 

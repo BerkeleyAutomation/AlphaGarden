@@ -312,3 +312,9 @@ def generate_image(leaf_centers, overhead_path):
     _ = plt.imshow(load)
     _ = plt.imshow(mask, alpha = 0.5)
     return plt
+
+if __name__ == "__main__":
+    file = "snc-21081008141400"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./" + file + ".jpg", "./priors/right/priors210810.p", "./models/leaf_keypoints.pth")
+    print(leaf_centers)
+
