@@ -82,8 +82,8 @@ def init_model(model_path= 'weights/borage_clean_CVPPP_Overhead-split.pth'):
     CountEstimate class instance
     '''
     komatsuna_leaf_count = mdl.CountEstimate()
-    komatsuna_leaf_count.load_state_dict(torch.load(model_path))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    komatsuna_leaf_count.load_state_dict(torch.load(model_path, map_location=device))
     print(device)
     komatsuna_leaf_count.to(device)
     return komatsuna_leaf_count
@@ -104,7 +104,10 @@ def eval_image(img_arr, model, transf = transf):
     heatmap, gpu_output
     '''
     img_arr = Image.fromarray(img_arr)
-    y_hat,_ = model(transf(img_arr).unsqueeze(0).cuda())
+    if next(model.parameters()).is_cuda:
+        y_hat,_ = model(transf(img_arr).unsqueeze(0).cuda())
+    else:
+        y_hat,_ = model(transf(img_arr).unsqueeze(0).cpu())
     return y_hat[0,0].cpu().detach().numpy(), y_hat
 
 
@@ -312,3 +315,8 @@ def generate_image(leaf_centers, overhead_path):
     _ = plt.imshow(load)
     _ = plt.imshow(mask, alpha = 0.5)
     return plt
+
+if __name__ == "__main__":
+    file = "snc-21060419141400"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210604.p", "models/leaf_keypoints.pth")
+    print(leaf_centers)
