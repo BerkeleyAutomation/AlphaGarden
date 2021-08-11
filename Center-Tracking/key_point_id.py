@@ -24,7 +24,8 @@ import cv2
 import numpy as np
 import pathlib
 
-
+## Repo Imports
+from key_point_decision import *
 # path = pathlib.Path(__file__).parent.resolve()
 # mask_path = os.path.join(path,'210805/snc-21080508141400.png')
 # priors_path = os.path.join(path,'210805/priors210805.p')
@@ -299,8 +300,10 @@ def generate_image(leaf_centers, overhead_path):
     >>> generate_images(leaf_centers, "snc-1240234232.jpg")
     matplotlib AxesImage with the data
     '''
+    file = overhead_path[-22:-4]
     load = cv2.imread(overhead_path)
-    mask = np.zeros(load.shape, dtype = np.uint8)
+    _ = plt.imshow(load, alpha = 0.5)
+    # mask = np.zeros(load.shape, dtype = np.uint8)
     colors = {}
     for plant in leaf_centers:
         if not plant['plant_type'] in colors:
@@ -311,12 +314,22 @@ def generate_image(leaf_centers, overhead_path):
         for pt in plant['leaves']:
             x,y = pt
             x,y = int(x), int(y)
-            cv2.rectangle(mask,(x-5,y-5),(x+5,y+5), colors[plant['plant_type']],-1)
+            load = cv2.rectangle(load,(x-5,y-5),(x+5,y+5), colors[plant['plant_type']],-1)
     _ = plt.imshow(load)
-    _ = plt.imshow(mask, alpha = 0.5)
+    # _ = plt.imshow(mask, alpha = 0.5)
+    plt.imsave("./target_leaf_data/images/" + file + ".png", load)
     return plt
 
 if __name__ == "__main__":
-    file = "snc-21060419141400"
-    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210604.p", "models/leaf_keypoints.pth")
-    print(leaf_centers)
+    ## Generation
+    file = "snc-21081019020000"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210810.p", "models/leaf_keypoints.pth")
+    pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
+    generate_image(leaf_centers, "./cropped/" + file + ".jpg")
+
+    ## Selection
+    select = SelectPoint(leaf_centers, 'r') #choose side
+    target_list = select.center_target()
+    pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + ".p", "wb"))
+    print(target_list)
+

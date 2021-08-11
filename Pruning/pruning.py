@@ -126,6 +126,7 @@ def perpendiculars(target_list):
         center, target = target_list[i][0], target_list[i][1]
         k = np.array([-1 * (target[0] - center[0]), target[1] - center[1]])
         print(k)
+        print(np.linalg.norm(k))
         k /= np.linalg.norm(k)
         print(k)
         x = np.random.randn(2)  # take a random vector
@@ -151,8 +152,8 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     offset = [-1 *sci_rad*math.sin(angle*math.pi/180) - 1 for angle in angles]
 
     fb = FarmBotThread()
-    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    # actual_farmbot_coords = [(209, 17), (251, 68)]
+    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
+    actual_farmbot_coords = [(103, 70), (61, 34)]
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
@@ -181,7 +182,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         fb.update_action("move_rel", (scissors_offset[0] * 10, scissors_offset[1]*10,0)) #perform scissors offset
         response = input("===== Enter 'y' when READY to prune.")
 
-        fb.update_action("move_rel", (0, 0, (z * -10)+ 50))#move to z position from the depth sensor after setting up the scissors
+        fb.update_action("move_rel", (0, 0, (z * -10)+ 70))#move to z position from the depth sensor after setting up the scissors
         time.sleep(90)
         print("---TIME TO CUT")
         done = False
@@ -199,7 +200,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             while (done == False):
                 fb.update_action("prune_scissor", None) #prune with angle
                 time.sleep(11)
-                fb.update_action("move_rel", (0, 0, (z * 10) - 50.5))#move to z position from the depth sensor after setting up the scissors
+                fb.update_action("move_rel", (0, 0, (z * 10) - 70.5))#move to z position from the depth sensor after setting up the scissors
                 time.sleep(90)
                 done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
                 print("CHECK: ", done)
@@ -304,12 +305,8 @@ if __name__ == "__main__":
     # target_list = [[(2397.637096774193, 695.9955645161285), (2404.649193548387, 955.44314516129)]] #should be a an x cut
     # target_list = [[(2411.6612903225805, 717.0318548387093), (2236.358870967742, 909.8645161290319)]] #scissors should point towards neg x pos y
     # target_list = [[(2373.094758064516, 727.5499999999995), (2586.963709677419, 937.9129032258061)]] #scissors should point towards pos x pos y 
-
-    #borage
-    # target_list = [((961.7344893566133, 404.5748624730926), (849, 383)), ((419.1007083074557, 913.2629979593647), (381, 961))]
-    #kale and turnip
-    target_list = [((671.3921207335263, 696.0703255242609), (452, 701))] # ((1083.3915387737638, 1209.318982634356), (1088, 1049)), ((1329.521974901467, 446.7697818589884), (1206,628))
-
+    # target_list = [((2388.0, 467.0), (2394.0, 552.0))]
+    target_list = [((1954.0, 1004.0), (2114.0, 1004.0)), ((2775.0, 589.0), (2679.0,  573.0))] #((1954.0, 1004.0), (2114.0, 1004.0)), ((2775.0, 589.0), (2679.0,  573.0)),
 
     #110, 50, 0, 90
     # first = [((2418.9024915528416, 708.3370823083476), (2236.951245776421, 771.1685411541738)), ((2614.5830485467905, 1059.5356036410094), (2520.791524273395, 950.7678018205047)), ((2092.8935432563703, 1282.7822196370712), (2210.946771628185, 1397.8911098185356))]

@@ -64,17 +64,17 @@ if __name__ == '__main__':
     # xp = np.linspace(800, 100, 100)
     # _ = plt.plot(xp, p(xp))
     # plt.show()
-    fb = FarmBotThread()
-    fb.update_action('read_pin', 8)
-    time.sleep(3)
-    depth = pkl.load(open('./data/read_water.p', 'rb'))
-    print(depth)
+    # fb = FarmBotThread()
+    # fb.update_action('read_pin', 8)
+    # time.sleep(3)
+    # depth = pkl.load(open('./data/read_water.p', 'rb'))
+    # print(depth)
 
     # fb.update_action("prune_scissor", None) #prune with angle
     # time.sleep(11)
     # print('done')
-    # os.system('python3 ../Learning/create_state.py ' + 'l')
-    # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
+    os.system('python3 ../Learning/create_state.py ' + 'r')
+    os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
 
     ### SCISSOR OFFSET AND ANGLE TESTING
     # pos_x, pos_y = 110, 47

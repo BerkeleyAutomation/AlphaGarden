@@ -3,7 +3,7 @@ import os
 import pickle as pkl
 import cv2
 import matplotlib.pyplot as plt
-
+import random
 
 class SelectPoint:
 
@@ -210,36 +210,49 @@ class SelectPoint:
 
 def plot_center(im, coords):
     for i in coords:
+        print(i)
+        if i[1] is None or i[0] is None:
+            continue
         x,y = int(i[1][0]), int(i[1][1])
         im = cv2.circle(im, (x,y), radius=20, color=(255, 0, 0), thickness=-1)
         x,y = int(i[0][0]), int(i[0][1])
         im = cv2.circle(im, (x,y), radius=20, color=(0, 0, 255), thickness=-1)
     return im
 
-# def plot_center(im, coords):
-#     for i in coords:
-#         x,y = int(i[1][0]), int(i[1][1])
-#         im = cv2.circle(im, (x,y), radius=20, color=(255, 0, 0), thickness=-1)
-#         for c in i[1]
-#         x,y = int(i[0][0]), int(i[0][1])
-#         im = cv2.circle(im, (x,y), radius=20, color=(0, 0, 255), thickness=-1)
-#     return im
+def choose_random(im, data):
+    # data = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/target_leaf_data/data/snc-21081008141400.p", 'rb'))
+    for i in data:
+        val = random.choice(np.arange(0, len(i['leaves'])-1))
+        print("RANDOM VAL: ", val)
+        leaf = i['leaves'][val]
+        center = i['mask_center']
+        print(i['plant_type'], center, leaf)
+        x,y = int(leaf[0]), int(leaf[1])
+        im = cv2.circle(im, (x,y), radius=10, color=(255, 0, 0), thickness=-1)
+        x,y = int(center[0]), int(center[1])
+        im = cv2.circle(im, (x,y), radius=10, color=(0, 0, 255), thickness=-1)
+    return im
 
 if __name__ == "__main__":
-    data = pkl.load(open("/Users/mpresten/Downloads/data.pkl", 'rb'))
-    p = SelectPoint(data, 'r')
-    target_list = p.center_target()                        
+    # data = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/target_leaf_data/data/snc-21081019020000.p", 'rb'))
+    # p = SelectPoint(data, 'r')
+    # target_list = p.center_target()                        
 
-    dirs = '/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/'
-    im_name = 'snc-21080618520000.jpg'
+    dirs = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/cropped/'
+    im_name = 'snc-21081019020000.jpg'
     path = dirs + im_name
     im = cv2.imread(path)
     new_im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
+    #borage
+    target_list = [((2388, 467), [2394, 552]), ((3029, 904), (2917, 872))]
+    #swiss chard + 2 kale 
+    target_list = [((1954, 1004), (2114, 1004)), ((2775, 589), [2679,  573]), ((2354, 1329),  [2600, 1452])]
+        
     out = plot_center(new_im, target_list)
     plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
 
-    # out = plot_center(new_im, target_list)
-    # plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
+    # out = choose_random(new_im, data)
+    # plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out2.jpeg', out)
 
 
