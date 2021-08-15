@@ -155,11 +155,8 @@ def correct_image(im_src, one, two, three, four):
 
 def get_points(overhead_image):
     #get coords for correct_image from overhead
-    cwd = os.getcwd()
-    image_path  = os.path.join(cwd, overhead_image)
-    im1 = cv2.imread(image_path)
-    plt.imshow(im1)
-    coords = plt.ginput(4, timeout=0)
+    plt.imshow(overhead_image)
+    coords = plt.ginput(2, timeout=0)
     plt.close()
     return coords
 
@@ -168,7 +165,8 @@ def crop_overhead(overhead_image):
     image_path  = os.path.join(cwd, overhead_image)
     im = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
     if im.shape[0] > 3900 or im.shape[1] > 2000:
-        im = correct_image(im, (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
+        im = correct_image(im, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
+        #PRIOR TO 8/12: (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
         plt.imsave(image_path  + "_cropped.jpg", im)
 
 def resize_local(local_image, scale_factor=0.7438):

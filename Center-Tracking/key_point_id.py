@@ -8,7 +8,7 @@ from PIL import Image
 import sys
 import key_point_pipeline_utils as keypoint
 import full_auto_utils as fau
-
+import time
 
 ## Heatmap Imports
 import keypoint_model as mdl
@@ -26,6 +26,8 @@ import pathlib
 
 ## Repo Imports
 from key_point_decision import *
+from crop_img_ind import *
+
 # path = pathlib.Path(__file__).parent.resolve()
 # mask_path = os.path.join(path,'210805/snc-21080508141400.png')
 # priors_path = os.path.join(path,'210805/priors210805.p')
@@ -259,9 +261,10 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
     mask = fau.get_img(mask_path)[1]
     overhead = fau.get_img(overhead_path)[1]
     priors = keypoint.get_recent_priors(priors_path)
-    plants = keypoint.get_individual_plants(priors, mask, overhead, )
+    plants = keypoint.get_individual_plants(priors, mask, overhead)
     vals = dict()
     for cut_idx, plant in enumerate(plants):
+        # print(cut_idx, plant)
         if not plant[3] in vals:
             vals[plant[3]] = {}
         size = np.array(plant[0].shape[:2])
@@ -317,19 +320,45 @@ def generate_image(leaf_centers, overhead_path):
             load = cv2.rectangle(load,(x-5,y-5),(x+5,y+5), colors[plant['plant_type']],-1)
     _ = plt.imshow(load)
     # _ = plt.imshow(mask, alpha = 0.5)
-    plt.imsave("./target_leaf_data/images/" + file + ".png", load)
+    # plt.imsave("./target_leaf_data/images/" + file + ".png", load) # For pruning
+    plt.imsave("./Experiments/" + file + ".png", load) # For experiments
     return plt
 
+def potted_plant_auto(overhead, mask):
+    file = overhead[-22:-4]
+    im = cv2.cvtColor(cv2.imread(overhead), cv2.COLOR_BGR2RGB)
+    ## Identify all key points (need prior from get_points, and manual mask)
+    print("INSTRUCTION: Label center then outer most point!")
+    center, outer = get_points(im)
+    dist = ((center[0] - outer[0])**2 + (center[1] - outer[1])**2)**0.5
+    prior = {'external': [{'circle': (center, dist, outer), 'days_post_germ': 40}]}
+    print("DUMPING")
+    pkl.dump(prior, open('./Experiments/prior' + file + '.p', 'wb'))
+    leaf_centers = get_keypoints(mask, overhead, './Experiments/prior' + file + '.p', "../Center-Tracking/models/leaf_keypoints.pth")
+    generate_image(leaf_centers, overhead)
+    ## Cut all points
+    return leaf_centers
+
 if __name__ == "__main__":
+    ## Experiments
+    leaf_centers = potted_plant_auto("Experiments/snc-21081309141400.jpg", "Experiments/snc-21081309141400_mask.png")
+    print(leaf_centers)
+
     ## Generation
-    file = "snc-21081019020000"
-    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210810.p", "models/leaf_keypoints.pth")
-    pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
-    generate_image(leaf_centers, "./cropped/" + file + ".jpg")
+    # file = "snc-21081119280000"
+    # leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210811.p", "models/leaf_keypoints.pth")
+    # pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
+    # generate_image(leaf_centers, "./cropped/" + file + ".jpg")
+
+    ##Simulator
+    # pkl.dump([], open("plants_to_prune.p", "wb"))
+    # os.system('python3 ../Learning/create_state.py ' + 'l') #choose side
+    # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
+    # time.sleep(10)
 
     ## Selection
-    select = SelectPoint(leaf_centers, 'r') #choose side
-    target_list = select.center_target()
-    pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + ".p", "wb"))
-    print(target_list)
+    # select = SelectPoint(leaf_centers, 'l') #choose side
+    # target_list = select.center_target()
+    # pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + ".p", "wb"))
+    # print(target_list)
 

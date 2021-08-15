@@ -6,12 +6,14 @@ import argparse
 import imutils
 import math
 import glob
-from movement import batch_target_approach
+from movement import batch_target_approach, correct_image, get_points
 from control import start, MyHandler, mount_xPruner, mount_yPruner, dismount_xPruner, dismount_yPruner, mount_nozzle, dismount_nozzle, photo
 from thread import FarmBotThread
 import argparse
 import time
 import pickle as pkl
+
+from Experiments.key_point_id import get_keypoints, generate_image
 
 def separate_list(actual_coords, target_list):
     x_list, y_list = [], []
@@ -23,8 +25,6 @@ def separate_list(actual_coords, target_list):
             x_list.append(actual_coords[i])
 
     return x_list, y_list
-
-
 
 def batch_prune(target_list, overhead, rpi_check):
     fb = FarmBotThread()
@@ -152,8 +152,13 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     offset = [-1 *sci_rad*math.sin(angle*math.pi/180) - 1 for angle in angles]
 
     fb = FarmBotThread()
-    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    actual_farmbot_coords = [(103, 70), (61, 34)]
+    # Reset to good position
+    fb.update_action("servo", (6, 101))
+    fb.update_action("servo", (11, 0))
+
+    # Start Locationing
+    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
+    # actual_farmbot_coords = [(200, 75)] #(220, 37), (181, 94)
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
@@ -180,31 +185,43 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         scissors_offset = (sci_rad*math.cos(angle*math.pi/180) + 2, -1 *sci_rad*math.sin(angle*math.pi/180) - 1) #scissor offset
         print("---Scissor offset: ", (scissors_offset[0] * 10, scissors_offset[1]*10,0))
         fb.update_action("move_rel", (scissors_offset[0] * 10, scissors_offset[1]*10,0)) #perform scissors offset
+        
+        prune_top = False
+        if z < height_fb_clearance:
+            prune_top = True
+            print("PRUNING TOP")
+            response = input("===== Enter 'n' if you don't want to prune top.")
+            if response == 'n':
+                prune_top = False
+
         response = input("===== Enter 'y' when READY to prune.")
 
-        fb.update_action("move_rel", (0, 0, (z * -10)+ 70))#move to z position from the depth sensor after setting up the scissors
-        time.sleep(90)
-        print("---TIME TO CUT")
-        done = False
-        if False: #z < height_fb_clearance:
-            #cut top off - NOT IMPLEMENTED
-            fb.update_action("servo", (6, 101)) #determine the pin
-            while (done == False):
-                fb.update_action("prune_scissor", None) #prune with angle
-                time.sleep(11)
-                done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
+        if prune_top: #FIX - add orientation
+            fb.update_action("move_rel", (0, -100, 0))#move to z position from the depth sensor after setting up the scissors
+            time.sleep(15)
+            fb.update_action("move_rel", (0, 0, (z * -10)))#move to z position from the depth sensor after setting up the scissors
+            time.sleep(20)
+            fb.update_action("move_rel", (0, 100, 0))#move to z position from the depth sensor after setting up the scissors
+            time.sleep(15)
         else:
-            #radial cut with certain angle
-            fb.update_action("servo", (6, 38)) #determine the pin
+            fb.update_action("move_rel", (0, 0, (z * -10)+ 70))#move to z position from the depth sensor after setting up the scissors
+            time.sleep(90)
+
+        print("---TIME TO CUT")
+        if prune_top:
+            # while (done == False):
+            fb.update_action("prune_scissor", None) #prune with angle
+            time.sleep(11)
+                # done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
+        else:
+            fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
             time.sleep(2)
-            while (done == False):
-                fb.update_action("prune_scissor", None) #prune with angle
-                time.sleep(11)
-                fb.update_action("move_rel", (0, 0, (z * 10) - 70.5))#move to z position from the depth sensor after setting up the scissors
-                time.sleep(90)
-                done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
-                print("CHECK: ", done)
-                done = True
+            # while (done == False):
+            fb.update_action("prune_scissor", None) #prune with angle
+            time.sleep(11)
+            fb.update_action("move_rel", (0, 0, (z * 10) - 70.5))#move to z position from the depth sensor after setting up the scissors
+            time.sleep(90)
+                # done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
         print("--COMPLETE")
     return None
 
@@ -231,7 +248,6 @@ def get_depth(fb):
     value = pkl.load(open('./data/read_depth.p', 'rb'))
     return value
 
-
 def crop_o_px_to_cm(x_px, y_px):
     pred_pt = (round(274.66 - (x_px - 102)/11.9), round((y_px - 72)/11.9))
     return pred_pt
@@ -249,8 +265,6 @@ def recent_rpi_photo(fb):
 
 def check_prune(i, bef_rpi, aft_rpi):
     #checks whether leaf has been pruned
-
-
     cwd = os.getcwd()
     # image_path  = os.path.join(cwd, "rpi_images", bef_rpi + "_resized.jpg")
     image_path  = os.path.join(cwd, "rpi_images", bef_rpi)
@@ -269,7 +283,6 @@ def check_prune(i, bef_rpi, aft_rpi):
     method = eval(meth)
 
     # Apply template Matching
-
     res = cv2.matchTemplate(bef_rpi, aft_rpi.astype(np.uint8), method)
 
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -285,31 +298,46 @@ def check_prune(i, bef_rpi, aft_rpi):
     prune = True if max_val < threshold else False
     return prune
 
+def potted_plant_manual(overhead):
+    im = cv2.cvtColor(cv2.imread(overhead), cv2.COLOR_BGR2RGB)
+    im = correct_image(im, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
+    center, target = get_points(im)
+    print("--Center: ", center)
+    print("--Target: ", target)
+    batch_prune_scissors([(center, target)], overhead, False)
+
+def potted_plant_auto(overhead, mask):
+    file = overhead[-22:-4]
+    im = cv2.cvtColor(cv2.imread(overhead), cv2.COLOR_BGR2RGB)
+    im = correct_image(im, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
+    ## Identify all key points (need prior from get_points, and manual mask)
+    print("INSTRUCTION: Label center then outer most point!")
+    center, outer = get_points(im)
+    dist = ((center[0] - outer[0])**2 + (center[1] - outer[1])**2)**0.5
+    prior = {'external': [{'circle': (center, dist, target), 'days_post_germ': 40}]}
+    pkl.dump(prior, open('./Experiments/prior' + file + '.p', 'wb'))
+    leaf_centers = get_keypoints(mask, overhead, './Experiments/prior' + file + '.p', "../Center-Tracking/models/leaf_keypoints.pth")
+    generate_image(leaf_centers, overhead)
+    ## Cut all points
+    return
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
     parser.add_argument("--overhead", "-o", type=str, default="", help="Specify the overhead")
     parser.add_argument("--rpi_check_prune", "-p", type=bool, default=False, help="Use rpi images to check if the tool correctly pruned the target leaf")
+    parser.add_argument("--mask", "-m", type=str, default="", help="Pass in mask for potted plant experiments.")
 
     args = parser.parse_args()
 
     # Initialize - comment out after failure
     # pkl.dump([], open("actual_coords.p", "wb"))
 
-    # target_list = [((2481.782258064516, 923.8887096774195), (2000, 900)), ((2250.383064516129, 678.4653225806451), (2100, 600)), ((3098.8467741935483, 1337.6024193548387), (3000, 1000))]
-    # target_list = [((2192.1348713372863, 1033.2203931840422), (2051.2697426745726, 766.4407863680847)), ((2646.372097874638, 677.2447216554123), (2762.744195749276, 475.4894433108245)), ((2469.969855260587, 922.4155430868436), (2405.9397105211738, 680.8310861736873)), ((2469.4256064016004, 993.9150318829708), (2579.8512128032007, 965.8300637659415)), ((2358.408583699892, 1373.3575856917587), (2478.817167399784, 1297.7151713835174)), ((2533.076888573078, 1331.9534684904738), (2850.1537771461562, 1248.9069369809476)), ((2211.2047908751406, 1345.0958580073393), (2084.409581750281, 1262.1917160146788)), ((3174.827852473074, 860.0234503457663), (2972.6557049461485, 877.0469006915325))]
-    # target_list = [((2277.5, 812.0), (2406, 681)), ((2701.746661309253, 1078.2378295073647), (2605.493322618506, 976.4756590147294)), ((2154.69379587411, 962.8057578959075), (2045.3875917482205, 762.611515791815)), ((2676.7439679713843, 364.66091015743575), (2773.4879359427687, 472.3218203148715)), ((2534.407785238923, 1414.590281191918), (2509.8155704778464, 1313.1805623838359)), ((3145.0094609449748, 1407.244076094701), (2878.0189218899495, 1270.4881521894022)), ((2105.8164770134176, 1122.0139410350807), (2080.6329540268353, 1266.0278820701615)), ((3104.0017608655576, 950.9779367359782), (2978.003521731115, 876.9558734719565)), ((3153.5, 1509.0), (3113, 1409))]
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    # target_list = [[(2404.649193548387, 734.5620967741932), (2180.262096774193, 734.5620967741932)]] # should be a y cut
-    # target_list = [[(2397.637096774193, 695.9955645161285), (2404.649193548387, 955.44314516129)]] #should be a an x cut
-    # target_list = [[(2411.6612903225805, 717.0318548387093), (2236.358870967742, 909.8645161290319)]] #scissors should point towards neg x pos y
-    # target_list = [[(2373.094758064516, 727.5499999999995), (2586.963709677419, 937.9129032258061)]] #scissors should point towards pos x pos y 
-    # target_list = [((2388.0, 467.0), (2394.0, 552.0))]
-    target_list = [((1954.0, 1004.0), (2114.0, 1004.0)), ((2775.0, 589.0), (2679.0,  573.0))] #((1954.0, 1004.0), (2114.0, 1004.0)), ((2775.0, 589.0), (2679.0,  573.0)),
+    # target_list = [[(713.6950418160093, 1009.6959976105136), (812.3838112305853, 1095.3994026284347)]] #, 
 
-    #110, 50, 0, 90
-    # first = [((2418.9024915528416, 708.3370823083476), (2236.951245776421, 771.1685411541738)), ((2614.5830485467905, 1059.5356036410094), (2520.791524273395, 950.7678018205047)), ((2092.8935432563703, 1282.7822196370712), (2210.946771628185, 1397.8911098185356))]
-    #angles = perpendiculars(target_list)
-    batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
+    # batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
+
+    ### External Pot
+    potted_plant_auto(args.overhead, args.mask)
     

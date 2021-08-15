@@ -35,8 +35,22 @@ class SelectPoint:
             else:
                 print("NOT VALID SIDE - should be 'r' or 'l' ")
 
-        def filter(self):
-            return "NOT IMPLEMENTED"
+        def filter(self, dic):
+            plants_to_prune = pkl.load(open('./plants_to_prune.p', 'rb'))
+            plants = []
+            for k, v in self.sim_coords.items():
+                for c in v:
+                    if (c[0] + 2 * c[1]) in plants_to_prune:
+                        if len(str(c[0])) == 2:
+                            plants.append(k + '0' + str(c[0]))
+                        else:
+                            plants.append(k + str(c[0]))
+            new_data = {}
+            for k, v in dic.items():
+                print("-",k)
+                if k in plants:
+                    new_data[k] = v
+            return new_data
 
         def center_target(self):
             """
@@ -56,6 +70,7 @@ class SelectPoint:
             for k,v in closest_plant.items():
                 # print(k, v)
                 new_k = k[:-3]
+                print(new_k)
                 x = int(k[-3:])
                 index = 0
                 for c in self.sim_coords[new_k]:
@@ -72,20 +87,19 @@ class SelectPoint:
                     if self.distance(leaf, v) < closest_value:
                         closest_value = self.distance(leaf, v)
                         closest_item = tuple(leaf)
-                        print(closest_item)
                 out.append((data_center, closest_item))
                 count +=1
             return out
 
         def choose_point(self):
             """
-            Dicionary of plant_types with value of closest 
+            Dictionary of plant_types with value of closest 
             plant center that has largest decline in area.
             Key:    <plant_type><sim_x_coord>
             Value:  <pixel_center_coords> of declining plant
             """
             slopes = self.rolling_diversity()
-            proximity = self.find_neighbors()
+            proximity = self.filter(self.find_neighbors())
             output = {}
             for k,v in proximity.items():
                 matched = zip(v, [slopes[i] for i in v])
@@ -114,9 +128,9 @@ class SelectPoint:
                 p_type = plant['plant_type']
                 center = plant['mask_center']
                 leaves = plant['leaves']
-                if self.distance(center, self.coord[p_type][0]) < (10 * x_fc):
+                if self.distance(center, self.coord[p_type][0]) < (20 * x_fc):
                     plant_num = 0
-                elif self.distance(center, self.coord[p_type][1]) < (10 * x_fc):
+                elif self.distance(center, self.coord[p_type][1]) < (20 * x_fc):
                     plant_num = 1
                 nearby = []
                 for k, v in self.coord.items():
@@ -157,7 +171,6 @@ class SelectPoint:
             for i in last_five:
                 print("FILE: ", i)
                 div.append(self.diversity(path + i))
-            # print("DIV: ", div)
             slopes = self.relative_change(div)
             return slopes
 
@@ -177,9 +190,9 @@ class SelectPoint:
                         old.append(v)
                         out[k] = old
             slopes = {}
-            x = np.array([1, 2, 3, 4, 5])
             for k, v in out.items():
                 y = np.array(v)
+                x = np.arange(1, len(y)+1)
                 m, _ = np.polyfit(x, y, 1)
                 slopes[k] = m
             return slopes
@@ -237,18 +250,17 @@ if __name__ == "__main__":
     # data = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/target_leaf_data/data/snc-21081019020000.p", 'rb'))
     # p = SelectPoint(data, 'r')
     # target_list = p.center_target()                        
+    # print(target_list)
 
     dirs = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/cropped/'
-    im_name = 'snc-21081019020000.jpg'
+    im_name = 'snc-21081119280000.jpg'
     path = dirs + im_name
     im = cv2.imread(path)
     new_im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
     #borage
-    target_list = [((2388, 467), [2394, 552]), ((3029, 904), (2917, 872))]
-    #swiss chard + 2 kale 
-    target_list = [((1954, 1004), (2114, 1004)), ((2775, 589), [2679,  573]), ((2354, 1329),  [2600, 1452])]
-        
+    #kale + turnip
+    target_list = [((913.6696535244919, 363.90208416301584), (858.2654320987651, 470.0935085623257)), [(1310.3040201005028, 468.67325336359227), (1292.2628464905174, 628.7886691522126)], [(713.6950418160093, 1009.6959976105136), (812.3838112305853, 1095.3994026284347)], [(501.07115749525633, 785.1316888045544), (470.2729285262494, 617.9413029728023)], [(1063.2484975473476, 1225.989328525485), (1112.9616509112172, 1320.8962576746906)]]
     out = plot_center(new_im, target_list)
     plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
 

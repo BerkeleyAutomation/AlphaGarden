@@ -28,3 +28,10 @@ def correct_image(im_src, one, two, three, four):
   h, status = cv2.findHomography(pts_src, pts_dst)
   im_dst = cv2.warpPerspective(im_src, h, size[0:2])
   return im_dst
+
+def get_points(overhead_image):
+    #get coords for correct_image from overhead
+    plt.imshow(overhead_image)
+    coords = plt.ginput(2, timeout=0)
+    plt.close()
+    return coords

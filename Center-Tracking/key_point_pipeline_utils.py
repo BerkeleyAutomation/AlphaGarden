@@ -23,7 +23,8 @@ TYPES_TO_COLORS = {
     "red-lettuce": [145, 50, 226],
     "sorrel": [255, 0, 0],
     "swiss-chard": [226, 50, 170],
-    "turnip": [255, 85, 89]
+    "turnip": [255, 85, 89],
+    "external": [255, 255, 255]
 }
 COLOR_TOLERANCE = 50
 # %%
