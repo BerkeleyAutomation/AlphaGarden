@@ -36,7 +36,7 @@ def label_circles_BFS(path, show_res=False, side=None):
             day = circle["days_post_germ"]+1
             min_rad, max_rad = get_radius_range(day, prev_rad, rad_models)
             try:
-                c, max_p = bfs_circle(path, center, max_rad, min_rad, plant_type, taken_circles=new_circles[plant_type])
+                c, max_p = bfs_circle(path, center, max_rad, min_rad, plant_type, side=side, taken_circles=new_circles[plant_type])
                 r = abs(distance(c, max_p))
             except ZeroDivisionError:
                 # traceback.print_exc()
