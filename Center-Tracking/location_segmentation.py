@@ -111,13 +111,14 @@ def points_in_circle(radius, x0=0, y0=0):
     for x, y in zip(x_[x], y_[y]):
         yield x, y
 
-def loc_bias_with_shift(model, path, name):
+def loc_bias_with_shift(model, name, path):
 
-    image_name = path + '/' + name
+    image_name = '{}/{}.jpg'.format(path, name)
 
     priors_left = get_recent_priors(path=PRIOR_PATH, side='l')
     priors_right = get_recent_priors(path=PRIOR_PATH, side='r')
 
+    print(image_name)
     test_image = cv2.cvtColor(cv2.imread(image_name), cv2.COLOR_BGR2RGB)
 
     shifted_image = np.zeros((test_image.shape[0] + 256, test_image.shape[1] + 256, 3))
@@ -151,5 +152,7 @@ def loc_bias_with_shift(model, path, name):
                 label[i][j] = label_map2[i][j]
                 prescor[i][j] = prescor2[i][j]
 
-    show_test_truth_prediction(labels_to_colors(label), 'post_process/' + name)
+    show_test_truth_prediction(labels_to_colors(label), 'post_process/' + name + ".png")
     #combine the two images together using major vote / confidence metric
+
+    return "./post_process/" + name + ".png"
