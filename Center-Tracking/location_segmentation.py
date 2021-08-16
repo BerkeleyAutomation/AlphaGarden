@@ -11,6 +11,7 @@ from tqdm import tqdm_notebook, tnrange
 from constants import *
 from statistics import *
 from eval_utils import *
+from full_auto_utils import *
 import copy
 from math import *
 from sklearn.metrics import confusion_matrix
@@ -60,23 +61,37 @@ def generate_full_scores_arr(test_image, model):
                         scores[i+x][j+y] = softmaxes[x][y]
     return scores
 
+def bias_by_rad(center, x, y, rad):
+    dist = (center[0] - y) ** 2 + (center[1] - x) ** 2
+    dist = dist ** 0.5
+    if rad == 0 or rad - dist == 0:
+        return 0.2
+    return ((rad - dist) / rad)
+
 # Scores height x width x # classes array of softmax outputs for each score.
 # Priors a dictionary keyed by plant types containing previous centers
-def augment_model_prediction_by_priors(scores, priors):
-    bias = 2
+def augment_model_prediction_by_priors(scores, priors_left, priors_right):
+    bias = 5
     growth_rate = 1.3
     s = []
-    for plant_type in priors.keys():
-        for center in priors[plant_type]:
+    for plant_type in priors_left.keys():
+        for center in priors_left[plant_type]:
             center = center['circle']
-            for y, x in points_in_circle(center[1] * growth_rate, center[0][0], center[0][1]):
+            for y, x in points_in_circle(center[1], center[0][0], center[0][1]):
                 if x < 0 or x >= scores.shape[0] or y < 0 or y >= scores.shape[1]:
                     continue
-                scores[x][y][LABEL_ENC[plant_type]] = min(scores[x][y][LABEL_ENC[plant_type]] * bias, 1)
-                # if tuple(x, y) not in set:
-                scores[x][y][0] = min(scores[x][y][0] * bias, 0.99)
-                # else:
-                    # set.append((x, y))
+                bias_temp = bias * bias_by_rad(center[0], x, y, center[1] * growth_rate)
+                scores[x][y][LABEL_ENC[plant_type]] = min(scores[x][y][LABEL_ENC[plant_type]] * bias_temp, 1)
+                scores[x][y][0] = min(scores[x][y][0] * bias_temp, 0.99)
+    for plant_type in priors_right.keys():
+        for center in priors_right[plant_type]:
+            center = center['circle']
+            for y, x in points_in_circle(center[1], center[0][0], center[0][1]):
+                if x < 0 or x >= scores.shape[0] or y < 0 or y >= scores.shape[1]:
+                    continue
+                bias_temp = bias * bias_by_rad(center[0], x, y, center[1] * growth_rate)
+                scores[x][y][LABEL_ENC[plant_type]] = min(scores[x][y][LABEL_ENC[plant_type]] * bias_temp, 1)
+                scores[x][y][0] = min(scores[x][y][0] * bias_temp, 0.99)
     return scores
 
 def scores_to_labels(scores):
@@ -96,27 +111,13 @@ def points_in_circle(radius, x0=0, y0=0):
     for x, y in zip(x_[x], y_[y]):
         yield x, y
 
-def test_loc_bias_seg(model, image_name, prior_loc):
-    #load priors to serve as a bias to the current model
-    #Influenced by initial seed placement
-    priors = pkl.load(open(prior_loc, "rb"))
-
-    #predict plain segmentation based off just the moel and save to _original
-    test_image = cv2.cvtColor(cv2.imread(image_name), cv2.COLOR_BGR2RGB)
-    scores = generate_full_scores_arr(test_image, model)
-    labels = scores_to_labels(scores)
-    show_test_truth_prediction(labels_to_colors(labels), "test_img_original.png")
-
-    #predict on segmentation + prior data and save to the _augmented
-    scores_augmented = augment_model_prediction_by_priors(scores, priors)
-    labels = scores_to_labels(scores_augmented)
-    show_test_truth_prediction(labels_to_colors(labels), "test_img_augmented.png")
-
-def loc_bias_with_shift(model, name, prior_loc):
+def loc_bias_with_shift(model, path, name):
 
     image_name = path + '/' + name
 
-    priors = pkl.load(open(prior_loc, "rb"))
+    priors_left = get_recent_priors(path=PRIOR_PATH, side='l')
+    priors_right = get_recent_priors(path=PRIOR_PATH, side='r')
+
     test_image = cv2.cvtColor(cv2.imread(image_name), cv2.COLOR_BGR2RGB)
 
     shifted_image = np.zeros((test_image.shape[0] + 256, test_image.shape[1] + 256, 3))
@@ -128,8 +129,8 @@ def loc_bias_with_shift(model, name, prior_loc):
 
     scores_shifted = scores_shifted[256:, 256:] #shift the array back to the original position
 
-    scores = augment_model_prediction_by_priors(scores, priors)
-    scores_shifted = augment_model_prediction_by_priors(scores_shifted, priors)
+    scores = augment_model_prediction_by_priors(scores, priors_left, priors_right)
+    scores_shifted = augment_model_prediction_by_priors(scores_shifted, priors_left, priors_right)
 
 
     label = np.full((test_image.shape[0], test_image.shape[1]), 0)
@@ -149,5 +150,6 @@ def loc_bias_with_shift(model, name, prior_loc):
             elif label_map1[i][j] < label_map2[i][j]:
                 label[i][j] = label_map2[i][j]
                 prescor[i][j] = prescor2[i][j]
-    show_test_truth_prediction(labels_to_colors(label), 'post_process/' + name + '.png')
+
+    show_test_truth_prediction(labels_to_colors(label), 'post_process/' + name)
     #combine the two images together using major vote / confidence metric
