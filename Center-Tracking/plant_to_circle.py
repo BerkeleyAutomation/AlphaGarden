@@ -266,7 +266,7 @@ def draw_circles_on_canvas(plant_circles, mask):
 ############################################
 
 
-def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=None, **kwargs):
+def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=None, side=None, **kwargs):
     '''Uses BFS and a termination condition to find the plant.
     Path: relative path of the image
     old_center: prior center
@@ -281,6 +281,12 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
         return (plant_ended or too_long) and not too_small
 
     img, img_arr = get_img(path)
+    x, y, z = img.shape
+    if side == 'left':
+        cv2.rectangle(img, (0, 0), (y // 2, x), (0,0,0), -1)
+    if side == 'right':
+        cv2.rectangle(img, (y // 2, 0), (y, x), (0,0,0), -1)
+    img_arr = np.asarray(img)
     img, _ = convert_to_plant_colorspace(old_center, img_arr, img, plant_type)
     taken_circles = kwargs.get("taken_circles", tuple())
     for circ_dict in taken_circles:
