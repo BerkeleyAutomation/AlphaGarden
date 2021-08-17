@@ -36,6 +36,9 @@ class SelectPoint:
                 print("NOT VALID SIDE - should be 'r' or 'l' ")
 
         def filter(self, dic):
+            """
+            Used to filter via plants chosen to be pruned in sim. 
+            """
             plants_to_prune = pkl.load(open('./plants_to_prune.p', 'rb'))
             plants = []
             for k, v in self.sim_coords.items():
@@ -70,7 +73,6 @@ class SelectPoint:
             for k,v in closest_plant.items():
                 # print(k, v)
                 new_k = k[:-3]
-                print(new_k)
                 x = int(k[-3:])
                 index = 0
                 for c in self.sim_coords[new_k]:
@@ -80,7 +82,6 @@ class SelectPoint:
                 pixel_center_init = self.coord[new_k][index]
                 data_center = self.prune_data[count]['mask_center']
                 leaves = self.prune_data[count]['leaves']
-                # print(pixel_center_init, data_center)                
                 closest_item = None
                 closest_value = np.inf 
                 for leaf in leaves:
@@ -99,10 +100,10 @@ class SelectPoint:
             Value:  <pixel_center_coords> of declining plant
             """
             slopes = self.rolling_diversity()
-            proximity = self.filter(self.find_neighbors())
+            proximity = self.find_neighbors() # Use this if info from sim: self.filter(self.find_neighbors())
             output = {}
             for k,v in proximity.items():
-                matched = zip(v, [slopes[i] for i in v])
+                matched = zip(v, [slopes[i] if i in slopes else -np.inf for i in v])
                 min_value = min(matched, key=lambda x: x[1])
                 
                 temp_k = min_value[0][:-3]
@@ -158,9 +159,12 @@ class SelectPoint:
 
         def rolling_diversity(self):
             """
-            Returns dictionary of area change over last five days
-            Key:    <plant_type><sim_x_coord>
-            Value:  slope of change in area over last 5 days
+            Outputs dictionary of area change over last five days
+            Input - N/A
+
+            Returns - dictionary
+            Key:    [str]   <plant_type><sim_x_coord>
+            Value:  [float] slope of change in area over past 5 days
             """
             path = "./circles/" + self.folder
             file_list = os.listdir(path)
@@ -177,8 +181,13 @@ class SelectPoint:
         def relative_change(self, div):
             """
             Helper for rolling_diversity
-            Input: past 5 days of area
-            Output: slope over past 5 days
+            Input - dictionary
+            Key:    [str]   <plant_type><sim_x_coord>
+            Value:  [list]  list of plant areas over past 5 days
+    
+            Returns - dictionary
+            Key:    [str]   <plant_type><sim_x_coord>
+            Value:  [float] slope over past 5 days
             """
             out = {}
             for day in div:
@@ -199,9 +208,12 @@ class SelectPoint:
 
         def diversity(self, path):
             """
-            Returns dictionary for each plant:
-            Key:    <plant_type><sim_x_coord>
-            Value:  <area of plant on specific day>
+            Input - file path of prior
+            path: [str] prior path
+
+            Returns - dictionary for each plant:
+            Key:    [str]   <plant_type><sim_x_coord>
+            Value:  [float] area of plant
             """
             data = pkl.load(open(path, 'rb'))
             output = {}
@@ -247,22 +259,22 @@ def choose_random(im, data):
     return im
 
 if __name__ == "__main__":
-    # data = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/target_leaf_data/data/snc-21081019020000.p", 'rb'))
-    # p = SelectPoint(data, 'r')
-    # target_list = p.center_target()                        
-    # print(target_list)
+    data = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/target_leaf_data/data/snc-21081519390000_unfiltered.p", 'rb'))
+    p = SelectPoint(data, 'r')
+    target_list = p.center_target()                        
+    print(target_list)
 
-    dirs = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/cropped/'
-    im_name = 'snc-21081119280000.jpg'
-    path = dirs + im_name
-    im = cv2.imread(path)
-    new_im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+    # dirs = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/cropped/'
+    # im_name = 'snc-21081119280000.jpg'
+    # path = dirs + im_name
+    # im = cv2.imread(path)
+    # new_im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
     #borage
     #kale + turnip
-    target_list = [((913.6696535244919, 363.90208416301584), (858.2654320987651, 470.0935085623257)), [(1310.3040201005028, 468.67325336359227), (1292.2628464905174, 628.7886691522126)], [(713.6950418160093, 1009.6959976105136), (812.3838112305853, 1095.3994026284347)], [(501.07115749525633, 785.1316888045544), (470.2729285262494, 617.9413029728023)], [(1063.2484975473476, 1225.989328525485), (1112.9616509112172, 1320.8962576746906)]]
-    out = plot_center(new_im, target_list)
-    plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
+    # target_list = [((913.6696535244919, 363.90208416301584), (858.2654320987651, 470.0935085623257)), [(1310.3040201005028, 468.67325336359227), (1292.2628464905174, 628.7886691522126)], [(713.6950418160093, 1009.6959976105136), (812.3838112305853, 1095.3994026284347)], [(501.07115749525633, 785.1316888045544), (470.2729285262494, 617.9413029728023)], [(1063.2484975473476, 1225.989328525485), (1112.9616509112172, 1320.8962576746906)]]
+    # out = plot_center(new_im, target_list)
+    # plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out1.jpeg', out)
 
     # out = choose_random(new_im, data)
     # plt.imsave('/Users/mpresten/Desktop/AlphaGarden/overhead_iter3/out2.jpeg', out)

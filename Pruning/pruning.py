@@ -13,8 +13,6 @@ import argparse
 import time
 import pickle as pkl
 
-from Experiments.key_point_id import get_keypoints, generate_image
-
 def separate_list(actual_coords, target_list):
     x_list, y_list = [], []
     for i in range(len(target_list)):
@@ -158,11 +156,14 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
 
     # Start Locationing
     actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    # actual_farmbot_coords = [(200, 75)] #(220, 37), (181, 94)
+    # actual_farmbot_coords = [(118, 73), ()] 
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
     for cur_point, angle in zip(actual_farmbot_coords, angles):
+        # Reset to good position
+        fb.update_action("servo", (6, 101))
+        fb.update_action("servo", (11, 0))
         mod_angle = (angle - 90) * ang_sf + pos_y if angle > 90 else pos_y - ang_sf * (90 - angle)
         print("---CURR PT, MOD_ANGLE: ", cur_point, mod_angle)
 
@@ -189,7 +190,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         prune_top = False
         if z < height_fb_clearance:
             prune_top = True
-            print("PRUNING TOP")
+            print("---PRUNING TOP")
             response = input("===== Enter 'n' if you don't want to prune top.")
             if response == 'n':
                 prune_top = False
@@ -204,6 +205,8 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             fb.update_action("move_rel", (0, 100, 0))#move to z position from the depth sensor after setting up the scissors
             time.sleep(15)
         else:
+            fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
+            time.sleep(2)
             fb.update_action("move_rel", (0, 0, (z * -10)+ 70))#move to z position from the depth sensor after setting up the scissors
             time.sleep(90)
 
@@ -214,7 +217,6 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             time.sleep(11)
                 # done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
         else:
-            fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
             time.sleep(2)
             # while (done == False):
             fb.update_action("prune_scissor", None) #prune with angle
@@ -310,6 +312,7 @@ def potted_plant_auto(overhead, mask):
     file = overhead[-22:-4]
     im = cv2.cvtColor(cv2.imread(overhead), cv2.COLOR_BGR2RGB)
     im = correct_image(im, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
+    plt.imsave(file + "_cropped.jpg", im)
     ## Identify all key points (need prior from get_points, and manual mask)
     print("INSTRUCTION: Label center then outer most point!")
     center, outer = get_points(im)
@@ -334,10 +337,10 @@ if __name__ == "__main__":
 
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    # target_list = [[(713.6950418160093, 1009.6959976105136), (812.3838112305853, 1095.3994026284347)]] #, 
+    target_list = [((1947.0, 994.0), (1926.0, 1143.0)), ((2988.0, 1427.0), (2924.0, 1368.0))]
 
-    # batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
+    batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
     ### External Pot
-    potted_plant_auto(args.overhead, args.mask)
+    # potted_plant_manual(args.overhead)
     

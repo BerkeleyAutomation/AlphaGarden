@@ -341,14 +341,14 @@ def potted_plant_auto(overhead, mask):
 
 if __name__ == "__main__":
     ## Experiments
-    leaf_centers = potted_plant_auto("Experiments/snc-21081309141400.jpg", "Experiments/snc-21081309141400_mask.png")
-    print(leaf_centers)
+    # leaf_centers = potted_plant_auto("Experiments/snc-21081309141400.jpg", "Experiments/snc-21081309141400_mask.png")
+    # print(leaf_centers)
 
     ## Generation
-    # file = "snc-21081119280000"
-    # leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210811.p", "models/leaf_keypoints.pth")
-    # pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
-    # generate_image(leaf_centers, "./cropped/" + file + ".jpg")
+    file = "snc-21081519390000"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210815.p", "models/leaf_keypoints.pth")
+    pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
+    generate_image(leaf_centers, "./cropped/" + file + ".jpg")
 
     ##Simulator
     # pkl.dump([], open("plants_to_prune.p", "wb"))
