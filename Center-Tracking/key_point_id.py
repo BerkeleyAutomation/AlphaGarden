@@ -143,7 +143,7 @@ def create_circular_mask(h, w, center=None, radius=None, area_scale =4):
 
     mask = dist_from_center <= radius
     return mask
-def shrink_im(im, inner_size = (128,128), outer_size = (256,256)):
+def shrink_im(im, inner_size = (128,128), outer_size = (256,256), which="RGB"):
     '''Shrink Image
     Params
         :numpy arr im: image to mask
@@ -158,7 +158,7 @@ def shrink_im(im, inner_size = (128,128), outer_size = (256,256)):
     numpy array for image masked
     '''
     old = Image.fromarray(im)
-    new = Image.new("RGB", outer_size)
+    new = Image.new(which, outer_size)
     new.paste(old.resize(inner_size), ((outer_size[0]-inner_size[0])//2,(outer_size[1]-inner_size[1])//2))
     return np.array(new)
 def mask_im(im, mask):
@@ -203,7 +203,7 @@ def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2))):
         test_mask  = create_circular_mask(*heatmap.shape[:2], center = pt, radius = 7, area_scale=1)
         norm_map[np.argwhere(test_mask == 1)] = 0 
         pt2 = pt.astype(int)
-        if tuple(masked[0][pt2[0],pt2[1]]) == (0,0,0):
+        if tuple(masked[pt2[0],pt2[1]]) == (0,0,0):
             clusterpts = np.delete(clusterpts,np.argwhere(clusterpts == pt)[:,0],axis=0)
     pts = np.vstack((pts,clusterpts))
     if len(clusterpts) == 0:
@@ -227,9 +227,17 @@ def point_to_overhead(point, mask_center, input_size, scale = 4*1/0.75):
     '''
     center_scale = scale*(np.array(point) - np.array(input_size)//2)
     return center_scale[::-1] + np.array(mask_center)
+
+def remove_keypoints(points, mask, inner_thres = 1):
+    ret_pts = []
+    for point in points:
+        # print(mask[point[0],point[1]])
+        if mask[int(point[0]),int(point[1])] != 0:
+            ret_pts.append(point)
+    return ret_pts
     
 # mask, overhead = keypoint.get_masks_and_overhead(i, mask_path=mask_path, overhead_path=overhead_path)#20101016snc-20101006
-def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000"):
+def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False):
     '''Generates a keypoint dictionary with all the data for the overhead
     Params
         :string mask_path: location of segmentation mask
@@ -264,11 +272,12 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
     plants = keypoint.get_individual_plants(priors, mask, overhead)
     vals = dict()
     for cut_idx, plant in enumerate(plants):
-        # print(cut_idx, plant)
         if not plant[3] in vals:
             vals[plant[3]] = {}
         size = np.array(plant[0].shape[:2])
-        vals[plant[3]][f'{date}_{cut_idx}'] = [shrink_im(plant[0], tuple(size//shrink), tuple(size)), 1.5* plant[2] //shrink, plant[1]]
+        plant[4][np.where(plant[4] != 0)] = 1
+        vals[plant[3]][f'{date}_{cut_idx}'] = [shrink_im(plant[0], tuple(size//shrink), tuple(size)), 1.5* plant[2] //shrink, plant[1], 
+                                    shrink_im(plant[4], tuple(size//shrink), tuple(size),which="L"), plant[5]]
     leaf_centers  = []
     for pt in list(vals.keys()):    
         for rc in list(vals[pt].keys()):
@@ -277,20 +286,31 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             center = np.array(plant[0].shape)
             plant_mask  = create_circular_mask(*plant[0].shape[:2], center = center//2, radius = plant[1])
             t_arr = mask_im(np.asarray(t[0]), plant_mask)
-            pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant)
-            pts = pts.astype(int)
-            converted_pts = np.array([point_to_overhead(pt, plant[2], plant[0].shape[:2]) for pt in pts]).astype(int)
+            pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant[0])
+            pts = remove_keypoints(pts,plant[3])
+            # print(pt, rc, tuple(np.array(plant[2]).astype(int)))
+            if save_raw:
+                mask = np.copy(plant[0])
+                for y,x in pts:
+                    x,y = int(x), int(y)
+                    mask = cv2.rectangle(mask,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
+                plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/{pt}_{rc}.png',mask)
+            
+            im_size = np.array(plant[0].shape[:2])
+            converted_pts = np.array([point_to_overhead(pt, plant[2], plant[0].shape[:2],
+                                    scale=min(im_size/(im_size//shrink))*plant[4]) for pt in pts]).astype(int)
             leaf_centers.append({
                                     'plant_type':pt, 
                                     'mask_center': tuple(np.array(plant[2]).astype(int)), 
                                     'leaves': converted_pts, 
                                     'original':pts, 
                                     'id_name':rc, 
-                                    'radius':plant[1]*shrink
+                                    'radius':plant[1]*shrink,
+                                    'localized_im': mask if save_raw else None
                                 })
     return leaf_centers
 
-def generate_image(leaf_centers, overhead_path):
+def generate_image(leaf_centers, overhead_path, raw_img = False):
     '''Generates Leaf Center Images from overhead image
     Params
         :dict leaf_centers: data generated from get_keypoints
@@ -303,7 +323,7 @@ def generate_image(leaf_centers, overhead_path):
     >>> generate_images(leaf_centers, "snc-1240234232.jpg")
     matplotlib AxesImage with the data
     '''
-    file = overhead_path[-22:-4]
+    # file = overhead_path[-22:-4]
     load = cv2.imread(overhead_path)
     _ = plt.imshow(load, alpha = 0.5)
     # mask = np.zeros(load.shape, dtype = np.uint8)
@@ -321,8 +341,12 @@ def generate_image(leaf_centers, overhead_path):
     _ = plt.imshow(load)
     # _ = plt.imshow(mask, alpha = 0.5)
     # plt.imsave("./target_leaf_data/images/" + file + ".png", load) # For pruning
-    plt.imsave("./Experiments/" + file + ".png", load) # For experiments
-    return plt
+    # plt.imsave("./Experiments/" + file + ".png", load) # For experiments
+    # print(colors)
+    if raw_img:
+        return plt, load
+    else:
+        return plt
 
 def potted_plant_auto(overhead, mask):
     file = overhead[-22:-4]
@@ -348,7 +372,11 @@ if __name__ == "__main__":
     file = "snc-21081719340000"
     leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210817.p", "models/leaf_keypoints.pth")
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
-    generate_image(leaf_centers, "./cropped/" + file + ".jpg")
+    print("./target_leaf_data/data/" + file + "_unfiltered.p")
+    with open("./target_leaf_data/data/" + file + "_unfiltered.p", "rb") as f:
+        leaf_centers = pkl.load(f)
+        fg = generate_image(leaf_centers, "./cropped/" + file + ".jpg", raw_img=True)
+        fg[0].imsave(f'./target_leaf_data/images/{file}.png', fg[1])
 
     ##Simulator
     pkl.dump([], open("plants_to_prune.p", "wb"))

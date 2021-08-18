@@ -10,6 +10,7 @@ sys.path.insert(1, '..')
 from full_auto_utils import *
 from constants import *
 from center_constants import *
+from key_point_id import shrink_im
 
 TYPES_TO_COLORS = {
     "other":[0,0,0],
@@ -92,13 +93,18 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         key_isolated_mask = isolate_color(mask, *calculate_color_range(TYPES_TO_COLORS[key], COLOR_TOLERANCE))[0]
         key_isolated_mask = (cv2.cvtColor(key_isolated_mask, cv2.COLOR_RGB2GRAY)).astype(np.uint8)
         masked_overhead = cv2.bitwise_and(overhead, overhead, mask=key_isolated_mask)
-        plt.imshow(masked_overhead)
         for circle in priors[key]:
             (x, y), r,_ = circle["circle"]
-            plant = masked_overhead[max(int(y-RADIUS_SCALE_FACTOR*r), 0):int(y+RADIUS_SCALE_FACTOR*r), int(x-RADIUS_SCALE_FACTOR*r):int(x+RADIUS_SCALE_FACTOR*r)]
+            plant = masked_overhead[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]         
+            cutmask = key_isolated_mask[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]         
             if plant.shape[0] > 0 and plant.shape[1] > 0:
-                plant = cv2.resize(plant, (256, 256))
-                yield plant, (x, y), r, key
+                shp = np.array(plant.shape[:2]).astype(float)
+                scale = 256/max(shp)
+                new_res = (shp* scale).astype(int)
+                plant = shrink_im(plant,tuple(new_res) ,(256,256))
+                cutmask = shrink_im(cutmask,tuple(new_res) ,(256,256))
+                # plant = cv2.resize(plant, (256, 256))
+                yield plant, (x, y), r, key, cutmask, min(shp/new_res)
         # return images
 
 def project_key_points(key_points, center, radius):
