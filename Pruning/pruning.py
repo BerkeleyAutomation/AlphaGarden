@@ -13,7 +13,7 @@ import argparse
 import time
 import pickle as pkl
 
-from Experiments.key_point_id import get_keypoints, generate_image
+#from Experiments.key_point_id import get_keypoints, generate_image
 
 def separate_list(actual_coords, target_list):
     x_list, y_list = [], []
@@ -121,7 +121,7 @@ def batch_prune(target_list, overhead, rpi_check):
     return None
 
 def perpendiculars(target_list):
-    angles = []
+    angles, k_arr = [], []
     for i in range(len(target_list)):
         center, target = target_list[i][0], target_list[i][1]
         k = np.array([-1 * (target[0] - center[0]), target[1] - center[1]])
@@ -140,15 +140,16 @@ def perpendiculars(target_list):
             angle = 360 - (np.arccos(dot_product) * (180/math.pi))
         angle = angle if angle < 180 else angle - 180
         angles.append(angle)
+        k_arr.append(k)
         print(angle, "\n")
     print(angles)
-    return angles
+    return angles, k_arr
 
 def batch_prune_scissors(target_list, overhead, rpi_check):
     pos_x, pos_y = 110, 47 #47
     ang_sf = (pos_x-pos_y)/90
     sci_rad = 13
-    angles = perpendiculars(target_list)
+    angles, k_arr = perpendiculars(target_list) #angles=angle of cut, k_arr=vector from center to target pt for repositioning
     offset = [-1 *sci_rad*math.sin(angle*math.pi/180) - 1 for angle in angles]
 
     fb = FarmBotThread()
@@ -162,7 +163,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
-    for cur_point, angle in zip(actual_farmbot_coords, angles):
+    for cur_point, angle, k in zip(actual_farmbot_coords, angles, k_arr):
         mod_angle = (angle - 90) * ang_sf + pos_y if angle > 90 else pos_y - ang_sf * (90 - angle)
         print("---CURR PT, MOD_ANGLE: ", cur_point, mod_angle)
 
@@ -180,7 +181,9 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         z = min(z, 40)
 
         fb.update_action("move_rel", (15, 0,0)) #reset to account for depth sensor
+
         time.sleep(10)
+        curr_rpi = recent_rpi_photo(fb) #name of rpi image of current state
 
         scissors_offset = (sci_rad*math.cos(angle*math.pi/180) + 2, -1 *sci_rad*math.sin(angle*math.pi/180) - 1) #scissor offset
         print("---Scissor offset: ", (scissors_offset[0] * 10, scissors_offset[1]*10,0))
@@ -208,37 +211,55 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             time.sleep(90)
 
         print("---TIME TO CUT")
-        if prune_top:
-            # while (done == False):
-            fb.update_action("prune_scissor", None) #prune with angle
-            time.sleep(11)
-                # done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
-        else:
-            fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
-            time.sleep(2)
-            # while (done == False):
-            fb.update_action("prune_scissor", None) #prune with angle
-            time.sleep(11)
-            fb.update_action("move_rel", (0, 0, (z * 10) - 70.5))#move to z position from the depth sensor after setting up the scissors
-            time.sleep(90)
-                # done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
+        done = False
+        i = 0 #counter for number of times repositioned scissors for same cut
+        while (done == False and i < 2):  #change iteration threshold
+            if prune_top:
+                fb.update_action("prune_scissor", None) #prune with angle
+                time.sleep(11)
+                    
+            else:
+                fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
+                time.sleep(2)
+                fb.update_action("prune_scissor", None) #prune with angle
+                time.sleep(11)
+                fb.update_action("move_rel", (0, 0, (z * 10) - 70.5))#move to z position from the depth sensor after setting up the scissors
+                time.sleep(90)
+            done, curr_rpi = prune_check_sensor(fb, i, curr_rpi, z, cur_point, dsensor_adjusted, scissors_offset)
+            if done:
+                continue
+            reposition_scissors(fb, k, scissors_offset, cur_point)
+            i += 1
         print("--COMPLETE")
     return None
 
-def prune_check_sensor(fb, prev_depth, origi_pos, scissors_offset):
-    #use origi_pos to check the depth with consistent offset
-    fb.update_action("move", (origi_pos[0] * 10, origi_pos[1] * 10,0))
+def reposition_scissors(fb, k, scissors_offset, rpi_pos):
+    #reposition scissors to move in direction of the center
+    reposition_dist = 2 #length of reposition vector in cm
+    change = [k[0]*np.sqrt(reposition_dist), k[1]*np.sqrt(reposition_dist)]
+    fb.update_action("move_rel", (scissors_offset[0] *10, scissors_offset[1]*10,0))
+    time.sleep(5)
+    z = get_depth(fb)
+    z = min(z, 40)
+    fb.update_action("move_rel", (change[0] *10, change[1]*10,(z * -10)+ 70))
+    
+    time.sleep(5)
+
+def prune_check_sensor(fb, i, prev_rpi, prev_depth, rpi_pos, depthsen_pos, scissors_offset):
+    #use depthsen_pos to check the depth with consistent offset
+    fb.update_action("move", (depthsen_pos[0] * 10, depthsen_pos[1] * 10,0)) #move to depth sensor
     time.sleep(15)
-    print(origi_pos)
-    fraction = .7
+    print(depthsen_pos)
+    epsilon = 3 # min depth difference threshold in cm
     curr_depth = get_depth(fb)
     time.sleep(2)
     print(curr_depth)
-    if curr_depth * fraction < prev_depth:
+    if curr_depth - prev_depth > epsilon: #curr_depth has to be lower if leaf was cut
         return True
-    fb.update_action("move_rel", (scissors_offset[0] *10, scissors_offset[1]*10,0))
-    time.sleep(5)
-    return False
+    fb.update_action("move_rel", (15, 0,0)) #reset to account for depth sensor
+
+    curr_rpi = recent_rpi_photo(fb) #takes rpi photo of after cut
+    return compare_recent_rpi(i, prev_rpi, curr_rpi), curr_rpi
 
 def get_depth(fb):
     #get depth necessary to prune the leaf with the depth sensor
@@ -263,16 +284,17 @@ def recent_rpi_photo(fb):
     latest_file = max(list_of_files, key=os.path.getctime)
     return latest_file[latest_file.find("rpi_images")+11:]
 
-def check_prune(i, bef_rpi, aft_rpi):
-    #checks whether leaf has been pruned
+def compare_recent_rpi(i, bef_rpi, aft_rpi):
+    #Take photo to compare to previous photo before cut
     cwd = os.getcwd()
     # image_path  = os.path.join(cwd, "rpi_images", bef_rpi + "_resized.jpg")
     image_path  = os.path.join(cwd, "rpi_images", bef_rpi)
-    bef_rpi = cv2.imread(image_path, 1)
+    bef_rpi = cv2.cvtColor(cv2.imread(image_path, 1), cv2.COLOR_BGR2RGB)
+
 
     # image_path  = os.path.join(cwd, "rpi_images", aft_rpi + "_resized.jpg")
     image_path  = os.path.join(cwd, "rpi_images", aft_rpi)
-    aft_rpi = cv2.imread(image_path, 1)
+    aft_rpi = cv2.cvtColor(cv2.imread(image_path, 1), cv2.COLOR_BGR2RGB)
 
     meth = 'cv2.TM_CCOEFF_NORMED'
     threshold = 0.8 #threshold for normalized ccoeff if pruned or not
@@ -339,5 +361,8 @@ if __name__ == "__main__":
     # batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
     ### External Pot
-    potted_plant_auto(args.overhead, args.mask)
+    #potted_plant_auto(args.overhead, args.mask)
+
+    a, c = prune_check_sensor(None, 0, "2021-08-07T02_54_09.154Z_2450.0_530.0_0.0.jpg", 23, (30, 34), (31.5, 34), (13, 3))
+    print(a, c)
     

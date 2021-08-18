@@ -31,6 +31,19 @@ def overhead_image_preprocess(overhead_image):
     src = cv2.imread(image_path, 1)
     return src
 
+def determine_error():
+    #the border around the target to constrain the region of interest
+    if not os.path.isfile('ccoeff_visualseroving.txt'):
+        open("ccoeff_visualseroving.txt", "a").close()
+        return [44, 20] 
+    t = open("ccoeff_visualseroving.txt","r+")
+    lines = t.readlines()
+    t.close()
+    ccoeff = float(lines[-1][:-1])
+
+    if ccoeff > 0.4: #empirically determined
+        return [20, 10]
+
 
 def find_local_in_overhead(local_image, overhead_image, target):
     
@@ -52,7 +65,8 @@ def find_local_in_overhead(local_image, overhead_image, target):
     
     targetpx_x = round((274.66 - target[0])*11.9) + 102
     targetpx_y = round(target[1] * 11.9) + 72
-    error = [44, 20] #the border around the target to constrain the region of interest
+
+    error = determine_error()
 
     best_sf = 1
     best_max_val = 0
@@ -93,6 +107,28 @@ def find_local_in_overhead(local_image, overhead_image, target):
         os.remove(rpi_path_d)
         
 
+    #get top 5 points from best sf
+    # num_cand = 5
+    # avg_grid = [2, 2] #add a plus/minus x and y coord to the max location to average the ccoeff values
+    # res = cv2.matchTemplate(img, template.astype(np.uint8) ,method)
+    # masked_res = localized_search(best_sf, res)
+    # candidiates = []
+    # seen = set()
+    # plt.imshow(masked_res)
+    # plt.show()
+    # for _ in range(num_cand):
+    #     _, max_val, _, max_loc = cv2.minMaxLoc(masked_res)
+    #     if max_loc in seen:
+    #         continue
+    #     avg = np.mean(masked_res[max_loc[1]-avg_grid[0]:max_loc[1]+avg_grid[0], max_loc[0]-avg_grid[1]:max_loc[0]+avg_grid[1]])
+    #     print(masked_res[max_loc[0], max_loc[1]])
+    #     masked_res[max_loc[1], max_loc[0]] = 0
+    #     print(avg, max_loc)
+    #     candidiates.append((avg, max_loc))
+    #     seen.add(max_loc)
+    # sorted(candidiates)
+    # top_left = candidiates[-1][1]
+
     top_left = best_max_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
     img, _ = local_image_preprocess(local_image, best_sf)
@@ -100,6 +136,11 @@ def find_local_in_overhead(local_image, overhead_image, target):
     img = img2.copy()
 
     cv2.rectangle(img,top_left, bottom_right, 255, 2)
+
+    #add max ccoeff val to .txt file
+    t = open("ccoeff_visualseroving.txt","a")
+    t.write(str(best_max_val) + "\n")
+    t.close()
 
     #checking the cross correlation, white = more correlated
     plt.subplot(121),plt.imshow(res,cmap = 'gray')
@@ -173,7 +214,7 @@ def resize_local(local_image, scale_factor=0.7438):
     # Default scale_factor empirically determined from px to cm calculations from local and overhead images
     cwd = os.getcwd()
     image_path  = os.path.join(cwd, "rpi_images", local_image)
-    img = cv2.imread(image_path, 1)
+    img = cv2.cvtColor(cv2.imread(image_path, 1), cv2.COLOR_BGR2RGB)
     img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE) #rotate to align with overhead image
      
     width = int(img.shape[1] * scale_factor)
@@ -242,6 +283,7 @@ def batch_target_approach(fb, target_list, overhead, y_offset):
         act_pt = farmbot_target_approach(fb, target_point, overhead, y_offset[i])
         actual_farmbot_coord.append(act_pt)
         pkl.dump(actual_farmbot_coord, open("actual_coords.p", "wb"))
+        os.remove("ccoeff_visualseroving.txt") #remove the ccoeff file to reset for next target point pair
     return actual_farmbot_coord
 
 def crop_o_px_to_cm(x_px, y_px):
@@ -270,3 +312,6 @@ def curr_pos_from_local(fb, overhead_image, target):
 
     pt = find_local_in_overhead(local_name, overhead_image, target)
     return pt
+
+if __name__ == "__main__":  
+    print(determine_error())
