@@ -95,8 +95,7 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         plt.imshow(masked_overhead)
         for circle in priors[key]:
             (x, y), r,_ = circle["circle"]
-            plant = masked_overhead[int(y-RADIUS_SCALE_FACTOR*r):int(y+RADIUS_SCALE_FACTOR*r), int(x-RADIUS_SCALE_FACTOR*r):int(x+RADIUS_SCALE_FACTOR*r)]
-            # print(r, plant.shape)
+            plant = masked_overhead[max(int(y-RADIUS_SCALE_FACTOR*r), 0):int(y+RADIUS_SCALE_FACTOR*r), int(x-RADIUS_SCALE_FACTOR*r):int(x+RADIUS_SCALE_FACTOR*r)]
             if plant.shape[0] > 0 and plant.shape[1] > 0:
                 plant = cv2.resize(plant, (256, 256))
                 yield plant, (x, y), r, key

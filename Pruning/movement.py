@@ -283,7 +283,7 @@ def batch_target_approach(fb, target_list, overhead, y_offset):
         act_pt = farmbot_target_approach(fb, target_point, overhead, y_offset[i])
         actual_farmbot_coord.append(act_pt)
         pkl.dump(actual_farmbot_coord, open("actual_coords.p", "wb"))
-        os.remove("ccoeff_visualseroving.txt") #remove the ccoeff file to reset for next target point pair
+        os.remove("ccoeff_visualseroving.txt") #remove the ccoeff file to reset for next target, center point pair
     return actual_farmbot_coord
 
 def crop_o_px_to_cm(x_px, y_px):

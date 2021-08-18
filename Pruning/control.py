@@ -113,11 +113,11 @@ class MyHandler:
 
         elif self.action == 'prune_scissor':
             request_id = self.bot.set_servo_angle(5, 180)
-            time.sleep(4.68)
+            time.sleep(5.5)#5.2
             request_id = self.bot.set_servo_angle(5, 90)
             time.sleep(0.5)
             request_id = self.bot.set_servo_angle(5, 0)
-            time.sleep(4.3)
+            time.sleep(5.2)#4.95
             request_id = self.bot.set_servo_angle(5, 90)
             time.sleep(0.5)
             print("TOGGLE SERVO STOP ID: " + request_id)
