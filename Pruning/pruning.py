@@ -61,7 +61,7 @@ def batch_prune(target_list, overhead, rpi_check):
                 print("PHOTO TIME")
 
                 aft_name = recent_rpi_photo(fb)
-                chk = check_prune(i, bef_name, aft_name)
+                chk = compare_recent_rpi(i, bef_name, aft_name)
                 print("--PRUNE CHECK--: ", chk)
 
                 if chk:
@@ -98,7 +98,7 @@ def batch_prune(target_list, overhead, rpi_check):
                 time.sleep(180)
 
                 aft_name = recent_rpi_photo(fb)
-                chk = check_prune(i, bef_name, aft_name)
+                chk = compare_recent_rpi(i, bef_name, aft_name)
                 print("PRUNE CHECK: ", chk)
 
                 response = input("===== Enter 'y' if leaf pruned, else 'n': ")
@@ -231,7 +231,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             done, curr_rpi = prune_check_sensor(fb, i, curr_rpi, z, cur_point, dsensor_adjusted, scissors_offset)
             if done:
                 continue
-            reposition_scissors(fb, k, scissors_offset, cur_point)
+            z = reposition_scissors(fb, k, scissors_offset, cur_point)
             i += 1
         print("--COMPLETE")
     return None
@@ -247,6 +247,7 @@ def reposition_scissors(fb, k, scissors_offset, rpi_pos):
     fb.update_action("move_rel", (change[0] *10, change[1]*10,(z * -10)+ 70))
     
     time.sleep(5)
+    return z
 
 def prune_check_sensor(fb, i, prev_rpi, prev_depth, rpi_pos, depthsen_pos, scissors_offset):
     #use depthsen_pos to check the depth with consistent offset
