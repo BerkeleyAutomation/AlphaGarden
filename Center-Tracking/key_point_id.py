@@ -345,20 +345,20 @@ if __name__ == "__main__":
     # print(leaf_centers)
 
     ## Generation
-    file = "snc-21081519390000"
-    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210815.p", "models/leaf_keypoints.pth")
+    file = "snc-21081719340000"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210817.p", "models/leaf_keypoints.pth")
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     generate_image(leaf_centers, "./cropped/" + file + ".jpg")
 
     ##Simulator
-    # pkl.dump([], open("plants_to_prune.p", "wb"))
-    # os.system('python3 ../Learning/create_state.py ' + 'l') #choose side
-    # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
-    # time.sleep(10)
+    pkl.dump([], open("plants_to_prune.p", "wb"))
+    os.system('python3 ../Learning/create_state.py ' + 'l') #choose side
+    os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
+    time.sleep(10)
 
     ## Selection
-    # select = SelectPoint(leaf_centers, 'l') #choose side
-    # target_list = select.center_target()
-    # pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + ".p", "wb"))
-    # print(target_list)
+    select = SelectPoint(leaf_centers, 'l') #choose side
+    target_list = select.center_target()
+    pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + ".p", "wb"))
+    print(target_list)
 

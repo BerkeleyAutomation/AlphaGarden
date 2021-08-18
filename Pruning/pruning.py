@@ -155,8 +155,8 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     fb.update_action("servo", (11, 0))
 
     # Start Locationing
-    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    # actual_farmbot_coords = [(118, 73), ()] 
+    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
+    actual_farmbot_coords = [(165, 81)] #(178, 30), (211, 80), (235, 45),
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
@@ -207,7 +207,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         else:
             fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
             time.sleep(2)
-            fb.update_action("move_rel", (0, 0, (z * -10)+ 70))#move to z position from the depth sensor after setting up the scissors
+            fb.update_action("move_rel", (0, 0, (z * -10)+ 30))#move to z position from the depth sensor after setting up the scissors
             time.sleep(90)
 
         print("---TIME TO CUT")
@@ -221,7 +221,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             # while (done == False):
             fb.update_action("prune_scissor", None) #prune with angle
             time.sleep(11)
-            fb.update_action("move_rel", (0, 0, (z * 10) - 70.5))#move to z position from the depth sensor after setting up the scissors
+            fb.update_action("move_rel", (0, 0, (z * 10) - 30.5))#move to z position from the depth sensor after setting up the scissors
             time.sleep(90)
                 # done = prune_check_sensor(fb, z, dsensor_adjusted, scissors_offset)
         print("--COMPLETE")
@@ -337,8 +337,8 @@ if __name__ == "__main__":
 
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    target_list = [((1947.0, 994.0), (1926.0, 1143.0)), ((2988.0, 1427.0), (2924.0, 1368.0))]
-
+    target_list = [((1391.2966780172076, 1206.2281588729174), (1293.658457019573, 1099.5493618569833))] #((1381.0725806451615, 413.9576612903227), (1151.7580645161288, 499.2399193548388)), ((751.8790322580645, 1024.1995967741937), (619.2177419354838, 1240.2479838709678)), ((504.6410966706362, 668.0000776678924), (274.1310775125562, 722.0258634080674)), 
+    print(len(target_list))
     batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
     ### External Pot

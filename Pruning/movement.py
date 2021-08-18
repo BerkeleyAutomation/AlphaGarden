@@ -173,7 +173,7 @@ def resize_local(local_image, scale_factor=0.7438):
     # Default scale_factor empirically determined from px to cm calculations from local and overhead images
     cwd = os.getcwd()
     image_path  = os.path.join(cwd, "rpi_images", local_image)
-    img = cv2.imread(image_path, 1)
+    img = cv2.cvtColor(cv2.imread(image_path, 1), cv2.COLOR_BGR2RGB)
     img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE) #rotate to align with overhead image
      
     width = int(img.shape[1] * scale_factor)
@@ -208,7 +208,7 @@ def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
         coord_x += int(np.sign(diff_x) * min(4, np.abs(diff_x)))
         coord_y += int(np.sign(diff_y) * min(4, np.abs(diff_y)))
         # Cap to limit movement error
-        coord_x = min(coord_x, 274)
+        coord_x = min(coord_x, 271)
         coord_x = max(0, coord_x)
         if coord_y > (125-abs(y_offset)):
             print("------CAPPED------")
