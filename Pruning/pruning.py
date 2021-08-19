@@ -339,7 +339,7 @@ def potted_plant_manual(overhead):
     center, target = get_points(im)
     print("--Center: ", center)
     print("--Target: ", target)
-    batch_prune_scissors([(center, target)], overhead, False)
+    batch_prune([(center, target)], overhead, False)
 
 def potted_plant_auto(overhead, mask):
     file = overhead[-22:-4]
@@ -370,10 +370,10 @@ if __name__ == "__main__":
 
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    target_list = [((1391.2966780172076, 1206.2281588729174), (1293.658457019573, 1099.5493618569833))] #((1381.0725806451615, 413.9576612903227), (1151.7580645161288, 499.2399193548388)), ((751.8790322580645, 1024.1995967741937), (619.2177419354838, 1240.2479838709678)), ((504.6410966706362, 668.0000776678924), (274.1310775125562, 722.0258634080674)), 
+    # target_list = [((1391.2966780172076, 1206.2281588729174), (1293.658457019573, 1099.5493618569833))] #((1381.0725806451615, 413.9576612903227), (1151.7580645161288, 499.2399193548388)), ((751.8790322580645, 1024.1995967741937), (619.2177419354838, 1240.2479838709678)), ((504.6410966706362, 668.0000776678924), (274.1310775125562, 722.0258634080674)), 
 
-    batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
+    # batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
     ### External Pot
-    # potted_plant_manual(args.overhead)
+    potted_plant_manual(args.overhead)
     
