@@ -26,33 +26,29 @@ def separate_list(actual_coords, target_list):
 
 def batch_prune(target_list, overhead, rpi_check):
     fb = FarmBotThread()
-    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
-    # print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
-    # x_list, y_list = separate_list(actual_farmbot_coords, target_list)
+    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
+    print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
+    x_list, y_list = separate_list(actual_farmbot_coords, target_list)
     # print("--x_list: ", x_list)
     # print("--y_list: ", y_list)
 
-    x_list = [(15, 37), (78, 63), (51, 15)]
-    y_list = [(50, 66.9), (88, 88)] #(93, 50.9)
+    # x_list = [(15, 37), (78, 63), (51, 15)]
+    # y_list = [(50, 66.9), (88, 88)] #(93, 50.9)
 
     # dismount_nozzle()
     # mount_yPruner()
-    response = input("===== Enter 'y' after MOUNTING yPruner.")
-
     for i in y_list:
+        response = input("===== Enter 'y' in yPruner MOUNTED.")
+
         fb.update_action("move", (i[0] * 10 - 40, i[1] * 10 + 70,0))    #y requires offset
         response = input("===== Enter 'y' when READY to prune.")
-        if rpi_check:
+        if False:
             done = False
             inc = -350
             while (done == False):
                 #go down z cm prune and come back up
                 bef_name = recent_rpi_photo(fb)
         
-                # fb.update_action("prune", None)
-                # fb.update_action("move_rel", (0,0,inc))
-                # fb.update_action("move_rel", (0,0,(-1 * inc) - 1))
-                # fb.update_action("prune", None)
                 fb.update_action("prune", None)
                 fb.update_action("move_rel", (0,0,-250))
                 fb.update_action("move_rel", (0,0, 249))
@@ -68,20 +64,27 @@ def batch_prune(target_list, overhead, rpi_check):
                     done = True
                 done = True
                 inc -= 50
-
         else:
-            #TODO add functionality to go up and down and prune
+            print("---TIME TO CALC DEPTH")
+            dsensor_adjusted = tuple((i[0] - 1.5, i[1])) #depth sensor offset
+            fb.update_action("move", (dsensor_adjusted[0] * 10, dsensor_adjusted[1] * 10,0))
+            time.sleep(5)
+            print("---DONE SLEEPING")
+            z = get_depth(fb)
+            time.sleep(3)
+            print("---Depth: ", z)
+            z = min(z, 40)
             fb.update_action("prune", None)
-            fb.update_action("move_rel", (0,0,-390))
-            fb.update_action("move_rel", (0,0, 389))
+            fb.update_action("move_rel", (0,0,(z * -10)))
+            fb.update_action("move_rel", (0,0,(z * 10)))
             fb.update_action("prune", None)
             time.sleep(180)
 
     # dismount_yPruner()
     # mount_xPruner()
-    response = input("===== Enter 'y' after pruner is SWITCHED.")
 
     for i in x_list:
+        response = input("===== Enter 'y' in xPruner MOUNTED.")
         fb.update_action("move", (i[0] * 10, i[1] * 10,0))
         response = input("===== Enter 'y' when READY to prune.")
         if False: # rpi_check: (can't use servo'ing with xPruner bc it blocks camera)
@@ -106,13 +109,20 @@ def batch_prune(target_list, overhead, rpi_check):
                     done = True
                 inc -= 50
         else:
-            #TODO add functionality to go up and down and prune
+            print("---TIME TO CALC DEPTH")
+            dsensor_adjusted = tuple((i[0] - 1.5, i[1])) #depth sensor offset
+            fb.update_action("move", (dsensor_adjusted[0] * 10, dsensor_adjusted[1] * 10,0))
+            time.sleep(5)
+            print("---DONE SLEEPING")
+            z = get_depth(fb)
+            time.sleep(3)
+            print("---Depth: ", z)
+            z = min(z, 40)
             fb.update_action("prune", None)
-            fb.update_action("move_rel", (0,0,-250))
-            fb.update_action("move_rel", (0,0, 249))
+            fb.update_action("move_rel", (0,0,(z * -10)))
+            fb.update_action("move_rel", (0,0,(z * 10)))
             fb.update_action("prune", None)
-            time.sleep(180) #modify!!!
-
+            time.sleep(180)
     # dismount_xPruner()
     # mount_nozzle()
 
@@ -156,8 +166,8 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     fb.update_action("servo", (11, 0))
 
     # Start Locationing
-    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    actual_farmbot_coords = [(165, 81)] #(178, 30), (211, 80), (235, 45),
+    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
+    # actual_farmbot_coords = [(165, 81)] #(178, 30), (211, 80), (235, 45),
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
@@ -220,7 +230,6 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             if prune_top:
                 fb.update_action("prune_scissor", None) #prune with angle
                 time.sleep(11)
-                    
             else:
                 # fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
                 # time.sleep(2)
@@ -362,7 +371,7 @@ if __name__ == "__main__":
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
     target_list = [((1391.2966780172076, 1206.2281588729174), (1293.658457019573, 1099.5493618569833))] #((1381.0725806451615, 413.9576612903227), (1151.7580645161288, 499.2399193548388)), ((751.8790322580645, 1024.1995967741937), (619.2177419354838, 1240.2479838709678)), ((504.6410966706362, 668.0000776678924), (274.1310775125562, 722.0258634080674)), 
-    print(len(target_list))
+
     batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
     ### External Pot

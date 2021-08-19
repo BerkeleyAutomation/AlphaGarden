@@ -148,7 +148,8 @@ class MyHandler:
         # convenience helpers such as `bot.position()`,
         # which returns an (x, y, z) tuple of the device's
         # last known position:
-        print("Current position: (%.2f, %.2f, %.2f)" % bot.position())
+        x = 'Do Nothing'
+        # print("Current position: (%.2f, %.2f, %.2f)" % bot.position())
 
         # A less convenient method would be to access the state
         # tree directly:
@@ -177,6 +178,7 @@ class MyHandler:
     # pending operations.
     def on_response(self, bot, response):
         print("ID of successful request: " + response.id)
+        print("Current position: (%.2f, %.2f, %.2f)" % bot.position())
 
     # If an RPC request fails (example: stalled motors, firmware
     # timeout, etc..), the `on_error` callback is called.

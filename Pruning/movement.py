@@ -42,7 +42,7 @@ def determine_error():
     ccoeff = float(lines[-1][:-1])
 
     if ccoeff > 0.4: #empirically determined
-        return [20, 10]
+        return [22, 10]
 
 
 def find_local_in_overhead(local_image, overhead_image, target):
