@@ -242,18 +242,37 @@ def remove_keypoints(points, mask, inner_thres = 10):
     [(),(),(),...]
     '''
     assert inner_thres >= 0
-    add_pts = []
+    inner_pts = []
     for point in points:
         if mask[int(point[0]),int(point[1])] != 0:
-            add_pts.append(point) 
+            inner_pts.append(tuple(point) )
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    for contour in contours:
-        for point in points:
-            dist = cv2.pointPolygonTest(contour,tuple(point.astype(int)),True)
+    contours = sorted(contours, key=lambda x: cv2.contourArea(x))
+    # bad_pt = []
+    # new_points = add_pts.copy()
+    # new_add =[]
+    respectivepts = [[(point,cv2.pointPolygonTest(contour,point[::-1],True)) for point in inner_pts if 
+                        cv2.pointPolygonTest(contour,point[::-1],True) >= 0] for contour in contours]
+    ret_pts = set()
+    for ct in respectivepts:
+        for pt, dist in ct:
+            # print(dist)
             if dist >= inner_thres:
-                add_pts.append(point)
-    print(len(add_pts), len(points))
-    return add_pts
+                ret_pts.add(pt) 
+    # bad_pt = list(set([tuple(point) for point in points]) - ret_pts)
+    # new_add = list(ret_pts)
+    # print(len(bad_pt),len(new_add))
+    # img = np.zeros((*mask.shape,3))
+    # cv2.drawContours(img, contours, -1, (0,255,0), 1)
+    # for y,x in new_add:
+    #     x,y = int(x), int(y)
+    #     cv2.rectangle(img,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
+    # for y,x in bad_pt:
+    #     x,y = int(x), int(y)
+    #     cv2.rectangle(img,(x,y),(x+2,y+2), (0,0,255),-1)
+    #             # plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/{pt}_{rc}.png',mask)
+    # cv2.imwrite(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/{random.randint(0,15000)}.jpg',img)
+    return list(ret_pts)
     
 # mask, overhead = keypoint.get_masks_and_overhead(i, mask_path=mask_path, overhead_path=overhead_path)#20101016snc-20101006
 def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False):
@@ -306,8 +325,8 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             plant_mask  = create_circular_mask(*plant[0].shape[:2], center = center//2, radius = plant[1])
             t_arr = mask_im(np.asarray(t[0]), plant_mask)
             pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant[0])
-            pts = remove_keypoints(pts,plant[3])
-            # print(pt, rc, plant[5])
+            pts = remove_keypoints(pts,plant[3],inner_thres=plant[1]*0.01)
+            # print(pt, rc, plant[5], plant[4]*2)
             if save_raw:
                 mask = np.copy(plant[0])
                 for y,x in pts:
@@ -396,8 +415,8 @@ if __name__ == "__main__":
     # print(leaf_centers)
 
     ## Generation
-    file = "snc-21081719340000"
-    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210817.p", "models/leaf_keypoints.pth")
+    file = "snc-21081119280000"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/right/priors210811.p", "models/leaf_keypoints.pth")
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     print("./target_leaf_data/data/" + file + "_unfiltered.p")
     with open("./target_leaf_data/data/" + file + "_unfiltered.p", "rb") as f:
