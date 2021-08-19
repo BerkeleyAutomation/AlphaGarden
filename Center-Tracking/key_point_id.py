@@ -248,33 +248,15 @@ def remove_keypoints(points, mask, inner_thres = 10):
             inner_pts.append(tuple(point) )
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     contours = sorted(contours, key=lambda x: cv2.contourArea(x))
-    # bad_pt = []
-    # new_points = add_pts.copy()
-    # new_add =[]
     respectivepts = [[(point,cv2.pointPolygonTest(contour,point[::-1],True)) for point in inner_pts if 
                         cv2.pointPolygonTest(contour,point[::-1],True) >= 0] for contour in contours]
     ret_pts = set()
     for ct in respectivepts:
         for pt, dist in ct:
-            # print(dist)
             if dist >= inner_thres:
                 ret_pts.add(pt) 
-    # bad_pt = list(set([tuple(point) for point in points]) - ret_pts)
-    # new_add = list(ret_pts)
-    # print(len(bad_pt),len(new_add))
-    # img = np.zeros((*mask.shape,3))
-    # cv2.drawContours(img, contours, -1, (0,255,0), 1)
-    # for y,x in new_add:
-    #     x,y = int(x), int(y)
-    #     cv2.rectangle(img,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
-    # for y,x in bad_pt:
-    #     x,y = int(x), int(y)
-    #     cv2.rectangle(img,(x,y),(x+2,y+2), (0,0,255),-1)
-    #             # plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/{pt}_{rc}.png',mask)
-    # cv2.imwrite(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/{random.randint(0,15000)}.jpg',img)
     return list(ret_pts)
-    
-# mask, overhead = keypoint.get_masks_and_overhead(i, mask_path=mask_path, overhead_path=overhead_path)#20101016snc-20101006
+
 def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False):
     '''Generates a keypoint dictionary with all the data for the overhead
     Params
@@ -326,22 +308,11 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             t_arr = mask_im(np.asarray(t[0]), plant_mask)
             pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant[0])
             pts = remove_keypoints(pts,plant[3],inner_thres=plant[1]*0.01)
-            # print(pt, rc, plant[5], plant[4]*2)
             if save_raw:
                 mask = np.copy(plant[0])
                 for y,x in pts:
                     x,y = int(x), int(y)
                     mask = cv2.rectangle(mask,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
-                # plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/{pt}_{rc}.png',mask)
-                # mask = Image.fromarray(np.copy(plant[0]))
-                # mask = np.array(mask.crop((64,64,192,192)).resize((256,256)))
-                # converted_pts = np.array([point_to_overhead(pt, (128,128), plant[0].shape[:2],
-                #                     scale=2) for pt in pts]).astype(int)
-                # for x,y in converted_pts:
-                #     x,y = int(x), int(y)
-                #     mask = cv2.rectangle(mask,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
-                # plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/big_{pt}_{rc}.png',mask)
-            
             im_size = np.array(plant[0].shape[:2])
             converted_pts = np.array([point_to_overhead(pt, plant[2], plant[0].shape[:2],
                                     scale=min(im_size/(im_size//shrink))*plant[4], orig_offset = plant[5]) for pt in pts]).astype(int)
