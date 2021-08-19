@@ -1,4 +1,5 @@
 # %%
+from math import ceil
 import cv2
 import matplotlib.pyplot as plt
 import sys
@@ -75,6 +76,9 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         :center: The center of the plant
         :radius: The radius of the plant
         :type: The type of the plant
+        :np array: Mask outlining the cut area
+        :double: The scale change between the original and scaled down
+        :tuple: The offset of the image due to a mask that was cut off
     '''
     # if key != None:
     #     key_isolated_mask = isolate_color(mask, *calculate_color_range(TYPES_TO_COLORS[key], COLOR_TOLERANCE))[0]
@@ -96,7 +100,26 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         for circle in priors[key]:
             (x, y), r,_ = circle["circle"]
             plant = masked_overhead[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]         
-            cutmask = key_isolated_mask[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]         
+            cutmask = key_isolated_mask[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]
+            imsize = ceil(RADIUS_SCALE_FACTOR*r*2)
+            
+            ## PADDING CODE:
+            ylims = np.array(max(0,int(y-RADIUS_SCALE_FACTOR*r)))
+            xlims = np.array(max(0,int(x-RADIUS_SCALE_FACTOR*r)))
+            ypads = -1*(np.array([int(y-RADIUS_SCALE_FACTOR*r)]) - ylims)[0]
+            xpads = -1*(np.array([int(x-RADIUS_SCALE_FACTOR*r)]) - xlims)[0]
+            # pad_plant = np.zeros((imsize, imsize,3)).astype(np.uint8)
+            # # print(ypads, xpads, plant.shape, ypads+plant.shape[0], xpads+plant.shape[1], pad_plant.shape)
+            # pad_plant[ypads:ypads+plant.shape[0],xpads:xpads+plant.shape[1]] = plant
+            # pad_mask = np.zeros((imsize, imsize)).astype(np.uint8)
+            # pad_mask[ypads:ypads+cutmask.shape[0],xpads:xpads+cutmask.shape[1]] = cutmask
+            # cutmask = pad_mask
+            # plant = pad_plant
+            # # print(pad_plant.shape, plant.shape, pad_plant.dtype)
+            
+            # plant = masked_overhead[int(y-small/2):int(y+small/2),int(x-small/2):int(x+small/2)]
+            # print(plant.shape, small)
+            # cutmask = key_isolated_mask[int(y-small/2):int(y+small/2),int(x-small/2):int(x+small/2)]
             if plant.shape[0] > 0 and plant.shape[1] > 0:
                 shp = np.array(plant.shape[:2]).astype(float)
                 scale = 256/max(shp)
@@ -104,7 +127,9 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
                 plant = shrink_im(plant,tuple(new_res) ,(256,256))
                 cutmask = shrink_im(cutmask,tuple(new_res) ,(256,256))
                 # plant = cv2.resize(plant, (256, 256))
-                yield plant, (x, y), r, key, cutmask, min(shp/new_res)
+                # cutmask = cv2.resize(cutmask, (256, 256))
+                yield plant, (x, y), r, key, cutmask, min(shp/new_res), (ypads/2, xpads/2)
+                #(shp, new_res)
         # return images
 
 def project_key_points(key_points, center, radius):

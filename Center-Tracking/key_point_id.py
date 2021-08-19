@@ -210,14 +210,14 @@ def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2))):
         return pts
     return recursive_cluster(norm_map,leaves_remaining-len(clusterpts), masked, pts)
 
-def point_to_overhead(point, mask_center, input_size, scale = 4*1/0.75):
+def point_to_overhead(point, mask_center, input_size, scale = 4*1/0.75, orig_offset = (0,0)):
     '''Converts a point to the overhead space
     Params
         :tuple point: array location of the point
         :tuple point: array location of the plant in overhead
         :tuple input_size: size of the input image (square)
         :double scale: factor for the point scaling
-        
+        :tuple orig_offset: offset for the original plant, in case the mask was cut off
     Return
         :tuple: point containing (x,y) coords in matplotlib format ((0,0) is top left)
 
@@ -225,16 +225,35 @@ def point_to_overhead(point, mask_center, input_size, scale = 4*1/0.75):
     >>> point_to_overhead((0,0),(0,0),(256,256))
     (-682.67,-682.67)
     '''
-    center_scale = scale*(np.array(point) - np.array(input_size)//2)
+    center_scale = scale*(np.array(point) - np.array(input_size)//2) + np.array(orig_offset)
     return center_scale[::-1] + np.array(mask_center)
 
-def remove_keypoints(points, mask, inner_thres = 1):
-    ret_pts = []
+def remove_keypoints(points, mask, inner_thres = 10):
+    '''Removes bad keypoints from a detection
+    Params
+        :tuple points: locations for the keypoints
+        :np array mask: array location of the plant in overhead
+        :float inner_thres: threshold to remove points too close to the edge of the mask
+    Return
+        :np array: array with the cleaned points list
+
+    Sample usage:
+    >>> point_to_overhead(pts, mask, 5)
+    [(),(),(),...]
+    '''
+    assert inner_thres >= 0
+    add_pts = []
     for point in points:
-        # print(mask[point[0],point[1]])
         if mask[int(point[0]),int(point[1])] != 0:
-            ret_pts.append(point)
-    return ret_pts
+            add_pts.append(point) 
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    for contour in contours:
+        for point in points:
+            dist = cv2.pointPolygonTest(contour,tuple(point.astype(int)),True)
+            if dist >= inner_thres:
+                add_pts.append(point)
+    print(len(add_pts), len(points))
+    return add_pts
     
 # mask, overhead = keypoint.get_masks_and_overhead(i, mask_path=mask_path, overhead_path=overhead_path)#20101016snc-20101006
 def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False):
@@ -277,7 +296,7 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
         size = np.array(plant[0].shape[:2])
         plant[4][np.where(plant[4] != 0)] = 1
         vals[plant[3]][f'{date}_{cut_idx}'] = [shrink_im(plant[0], tuple(size//shrink), tuple(size)), 1.5* plant[2] //shrink, plant[1], 
-                                    shrink_im(plant[4], tuple(size//shrink), tuple(size),which="L"), plant[5]]
+                                    shrink_im(plant[4], tuple(size//shrink), tuple(size),which="L"), plant[5], plant[6]]
     leaf_centers  = []
     for pt in list(vals.keys()):    
         for rc in list(vals[pt].keys()):
@@ -288,17 +307,25 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             t_arr = mask_im(np.asarray(t[0]), plant_mask)
             pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant[0])
             pts = remove_keypoints(pts,plant[3])
-            # print(pt, rc, tuple(np.array(plant[2]).astype(int)))
+            # print(pt, rc, plant[5])
             if save_raw:
                 mask = np.copy(plant[0])
                 for y,x in pts:
                     x,y = int(x), int(y)
                     mask = cv2.rectangle(mask,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
-                plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/{pt}_{rc}.png',mask)
+                # plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/{pt}_{rc}.png',mask)
+                # mask = Image.fromarray(np.copy(plant[0]))
+                # mask = np.array(mask.crop((64,64,192,192)).resize((256,256)))
+                # converted_pts = np.array([point_to_overhead(pt, (128,128), plant[0].shape[:2],
+                #                     scale=2) for pt in pts]).astype(int)
+                # for x,y in converted_pts:
+                #     x,y = int(x), int(y)
+                #     mask = cv2.rectangle(mask,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
+                # plt.imsave(f'/home/users/aeron/ag/AlphaGarden/Center-Tracking/target_leaf_data/images/big_{pt}_{rc}.png',mask)
             
             im_size = np.array(plant[0].shape[:2])
             converted_pts = np.array([point_to_overhead(pt, plant[2], plant[0].shape[:2],
-                                    scale=min(im_size/(im_size//shrink))*plant[4]) for pt in pts]).astype(int)
+                                    scale=min(im_size/(im_size//shrink))*plant[4], orig_offset = plant[5]) for pt in pts]).astype(int)
             leaf_centers.append({
                                     'plant_type':pt, 
                                     'mask_center': tuple(np.array(plant[2]).astype(int)), 
