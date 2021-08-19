@@ -99,37 +99,22 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         masked_overhead = cv2.bitwise_and(overhead, overhead, mask=key_isolated_mask)
         for circle in priors[key]:
             (x, y), r,_ = circle["circle"]
+            (yshape,xshape) = masked_overhead.shape[:2]
             plant = masked_overhead[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]         
             cutmask = key_isolated_mask[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]
-            imsize = ceil(RADIUS_SCALE_FACTOR*r*2)
             
             ## PADDING CODE:
-            ylims = np.array(max(0,int(y-RADIUS_SCALE_FACTOR*r)))
-            xlims = np.array(max(0,int(x-RADIUS_SCALE_FACTOR*r)))
-            ypads = -1*(np.array([int(y-RADIUS_SCALE_FACTOR*r)]) - ylims)[0]
-            xpads = -1*(np.array([int(x-RADIUS_SCALE_FACTOR*r)]) - xlims)[0]
-            # pad_plant = np.zeros((imsize, imsize,3)).astype(np.uint8)
-            # # print(ypads, xpads, plant.shape, ypads+plant.shape[0], xpads+plant.shape[1], pad_plant.shape)
-            # pad_plant[ypads:ypads+plant.shape[0],xpads:xpads+plant.shape[1]] = plant
-            # pad_mask = np.zeros((imsize, imsize)).astype(np.uint8)
-            # pad_mask[ypads:ypads+cutmask.shape[0],xpads:xpads+cutmask.shape[1]] = cutmask
-            # cutmask = pad_mask
-            # plant = pad_plant
-            # # print(pad_plant.shape, plant.shape, pad_plant.dtype)
-            
-            # plant = masked_overhead[int(y-small/2):int(y+small/2),int(x-small/2):int(x+small/2)]
-            # print(plant.shape, small)
-            # cutmask = key_isolated_mask[int(y-small/2):int(y+small/2),int(x-small/2):int(x+small/2)]
+            ylims = np.array([max(0,int(y-RADIUS_SCALE_FACTOR*r)),min(yshape-1,y+RADIUS_SCALE_FACTOR*r)])
+            xlims = np.array([max(0,int(x-RADIUS_SCALE_FACTOR*r)),min(xshape-1,x+RADIUS_SCALE_FACTOR*r)])
+            ypads = np.sum(-1*(np.array([int(y-RADIUS_SCALE_FACTOR*r),int(y+RADIUS_SCALE_FACTOR*r)]) - ylims))
+            xpads = np.sum(-1*(np.array([int(x-RADIUS_SCALE_FACTOR*r),int(x+RADIUS_SCALE_FACTOR*r)]) - xlims))
             if plant.shape[0] > 0 and plant.shape[1] > 0:
                 shp = np.array(plant.shape[:2]).astype(float)
                 scale = 256/max(shp)
                 new_res = (shp* scale).astype(int)
                 plant = shrink_im(plant,tuple(new_res) ,(256,256))
                 cutmask = shrink_im(cutmask,tuple(new_res) ,(256,256))
-                # plant = cv2.resize(plant, (256, 256))
-                # cutmask = cv2.resize(cutmask, (256, 256))
                 yield plant, (x, y), r, key, cutmask, min(shp/new_res), (ypads/2, xpads/2)
-                #(shp, new_res)
         # return images
 
 def project_key_points(key_points, center, radius):
@@ -147,4 +132,4 @@ def project_key_points(key_points, center, radius):
     #TODO: VERIFY IMPLEMENTATION
     X_SCALE = (2 * radius * RADIUS_SCALE_FACTOR) / 256
     Y_SCALE = (2 * radius * RADIUS_SCALE_FACTOR) / 256
-    return map(lambda p: (center[0] + X_SCALE*p[0], center[1] + Y_SCALE*p[1]), key_points)   
+    return map(lambda p: (center[0] + X_SCALE*p[0], center[1] + Y_SCALE*p[1]), key_points)
