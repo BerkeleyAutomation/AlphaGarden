@@ -66,7 +66,7 @@ def find_local_in_overhead(local_image, overhead_image, target):
     targetpx_x = round((274.66 - target[0])*11.9) + 102
     targetpx_y = round(target[1] * 11.9) + 72
 
-    error = determine_error()
+    error = [44, 20]#determine_error()
 
     best_sf = 1
     best_max_val = 0
@@ -240,7 +240,7 @@ def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
     coord_y = target_point[1]
     previous_points = []
     count = 0
-    while ((np.linalg.norm(np.array(target_point) - np.array(curr_pos)) > epsilon) and count <= 6): #add 6 iteration limit, average last three
+    while ((np.linalg.norm(np.array(target_point) - np.array(curr_pos)) > epsilon) and count <= 5): #add 6 iteration limit, average last three
         curr_x, curr_y  = curr_pos[0], curr_pos[1]
         diff_x = int(target_point[0] - curr_x)
         diff_y = int(target_point[1] - curr_y)  #increment with a vector
@@ -290,7 +290,6 @@ def crop_o_px_to_cm(x_px, y_px):
     #convert pixel to cm in overhead image with set scale factor of 11.9
     pred_pt = (round(274.66 - (x_px - 102)/11.9), round((y_px - 72)/11.9))
     return pred_pt
-
 
 def curr_pos_from_local(fb, overhead_image, target):
     cwd = os.getcwd()

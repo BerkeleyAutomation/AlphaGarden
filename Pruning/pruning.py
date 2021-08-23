@@ -166,8 +166,8 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     fb.update_action("servo", (11, 0))
 
     # Start Locationing
-    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    # actual_farmbot_coords = [(165, 81)] #(178, 30), (211, 80), (235, 45),
+    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
+    actual_farmbot_coords = [(251, 50), (207, 97), (234, 27)]
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 8 #cm from top of farmbot
 
@@ -189,7 +189,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         z = get_depth(fb)
         time.sleep(2)
         print("---Depth: ", z)
-        z = min(z, 40)
+        z = min(z, 35)
 
         fb.update_action("move_rel", (15, 0,0)) #reset to account for depth sensor
 
@@ -237,12 +237,15 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
                 time.sleep(11)
                 fb.update_action("move_rel", (0, 0, (z * 10) - 30.5))#move to z position from the depth sensor after setting up the scissors
                 time.sleep(90)
-            done, curr_rpi = prune_check_sensor(fb, i, curr_rpi, z, cur_point, dsensor_adjusted, scissors_offset)
-            if done:
-                continue
-            z = reposition_scissors(fb, k, scissors_offset, cur_point)
-            i += 1
-        print("--COMPLETE")
+                done = True
+            # done, curr_rpi = prune_check_sensor(fb, i, curr_rpi, z, cur_point, dsensor_adjusted, scissors_offset)
+            # print("---DONE: ", done)
+            # retry = input("==== enter y to continue")
+        #     if True: #retry == 'y':
+        #         continue
+        #     z = reposition_scissors(fb, k, scissors_offset, cur_point)
+        #     i += 1
+        # print("--COMPLETE")
     return None
 
 def reposition_scissors(fb, k, scissors_offset, rpi_pos):
@@ -370,10 +373,10 @@ if __name__ == "__main__":
 
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    # target_list = [((1391.2966780172076, 1206.2281588729174), (1293.658457019573, 1099.5493618569833))] #((1381.0725806451615, 413.9576612903227), (1151.7580645161288, 499.2399193548388)), ((751.8790322580645, 1024.1995967741937), (619.2177419354838, 1240.2479838709678)), ((504.6410966706362, 668.0000776678924), (274.1310775125562, 722.0258634080674)), 
-
-    # batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
+    target_list = [((214.38507907862743, 866.1944632428504), (155.10643657417847, 869.6814422137002)), ((834.7609671942603, 1366.2293937236427), (663.327701407525, 1524.3289610602988)), ((545.2292294211072, 554.7786023330959), (413.7970589846102, 410.0127334465194))]
+    print(len(target_list))
+    batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
     ### External Pot
-    potted_plant_manual(args.overhead)
+    # potted_plant_manual(args.overhead)
     

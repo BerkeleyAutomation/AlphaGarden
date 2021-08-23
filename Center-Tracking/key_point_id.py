@@ -369,7 +369,7 @@ if __name__ == "__main__":
     # print(leaf_centers)
 
     ## Generation
-    file = "snc-21081719340000"
+    file = "snc-21082219060000"
     leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210817.p", "models/leaf_keypoints.pth")
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     print("./target_leaf_data/data/" + file + "_unfiltered.p")
