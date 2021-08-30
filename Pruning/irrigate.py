@@ -74,13 +74,15 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     sectors_fb = []
     for i in sectors:
         if (i[0] + i[1]) not in sim2FB.keys() and side == 'r':
+            print("MISSED")
             sectors_fb.append((int((150 - i[0])*ratio_x), int((150 - i[1])*ratio_y)))
         elif (i[0] + i[1]) not in sim2FB.keys() and side == 'l':
+            print("MISSED")
             sectors_fb.append((int(i[0]*ratio_x+1373.3), int((150 - i[1])*ratio_y)))
         else:
             sectors_fb.append((sim2FB[i[0] + i[1]][0], sim2FB[i[0] + i[1]][1]))
 
-    # sectors_fb = [(sim2FB[i[0] + i[1]][0], sim2FB[i[0] + i[1]][1]) for i in sectors]
+    sectors_fb = [i for i in sim2FB.values()]
     sorted_sectors_fb = sorted(sectors_fb, key=lambda x: x[0])#sectors sorted by increasing x
     print(sorted_sectors_fb)
     for i in sorted_sectors_fb:
@@ -121,7 +123,7 @@ if __name__ == "__main__":
         sim2FB = {45.0: (1501, 993), 40.0: (1593, 1119), 108.0: (1593, 551), 82.0: (1620, 793), 150.0: (1684, 283), 91.0: (1885, 960), 185.0: (1968, 250), 142.0: (2142, 768), 114.0: (2197, 1052), 225.0: (2197, 125), 191.0: (2233, 442), 134.0: (2435, 1102), 194.0: (2481, 643), 242.0: (2481, 242), 156.0: (2600, 1069), 173.0: (2627, 952)}
     else:
         print("----ERROR, specify 'r' or 'l'")
-
+    
     watergrid_oneday_lookahead(sim2FB, f)
 
 

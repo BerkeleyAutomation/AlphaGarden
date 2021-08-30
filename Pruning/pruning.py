@@ -167,9 +167,9 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
 
     # Start Locationing
     # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    actual_farmbot_coords = [(251, 50), (207, 97), (234, 27)]
+    actual_farmbot_coords = [(246, 58), (198, 6), (234, 1), (154, 94), (187, 43)]
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
-    height_fb_clearance = 8 #cm from top of farmbot
+    height_fb_clearance = 10 #cm from top of farmbot
 
     for cur_point, angle, k in zip(actual_farmbot_coords, angles, k_arr):
         # Reset to good position
@@ -184,7 +184,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         print("---TIME TO CALC DEPTH")
         dsensor_adjusted = tuple((cur_point[0] - 1.5, cur_point[1])) #depth sensor offset
         fb.update_action("move", (dsensor_adjusted[0] * 10, dsensor_adjusted[1] * 10,0))
-        time.sleep(40)
+        time.sleep(50)
         print("---DONE SLEEPING")
         z = get_depth(fb)
         time.sleep(2)
@@ -195,11 +195,10 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
 
         time.sleep(10)
         curr_rpi = recent_rpi_photo(fb) #name of rpi image of current state
-
+        
         scissors_offset = (sci_rad*math.cos(angle*math.pi/180) + 2, -1 *sci_rad*math.sin(angle*math.pi/180) - 1) #scissor offset
         print("---Scissor offset: ", (scissors_offset[0] * 10, scissors_offset[1]*10,0))
-        fb.update_action("move_rel", (scissors_offset[0] * 10, scissors_offset[1]*10,0)) #perform scissors offset
-        
+
         prune_top = False
         if z < height_fb_clearance:
             prune_top = True
@@ -207,16 +206,24 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             response = input("===== Enter 'n' if you don't want to prune top.")
             if response == 'n':
                 prune_top = False
+                fb.update_action("move_rel", (scissors_offset[0] * 10, scissors_offset[1]*10,0)) #perform scissors offset
+        else:
+            scissors_offset = (sci_rad*math.cos(angle*math.pi/180) + 2, -1 *sci_rad*math.sin(angle*math.pi/180) - 1) #scissor offset
+            fb.update_action("move_rel", (scissors_offset[0] * 10, scissors_offset[1]*10,0)) #perform scissors offset
 
         response = input("===== Enter 'y' when READY to prune.")
 
-        if prune_top: #FIX - add orientation
-            fb.update_action("move_rel", (0, -100, 0))#move to z position from the depth sensor after setting up the scissors
-            time.sleep(15)
-            fb.update_action("move_rel", (0, 0, (z * -10)))#move to z position from the depth sensor after setting up the scissors
-            time.sleep(20)
-            fb.update_action("move_rel", (0, 100, 0))#move to z position from the depth sensor after setting up the scissors
-            time.sleep(15)
+        if prune_top: 
+            fb.update_action("servo", (6, 101)) # Ordinary Scissor cut
+            time.sleep(1)
+            fb.update_action("servo", (11, 70))
+            time.sleep(1)
+            fb.update_action("move_rel", (200, -180, 0))
+            time.sleep(25)
+            fb.update_action("move_rel", (0, 0, (z * -10)+30))#move to z position from the depth sensor after setting up the scissors
+            time.sleep(30)
+            fb.update_action("move_rel", (-200, 180, 0))
+            time.sleep(25)
         else:
             fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
             time.sleep(2)
@@ -228,8 +235,11 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
         i = 0 #counter for number of times repositioned scissors for same cut
         while (done == False and i < 2):  #change iteration threshold
             if prune_top:
-                fb.update_action("prune_scissor", None) #prune with angle
+                fb.update_action("prune_scissor", None)
                 time.sleep(11)
+                fb.update_action("move_rel", (0, 0, (z * 10)- 30.5))#move to z position from the depth sensor after setting up the scissors
+                time.sleep(20)
+                done = True
             else:
                 # fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
                 # time.sleep(2)
@@ -373,7 +383,7 @@ if __name__ == "__main__":
 
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    target_list = [((214.38507907862743, 866.1944632428504), (155.10643657417847, 869.6814422137002)), ((834.7609671942603, 1366.2293937236427), (663.327701407525, 1524.3289610602988)), ((545.2292294211072, 554.7786023330959), (413.7970589846102, 410.0127334465194))]
+    target_list = [((45.29328505595777, 764.53952600395), (155.19716919025666, 741.6428834759711)), ((633.7369980250162, 98.24722843976315), (697.8475971033572, 139.46118499012528)), ((525.4072580645161, 138.53387096774168), (353.61088709677415, 219.17298387096753)), ((1352.8346774193546, 1509.3987903225802), (1293.2318548387095, 1456.8080645161285)), ((1322.3791526239768, 425.4228213769861), (1106.36470871, 571.106981277))]
     print(len(target_list))
     batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 
