@@ -197,7 +197,7 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
         if i % sector_obs_per_day == 0:
             current_day = int(i/sector_obs_per_day) + 1
             print("Day {}/{}".format(current_day, 100))
-            vis.get_canopy_image_full(False, vis_identifier, current_day)
+            # vis.get_canopy_image_full(False, vis_identifier, current_day)
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
         cc_vec = env.get_global_cc_vec()

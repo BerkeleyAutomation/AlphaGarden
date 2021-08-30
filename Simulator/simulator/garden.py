@@ -305,13 +305,13 @@ class Garden:
                 watered_sectors.append(sectors[i])
 
 
-        save_sectors(watered_sectors, self.timestep) #saves watered sectors for auto irrigation
+        # save_sectors(watered_sectors, self.timestep) #saves watered sectors for auto irrigation
 
-        save_water_grid(np.squeeze(self.water_grid), self.timestep, "", None, True, "_1after_watering")
+        # save_water_grid(np.squeeze(self.water_grid), self.timestep, "", None, True, "_1after_watering")
 
         self.distribute_light()
         self.distribute_water()
-        save_water_grid(np.squeeze(self.water_grid), self.timestep, "_2after_evap", np.squeeze(self.grid['last_watered']))
+        # save_water_grid(np.squeeze(self.water_grid), self.timestep, "_2after_evap", np.squeeze(self.grid['last_watered']))
         self.grow_plants()
         self.performing_timestep = True
 
