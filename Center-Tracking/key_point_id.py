@@ -72,7 +72,7 @@ def find_point_clusters(points, thresh, name = 1):
 
 
 transf = transforms.Compose([transforms.Resize((256,256)),transforms.ToTensor()])
-def init_model(model_path= 'weights/borage_clean_CVPPP_Overhead-split.pth'):
+def init_model(model_path= 'weights/borage_clean_CVPPP_Overhead-split.pth', cuda_device = 'cuda'):
     '''Initialize the Model
     Params
         :string model_path: .pth location for the model
@@ -85,12 +85,12 @@ def init_model(model_path= 'weights/borage_clean_CVPPP_Overhead-split.pth'):
     CountEstimate class instance
     '''
     komatsuna_leaf_count = mdl.CountEstimate()
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(cuda_device if torch.cuda.is_available() else 'cpu')
     komatsuna_leaf_count.load_state_dict(torch.load(model_path, map_location=device))
     print(device)
     komatsuna_leaf_count.to(device)
     return komatsuna_leaf_count
-def eval_image(img_arr, model, transf = transf):
+def eval_image(img_arr, model, transf = transf, device = 0):
     '''Apply the model on the image
     Params
         :numpy arr image_arr: image to apply model on
@@ -108,7 +108,7 @@ def eval_image(img_arr, model, transf = transf):
     '''
     img_arr = Image.fromarray(img_arr)
     if next(model.parameters()).is_cuda:
-        y_hat,_ = model(transf(img_arr).unsqueeze(0).cuda())
+        y_hat,_ = model(transf(img_arr).unsqueeze(0).cuda(device))
     else:
         y_hat,_ = model(transf(img_arr).unsqueeze(0).cpu())
     return y_hat[0,0].cpu().detach().numpy(), y_hat
@@ -178,7 +178,7 @@ def mask_im(im, mask):
     t2[~mask] = 0
     return t2
     
-def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2))):
+def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), thres = 0.3):
     '''Recursively Cluster the heatmap
     Params
         :numpy arr heatmap: heatmap output from the model
@@ -196,14 +196,15 @@ def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2))):
     if leaves_remaining <= 0:
         return pts
     norm_map = (heatmap-np.min(heatmap))/(np.max(heatmap)-np.min(heatmap))
-    pointmap = np.array(list(zip(*np.where(norm_map > 0.3))))
+    pointmap = np.array(list(zip(*np.where(norm_map > thres))))
     clusterdata = find_point_clusters(pointmap,7)
     clusterpts = (clusterdata[0]).copy()
     for pt in clusterdata[0]:
         test_mask  = create_circular_mask(*heatmap.shape[:2], center = pt, radius = 7, area_scale=1)
         norm_map[np.argwhere(test_mask == 1)] = 0 
         pt2 = pt.astype(int)
-        if tuple(masked[pt2[0],pt2[1]]) == (0,0,0):
+        # print(tuple(masked[pt2[0],pt2[1]]),tuple(masked[pt2[1],pt2[0]]) )
+        if tuple(masked[pt2[1],pt2[0]]) == (0,0,0):
             clusterpts = np.delete(clusterpts,np.argwhere(clusterpts == pt)[:,0],axis=0)
     pts = np.vstack((pts,clusterpts))
     if len(clusterpts) == 0:
@@ -310,7 +311,7 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             pts = remove_keypoints(pts,plant[3],inner_thres=plant[1]*0.01)
             if save_raw:
                 mask = np.copy(plant[0])
-                for y,x in pts:
+                for x,y in pts:
                     x,y = int(x), int(y)
                     mask = cv2.rectangle(mask,(x-1,y-1),(x+1,y+1), (255,255,255),-1)
             im_size = np.array(plant[0].shape[:2])

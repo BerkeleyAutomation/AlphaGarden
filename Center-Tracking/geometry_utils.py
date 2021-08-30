@@ -6,7 +6,7 @@ def sq_distance(p1, p2):
 
 
 def distance(p1, p2):
-    '''returns the squared distance between two points'''
+    '''returns the euclidean distance between two points'''
     return sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 

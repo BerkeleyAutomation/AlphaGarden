@@ -11,7 +11,6 @@ sys.path.insert(1, '..')
 from full_auto_utils import *
 from constants import *
 from center_constants import *
-from key_point_id import shrink_im
 
 TYPES_TO_COLORS = {
     "other":[0,0,0],
@@ -80,6 +79,7 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         :double: The scale change between the original and scaled down
         :tuple: The offset of the image due to a mask that was cut off
     '''
+    from key_point_id import shrink_im
     # if key != None:
     #     key_isolated_mask = isolate_color(mask, *calculate_color_range(TYPES_TO_COLORS[key], COLOR_TOLERANCE))[0]
     #     key_isolated_mask = (cv2.cvtColor(key_isolated_mask, cv2.COLOR_RGB2GRAY)).astype(np.uint8)
