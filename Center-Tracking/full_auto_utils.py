@@ -8,6 +8,13 @@ import pickle as pkl
 import os
 from PIL import Image
 import imageio
+from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, IRR_THRESHOLD 
+from simulator.plant_type import PlantType
+from simulator.garden_state import GardenState
+from simulator.garden import Garden
+import numpy as np
+import cv2
+import pickle
 
 ############################
 ######### Utility ##########
@@ -30,6 +37,92 @@ def logifunc_fix_a(x, k, R):
 
 def inv_logifunc_fix_a(y, k , r):
     return (np.log(r-y) - np.log(y(r-1))) / -k
+
+
+''' From garden.py '''
+def compute_growth_map():
+    growth_map = []
+    for i in range(max(COLS, ROWS) // 2 + 1):
+        for j in range(i + 1):
+            points = set()
+            points.update(((i, j), (i, -j), (-i, j), (-i, -j), (j, i), (j, -i), (-j, i), (-j, -i)))
+            growth_map.append((STEP ** 0.5 * np.linalg.norm((i, j)), points))
+    growth_map.sort(key=lambda x: x[0])
+    return growth_map
+
+def add_plant(plant, id, plants, plant_types, plant_locations, grid, plant_grid, leaf_grid):
+    """ Add plants to garden's grid locations.
+    Args:
+        plant: Plants objects for Garden.
+    """
+    if (plant.row, plant.col) in plant_locations:
+        print(
+            f"[Warning] A plant already exists in position ({plant.row, plant.col}). The new one was not planted.")
+    else:
+        plant.id = id
+        plants[plant_types.index(plant.type)][plant.id] = plant
+        plant_locations[plant.row, plant.col] = True
+        grid[plant.row, plant.col]['nearby'].add((plant_types.index(plant.type), plant.id))
+        plant_grid[plant.row, plant.col, plant_types.index(plant.type)] = 1
+        leaf_grid[plant.row, plant.col, plant_types.index(plant.type)] += 1
+
+def enumerate_grid(grid):
+    for i in range(0, len(grid)):
+        for j in range(len(grid[i])):
+            yield (grid[i, j], (i, j))
+                    
+def compute_plant_health(grid, grid_shape, plants):
+    """ Compute health of the plants at each grid point.
+    Args:
+        grid_shape (tuple of (int,int)): Shape of garden grid.
+    Return:
+        Grid shaped array (M,N) with health state of plants.
+    """
+    plant_health_grid = np.empty(grid_shape)
+    for point in enumerate_grid(grid):
+        coord = point[1]
+        if point[0]['nearby']:
+
+            tallest_height = -1
+            tallest_plant_stage = 0
+            tallest_plant_stage_idx = -1
+
+            for tup in point[0]['nearby']:
+                plant = plants[tup[0]][tup[1]]
+                if plant.height > tallest_height:
+                    tallest_height = plant.height
+                    tallest_plant_stage = plant.stages[plant.stage_index]
+                    tallest_plant_stage_idx = plant.stage_index
+
+            if tallest_plant_stage_idx in [-1, 3, 4]:
+                plant_health_grid[coord] = 0
+            elif tallest_plant_stage_idx == 0:
+                plant_health_grid[coord] = 2
+            elif tallest_plant_stage_idx in [1, 2]:
+                if tallest_plant_stage.overwatered:
+                    plant_health_grid[coord] = 3
+                elif tallest_plant_stage.underwatered:
+                    plant_health_grid[coord] = 1
+                else:
+                    plant_health_grid[coord] = 2
+
+    return plant_health_grid
+
+def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows, prune_win_cols, step, prune_rate):
+    garden = Garden(
+               garden_state=garden_state,
+                N=rows,
+                M=cols,
+                sector_rows=sector_row,
+                sector_cols=sector_col,
+                prune_window_rows=prune_win_rows,
+                prune_window_cols=prune_win_cols,
+                irr_threshold=IRR_THRESHOLD,
+                step=step,
+                prune_rate = prune_rate,
+                animate=False)
+    return garden
+
 
 
 # sides : b, l, r -> both, left, right
@@ -172,11 +265,76 @@ def get_model_coeff(model_type: str, plant_name: str = '') -> list:
         raise KeyError("Key "+plant_name+" not a valid plant type")
     return m[plant_name]
 
+def cm_circles_to_sim_garden_state(real_path, timestep):
+    real_data = pickle.load(open(real_path, "rb"))
+    plant_type = PlantType()
+    plant_types = plant_type.plant_names
+    plant_objs = plant_type.get_plant_seeds(0, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS,
+                                            start_from_germination=False, existing_data=real_data,
+                                            timestep=timestep)
+
+    plants = [{} for _ in range(len(plant_types))]
+
+    grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
+    grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape)
+    grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int)
+
+    for i in range(ROWS):
+        for j in range(COLS):
+            grid[i, j]['nearby'] = set()
+
+    plant_grid = np.zeros((ROWS, COLS, len(plant_types)))
+
+    plant_prob = np.zeros((ROWS, COLS, 1 + len(plant_types)))
+
+    leaf_grid = np.zeros((ROWS, COLS, len(plant_types)))
+
+    plant_locations = {}
+
+    id_ctr = 0
+    for plant in plant_objs:
+        add_plant(plant, id_ctr, plants, plant_types, plant_locations, grid, plant_grid, leaf_grid)
+        id_ctr += 1
+        
+    grid['health'] = compute_plant_health(grid, grid['health'].shape, plants)
+
+    growth_map = compute_growth_map()
+
+    radius_grid = np.zeros((ROWS, COLS, 1))
+    for p_type in real_data:
+        for plant in real_data[p_type]:
+            r, c = plant[0]
+            radius = plant[1]
+            radius_grid[r, c, 0] = radius 
+
+    garden_state = GardenState(plants, grid, plant_grid, plant_prob, leaf_grid, plant_type,
+                            plant_locations, growth_map, radius_grid, timestep, existing_data=True)
+    return garden_state
+
+def query_sim_radius_range(circle_path, timestep):
+    garden_state = cm_circles_to_sim_garden_state(circle_path, timestep)
+    max_garden = Garden(garden_state=garden_state, init_water_mean=1, init_water_scale=0)
+    max_garden.distribute_light()
+    max_garden.distribute_water()
+    max_garden.grow_plants()
+    x_cm_to_pix = 1/(282/3478)
+    # y_cm_to_pix = 1/(133/1630)
+    radius_conversion_factor = x_cm_to_pix
+    # print(min_garden.get_plant_grid_full())
+    radius_dict = {}
+    for max_d in max_garden.plants:
+        for max_plant in max_d.values():
+            # print(max_plant.type, max_plant.radius*radius_conversion_factor, (max_plant.row, max_plant.col))
+            radius_dict[max_plant.type] = radius_dict.get(max_plant.type, []) + [(max_plant.radius*radius_conversion_factor, (max_plant.row, max_plant.col))]
+    return {type: sorted(radius_dict[type], key=lambda tup: tup[0]) for type in radius_dict.keys()}
+        
+
 
 def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwargs) -> tuple:
     plant_type = kwargs.get("type", "kale")
     if day == 0:
         return (0, 10)
+    
     MAX_DIAMETER = {
         "arugula": 500,
         "borage": 500,
@@ -226,14 +384,14 @@ def crop_img(path):
     return TEST_PATH+"/"+path
 
 
-def daily_files(path, filtered = True):
+def daily_files(path, filtered = True, prefix=None):
     ''' returns a list of the first image taken each day in the given folder'''
     file_list = os.listdir(path)
     list.sort(file_list)
     #Only keep files from the same days
     copy_file_list = file_list[:]
     i = 0
-    label_prefix = file_list[0].find("-") + 1
+    label_prefix = max(file_list[0].find("-") + 1, file_list[-1].find("-") + 1)
     DATE_LENGTH = 6
     while i < len(copy_file_list) and filtered:
         curPrefix = copy_file_list[i][:label_prefix + DATE_LENGTH]
@@ -263,7 +421,7 @@ def make_gif(img_path, save_path, **kwargs):
 def not_black(point, img_arr):
     '''Checks that a pixel isn't black'''
     rgb = img_arr[int(point[1])][int(point[0])]
-    return rgb[0] > 100 or rgb[1] > 100 or rgb[2] > 100
+    return rgb[0] > 50 or rgb[1] > 50 or rgb[2] > 50
 
 def valid_point(point, img_arr, visited = set()):
     '''helper function for find_color'''

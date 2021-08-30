@@ -29,6 +29,8 @@ def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w", si
         folder = 'right/'
     elif side == 'l':
         folder = 'left/'
+    else: 
+        folder = "testing/"
 
     img, img_arr = get_img(path)
     fig, ax = plt.subplots()

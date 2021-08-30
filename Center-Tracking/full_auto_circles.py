@@ -6,9 +6,7 @@ from center_constants import *
 from full_auto_utils import *
 from run import *
 import numpy as np
-import pickle as pkl
-import traceback
-# from constants import *
+from constants import *
 from tqdm import tqdm
 
 
@@ -17,24 +15,27 @@ from tqdm import tqdm
 ############################
 
 
-def label_circles_BFS(path, show_res=False, side=None):
+def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day=None, prior_path=None):
     print("BFS Fit for: "+path)
-    priors = get_recent_priors(path=PRIOR_PATH, side=side)
+    priors = get_recent_priors(prior_path)[1] if prior_path else get_recent_priors(path=PRIOR_PATH, side=side)
     new_circles = {plant_type: [] for plant_type in priors.keys()}
+    use_sim = sim_circle_path != None and day != None
+    if use_sim:
+        max_radius_dict = query_sim_radius_range(sim_circle_path, day)
     # Iterate over each plant type
     for plant_type in tqdm(priors.keys()):
         old_circles = priors[plant_type]
         # Get radius models
         rad_models = (get_model_coeff("min", plant_type),
                       get_model_coeff("max", plant_type))
-        for circle in old_circles:
+        for idx, circle in enumerate(sorted(old_circles, key=lambda p: p["circle"][1])):
             # circle = {"circle":circle, "days_post_germ": 10}
             new_c = {}
             center = circle["circle"][0]
             center = (round(center[0]), round(center[1]))
             prev_rad = circle["circle"][1]
             day = circle["days_post_germ"]+1
-            min_rad, max_rad = get_radius_range(day, prev_rad, rad_models)
+            min_rad, max_rad = 50, max(55, max_radius_dict[plant_type.replace("-","_")][idx][0]*.9) if use_sim else get_radius_range(day, prev_rad, rad_models)
             try:
                 c, max_p = bfs_circle(path, center, max_rad, min_rad, plant_type, side=side, taken_circles=new_circles[plant_type])
                 r = abs(distance(c, max_p))
@@ -43,11 +44,23 @@ def label_circles_BFS(path, show_res=False, side=None):
                 #TODO ADD WILTING LOGIC
                 if day > 10:
                     # prev_rad = radial_wilt(prev_rad)
-                    print("")
+                    "pass"
                 r, c, max_p = abs(prev_rad), center, (center[0]+prev_rad, center[1])
                 # print("Zero div at: " + str(c))
             if day > r:
                 r = 0
+            if r <= prev_rad*.9:
+                r = prev_rad*.9
+            if r*.7 > prev_rad:
+                r = prev_rad*1.1
+            if distance(center, c) > 50:
+                direction_vec = [c[i] - center[i] for i in range(2)]
+                direction_vec = direction_vec / np.linalg.norm(direction_vec)
+                # Solve for moving the original point 50 units in the direction of the new vector.
+                # As long as the vector is normalized the answer is 5*root2, and independent of the vectors
+                # pretty neat! 
+                scale_factor = 5*sqrt(2)
+                c = [c[i] + scale_factor*direction_vec[i] for i in range(2)]
             new_c["circle"], new_c["days_post_germ"] = (c, r, max_p), day
             # computed_type = COLORS_TO_TYPES[find_color(c, get_img(path)[1])[0]]
             new_circles[plant_type].append(new_c)
@@ -110,7 +123,8 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False, sid
     mask_path = get_img_seg_mask(id_)
     # mask_path = "./post_process/"+id_+".png"
     print("Labeling circles: "+ mask_path)
-    return label_circles_BFS(mask_path, True, side)
+    day = pickle.load(open("./timestep.p", "rb"))
+    return label_circles_BFS(mask_path, True, side, day=day,sim_circle_path="./current_dic_"+side)
 
 if __name__ == "__main__":
 #     print("=" * 20)
@@ -119,5 +133,9 @@ if __name__ == "__main__":
 #     print("Using Segmentation Model: {}".format(TEST_MODEL))
 #     print("Combining images via: {}".format(SHIFT))
 #     print("=" * 20)
-    for f in daily_files("./cropped"):
-        process_image("cropped/" + f, True, True)
+    real_circles_paths = ["./circles/right/" + f for f in daily_files("./circles/right", False)[33:]]
+    priors_paths =  ["./priors/right/" + f for f in daily_files("./priors/right", False)[33:]]
+    for day, f in enumerate(daily_files("./post_process")[34:]):
+        print(f,real_circles_paths[day], priors_paths[day])
+        label_circles_BFS("post_process/" + f, side="r", show_res=True, day=day+33,sim_circle_path=real_circles_paths[day], prior_path=priors_paths[day])
+        
