@@ -828,15 +828,15 @@ class Garden:
                 non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
         for plant in non_occluded_plants:
             # #For auto pruning
-            time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
-            print("TIME: ", time, self.timestep == time)
-            print(plant.type, (plant.row, plant.col), plant.row + plant.col)
-            if self.timestep == time or self.timestep == time + 1: #REMOVE DAYS
-                curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
-                if (plant.row + (2 * plant.col)) not in curr_l:
-                    print(plant.row + 2 * plant.col)
-                    curr_l.append(plant.row + 2*plant.col)
-                    pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
+            # time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+            # print("TIME: ", time, self.timestep == time)
+            # print(plant.type, (plant.row, plant.col), plant.row + plant.col)
+            # if self.timestep == time or self.timestep == time + 1: #REMOVE DAYS
+            #     curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
+            #     if (plant.row + (2 * plant.col)) not in curr_l:
+            #         print(plant.row + 2 * plant.col)
+            #         curr_l.append(plant.row + 2*plant.col)
+            #         pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
             #end auto pruning
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
