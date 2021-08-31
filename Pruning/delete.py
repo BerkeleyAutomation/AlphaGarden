@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # _ = plt.plot(xp, p(xp))
     # plt.show()
     fb = FarmBotThread()
-    fb.update_action("prune_scissor", None) #prune with angle
+    fb.update_action("water", None) #prune with angle
 
     # fb.update_action('read_pin', 8)
     # time.sleep(3)

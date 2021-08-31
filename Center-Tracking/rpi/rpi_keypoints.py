@@ -31,7 +31,7 @@ def fit_image_mask(image, mask):
 
 def find_points(img, device = 1):
     t = kp.eval_image(img,model, device = device)
-    pts = kp.recursive_cluster(t[0],round(t[1].sum().item()),img)
+    pts = kp.recursive_cluster(t[0],round(t[1].sum().item()),img, flip_coords=True)
     return pts
 
 

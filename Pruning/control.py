@@ -68,7 +68,7 @@ class MyHandler:
         if self.action == 'move':
             if isinstance(self.coords, list):
                 for i in self.coords:
-                    request_id = self.bot.move_absolute(x=min(i[0], 2715), y=min(i[1], 1200), z=i[2])
+                    request_id = self.bot.move_absolute(x=max(0, min(i[0], 2715)), y=max(0, min(i[1], 1200)), z=i[2])
                     print("MOVE_ABS REQUEST ID: " + request_id)
             else:
                 x, y, z = self.coords[0], self.coords[1], self.coords[2]

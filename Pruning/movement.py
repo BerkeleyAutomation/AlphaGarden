@@ -240,7 +240,7 @@ def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
     coord_y = target_point[1]
     previous_points = []
     count = 0
-    while ((np.linalg.norm(np.array(target_point) - np.array(curr_pos)) > epsilon) and count <= 5): #add 6 iteration limit, average last three
+    while ((np.linalg.norm(np.array(target_point) - np.array(curr_pos)) > epsilon) and count <= 3): #add 6 iteration limit, average last three
         curr_x, curr_y  = curr_pos[0], curr_pos[1]
         diff_x = int(target_point[0] - curr_x)
         diff_y = int(target_point[1] - curr_y)  #increment with a vector
