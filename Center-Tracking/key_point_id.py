@@ -178,13 +178,15 @@ def mask_im(im, mask):
     t2[~mask] = 0
     return t2
     
-def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), thres = 0.3):
+def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), thres = 0.3, flip_coords = False):
     '''Recursively Cluster the heatmap
     Params
         :numpy arr heatmap: heatmap output from the model
         :int leaves_remaining: number of leaves remaining to find
         :numpy arr masked: the masked plant image from the segmentation mask
         :numpy arr pts: all the discovered points so far
+        :double thres: threshold for clustering
+        :bool flip_coords: whether to swap x/y for the black point checking
         
     Return
         :numpy arr: array of keypoints from the heatmap, cv2 style
@@ -204,7 +206,8 @@ def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), 
         norm_map[np.argwhere(test_mask == 1)] = 0 
         pt2 = pt.astype(int)
         # print(tuple(masked[pt2[0],pt2[1]]),tuple(masked[pt2[1],pt2[0]]) )
-        if tuple(masked[pt2[1],pt2[0]]) == (0,0,0):
+        check = tuple(masked[pt2[0],pt2[1]]) if not flip_coords else tuple(masked[pt2[1],pt2[0]])
+        if check == (0,0,0):
             clusterpts = np.delete(clusterpts,np.argwhere(clusterpts == pt)[:,0],axis=0)
     pts = np.vstack((pts,clusterpts))
     if len(clusterpts) == 0:
