@@ -1,3 +1,5 @@
+from keras.optimizers import get
+from numpy.core.defchararray import center
 from plant_to_circle import *
 from geometry_utils import *
 # from centers_test import *
@@ -498,3 +500,42 @@ def radial_wilt(cur_rad, **kwargs):
     eps = 0 if cur_rad else 10e-10
     wilting_factor = (final_radius / (cur_rad + eps)) ** (1 / duration)
     return cur_rad + ((wilting_factor - 1) * cur_rad)
+
+def make_graphic_for_paper(prior_pathes, image_pathes, use_color=True):
+    priors = [get_recent_priors(path) for path in prior_pathes]
+    assert len(priors) == len(image_pathes)
+    for circles, image in zip(priors, image_pathes):
+        circles = circles[1]
+        centers, radii, colors = [], [], []
+        for color in COLORS_TO_TYPES.keys():
+            type = COLORS_TO_TYPES[color]
+            if type not in circles:
+                continue
+            c = circles[type]
+            cur_cen, cur_rad = [], []
+            for circ in c:
+                c, rad, _ = circ["circle"]
+                cur_cen.append(c)
+                cur_rad.append(rad) 
+            centers.append(cur_cen)
+            radii.append(cur_rad)
+            colors.append(color if use_color else [256,256,256])
+        draw_circle_sets(image, centers, radii, colors)
+
+def crop_left_half(image_paths):
+    # cropped = []
+    for i, img_path in enumerate(image_paths):
+        img, img_arr = get_img(img_path)
+        height, width, channels = img.shape
+        croppedImage = img[0:height, int(width/2)-10:width] #this line crops
+        plt.imsave("figures/"+img_path[img_path.find("r/")+1:], croppedImage)
+
+
+if __name__ == "__main__":
+    priors = ["priors/right/priors210725.p", "priors/right/priors210805.p", "priors/right/priors210815.p"]
+    masks = ["post_process/snc-21072508141400.png", "post_process/snc-21080508141400.png", "post_process/snc-21081508141400.png"]
+    real_images =  ["cropped/snc-21072508141400.jpg", "cropped/snc-21080508141400.jpg", "cropped/snc-21081508141400.jpg"]
+
+    # make_graphic_for_paper(priors, real_images)
+    # make_graphic_for_paper(priors, masks, False)
+    crop_left_half(["./figures/for_paper/" + f for f in daily_files("./figures/for_paper") if f[-3:] != "jpg"])

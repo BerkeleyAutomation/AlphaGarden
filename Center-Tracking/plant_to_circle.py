@@ -49,18 +49,20 @@ def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w", si
     else:
         plt.show()
 
-def draw_circle_sets(path, centers, list_of_radii, colors):
+def draw_circle_sets(path, list_of_centers, list_of_radii, colors):
     assert len(colors) == len(list_of_radii)
+    assert len(list_of_centers) == len(list_of_radii)
     img, img_arr = get_img(path)
     fig, ax = plt.subplots()
-    ax.imshow(img)
-    for radii, color in zip(list_of_radii, colors):
+    plt.imshow(img)
+    # ax.imshow(img)
+    for radii, centers, color in zip(list_of_radii, list_of_centers, colors):
         for center, radius in zip(centers, radii):
-            center = center[2]
-            # print(center[0],center[1], radius)
-            circle = Circle((round(center[0]), round(center[1])), radius, color="g", fill=False, lw=2)
+            # center = center[2]
+            circle = Circle((round(center[0]), round(center[1])), radius, color=[c/256 for c in color], fill=False, lw=1, alpha=.7)
             ax.add_patch(circle)
-    plt.savefig("./figures/circle_comparison.png")
+    plt.axis('off')
+    plt.savefig("./figures/"+path[path.find("-")+1:], bbox_inches='tight')
     plt.show()
 
 
