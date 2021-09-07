@@ -124,7 +124,7 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False, sid
     # mask_path = "./post_process/"+id_+".png"
     print("Labeling circles: "+ mask_path)
     day = pickle.load(open("./timestep.p", "rb"))
-    return label_circles_BFS(mask_path, True, side, day=day,sim_circle_path="./current_dic_"+side)
+    return label_circles_BFS(mask_path, True, side, day=day, sim_circle_path="./current_dic_"+side+".p")
 
 if __name__ == "__main__":
 #     print("=" * 20)

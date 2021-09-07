@@ -58,14 +58,15 @@ def auto_irrigate_withsim():
 def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     #load garden state
     #os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
-    os.system('python3 ../Learning/create_state.py ' + side)
-    time.sleep(2)
-    os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
-    timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
 
-    with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
-        sectors = pickle.load(f)
-        print(len(sectors), sectors)
+    # os.system('python3 ../Learning/create_state.py ' + side)
+    # time.sleep(2)
+    # os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
+    # timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
+
+    # with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
+    #     sectors = pickle.load(f)
+    #     print(len(sectors), sectors)
 
     fb = FarmBotThread()
 
@@ -91,7 +92,7 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
         fb.update_action("move", (i[0], i[1], 0)) #sim to farmbot coord * scaling factor
         time.sleep(20) 
         fb.update_action("water", None)
-        time.sleep(5)
+        time.sleep(6)
 
         #Check if water is still on, if it is turn it off
         fb.update_action("read_pin", 8)
@@ -123,7 +124,7 @@ if __name__ == "__main__":
         sim2FB = {45.0: (1501, 993), 40.0: (1593, 1119), 108.0: (1593, 551), 82.0: (1620, 793), 150.0: (1684, 283), 91.0: (1885, 960), 185.0: (1968, 250), 142.0: (2142, 768), 114.0: (2197, 1052), 225.0: (2197, 125), 191.0: (2233, 442), 134.0: (2435, 1102), 194.0: (2481, 643), 242.0: (2481, 242), 156.0: (2600, 1069), 173.0: (2627, 952)}
     else:
         print("----ERROR, specify 'r' or 'l'")
-    
+
     watergrid_oneday_lookahead(sim2FB, f)
 
 

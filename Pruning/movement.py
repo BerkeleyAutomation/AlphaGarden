@@ -278,13 +278,18 @@ def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
 def batch_target_approach(fb, target_list, overhead, y_offset):
     actual_farmbot_coord = []
     for i in range(len(target_list)):
-        #convert target point
+        #convert target point OLD
         target_point = crop_o_px_to_cm(target_list[i][1][0], target_list[i][1][1]) #assuming each point is (center point, target)
+        # Convert target point NEw
+
         act_pt = farmbot_target_approach(fb, target_point, overhead, y_offset[i])
         actual_farmbot_coord.append(act_pt)
         pkl.dump(actual_farmbot_coord, open("actual_coords.p", "wb"))
         os.remove("ccoeff_visualseroving.txt") #remove the ccoeff file to reset for next target, center point pair
     return actual_farmbot_coord
+
+def get_seed_location(center):
+    return
 
 def crop_o_px_to_cm(x_px, y_px):
     #convert pixel to cm in overhead image with set scale factor of 11.9

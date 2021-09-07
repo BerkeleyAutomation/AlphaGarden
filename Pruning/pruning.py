@@ -167,7 +167,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
 
     # Start Locationing
     # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    actual_farmbot_coords = [(246, 58), (198, 6), (234, 1), (154, 94), (187, 43)]
+    actual_farmbot_coords = [(190, 16), (165,84), (177, 38)]
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 10 #cm from top of farmbot
 
@@ -222,7 +222,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
             time.sleep(25)
             fb.update_action("move_rel", (0, 0, (z * -10)+30))#move to z position from the depth sensor after setting up the scissors
             time.sleep(30)
-            fb.update_action("move_rel", (-200, 180, 0))
+            fb.update_action("move_rel", (-200, 0, 0))
             time.sleep(25)
         else:
             fb.update_action("servo", (6, 38)) # Ordinary Scissor cut
@@ -383,7 +383,7 @@ if __name__ == "__main__":
 
     #target_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_pts.p", "rb"))
     #print(target_l)
-    target_list = [((45.29328505595777, 764.53952600395), (155.19716919025666, 741.6428834759711)), ((633.7369980250162, 98.24722843976315), (697.8475971033572, 139.46118499012528)), ((525.4072580645161, 138.53387096774168), (353.61088709677415, 219.17298387096753)), ((1352.8346774193546, 1509.3987903225802), (1293.2318548387095, 1456.8080645161285)), ((1322.3791526239768, 425.4228213769861), (1106.36470871, 571.106981277))]
+    target_list = [((737.9679826673084, 150.91702455464588), (830.0671641791043, 331.76632643235416)), ((1362.1701435838, 1075.8818556435517), (1187.4975532805354, 1066.924286910051)), ((1279.312632798918, 451.0914364818748), (1102.4006503122785, 666.0730860858928))]
     print(len(target_list))
     batch_prune_scissors(target_list, args.overhead, args.rpi_check_prune)
 

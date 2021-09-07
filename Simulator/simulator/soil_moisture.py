@@ -2,8 +2,8 @@ import gym
 import torch
 from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_MOISTURE_SENSOR_POSITIONS, GARDEN_START_DATE, SIDE, IRRIGATE_BUFFER
 import simalphagarden
-from net import Net
-from constants import TrainingConstants
+# from net import Net
+# from constants import TrainingConstants
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle

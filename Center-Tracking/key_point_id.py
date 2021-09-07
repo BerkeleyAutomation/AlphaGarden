@@ -390,8 +390,8 @@ if __name__ == "__main__":
     # print(leaf_centers)
 
     ## Generation
-    file = "snc-21082708300900"
-    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210827.p", "models/leaf_keypoints.pth")
+    file = "snc-21090119150000"
+    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210901.p", "models/leaf_keypoints.pth")
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     print("./target_leaf_data/data/" + file + "_unfiltered.p")
     with open("./target_leaf_data/data/" + file + "_unfiltered.p", "rb") as f:
