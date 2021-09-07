@@ -73,15 +73,15 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     ratio_x = 1373.3/150 #mm/plant_loc : 2746.6 -> 1373.3
     ratio_y = 1252.8/150 #mm/plant_loc
     sectors_fb = []
-    for i in sectors:
-        if (i[0] + i[1]) not in sim2FB.keys() and side == 'r':
-            print("MISSED")
-            sectors_fb.append((int((150 - i[0])*ratio_x), int((150 - i[1])*ratio_y)))
-        elif (i[0] + i[1]) not in sim2FB.keys() and side == 'l':
-            print("MISSED")
-            sectors_fb.append((int(i[0]*ratio_x+1373.3), int((150 - i[1])*ratio_y)))
-        else:
-            sectors_fb.append((sim2FB[i[0] + i[1]][0], sim2FB[i[0] + i[1]][1]))
+    # for i in sectors:
+    #     if (i[0] + i[1]) not in sim2FB.keys() and side == 'r':
+    #         print("MISSED")
+    #         sectors_fb.append((int((150 - i[0])*ratio_x), int((150 - i[1])*ratio_y)))
+    #     elif (i[0] + i[1]) not in sim2FB.keys() and side == 'l':
+    #         print("MISSED")
+    #         sectors_fb.append((int(i[0]*ratio_x+1373.3), int((150 - i[1])*ratio_y)))
+    #     else:
+    #         sectors_fb.append((sim2FB[i[0] + i[1]][0], sim2FB[i[0] + i[1]][1]))
 
     sectors_fb = [i for i in sim2FB.values()]
     sorted_sectors_fb = sorted(sectors_fb, key=lambda x: x[0])#sectors sorted by increasing x

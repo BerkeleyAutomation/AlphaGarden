@@ -90,8 +90,8 @@ class MyHandler:
         elif self.action == 'water':
             request_id = self.bot.toggle_pin(8)
             print("WATER REQUEST ID: " + request_id)
-            time.sleep(2.409)
-            # time.sleep(3.5)
+            # time.sleep(2.409)
+            time.sleep(3.5)
             request_id = self.bot.toggle_pin(8)
             print("WATER OFF REQUEST ID: " + request_id)
 

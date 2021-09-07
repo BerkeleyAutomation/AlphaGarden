@@ -52,32 +52,36 @@ if __name__ == "__main__":
     #PRIOR TO 8/12: (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
     imsave('./cropped/' + f, new_im)
 
-    d_0 = date(2021, 7, 5)
-    d_1 = date(2021, int(f[6:8]), int(f[8:10]))
-    delta = d_1 - d_0
-    pkl.dump(delta.days, open("timestep" + ".p", "wb"))
+    # d_0 = date(2021, 7, 5)
+    # d_1 = date(2021, int(f[6:8]), int(f[8:10]))
+    # delta = d_1 - d_0
+    # pkl.dump(delta.days, open("timestep" + ".p", "wb"))
 
-    circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
-    pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
-    pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
+    # circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
+    # pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
+    # pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
 
-    # For the simulator to select plants to prune
-    pkl.dump([], open("plants_to_prune.p", "wb"))
+    # # For the simulator to select plants to prune
+    # pkl.dump([], open("plants_to_prune.p", "wb"))
 
     print("------------------------------LINEARITY-----------------------------------------")
     # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
 
-    # prior = get_recent_priors(cwd + "/priors/priors" + f[4:10] + ".p")
-    # mask_path = str(cwd + "/post_process/" + f[:-4] + ".png")
-    # mask, _ = get_img(mask_path)
+    if side == 'r':
+        folder = 'right/'
+    elif side == 'l':
+        folder = 'left/'
+    prior = get_recent_priors(cwd + "/priors/" + folder + "priors" + f[4:10] + ".p")
+    mask_path = str(cwd + "/post_process/" + f[:-4] + ".png")
+    mask, _ = get_img(mask_path)
 
     # # This gets the actual overhead image
     # # real_path = "input/new_garden/snc-21052608141500.jpg"
 
-    # leaf_centers = get_max_leaf_centers(prior, mask_path, True)
+    leaf_centers = get_max_leaf_centers(prior, mask_path, True)
 
-    # print("LEAF CENTERS: (center, target)")
-    # print(leaf_centers)
+    print("LEAF CENTERS: (center, target)")
+    print(leaf_centers)
 
     # print("FILTERED LEAF CENTERS: (center, target)")
     # type_dic = pkl.load(open("current_type_dic.p", "rb"))
@@ -86,7 +90,7 @@ if __name__ == "__main__":
     # print(filtered)
 
     # save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_filtered.png", filtered)
-    # save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_all.png", leaf_centers)
+    save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_all.png", leaf_centers)
 
     # pkl.dump(filtered, open("current_pts" + ".p", "wb"))
     # pkl.dump(filtered, open(cwd + "/prune_points/" + f[4:10] + "_target.p", "wb"))

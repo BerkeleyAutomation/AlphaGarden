@@ -120,8 +120,10 @@ def get_max_leaf_centers(prior, mask_path, only_right=False):
         :extreme_pts: The leaf centers according to the algorithm
     '''
     extreme_pts = []
-    for key in tqdm(prior):
-        for p in prior[key]:
+    for key in tqdm(prior[1]):
+        if not key or key == 'arugula' or key == 'sorrel':
+            continue        
+        for p in prior[1][key]:
             center, r = p["circle"][0:2]
             if only_right and center[0] < 1630: #Value to be tuned to dictate each half of garden
                 continue
