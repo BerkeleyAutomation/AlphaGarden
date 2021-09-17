@@ -131,7 +131,6 @@ def get_max_leaf_centers(prior, mask_path, only_right=False):
             extreme_pts.append((center, get_leaf_center(max(extrema, key=lambda p: distance(center, p)), center)))
     return extreme_pts
 
-
 if __name__ == "__main__":
     # Get priors and image from sysargs
     prior = get_recent_priors(str(sys.argv[1]))
