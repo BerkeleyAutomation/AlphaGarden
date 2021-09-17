@@ -47,11 +47,11 @@ def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day
                     "pass"
                 r, c, max_p = abs(prev_rad), center, (center[0]+prev_rad, center[1])
                 # print("Zero div at: " + str(c))
-            if day > r:
+            if day > r and day < 20:
                 r = 0
-            if r <= prev_rad*.9:
+            if r <= prev_rad*.9 and prev_rad > 55:
                 r = prev_rad*.9
-            if r*.7 > prev_rad:
+            if r*.7 > prev_rad  and prev_rad > 55:
                 r = prev_rad*1.1
             if distance(center, c) > 50:
                 direction_vec = [c[i] - center[i] for i in range(2)]
