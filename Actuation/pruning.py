@@ -14,6 +14,11 @@ import time
 import pickle as pkl
 
 def separate_list(actual_coords, target_list):
+    """ Separate lists into x and y for the weed wacker pruner
+        Args
+            local_image (obj): local image.
+            sf (float): scale factor
+        """
     x_list, y_list = [], []
     for i in range(len(target_list)):
         center, target = target_list[i][0], target_list[i][1]
@@ -25,6 +30,12 @@ def separate_list(actual_coords, target_list):
     return x_list, y_list
 
 def batch_prune(target_list, overhead, rpi_check):
+    """ Prune a list of target points using the overhead image to servo for weed wacker tool
+        Args
+            taget_list (list): list of target points.
+            overhead (obj): overhead image
+            rpi_check(bool): use the rpi to check
+        """
     fb = FarmBotThread()
     actual_farmbot_coords = batch_target_approach(fb, target_list, overhead)
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
@@ -129,6 +140,10 @@ def batch_prune(target_list, overhead, rpi_check):
     return None
 
 def perpendiculars(target_list):
+    """ Find perpendicular vector to the vector spanning from the pruning shears and the target point
+        Args
+            target_list (list): list of target points.
+        """
     angles, k_arr = [], []
     for i in range(len(target_list)):
         center, target = target_list[i][0], target_list[i][1]
@@ -154,6 +169,12 @@ def perpendiculars(target_list):
     return angles, k_arr
 
 def batch_prune_scissors(target_list, overhead, rpi_check):
+    """ Prune a list of target points using the overhead image to servo for pruning shears
+        Args
+            taget_list (list): list of target points.
+            overhead (obj): overhead image
+            rpi_check(bool): use the rpi to check
+        """
     pos_x, pos_y = 110, 47 #47
     ang_sf = (pos_x-pos_y)/90
     sci_rad = 13
@@ -259,7 +280,13 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     return None
 
 def reposition_scissors(fb, k, scissors_offset, rpi_pos):
-    #reposition scissors to move in direction of the center
+    """ Reposition scissors to move in direction of the center
+        Args
+            fb (obj): farmbot instance.
+            k (list): vector
+            scissors_offset(list): offset of pruning scissors
+            rpi_pos(list): position of the rpi camera
+        """
     reposition_dist = 2 #length of reposition vector in cm
     change = [k[0]*np.sqrt(reposition_dist), k[1]*np.sqrt(reposition_dist)]
     fb.update_action("move_rel", (scissors_offset[0] *10, scissors_offset[1]*10,0))
@@ -289,7 +316,6 @@ def prune_check_sensor(fb, i, prev_rpi, prev_depth, rpi_pos, depthsen_pos, sciss
 
 def get_depth(fb):
     #get depth necessary to prune the leaf with the depth sensor
-    #depth offset
     fb.update_action('read_pin', 54)
     time.sleep(3)
     value = pkl.load(open('./data/read_depth.p', 'rb'))
@@ -300,6 +326,10 @@ def crop_o_px_to_cm(x_px, y_px):
     return pred_pt
 
 def recent_rpi_photo(fb):
+    """ Take a photo and save the rpi image
+        Args
+            fb (obj): farmbot instance.
+    """
     fb.update_action("photo", None)
     cwd = os.getcwd()
     rpi_folder_path = os.path.join(cwd, "rpi_images")
@@ -311,6 +341,14 @@ def recent_rpi_photo(fb):
     return latest_file[latest_file.find("rpi_images")+11:]
 
 def compare_recent_rpi(i, bef_rpi, aft_rpi):
+    """ Compare the recent rpi image with the most recent one
+        Args
+            i (int): iter.
+            bef_rpi (obj): previous rpi image
+            aft_rpi(obj): after the rpi camera takes an image
+    """
+
+
     #Take photo to compare to previous photo before cut
     cwd = os.getcwd()
     # image_path  = os.path.join(cwd, "rpi_images", bef_rpi + "_resized.jpg")

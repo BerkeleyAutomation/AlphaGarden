@@ -56,6 +56,14 @@ def auto_irrigate_withsim():
     return
 
 def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
+    """ Use the simulator to determine which sectors to water by doing a one day lookahead
+        Args
+            sim2FB (dict): simulator to farmbot coordinates
+            side (string): side of the garden (left or right)
+            timestep(int): timestep of the garden
+        """
+
+    #-------------alternative way-------------
     #load garden state
     #os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
 
@@ -67,13 +75,14 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
     # with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
     #     sectors = pickle.load(f)
     #     print(len(sectors), sectors)
+    #-----------------------------------------
 
     fb = FarmBotThread()
 
     ratio_x = 1373.3/150 #mm/plant_loc : 2746.6 -> 1373.3
     ratio_y = 1252.8/150 #mm/plant_loc
     sectors_fb = []
-    for i in sectors:
+    for i in sectors: #error checking uncomment line 70 to access the sectors
         if (i[0] + i[1]) not in sim2FB.keys() and side == 'r':
             print("MISSED")
             sectors_fb.append((int((150 - i[0])*ratio_x), int((150 - i[1])*ratio_y)))

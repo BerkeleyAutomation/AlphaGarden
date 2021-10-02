@@ -13,7 +13,11 @@ import time
 import pickle as pkl
 
 def local_image_preprocess(local_image, sf=0.7438):
-    #array of the preprocessed local image
+    """ Array of local preprocessed local image
+        Args
+            local_image (obj): local image.
+            sf (float): scale factor
+        """
     local_path = resize_local(local_image, sf) #rotate and rescale
 
     cwd = os.getcwd()
@@ -23,7 +27,10 @@ def local_image_preprocess(local_image, sf=0.7438):
     return src, local_path
 
 def overhead_image_preprocess(overhead_image):
-    #array of the preprocessed overhead image
+    """ Array of the preprocessed overhead image
+        Args
+            overhead_image (obj): overhead image.
+        """
     crop_overhead(overhead_image) #crop overhead image
 
     cwd = os.getcwd()
@@ -32,7 +39,8 @@ def overhead_image_preprocess(overhead_image):
     return src
 
 def determine_error():
-    #the border around the target to constrain the region of interest
+    """ Determine the border around the target to constrain the region of interest
+    """
     if not os.path.isfile('ccoeff_visualseroving.txt'):
         open("ccoeff_visualseroving.txt", "a").close()
         return [44, 20] 
@@ -46,8 +54,13 @@ def determine_error():
 
 
 def find_local_in_overhead(local_image, overhead_image, target):
+    """ Preprocess the overhead image and the raspberry pi local image
+    Args
+        local_image(obj): local image.
+        overhead_image(obj): overhead image
+        target(list): target point
+    """
     
-    #preprocess the overhead image and the raspberry pi local image
     local_name = local_image
     
     overhead_image = overhead_image_preprocess(overhead_image)
@@ -66,7 +79,7 @@ def find_local_in_overhead(local_image, overhead_image, target):
     targetpx_x = round((274.66 - target[0])*11.9) + 102
     targetpx_y = round(target[1] * 11.9) + 72
 
-    error = [44, 20]#determine_error()
+    error = [44, 20] #determine_error()
 
     best_sf = 1
     best_max_val = 0
@@ -105,9 +118,8 @@ def find_local_in_overhead(local_image, overhead_image, target):
             best_sf = scale
 
         os.remove(rpi_path_d)
-        
 
-    #get top 5 points from best sf
+    # -------get top 5 points from best sf -------
     # num_cand = 5
     # avg_grid = [2, 2] #add a plus/minus x and y coord to the max location to average the ccoeff values
     # res = cv2.matchTemplate(img, template.astype(np.uint8) ,method)
@@ -128,6 +140,7 @@ def find_local_in_overhead(local_image, overhead_image, target):
     #     seen.add(max_loc)
     # sorted(candidiates)
     # top_left = candidiates[-1][1]
+    # ------------------------------------------
 
     top_left = best_max_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
@@ -166,12 +179,13 @@ def find_local_in_overhead(local_image, overhead_image, target):
     cv2.waitKey(0)
 
     #(274.66, 0) cm in overhead is (102, 72) px
-
     #Overhead image has 1 cm = 11.9 px
 
     return pred_pt
 
 def correct_image(im_src, one, two, three, four):
+    """ Use homographic function to correct the overhead image
+    """
     size = (3478,1630,3) #change this or just take img size
     im_dst = np.zeros(size, np.uint8)
     pts_dst = np.array(
@@ -202,6 +216,10 @@ def get_points(overhead_image):
     return coords
 
 def crop_overhead(overhead_image):
+    """ Crop overhead image
+    Args
+        overhead_image(obj): overhead image
+    """
     cwd = os.getcwd()
     image_path  = os.path.join(cwd, overhead_image)
     im = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
@@ -227,7 +245,13 @@ def resize_local(local_image, scale_factor=0.7438):
     return image_path  + "_" + str(scale_factor) + "_resized.jpg"
 
 def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
-    #have farmbot apporach the target within same local image
+    """ Use visual seroving to use the farmbot to approach the target_point
+    Args
+        fb(obj): farmbot instance.
+        target_point(list): target point
+        overhead_image(obj): overhead image
+        y_offset(list): the offset in the y direction
+    """
     epsilon = 1 # the threshold needed to satisfy the closeness requirement
     max_y = (125-abs(y_offset))
     # print("HERE: ", max_y)
@@ -276,11 +300,18 @@ def farmbot_target_approach(fb, target_point, overhead_image, y_offset):
     return tuple((coord_x, coord_y))
 
 def batch_target_approach(fb, target_list, overhead, y_offset):
+    """ Iteratively go visually servo through a list of target points
+    Args
+        fb(obj): farmbot instance.
+        target_list(list): list of target points
+        overhead_image(obj): overhead image
+        y_offset(list): the offset in the y direction
+    """
     actual_farmbot_coord = []
     for i in range(len(target_list)):
         #convert target point OLD
         target_point = crop_o_px_to_cm(target_list[i][1][0], target_list[i][1][1]) #assuming each point is (center point, target)
-        # Convert target point NEw
+        # Convert target point New
 
         act_pt = farmbot_target_approach(fb, target_point, overhead, y_offset[i])
         actual_farmbot_coord.append(act_pt)
@@ -292,11 +323,22 @@ def get_seed_location(center):
     return
 
 def crop_o_px_to_cm(x_px, y_px):
-    #convert pixel to cm in overhead image with set scale factor of 11.9
+    """ Convert pixel to cm in overhead image with set scale factor of 11.9
+    Args
+        x_px(int): x pixel location.
+        y_px(int): y pixel location.
+    """
+    
     pred_pt = (round(274.66 - (x_px - 102)/11.9), round((y_px - 72)/11.9))
     return pred_pt
 
 def curr_pos_from_local(fb, overhead_image, target):
+    """ Find the current position from the local rpi image in the overhead image
+    Args
+        fb(obj): farmbot instance.
+        overhead_image(obj): overhead image.
+        target(list): target point.
+    """
     cwd = os.getcwd()
     rpi_folder_path = os.path.join(cwd, "rpi_images")
     if not os.path.exists(rpi_folder_path):
