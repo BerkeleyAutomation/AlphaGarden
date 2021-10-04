@@ -386,7 +386,10 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-    seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
+    # seed_config_path = '/home/satvik/autolab/placement_20.p'
+    # seed_config_path = '/Users/mpresten/Desktop/AlphaGarden/placement_20.p'
+    seed_config_path = None
+
     randomize_seeds_cords_flag = False
 
     for i in range(args.tests):
@@ -395,7 +398,6 @@ if __name__ == '__main__':
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                        action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
                        randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
-
         # vis = Matplotlib_Visualizer(env.wrapper_env)
         # vis = OpenCV_Visualizer(env.wrapper_env)
         vis = Pillow_Visualizer(env.wrapper_env)

@@ -3,17 +3,18 @@ from heapq import nlargest
 from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
-from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE
+from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE, ROWS, COLS, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_DEPTH
+from simulator.soil_moisture import augment_soil_moisture_map, determine_avg_gain, determine_evap_rate, initial_water_value, save_water_grid, save_sectors
 import os
 import pickle
 import multiprocessing as mp
 import copy
-
+import pickle as pkl
 
 class Garden:
     def __init__(self, plants=[], garden_state=None, N=96, M=54, sector_rows=1, sector_cols=1,
                  prune_window_rows=1, prune_window_cols=1, step=1, evaporation_rate=0.001, prune_rate=PRUNE_RATE,
-                 irr_threshold=9, init_water_mean=0.1, init_water_scale=0.04, plant_type = None,
+                 irr_threshold=9, init_water_mean=0.2, init_water_scale=0.04, plant_type = None,
                  skip_initial_germination=False, animate=False, save=False):
         """Model for garden.
         Args:
@@ -65,9 +66,10 @@ class Garden:
         First dimension is horizontal, second is vertical
         """
         if not garden_state:
-            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
+            self.grid = np.empty((N, M), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
             self.grid['water'] = np.clip(np.random.normal(init_water_mean, init_water_scale, self.grid['water'].shape), 0, MAX_WATER_LEVEL)
             self.grid['health'] = self.compute_plant_health(self.grid['health'].shape)
+            self.grid['last_watered'] = np.ones(self.grid['last_watered'].shape)
         else:
             self.grid = copy.deepcopy(garden_state.grid)
 
@@ -282,20 +284,34 @@ class Garden:
             List of updated plant objects.
         """
         water_use = 0
+
+        for point in self.enumerate_grid(): #add one day to last watered
+            point['last_watered'] += 1
+
         self.prune_coords = dict()
         self.irr_coords = []
+        watered_sectors = []
         for i, action in enumerate(actions):
             if action == NUM_IRR_ACTIONS:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
+                watered_sectors.append(sectors[i])
             elif action == NUM_IRR_ACTIONS + 1:
                 self.perform_timestep_prune(sectors[i])
             elif action == NUM_IRR_ACTIONS + 2:
                 self.perform_timestep_irr(sectors[i], self.irrigation_amount)
                 water_use += self.irrigation_amount
                 self.perform_timestep_prune(sectors[i])
+                watered_sectors.append(sectors[i])
+
+
+        save_sectors(watered_sectors, self.timestep) #saves watered sectors for auto irrigation
+
+        save_water_grid(np.squeeze(self.water_grid), self.timestep, "", None, True, "_1after_watering")
+
         self.distribute_light()
         self.distribute_water()
+        save_water_grid(np.squeeze(self.water_grid), self.timestep, "_2after_evap", np.squeeze(self.grid['last_watered']))
         self.grow_plants()
         self.performing_timestep = True
 
@@ -311,56 +327,55 @@ class Garden:
         self.save_water_use(water_use / len(sectors))
         self.actions.append(actions)
 
-        #GROWTH ANALYSIS
-        # folder = "textFiles/"
+        # GROWTH ANALYSIS
+        # folder = '/home/satvik/autolab/AlphaGarden/Learning/textFiles/'
         # # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
         # p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
-        # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
-        # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
-        # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
-        # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
-        # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
-        # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
-        # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
-        # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
-        # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
-        # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
+        # # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
+        # # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
+        # # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
+        # # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
+        # # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
+        # # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
+        # # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
+        # # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
+        # # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
+        # # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
         # for d in self.plants:
         #     for p in d.values():
         #         # print(p.type, p.radius, (p.row, p.col))
-
         #         if p.type == 'borage':
-        #             num = b[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'sorrel':
-        #             num = s[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'cilantro':
-        #             num = c[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'radicchio':
-        #             num = r[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'kale':
-        #             num = k[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'green_lettuce':
-        #             num = g[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'red_lettuce':
-        #             num = rl[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'arugula':
-        #             num = a[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'swiss_chard':
-        #             num = sc[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
         #         if p.type == 'turnip':
-        #             num = t[p_type_ind[p.type]]
+        #             num = p_type_ind[p.type]
 
         #         file_name = str(p.type) + str(num) + '.txt'
 
         #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
                     
-        #         if p_type_ind[p.type] == 5:
+        #         if p_type_ind[p.type] == 1:
         #             p_type_ind[p.type] = 0
-        #         elif p_type_ind[p.type] < 5:
+        #         elif p_type_ind[p.type] < 1:
         #             p_type_ind[p.type] += 1
-                
-        #         file_list = os.listdir('/Users/mpreseten/Desktop/AlphaGarden_growth/AlphaGarden/Learning/' + folder)
 
+        #         # print(os.getcwd())                
+        #         file_list = os.listdir(folder)
         #         if file_name not in file_list:
         #             fil = open(folder + file_name, "w+")
         #             item = str(p.radius)
@@ -408,6 +423,20 @@ class Garden:
         #             self.irr_threshold + self.irr_threshold + 1) / 10000  # in square meters
         window_grid_size = np.pi * ((self.irr_threshold)**2) / 10000  # in square meters
         gain = 1/32
+
+        if any(SOIL_MOISTURE_SENSOR_ACTIVE):
+            if self.timestep == 0:
+                center_points_gain = 0.046 #from experiments in May TASE
+            else:
+                center_points_gain = determine_avg_gain(self.timestep+1) #determines the gain
+        else:
+            k = 1.175 #scaling factor to account for water loss from drainage and etc., determined experimentally
+            center_points_gain = (amount / (window_grid_size * SOIL_DEPTH)) * k #.2 m of soil depth
+
+        #Sample the Gaussian to for gain for center points that are directly watered
+        mu, sigma = center_points_gain, 0.0054 # mean and standard deviation(from experiments in May TASE) for Gaussian
+        s = max(0, np.random.normal(mu, sigma, 1)) #max gain
+
         # Start from outer radius
         for radius in range(4,9)[::-1]:
             # For each bounding box, check if the cubes are within the radius 
@@ -420,7 +449,8 @@ class Garden:
                 for x in range(lower_x, upper_x):
                     pt = [x, y]
                     if np.sqrt((location[0] - pt[0])**2 + (location[1] - pt[1])**2) <= radius:
-                        self.grid[x, y]['water'] += gain * (amount / (window_grid_size * 0.35))
+                        self.grid[x, y]['water'] += gain * s
+                        self.grid[x, y]['last_watered'] = 0 
             gain *= 2
 
         # TODO: add distribution kernel for capillary action and spread of water jet
@@ -498,36 +528,54 @@ class Garden:
         for plant_type in self.plants:
             for plant in plant_type.values():
                 self.logger.log(Event.WATER_REQUIRED, plant.id, plant.desired_water_amt())
-
+        test_plant = None
         for point in self.enumerate_grid():
             if point['nearby']:
                 plant_types_and_ids = list(point['nearby'])
                 for plant_type_and_id in plant_types_and_ids:
                     plant = self.plants[plant_type_and_id[0]][plant_type_and_id[1]]
                     plant.water_available += point['water']
-
+                
                 while point['water'] > PERMANENT_WILTING_POINT and plant_types_and_ids:
-
+                    #print()
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plant_types_and_ids)))
                     plant = self.plants[plant_types_and_ids[i][0]][plant_types_and_ids[i][1]]
+                    test_plant = plant if test_plant == None else test_plant
+                    temp = test_plant.water_amt
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
+                    
                     if plant.amount_sunlight > 0:
-                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
+                        k = 1/15 #k is a scaling factor for the plant uptake
+                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points) 
                         plant.water_amt += water_to_absorb
                         plant.watered_day = self.timestep
-                        point['water'] -= water_to_absorb
+                        point['water'] -= water_to_absorb * k
 
+                    # if temp != test_plant.water_amt:
+                    #     print(test_plant, test_plant.water_amt, "\n")
                     plant_types_and_ids.pop(i)
 
             # Water evaporation per square cm (grid point)
-            if abs(plant.watered_day - self.timestep) <= 1:
-                evap_rate = 0.052
+            evap_rate_dict = {0:0.042, 1:0.01} #key:day since watered, value: experimentally determined evaporation rate for that day
+            evap_rate_std = {0:0.0048, 1:0.0001} #adjusted
+            if any(SOIL_MOISTURE_SENSOR_ACTIVE):
+                if self.timestep == 0:
+                    evap_rate_dict = {0:0.042, 1:0.01}
+                else:
+                    evap_rate_dict = determine_evap_rate(self.timestep+1)
             else:
-                evap_rate = 0.011
-            point['water'] = max(0, point['water'] - 0.01 * 0.01 * evap_rate)
+                evap_rate_dict = {0:0.042, 1:0.01} 
+
+            idx = point['last_watered'] if point['last_watered'] < len(evap_rate_dict) else len(evap_rate_dict) - 1
+            evap_rate = evap_rate_dict[idx] #evap rate for point according to last watered
+            evap_std = evap_rate_std[idx]
+            mu, sigma = evap_rate, evap_std # mean and standard deviation(from experiments in May TASE) for Gaussian
+            s = max(0, np.random.normal(mu, sigma, 1)) #max gain
+
+            point['water'] = max(0, point['water'] - s)
 
     def grow_plants(self):
         """ Compute growth for each plant and update plant coverage."""
@@ -779,6 +827,17 @@ class Garden:
                 tallest_plant_id = tallest[1]
                 non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
         for plant in non_occluded_plants:
+            # #For auto pruning
+            time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+            print("TIME: ", time, self.timestep == time)
+            print(plant.type, (plant.row, plant.col), plant.row + plant.col)
+            if self.timestep == time or self.timestep == time + 1: #REMOVE DAYS
+                curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
+                if (plant.row + (2 * plant.col)) not in curr_l:
+                    print(plant.row + 2 * plant.col)
+                    curr_l.append(plant.row + 2*plant.col)
+                    pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
+            #end auto pruning
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
             self.update_plant_size(plant, outward=-amount_to_prune)
@@ -864,7 +923,8 @@ class Garden:
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.water_grid, self.health_grid))
+        self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.last_watered_grid, self.water_grid, self.health_grid))
 
     def get_radius_grid(self):
         """ Get grid for plant radius representation.
@@ -997,7 +1057,8 @@ class Garden:
         """
         self.water_grid = np.expand_dims(self.grid['water'], axis=2)
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.water_grid, self.health_grid))
+        self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
+        return np.dstack((self.plant_grid, self.leaf_grid, self.last_watered_grid, self.water_grid, self.health_grid))
 
     def get_simulator_state_copy(self):
        """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.

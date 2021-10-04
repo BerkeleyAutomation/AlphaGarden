@@ -13,7 +13,6 @@ import random
 import io
 import pickle
 
-
 class SimAlphaGardenWrapper(WrapperEnv):
     def __init__(self, max_time_steps, rows, cols, sector_rows, sector_cols, prune_window_rows,
                  prune_window_cols, seed=None, step=1, dir_path="", randomize_seed_coords=False,
@@ -381,7 +380,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 plant_type=self.PlantType,
                 animate=False)
         ''' Uncomment line below to load from a garden file. '''
-        # self.garden, self.PlantType = pickle.load(open("garden_copy.pkl", "rb"))
+        self.garden, self.PlantType = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "rb")) #load
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
         self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)

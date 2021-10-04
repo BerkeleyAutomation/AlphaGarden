@@ -1,10 +1,16 @@
-from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, PRUNE_RATE, IRR_THRESHOLD
+from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, PRUNE_RATE, IRR_THRESHOLD, SIDE
 from simulator.plant_presets import PLANT_TYPES
 from simulator.plant_type import PlantType
 from simulator.garden_state import GardenState
 from simulator.garden import Garden
 import numpy as np
+import argparse
 import pickle
+import sys
+# parser = argparse.ArgumentParser()
+# parser.add_argument('-s', '--side', type=int, default=0)
+# args = parser.parse_args()
+side = sys.argv[1]
 
 ''' From garden.py '''
 def compute_growth_map():
@@ -91,18 +97,22 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
     return garden
 
 # INPUT {type: {(x, y), radius}, ..., {}}
-real_data = {
-    'borage': {
-        ((2, 2), 10),
-        ((5, 5), 10),
-    },
-    'sorrel': {
-        ((8, 8), 10),
-        ((11, 11), 10),
-    },
-}
+# real_data = {
+#     'borage': {
+#         ((2, 2), 10),
+#         ((5, 5), 10),
+#     },
+#     'arugula': {
+#         ((60, 60), 10),
+#         ((100, 100), 10),
+#     },
+# }
 
-timestep = 10
+# real_data = {'cilantro': {((137, 36), 30), ((14, 31), 30)}, 'green_lettuce': {((24, 16), 30), ((116, 18), 30)}, 'radicchio': {((90, 24), 30), ((24, 84), 40)}, 'swiss_chard': {((27, 55), 40), ((121, 121), 40)}, 'turnip': {((84, 58), 40), ((34, 116), 40)}, 'kale': {((56, 35), 40), ((94, 97), 40)}, 'borage': {((65, 120), 40), ((121, 73), 40)}, 'red_lettuce': {((90, 135), 40), ((134, 22), 40)}}
+real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic_"+side+".p", "rb")) #update path
+print("LOADED: ", side)
+print(real_data)
+timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #9
 
 plant_type = PlantType()
 plant_types = plant_type.plant_names
@@ -112,8 +122,10 @@ plant_objs = plant_type.get_plant_seeds(0, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS,
 
 plants = [{} for _ in range(len(plant_types))]
 
-grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O')])
-grid['water'] = np.random.normal(0.4, 0.1, grid['water'].shape)
+grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
+grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/water_grid_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/last_watered_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+
 for i in range(ROWS):
     for j in range(COLS):
         grid[i, j]['nearby'] = set()
@@ -147,4 +159,5 @@ garden_state = GardenState(plants, grid, plant_grid, plant_prob, leaf_grid, plan
 garden_copy = copy_garden(garden_state=garden_state, rows=ROWS, cols=COLS, sector_row=SECTOR_ROWS,
                           sector_col=SECTOR_COLS, prune_win_rows=PRUNE_WINDOW_ROWS,
                           prune_win_cols=PRUNE_WINDOW_COLS, step=STEP, prune_rate=PRUNE_RATE)
-pickle.dump([garden_copy, plant_type], open("garden_copy.pkl", "wb")) 
+pickle.dump([garden_copy, plant_type], open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "wb")) 
+print("SAVED!")
