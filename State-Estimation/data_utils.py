@@ -18,6 +18,10 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img
 from constants import *
 
 def prepare_data(ids, im_width, im_height, test_size, seed=42):
+    """
+    Performs positional augmentation on the original image patches to create
+    testing and training datasets. 
+    """
     X = np.zeros((len(ids) * 6, im_height, im_width, 3), dtype=np.float32)
     y = np.zeros((len(ids) * 6, im_height, im_width, N_CLASSES), dtype=np.float32)
     i = 0
@@ -38,37 +42,6 @@ def prepare_data(ids, im_width, im_height, test_size, seed=42):
         mask = img_to_array(mask)
         mask = resize(mask, (im_height, im_width, 3), mode = 'constant', preserve_range = True)
         ground_truth = np.full((im_height, im_width, N_CLASSES), 0)
-
-        for typep in TYPES_TO_COLORS:
-            if typep == 'other':
-                other_indices = np.argwhere(mask[:,:,:] < TYPES_TO_CHANNEL[typep]) # an array containing all the indices that match the pixels
-            elif typep == 'nasturtium':
-                if1_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels
-            elif typep == 'borage':
-                if2_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels
-            elif typep == 'bok_choy':
-                if3_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep]] > 230)& (mask[:,:,TYPES_TO_CHANNEL_ex[typep][0]] < 50) & (mask[:,:,TYPES_TO_CHANNEL_ex[typep][1]] < 50)) # an array containing all the indices that match the pixels
-            elif typep == 'plant1':
-                if4_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep][0]] > 230) & (mask[:,:,TYPES_TO_CHANNEL[typep][1]] > 230))
-            elif typep == 'plant2':
-                if5_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep][0]] > 230) & (mask[:,:,TYPES_TO_CHANNEL[typep][1]] > 230))
-            else:
-                if6_indices = np.argwhere((mask[:,:,TYPES_TO_CHANNEL[typep][0]] > 230) & (mask[:,:,TYPES_TO_CHANNEL[typep][1]] > 100))
-
-        for type_index in other_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['other']
-        for type_index in if1_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['nasturtium']
-        for type_index in if2_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['borage']
-        for type_index in if3_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['bok_choy']
-        for type_index in if4_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['plant1']
-        for type_index in if5_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['plant2']
-        for type_index in if6_indices:
-            ground_truth[type_index[0], type_index[1], :] = BINARY_ENCODINGS['plant3']
 
         if (_/len(ids))*100 % 10 == 0:
             print(_)

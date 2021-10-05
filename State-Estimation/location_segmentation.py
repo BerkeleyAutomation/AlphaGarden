@@ -21,6 +21,13 @@ import pickle as pkl
 
 
 def generate_full_scores_arr(test_image, model):
+    """ Outputs a label matrix of predicted plant type given a model and overhead
+        image.
+        args
+            test_id name of the overhead image
+            test_image RGB overhead image
+            model Semantic segmentation model used for prediction
+    """
     scores = np.full((test_image.shape[0], test_image.shape[1], N_CLASSES), 0.)
     for i in np.arange(0, test_image.shape[0] - IM_HEIGHT, 512):
         for j in np.arange(0, test_image.shape[1] - IM_WIDTH, 512):
@@ -62,6 +69,14 @@ def generate_full_scores_arr(test_image, model):
     return scores
 
 def bias_by_rad(center, x, y, rad):
+    """ Outputs a scaler multiplier based off of distance of x, y from plant center
+        Args
+            center (x, y) tuple of plant location
+            x "x coordinate" of pixel to bias
+            y "y coordinate" of pixel to bias
+            rad radius of plant
+
+    """
     dist = (center[0] - y) ** 2 + (center[1] - x) ** 2
     dist = dist ** 0.5
     if rad == 0 or rad - dist == 0:
@@ -71,6 +86,9 @@ def bias_by_rad(center, x, y, rad):
 # Scores height x width x # classes array of softmax outputs for each score.
 # Priors a dictionary keyed by plant types containing previous centers
 def augment_model_prediction_by_priors(scores, priors_left, priors_right):
+    """ Takes a prediction matrix of size NxMxplant_types and augments the confidence_map
+        based off prior center locations
+    """
     bias = 5
     growth_rate = 1.3
     s = []
@@ -95,16 +113,20 @@ def augment_model_prediction_by_priors(scores, priors_left, priors_right):
     return scores
 
 def scores_to_labels(scores):
+    """ returns the predicted label given a confidence_map
+    """
     labels = np.argmax(scores, axis=-1)
-    print(labels.shape)
     return labels
 
 def show_test_truth_prediction(unet_mask, dest):
+    """Saves image
+    """
     imsave(dest, unet_mask)
-    print(dest, "saved")
 
 
 def points_in_circle(radius, x0=0, y0=0):
+    """ Returns a list of points within a circle
+    """
     x_ = np.arange(x0 - radius - 1, x0 + radius + 1, dtype=int)
     y_ = np.arange(y0 - radius - 1, y0 + radius + 1, dtype=int)
     x, y = np.where((x_[:,np.newaxis] - x0)**2 + (y_ - y0)**2 <= radius**2)
@@ -112,6 +134,13 @@ def points_in_circle(radius, x0=0, y0=0):
         yield x, y
 
 def loc_bias_with_shift(model, name, path):
+    """ Outputs an image mask of plant types by color using the given model and
+    Location based center tracking algorithm.
+    args
+        model Semantic segmenation model used for predictions
+        name name of overhead image
+        path folder location of images
+    """
 
     image_name = '{}/{}.jpg'.format(path, name)
 

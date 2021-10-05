@@ -84,8 +84,8 @@ if not os.path.isdir("post_process"):
 
 
 def get_img_seg_mask(id_):
-    #Delete this 
-    if True: #set to true
-        return loc_bias_with_shift(model_unet, id_, TEST_PATH)
-    # To this
-    return output_prediction_images(id_, model_unet, TEST_PATH)
+    """ Outputs the segmentation mask and associated images from a given input.
+        Args
+            id_ name of the image to process
+    """
+    return loc_bias_with_shift(model_unet, id_, TEST_PATH)

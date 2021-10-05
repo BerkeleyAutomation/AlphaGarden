@@ -1,7 +1,13 @@
 from full_auto_utils import *
 import pickle as pkl
 
+"""
+Takes an overhead image and Center Tracking prior to create an overlaid image
+using colored circles. 
+"""
+
 DATE = "210525" #YYMMDD
+overhead_image = "./cropped/snc-21052520141400.jpg"
 circles = get_recent_priors("priors/priors" + DATE + ".p")
 centers, radii, colors = [], [], []
 for color in COLORS_TO_TYPES.keys():
@@ -19,4 +25,4 @@ for color in COLORS_TO_TYPES.keys():
     colors.append(color)
 print(colors)
 # print(centers, radii)
-draw_circle_sets("./cropped/snc-21052520141400.jpg", centers, radii, colors)
+draw_circle_sets(overhead_image, centers, radii, colors)
