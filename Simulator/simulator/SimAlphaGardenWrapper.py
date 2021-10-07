@@ -6,7 +6,7 @@ import configparser
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
-from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS
+from simulator.sim_globals import MAX_WATER_LEVEL, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, IRR_THRESHOLD, PRUNE_DELAY, ROWS, COLS, AG_REAL
 from simulator.plant_stage import GerminationStage, GrowthStage, WaitingStage, WiltingStage, DeathStage
 import os
 import random
@@ -380,7 +380,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 plant_type=self.PlantType,
                 animate=False)
         ''' Uncomment line below to load from a garden file. '''
-        self.garden, self.PlantType = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "rb")) #load
+        if AG_REAL:
+            self.garden, self.PlantType = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "rb")) #load
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
         self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)

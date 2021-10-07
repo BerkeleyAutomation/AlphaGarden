@@ -7,9 +7,7 @@ import numpy as np
 import argparse
 import pickle
 import sys
-# parser = argparse.ArgumentParser()
-# parser.add_argument('-s', '--side', type=int, default=0)
-# args = parser.parse_args()
+
 side = sys.argv[1]
 
 ''' From garden.py '''
