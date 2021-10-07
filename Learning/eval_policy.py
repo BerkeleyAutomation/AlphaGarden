@@ -236,10 +236,12 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                     sector_obs_per_day, vectorized=False)[0]
         all_actions.append(action)
         obs, rewards, _, _ = env.step(action)
-        if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
-            cov, div, water, act, mme1, mme2 = env.get_metrics()
-            div_cov_day = cov[-1] * div[-1]
-            div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
+
+        # if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
+        #     cov, div, water, act, mme1, mme2 = env.get_metrics()
+        #     div_cov_day = cov[-1] * div[-1]
+        #     div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
+        
     # dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
     # if not os.path.exists(dirname):    
     #     os.makedirs(dirname)

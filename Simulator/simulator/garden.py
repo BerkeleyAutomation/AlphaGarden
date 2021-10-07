@@ -798,7 +798,6 @@ class Garden:
         prob = cc_per_plant_type[np.nonzero(cc_per_plant_type)] / total_cc
         entropy = np.sum(-prob * np.log(prob))
         diversity = entropy / np.log(len(self.plant_types))  # normalized entropy
-        print("COVERAGE: ", coverage)
         self.coverage.append(coverage)
         self.diversity.append(diversity)
 
@@ -867,6 +866,7 @@ class Garden:
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
         self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
         return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.last_watered_grid, self.water_grid, self.health_grid))
+
 
     def get_radius_grid(self):
         """ Get grid for plant radius representation.
@@ -991,16 +991,6 @@ class Garden:
             Array of with number of grid points of highest canopy coverage per plant type.
         """
         return self.compute_plant_cc_dist()
-
-    def get_state(self):
-        """ Get state of the garden for all local and global quantities.
-        Return
-            Stacked array with state for plant, leaves, water, health of the garden for each point.
-        """
-        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.last_watered_grid, self.water_grid, self.health_grid))
 
     def get_simulator_state_copy(self):
        """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.
