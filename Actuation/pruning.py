@@ -43,9 +43,6 @@ def batch_prune(target_list, overhead, rpi_check):
     # print("--x_list: ", x_list)
     # print("--y_list: ", y_list)
 
-    # x_list = [(15, 37), (78, 63), (51, 15)]
-    # y_list = [(50, 66.9), (88, 88)] #(93, 50.9)
-
     # dismount_nozzle()
     # mount_yPruner()
     for i in y_list:
@@ -187,8 +184,7 @@ def batch_prune_scissors(target_list, overhead, rpi_check):
     fb.update_action("servo", (11, 0))
 
     # Start Locationing
-    # actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
-    actual_farmbot_coords = [(190, 16), (165,84), (177, 38)]
+    actual_farmbot_coords = batch_target_approach(fb, target_list, overhead, offset)
     print("--ACTUAL FARMBOT COORDS: ", actual_farmbot_coords)
     height_fb_clearance = 10 #cm from top of farmbot
 
@@ -318,7 +314,7 @@ def get_depth(fb):
     #get depth necessary to prune the leaf with the depth sensor
     fb.update_action('read_pin', 54)
     time.sleep(3)
-    value = pkl.load(open('./data/read_depth.p', 'rb'))
+    value = pkl.load(open('./FB_data/read_depth.p', 'rb'))
     return value
 
 def crop_o_px_to_cm(x_px, y_px):
@@ -347,8 +343,6 @@ def compare_recent_rpi(i, bef_rpi, aft_rpi):
             bef_rpi (obj): previous rpi image
             aft_rpi(obj): after the rpi camera takes an image
     """
-
-
     #Take photo to compare to previous photo before cut
     cwd = os.getcwd()
     # image_path  = os.path.join(cwd, "rpi_images", bef_rpi + "_resized.jpg")

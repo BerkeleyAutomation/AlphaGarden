@@ -18,8 +18,6 @@ def generate_growth_time(germination_time, maturation_time, r_max, r_0, k2, c2):
     """
     maturation_length = np.random.normal(maturation_time[0], maturation_time[1])
     germination_length = np.random.normal(germination_time[0], germination_time[1])
-    # maturation_length = maturation_time[0] - maturation_time[1]
-    # germination_length = germination_time[0] - germination_time[1]
     growth_time = int(maturation_length - germination_length)
     # c1 = (((r_max / r_0) ** (1 / growth_time) - 1) * STEP) / (k2 * c2 * (1.5 * np.pi) ** 0.5)
     return growth_time, germination_length

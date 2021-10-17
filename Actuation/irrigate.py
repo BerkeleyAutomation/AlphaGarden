@@ -64,19 +64,18 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
         """
 
     #-------------alternative way-------------
-    #load garden state
-    #os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
+    # load garden state
+    os.system('python3 ../Learning/create_state.py -t ' + str(timestep))
 
-    # os.system('python3 ../Learning/create_state.py ' + side)
-    # time.sleep(2)
-    # os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
-    # timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
+    os.system('python3 ../Learning/create_state.py ' + side)
+    time.sleep(2)
+    os.system('python3 ../Learning/eval_policy.py -p ba -s 1 -d 1')
+    timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #change path accordingly
 
-    # with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
-    #     sectors = pickle.load(f)
-    #     print(len(sectors), sectors)
+    with open('./policy_metrics/auto_irrigate_'+ SIDE +'/watered_sectors' + '_' + str(timestep) + '.pkl','rb') as f:
+        sectors = pickle.load(f)
+        print(len(sectors), sectors)
     #-----------------------------------------
-
     fb = FarmBotThread()
 
     ratio_x = 1373.3/150 #mm/plant_loc : 2746.6 -> 1373.3
@@ -106,14 +105,14 @@ def watergrid_oneday_lookahead(sim2FB, side, timestep=0):
         #Check if water is still on, if it is turn it off
         fb.update_action("read_pin", 8)
         time.sleep(3)
-        value = pickle.load(open('./data/read_water.p', 'rb'))
+        value = pickle.load(open('./FB_data/read_water.p', 'rb'))
         if value:
             fb.update_action("water", None)
 
     #Check if water is still on, if it is turn it off
     fb.update_action("read_pin", 8)
     time.sleep(3)
-    value = pickle.load(open('./data/read_water.p', 'rb'))
+    value = pickle.load(open('./FB_data/read_water.p', 'rb'))
     if value:
         fb.update_action("water", None)
     if side == 'l':

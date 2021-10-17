@@ -3,7 +3,7 @@ from heapq import nlargest
 from simulator.logger import Logger, Event
 from simulator.garden_state import GardenState
 #from simulator.visualization import setup_animation, setup_saving
-from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE, ROWS, COLS, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_DEPTH
+from simulator.sim_globals import MAX_WATER_LEVEL, IRRIGATION_AMOUNT, PERMANENT_WILTING_POINT, PRUNE_DELAY, PRUNE_THRESHOLD, NUM_IRR_ACTIONS, PRUNE_RATE, ROWS, COLS, SOIL_MOISTURE_SENSOR_ACTIVE, SOIL_DEPTH, AG_REAL
 from simulator.soil_moisture import augment_soil_moisture_map, determine_avg_gain, determine_evap_rate, initial_water_value, save_water_grid, save_sectors
 import os
 import pickle
@@ -328,68 +328,7 @@ class Garden:
         self.actions.append(actions)
 
         # GROWTH ANALYSIS
-        # folder = '/home/satvik/autolab/AlphaGarden/Learning/textFiles/'
-        # # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
-        # p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
-        # # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
-        # # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
-        # # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
-        # # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
-        # # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
-        # # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
-        # # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
-        # # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
-        # # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
-        # # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
-        # for d in self.plants:
-        #     for p in d.values():
-        #         # print(p.type, p.radius, (p.row, p.col))
-        #         if p.type == 'borage':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'sorrel':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'cilantro':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'radicchio':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'kale':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'green_lettuce':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'red_lettuce':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'arugula':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'swiss_chard':
-        #             num = p_type_ind[p.type]
-        #         if p.type == 'turnip':
-        #             num = p_type_ind[p.type]
-
-        #         file_name = str(p.type) + str(num) + '.txt'
-
-        #         # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
-                    
-        #         if p_type_ind[p.type] == 1:
-        #             p_type_ind[p.type] = 0
-        #         elif p_type_ind[p.type] < 1:
-        #             p_type_ind[p.type] += 1
-
-        #         # print(os.getcwd())                
-        #         file_list = os.listdir(folder)
-        #         if file_name not in file_list:
-        #             fil = open(folder + file_name, "w+")
-        #             item = str(p.radius)
-        #             fil.write(item)
-        #             fil.close()
-        #         if file_name in file_list:
-        #             f = open(folder + file_name, "r")
-        #             item = f.read()
-        #             fil = open(folder + file_name, "w+")
-        #             item = str(item) + ", " + str(p.radius)
-        #             fil.write(item)
-        #             fil.close()
-        #END GROWTH ANALYSIS
-
+        # self.growth_analysis()
 
         # print(">>>>>>>>>>>>>>>>>>> HEALTH GRID IS")
         # print(self.get_health_grid((57, 57)))
@@ -397,10 +336,11 @@ class Garden:
 
         # UNCOMMENT FOR REAL->SIM->REAL PIPELINE TO SAVE COORDINATES TO SEND FARMBOT
         # Save out pruning and irrigation coordinates.
-        coords_dirname = "Coords/"
-        if not os.path.exists(coords_dirname):    
-            os.makedirs(coords_dirname)
-        pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
+        if AG_REAL:
+            coords_dirname = "Coords/"
+            if not os.path.exists(coords_dirname):    
+                os.makedirs(coords_dirname)
+            pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
 
         self.timestep += 1
         self.performing_timestep = True
@@ -827,17 +767,18 @@ class Garden:
                 tallest_plant_id = tallest[1]
                 non_occluded_plants.add(self.plants[tallest_type][tallest_plant_id])
         for plant in non_occluded_plants:
-            # #For auto pruning
-            time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
-            print("TIME: ", time, self.timestep == time)
-            print(plant.type, (plant.row, plant.col), plant.row + plant.col)
-            if self.timestep == time or self.timestep == time + 1: #REMOVE DAYS
-                curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
-                if (plant.row + (2 * plant.col)) not in curr_l:
-                    print(plant.row + 2 * plant.col)
-                    curr_l.append(plant.row + 2*plant.col)
-                    pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
-            #end auto pruning
+            # For auto pruning
+            if AG_REAL:
+                time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+                print("TIME: ", time, self.timestep == time)
+                print(plant.type, (plant.row, plant.col), plant.row + plant.col)
+                if self.timestep == time or self.timestep == time + 1: #REMOVE DAYS
+                    curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
+                    if (plant.row + (2 * plant.col)) not in curr_l:
+                        print(plant.row + 2 * plant.col)
+                        curr_l.append(plant.row + 2*plant.col)
+                        pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
+            # end auto pruning
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
             self.update_plant_size(plant, outward=-amount_to_prune)
@@ -925,6 +866,7 @@ class Garden:
         self.health_grid = np.expand_dims(self.grid['health'], axis=2)
         self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
         return np.dstack((self.plant_grid, self.leaf_grid, self.radius_grid, self.last_watered_grid, self.water_grid, self.health_grid))
+
 
     def get_radius_grid(self):
         """ Get grid for plant radius representation.
@@ -1050,16 +992,6 @@ class Garden:
         """
         return self.compute_plant_cc_dist()
 
-    def get_state(self):
-        """ Get state of the garden for all local and global quantities.
-        Return
-            Stacked array with state for plant, leaves, water, health of the garden for each point.
-        """
-        self.water_grid = np.expand_dims(self.grid['water'], axis=2)
-        self.health_grid = np.expand_dims(self.grid['health'], axis=2)
-        self.last_watered_grid = np.expand_dims(self.grid['last_watered'], axis=2)
-        return np.dstack((self.plant_grid, self.leaf_grid, self.last_watered_grid, self.water_grid, self.health_grid))
-
     def get_simulator_state_copy(self):
        """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.
        
@@ -1080,6 +1012,70 @@ class Garden:
             print(
                 "[Garden] No animation to show. Set animate=True when initializing to allow animating history"
                 "of garden!")
+
+    def growth_analysis(self):
+        # GROWTH ANALYSIS
+        folder = '/home/satvik/autolab/AlphaGarden/Learning/textFiles/'
+        # textFiles = ["file0.txt", "file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt", "file7.txt", "file8.txt", "file9.txt"]
+        p_type_ind = {'borage':0, 'sorrel':0, 'cilantro':0, 'radicchio':0, 'kale':0, 'green_lettuce':0, 'red_lettuce':0, 'arugula':0, 'swiss_chard':0, 'turnip':0}
+        # b = {0:3, 1:4, 2:0, 3:5, 4:1, 5:2}
+        # s = {0:2, 1:3, 2:0, 3:1, 4:5, 5:4}
+        # c = {0:2, 1:3, 2:0, 3:1, 4:4, 5:5}
+        # r = {0:2, 1:4, 2:5, 3:0, 4:1, 5:3}
+        # k = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5}
+        # g = {0:3, 1:4, 2:5, 3:2, 4:0, 5:1}
+        # rl = {0:4, 1:0, 2:2, 3:1, 4:3, 5:5}
+        # a = {0:0, 1:1, 2:4, 3:2, 4:3, 5:5}
+        # sc = {0:1, 1:0, 2:2, 3:3, 4:5, 5:4}
+        # t = {0:0, 1:2, 2:1, 3:3, 4:4, 5:5}
+        for d in self.plants:
+            for p in d.values():
+                # print(p.type, p.radius, (p.row, p.col))
+                if p.type == 'borage':
+                    num = p_type_ind[p.type]
+                if p.type == 'sorrel':
+                    num = p_type_ind[p.type]
+                if p.type == 'cilantro':
+                    num = p_type_ind[p.type]
+                if p.type == 'radicchio':
+                    num = p_type_ind[p.type]
+                if p.type == 'kale':
+                    num = p_type_ind[p.type]
+                if p.type == 'green_lettuce':
+                    num = p_type_ind[p.type]
+                if p.type == 'red_lettuce':
+                    num = p_type_ind[p.type]
+                if p.type == 'arugula':
+                    num = p_type_ind[p.type]
+                if p.type == 'swiss_chard':
+                    num = p_type_ind[p.type]
+                if p.type == 'turnip':
+                    num = p_type_ind[p.type]
+
+                file_name = str(p.type) + str(num) + '.txt'
+                # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
+                    
+                if p_type_ind[p.type] == 1:
+                    p_type_ind[p.type] = 0
+                elif p_type_ind[p.type] < 1:
+                    p_type_ind[p.type] += 1
+
+                # print(os.getcwd())                
+                file_list = os.listdir(folder)
+                if file_name not in file_list:
+                    fil = open(folder + file_name, "w+")
+                    item = str(p.radius)
+                    fil.write(item)
+                    fil.close()
+                if file_name in file_list:
+                    f = open(folder + file_name, "r")
+                    item = f.read()
+                    fil = open(folder + file_name, "w+")
+                    item = str(item) + ", " + str(p.radius)
+                    fil.write(item)
+                    fil.close()
+        #END GROWTH ANALYSIS
+
 
     """
         def save_plots(self, path):

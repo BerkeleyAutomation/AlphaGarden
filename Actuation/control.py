@@ -166,9 +166,9 @@ class MyHandler:
         print("New message from FarmBot: " + log['message'])
         if self.read:
             if self.read == 'read_depth.p':
-                pkl.dump(depth_sensor(int(str.split(log['message'])[5])), open('./data/' + self.read, 'wb'))
+                pkl.dump(depth_sensor(int(str.split(log['message'])[5])), open('./FB_data/' + self.read, 'wb'))
             elif self.read == 'read_water.p':
-                pkl.dump(water_value(str.split(log['message'])[5]), open('./data/' + self.read, 'wb'))
+                pkl.dump(water_value(str.split(log['message'])[5]), open('./FB_data/' + self.read, 'wb'))
             self.read = False
 
     # When a response succeeds, the `on_response` callback
