@@ -63,9 +63,7 @@ def label_single_center(files):
     plt.show()
 
 if __name__ == "__main__":
-    # files = daily_files(cropped)[8:9]
-    files = ['hi']
-
+    files = daily_files(cropped)[8:9]
     for _ in range(1):
         centers = []
         for f in files:

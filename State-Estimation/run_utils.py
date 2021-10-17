@@ -166,11 +166,11 @@ def confidence_map(label_map,scor):
             label_map matrix of predicted labels
             scor the confidence of each predicted label
     """
-  dmap = np.full((label_map.shape[0], label_map.shape[1], 3), 0)
-  for x in np.arange(label_map.shape[0]):
-    for y in np.arange(label_map.shape[1]):
-        dmap[x,y,:] = (255, int(255*scor[x,y]), int(255*scor[x,y]))
-  return dmap
+    dmap = np.full((label_map.shape[0], label_map.shape[1], 3), 0)
+    for x in np.arange(label_map.shape[0]):
+        for y in np.arange(label_map.shape[1]):
+            dmap[x,y,:] = (255, int(255*scor[x,y]), int(255*scor[x,y]))
+    return dmap
 
 def correct_density_map(truth_label_map,label_map,scor):
     """ Returns an image of confidence for incorrect predictions.
@@ -179,14 +179,14 @@ def correct_density_map(truth_label_map,label_map,scor):
             label_map matrix of predicted labels
             scor the confidence of each predicted label
     """
-  dmap = np.full((label_map.shape[0], label_map.shape[1], 3), 0)
-  for x in np.arange(truth_label_map.shape[0]):
-    for y in np.arange(truth_label_map.shape[1]):
-      if truth_label_map[x][y] != label_map[x][y]:
-        dmap[x,y,:] = (0, 0, 0)
-      else:
-        dmap[x,y,:] = (int(255*scor[x,y]), int(255*scor[x,y]), 255)
-  return dmap
+    dmap = np.full((label_map.shape[0], label_map.shape[1], 3), 0)
+    for x in np.arange(truth_label_map.shape[0]):
+        for y in np.arange(truth_label_map.shape[1]):
+            if truth_label_map[x][y] != label_map[x][y]:
+                dmap[x,y,:] = (0, 0, 0)
+            else:
+                dmap[x,y,:] = (int(255*scor[x,y]), int(255*scor[x,y]), 255)
+    return dmap
 
 def sensitive_map(truth_label_map,label_map,scor):
     """ Returns an image of confidence for incorrect predictions.
@@ -195,11 +195,11 @@ def sensitive_map(truth_label_map,label_map,scor):
             label_map matrix of predicted labels
             scor the confidence of each predicted label
     """
-  dmap = np.full((label_map.shape[0], label_map.shape[1], 3), 0)
-  for x in np.arange(truth_label_map.shape[0]):
-    for y in np.arange(truth_label_map.shape[1]):
-      if truth_label_map[x][y] == label_map[x][y]:
-        dmap[x,y,:] = (0, 0, 0)
-      else:
-        dmap[x,y,:] = (255, min(int(255*scor[x,y]) * 3, 255), min(int(255*scor[x,y]) * 3, 255))
-  return dmap
+    dmap = np.full((label_map.shape[0], label_map.shape[1], 3), 0)
+    for x in np.arange(truth_label_map.shape[0]):
+        for y in np.arange(truth_label_map.shape[1]):
+            if truth_label_map[x][y] == label_map[x][y]:
+                dmap[x,y,:] = (0, 0, 0)
+            else:
+                dmap[x,y,:] = (255, min(int(255*scor[x,y]) * 3, 255), min(int(255*scor[x,y]) * 3, 255))
+            return dmap
