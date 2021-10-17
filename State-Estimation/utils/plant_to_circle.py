@@ -9,11 +9,10 @@ from itertools import combinations
 import heapq
 from collections import deque
 # from linearity import *
-from center_constants import *
-from geometry_utils import *
-from centers_test import *
+from utils.center_constants import *
+from utils.geometry_utils import *
+from utils.centers_test import *
 # from linearity import *
-from full_auto_utils import *
 
 #####################################
 ########## UTILITY METHODS ##########
@@ -29,7 +28,7 @@ def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w", si
         folder = 'right/'
     elif side == 'l':
         folder = 'left/'
-    else: 
+    else:
         folder = "testing/"
 
     img, img_arr = get_img(path)

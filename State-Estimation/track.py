@@ -5,17 +5,18 @@ import pickle as pkl
 from linearity import *
 from centers_test import *
 from datetime import date
+from Segmentation.run import *
 
 '''
-How to run this script: 
+How to run this script:
 python3 track.py "snc-<>.jpg"
 
 '''
 
 def process_targets(leaf_centers, type_dic, plants_to_prune):
     '''
-    Filter leaf centers by the plants we want to prune. 
-    Return only (center, target) for desired plants. 
+    Filter leaf centers by the plants we want to prune.
+    Return only (center, target) for desired plants.
     '''
     # type dic (k: int row + int col, v: pixel row)
     out = []
@@ -34,7 +35,7 @@ if __name__ == "__main__":
     prune_points/<yy><mm><dd>_all.png       --> all target points
     prune_points/<yy><mm><dd>_filtered.png  --> filtered target points
 
-    
+
     DIRECTORY FOR PICKLED FILES
     prune_points/<yy><mm><dd>_target.p      --> filtered target points
     circles/<yy><mm><dd>_circles.p          --> dictionary for plant centers/radius
@@ -57,12 +58,17 @@ if __name__ == "__main__":
     # delta = d_1 - d_0
     # pkl.dump(delta.days, open("timestep" + ".p", "wb"))
 
+    print("------------------------------Segmentation-----------------------------------------")
+    get_img_seg_mask(f[:-4])
+
     # circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
     # pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
     # pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
 
     # # For the simulator to select plants to prune
     # pkl.dump([], open("plants_to_prune.p", "wb"))
+
+
 
     print("------------------------------LINEARITY-----------------------------------------")
     # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
@@ -94,5 +100,3 @@ if __name__ == "__main__":
 
     # pkl.dump(filtered, open("current_pts" + ".p", "wb"))
     # pkl.dump(filtered, open(cwd + "/prune_points/" + f[4:10] + "_target.p", "wb"))
-
-

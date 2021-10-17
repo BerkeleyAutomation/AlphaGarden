@@ -8,7 +8,7 @@ from segmentation_models import base
 from skimage.transform import resize
 from skimage.io import imread, imshow, concatenate_images,imsave
 from tqdm import tqdm_notebook, tnrange
-from constants import *
+from utils.constants import *
 from statistics import *
 import copy
 from math import *

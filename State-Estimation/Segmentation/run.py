@@ -1,13 +1,10 @@
 import tensorflow as tf
 import segmentation_models as sm
 import torch
-from constants import *
-from data_utils import *
+from utils.constants import *
 from run_utils import *
-#Delete this
-from full_auto_utils import *
+from utils.full_auto_utils import *
 from location_segmentation import *
-#To this
 from keras.models import Model, load_model
 from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img

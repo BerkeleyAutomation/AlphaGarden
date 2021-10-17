@@ -1,16 +1,16 @@
 from keras.optimizers import get
 from numpy.core.defchararray import center
-from plant_to_circle import *
-from geometry_utils import *
+from utils.plant_to_circle import *
+from utils.geometry_utils import *
 # from centers_test import *
-from constants import *
-from center_constants import *
+from utils.constants import *
+from utils.center_constants import *
 import numpy as np
 import pickle as pkl
 import os
 from PIL import Image
 import imageio
-from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, IRR_THRESHOLD 
+from simulator.sim_globals import ROWS, COLS, STEP, SECTOR_ROWS, SECTOR_COLS, IRR_THRESHOLD
 from simulator.plant_type import PlantType
 from simulator.garden_state import GardenState
 from simulator.garden import Garden
@@ -72,7 +72,7 @@ def enumerate_grid(grid):
     for i in range(0, len(grid)):
         for j in range(len(grid[i])):
             yield (grid[i, j], (i, j))
-                    
+
 def compute_plant_health(grid, grid_shape, plants):
     """ Compute health of the plants at each grid point.
     Args:
@@ -297,7 +297,7 @@ def cm_circles_to_sim_garden_state(real_path, timestep):
     for plant in plant_objs:
         add_plant(plant, id_ctr, plants, plant_types, plant_locations, grid, plant_grid, leaf_grid)
         id_ctr += 1
-        
+
     grid['health'] = compute_plant_health(grid, grid['health'].shape, plants)
 
     growth_map = compute_growth_map()
@@ -307,7 +307,7 @@ def cm_circles_to_sim_garden_state(real_path, timestep):
         for plant in real_data[p_type]:
             r, c = plant[0]
             radius = plant[1]
-            radius_grid[r, c, 0] = radius 
+            radius_grid[r, c, 0] = radius
 
     garden_state = GardenState(plants, grid, plant_grid, plant_prob, leaf_grid, plant_type,
                             plant_locations, growth_map, radius_grid, timestep, existing_data=True)
@@ -329,14 +329,14 @@ def query_sim_radius_range(circle_path, timestep):
             # print(max_plant.type, max_plant.radius*radius_conversion_factor, (max_plant.row, max_plant.col))
             radius_dict[max_plant.type] = radius_dict.get(max_plant.type, []) + [(max_plant.radius*radius_conversion_factor, (max_plant.row, max_plant.col))]
     return {type: sorted(radius_dict[type], key=lambda tup: tup[0]) for type in radius_dict.keys()}
-        
+
 
 
 def get_radius_range(day: int, prev_rad: int, min_max_model_coefs: tuple, **kwargs) -> tuple:
     plant_type = kwargs.get("type", "kale")
     if day == 0:
         return (0, 10)
-    
+
     MAX_DIAMETER = {
         "arugula": 500,
         "borage": 500,
@@ -516,7 +516,7 @@ def make_graphic_for_paper(prior_pathes, image_pathes, use_color=True):
             for circ in c:
                 c, rad, _ = circ["circle"]
                 cur_cen.append(c)
-                cur_rad.append(rad) 
+                cur_rad.append(rad)
             centers.append(cur_cen)
             radii.append(cur_rad)
             colors.append(color if use_color else [256,256,256])

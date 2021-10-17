@@ -47,3 +47,4 @@ Keras==2.3.1
 -e ./Learning/gym_simalphagarden/agenv/
 -e ./Learning/gym_simalphagarden/wrapper/
 -e ./Simulator
+-e ./State-Estimation
