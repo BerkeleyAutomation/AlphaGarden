@@ -141,7 +141,7 @@ def loc_bias_with_shift(model, name, path):
         path folder location of images
     """
 
-    image_name = '{}/{}.jpg'.format(path, name)
+    image_name = '../{}/{}.jpg'.format(path, name)
 
     priors_left = get_recent_priors(path=PRIOR_PATH, side='l')
     priors_right = get_recent_priors(path=PRIOR_PATH, side='r')
@@ -180,7 +180,7 @@ def loc_bias_with_shift(model, name, path):
                 label[i][j] = label_map2[i][j]
                 prescor[i][j] = prescor2[i][j]
 
-    show_test_truth_prediction(labels_to_colors(label), 'post_process/' + name + ".png")
+    show_test_truth_prediction(labels_to_colors(label), '../out/post_process/' + name + ".png")
     #combine the two images together using major vote / confidence metric
 
-    return "./post_process/" + name + ".png"
+    return "../out/post_process/" + name + ".png"
