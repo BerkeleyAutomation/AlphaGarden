@@ -1,6 +1,6 @@
-IMG_DIR = "./inputs"
-CIRCLE_PATH = "./circles/"
-PRIOR_PATH = './priors/'
+IMG_DIR = "./out/inputs"
+CIRCLE_PATH = "./out/circles/"
+PRIOR_PATH = './out/priors/'
 MAX_RADIUS_MODELS_PATH = "./models/growth_models/max_log_models.p"
 MIN_RADIUS_MODELS_PATH = "./models/growth_models/min_log_models.p"
 COLOR_TOLERANCE = 50
