@@ -1,11 +1,11 @@
 import sys
-from crop_img_ind import *
-from full_auto_circles import *
+from utils.crop_img_ind import *
+from center_tracking.full_auto_circles import *
 import pickle as pkl
-from linearity import *
-from centers_test import *
+from center_tracking.linearity import *
+from utils.centers_test import *
 from datetime import date
-from Segmentation.run import *
+from segmentation.run import *
 
 '''
 How to run this script:

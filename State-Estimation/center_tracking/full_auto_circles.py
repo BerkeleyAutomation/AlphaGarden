@@ -1,12 +1,11 @@
 from matplotlib.pyplot import show
-from plant_to_circle import *
-from geometry_utils import *
-from center_constants import *
+from utils.plant_to_circle import *
+from utils.geometry_utils import *
+from utils.center_constants import *
 # from centers_test import *
-from full_auto_utils import *
-from run import *
+from utils.full_auto_utils import *
 import numpy as np
-from constants import *
+from utils.constants import *
 from tqdm import tqdm
 
 
@@ -58,7 +57,7 @@ def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day
                 direction_vec = direction_vec / np.linalg.norm(direction_vec)
                 # Solve for moving the original point 50 units in the direction of the new vector.
                 # As long as the vector is normalized the answer is 5*root2, and independent of the vectors
-                # pretty neat! 
+                # pretty neat!
                 scale_factor = 5*sqrt(2)
                 c = [c[i] + scale_factor*direction_vec[i] for i in range(2)]
             new_c["circle"], new_c["days_post_germ"] = (c, r, max_p), day
@@ -120,7 +119,7 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False, sid
         path = crop_img(path)
     id_ = path[path.find(IMAGE_NAME_PREFIX):path.find(".jpg")]
     print("Extracting Mask: "+path)
-    mask_path = get_img_seg_mask(id_)
+    mask_path = "../out/post_process/{}.png".format(id_)
     # mask_path = "./post_process/"+id_+".png"
     print("Labeling circles: "+ mask_path)
     day = pickle.load(open("./timestep.p", "rb"))
@@ -138,4 +137,3 @@ if __name__ == "__main__":
     for day, f in enumerate(daily_files("./post_process")[34:]):
         print(f,real_circles_paths[day], priors_paths[day])
         label_circles_BFS("post_process/" + f, side="r", show_res=True, day=day+33,sim_circle_path=real_circles_paths[day], prior_path=priors_paths[day])
-        
