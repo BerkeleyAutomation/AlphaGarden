@@ -33,15 +33,15 @@ CHECKPOINT_FILE = './final1.h5'
 
 
 TYPES_TO_COLORS = {
-    "other": [0, 0, 0], #check
-    "borage": [255, 174, 0], #check
-    "cilantro": [0, 124, 93], #check
-    "green-lettuce": [50, 226, 174], #check
-    "kale": [50, 50, 226], #check
-    "radicchio": [185, 180, 44], #check
-    "red-lettuce": [145, 50, 226], #check
-    "swiss-chard": [226, 50, 170], #check
-    "turnip": [254, 85, 89] #check
+    "other": [0, 0, 0],
+    "borage": [255, 174, 0],
+    "cilantro": [0, 124, 93],
+    "green-lettuce": [50, 226, 174],
+    "kale": [50, 50, 226],
+    "radicchio": [185, 180, 44],
+    "red-lettuce": [145, 50, 226],
+    "swiss-chard": [226, 50, 170],
+    "turnip": [254, 85, 89]
 }
 
 BINARY_ENCODINGS = {
@@ -57,15 +57,15 @@ BINARY_ENCODINGS = {
 }
 
 LABEL_ENC = {
-    "other": 0, #check
-    "borage": 1, #check
-    "cilantro": 2, #check
-    "green-lettuce": 3, #check
-    "kale": 4, #check
-    "radicchio": 5, #check
-    "red-lettuce": 6, #check
-    "swiss-chard": 7, #check
-    "turnip": 8 #check
+    "other": 0,
+    "borage": 1,
+    "cilantro": 2,
+    "green-lettuce": 3,
+    "kale": 4,
+    "radicchio": 5,
+    "red-lettuce": 6,
+    "swiss-chard": 7,
+    "turnip": 8
 }
 
 COLORS = [
@@ -100,6 +100,8 @@ TEST_PATH = 'out/cropped'
 IOU_EVAL_FILE = 'iou_eval_file.csv'
 
 TEST_MODEL = './models/curr_model.h5'
+
+PROCESSED_IMAGES = './out/post_process/'
 
 GARDEN_DATE_YEAR = 2021
 GARDEN_DATE_MONTH = 7

@@ -119,7 +119,7 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False, sid
         path = crop_img(path)
     id_ = path[path.find(IMAGE_NAME_PREFIX):path.find(".jpg")]
     print("Extracting Mask: "+path)
-    mask_path = "../out/post_process/{}.png".format(id_)
+    mask_path = "./out/post_process/{}.png".format(id_)
     # mask_path = "./post_process/"+id_+".png"
     print("Labeling circles: "+ mask_path)
     day = pickle.load(open("./timestep.p", "rb"))
