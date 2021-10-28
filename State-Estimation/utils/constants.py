@@ -102,6 +102,11 @@ IOU_EVAL_FILE = 'iou_eval_file.csv'
 TEST_MODEL = './models/curr_model.h5'
 
 PROCESSED_IMAGES = './out/post_process/'
+CIRCLES_LOC = './out/circles/'
+CROPPED_LOC = './out/cropped/'
+FIGURES_LOC = './out/figures/'
+PRIORS = './out/priors/'
+PRUNE_POINTS = './out/prune_points'
 
 GARDEN_DATE_YEAR = 2021
 GARDEN_DATE_MONTH = 7
