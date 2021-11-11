@@ -389,7 +389,7 @@ if __name__ == '__main__':
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
     if not AG_REAL:
-        seed_config_path = '/Users/mpresten/Desktop/AlphaGarden/placement_20.p'
+        seed_config_path = './placement_20.p'
     else:
         seed_config_path = None
 

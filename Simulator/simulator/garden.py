@@ -477,7 +477,6 @@ class Garden:
                     plant.water_available += point['water']
                 
                 while point['water'] > PERMANENT_WILTING_POINT and plant_types_and_ids:
-                    #print()
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plant_types_and_ids)))
                     plant = self.plants[plant_types_and_ids[i][0]][plant_types_and_ids[i][1]]
