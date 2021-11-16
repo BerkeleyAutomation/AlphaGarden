@@ -7,6 +7,7 @@ import pickle as pkl
 from scipy.spatial import KDTree
 from itertools import combinations 
 import heapq 
+from numba import njit
 from collections import deque
 # from linearity import *
 from center_constants import *
@@ -83,32 +84,37 @@ def plant_COM_extreme_points(old_center, img_arr, radius = 100):
                 max_x, max_y, min_x, min_y = update_min_max(cur_p, max_x, max_y, min_x, min_y)       
     return ((total_x / count, total_y / count) if count > 0 else old_center), (max_x, max_y, min_x, min_y)  
 
-def bfs(center, img_arr, termination_cond=lambda arr, recent_color_pts, p: len(arr) > 400, arr_oversided = lambda arr, r: 6.3*r < len(arr)):
+
+@njit
+def bfs(center, img_arr, termination_cond, arr_oversided):
+    center = (int(center[0]), int(center[1]))
     visited = set()
     color_pts = set()
     recent_color_pts = 0
     def distance_to_center(p1):
-        return sq_distance(p1, center)
+        return (p1[0] - center[0])**2 + (p1[1] - center[1])**2
 
     def is_valid_color(point):
         temp_rbg = img_arr[round(point[1])][round(point[0])]
         temp_rbg = (temp_rbg[0], temp_rbg[1], temp_rbg[2])
         return temp_rbg in COLORS
+
     benchmark_r = 10
     q = [(0, center)]
-    recent = deque([1])
+    recent = np.array([1])
     while q:
         current_r, cur_point = heapq.heappop(q)
         benchmark_r = max(benchmark_r, current_r)
         visited.add(cur_point)
         if not_black(cur_point, img_arr):
             color_pts.add(cur_point)
-            recent.append(1)
+            recent = np.append(recent, 1)
             recent_color_pts += 1
         else:
-            recent.append(0)
+            recent = np.append(recent, 0)
         if arr_oversided(recent, benchmark_r):
-            color_pt = recent.popleft()
+            color_pt = recent[0]
+            recent = np.delete(recent, 0)
             if color_pt:
                 recent_color_pts -= 1
         if termination_cond(recent, recent_color_pts, cur_point):
@@ -224,7 +230,7 @@ def merge_circles(circles):
         for smaller_circle in circles_copy:
             if intersect(curr_circle, smaller_circle):
                 circles.remove(smaller_circle)
-                curr_circle = reweight_circle(curr_circle, smaller_circle)
+                # curr_circle = reweight_circle(curr_circle, smaller_circle)
         merged.add(curr_circle)
     return list(merged)
 
@@ -266,23 +272,27 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
     max_radius: max search distance
     min_radius: min radius for searching
     
-    '''
+    ''' 
+    @njit
     def termination_cond(arr, recent_color_pts, point): 
-        plant_ended = recent_color_pts / len(arr) < .1
-        too_long = distance(point, old_center) > max_radius
+        plant_ended = recent_color_pts / len(arr) < .15 and len(arr) > 7*min_radius
+        too_long = distance(point, old_center) > max_radius and recent_color_pts / len(arr) < .3
         too_small = distance(point, old_center) < min_radius
         return (plant_ended or too_long) and not too_small
 
+    @njit
+    def arr_oversized(arr, r):
+        return 6.3*r < len(arr)
+
     img, img_arr = get_img(path)
-    img, _ = convert_to_plant_colorspace(old_center, img_arr, img, plant_type)
+    img, img_arr = convert_to_plant_colorspace(old_center, img_arr, img, plant_type)
     taken_circles = kwargs.get("taken_circles", tuple())
     for circ_dict in taken_circles:
         circ = circ_dict["circle"]
         if int(round(circ[1])) >= 0:
             img = cv2.circle(img, (int(circ[0][0]), int(circ[0][1])), int(round(circ[1])), (0,0,0), -1)
-        
-
-    color_points = bfs(old_center, np.asarray(img), termination_cond)
+    color_points = bfs(find_color(old_center, img_arr, TYPES_TO_COLORS[plant_type]), \
+        np.asarray(img), termination_cond, arr_oversized)
     sum_x, sum_y, extreme_pt = 0, 0, old_center
     for p in color_points:
         sum_x += p[0]
@@ -290,12 +300,12 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
         if distance(p, old_center) > distance(extreme_pt, old_center):
             extreme_pt = p
     center = (sum_x / len(color_points), sum_y / len(color_points))
-    center = ((center[0] + old_center[0]) / 2, (center[1] + old_center[1]) / 2)
+    # center = ((center[0] + old_center[0]) / 2, (center[1] + old_center[1]) / 2)
     extreme_pt = max(color_points, key=lambda p: sq_distance(center, p))
     # extrema = get_extrema((round(center[0]), round(center[1])), path, radius)
     # r =  max([distance(center, pt) for pt in extrema])
     # r = distance(extreme_pt, center)
-    return center, min(extreme_pt, (center[0]+max_radius, center[1]), key=lambda p: sq_distance(center, p))
+    return center, extreme_pt
 
 
 def extreme_points_circle(path, old_center, radius = 100):
@@ -358,7 +368,7 @@ def contour_fit_circles(path, benchmark_circles):
         merged = merge_circles_with_prior(circles, plant_type, benchmark_circles)
         # merged = [circle for circle in merged if circle[1] >= 10]
         merged.sort(key=lambda pair: -pair[1])
-        plant_circles[plant_type] = merged
+        plant_circles[plant_type] = merged 
 
     # circles = list()
 
