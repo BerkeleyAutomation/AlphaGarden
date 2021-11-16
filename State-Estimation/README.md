@@ -1,4 +1,4 @@
-## Cicle Tracking & Segmentation Pipeline
+## State Estimation
 
 ### Steps to run and high-level overview
 
@@ -8,7 +8,7 @@
     - CIRCLE_PATH = "out/circles/" (where to save the CM circles)
     - PRIOR_PATH = "out/priors/" (where to find the priors)
     - TEST_MODEL = './models/MOST_RECENT_MODEL.h5' (replace with most recent model)
-4. Open ```track.py``` run: ```python3 track.py "snc-<>.jpg" ```
+4. Open ```track.py``` run: ```python3 track.py "snc-<>.jpg"```
 5. Wait! It's gonna take a while from here, but when you come back everything should be processed.
 
 ### File Structure
@@ -37,9 +37,6 @@
 
 ``` models/growth_models ```
 - Radius logistic growth models by plant type (stored as Python serialization objects aka pickles)
-
-``` old/ ```
-- Old iterations of the pipeline (shouldn't be on Github)
 
 ``` out/post_process/ ```
 - Image Segmentation masks
