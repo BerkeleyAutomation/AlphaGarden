@@ -59,14 +59,14 @@ if __name__ == "__main__":
     # pkl.dump(delta.days, open("timestep" + ".p", "wb"))
 
     print("------------------------------Segmentation-----------------------------------------")
-    get_img_seg_mask(f[:-4])
+    # get_img_seg_mask(f[:-4])
 
-    # circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
-    # pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
-    # pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
+    circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
+    pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
+    pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
 
-    # # For the simulator to select plants to prune
-    # pkl.dump([], open("plants_to_prune.p", "wb"))
+    # For the simulator to select plants to prune
+    pkl.dump([], open("plants_to_prune.p", "wb"))
 
 
 

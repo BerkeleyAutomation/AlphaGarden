@@ -44,7 +44,7 @@ def draw_circles(path, circle_dict, save_no_show = False, circle_color = "w", si
             circle1 = Circle((round(center[0]), round(center[1])), radius, color=circle_color, fill=False, lw=2)
             ax.add_patch(circle1)
     if save_no_show:
-        plt.savefig("./figures/"+folder+path[path.find("snc"):])
+        plt.savefig("./out/figures/"+folder+path[path.find("snc"):])
     else:
         plt.show()
 
@@ -61,7 +61,7 @@ def draw_circle_sets(path, list_of_centers, list_of_radii, colors):
             circle = Circle((round(center[0]), round(center[1])), radius, color=[c/256 for c in color], fill=False, lw=1, alpha=.7)
             ax.add_patch(circle)
     plt.axis('off')
-    plt.savefig("./figures/"+path[path.find("-")+1:], bbox_inches='tight')
+    plt.savefig("./out/figures/"+path[path.find("-")+1:], bbox_inches='tight')
     plt.show()
 
 

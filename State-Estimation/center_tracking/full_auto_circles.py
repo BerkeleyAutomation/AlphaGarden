@@ -11,11 +11,7 @@ import numpy as np
 from utils.constants import *
 from tqdm import tqdm
 
-# Ensure that we're running things in the correct working directory
-if os.getcwd().split("/")[-1] != "center_tracking":
-    while "State-Estimation" not in os.listdir("."):
-        os.chdir("..")
-    os.chdir("./State-Estimation/center_tracking")
+
 
 
 ############################
@@ -27,6 +23,7 @@ def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day
     print("BFS Fit for: "+path)
     priors = get_recent_priors(prior_path)[1] if prior_path else get_recent_priors(path=PRIOR_PATH, side=side)
     new_circles = {plant_type: [] for plant_type in priors.keys()}
+    print(sim_circle_path)
     use_sim = sim_circle_path != None and day != None
     if use_sim:
         max_radius_dict = query_sim_radius_range(sim_circle_path, day)
@@ -123,22 +120,28 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False, sid
     First the image is cropped according to parameters using on Sept 2020 garden,
     then the segmentation mask is extract and post-processed. Then, BFS is run with priors,
     which are the most recent prior stored in center_constants.py/PRIOR_PATH'''
+    # print(daily_files("./out/circles/right", False))
+    real_circles_paths = ["./out/circles/right/" + f for f in daily_files("./out/circles/right", False)[15:16]]
+    priors_paths =  ["./out/priors/right/" + f for f in daily_files("./out/priors/right", False)[15:16]]
     id_ = path[path.find(IMAGE_NAME_PREFIX):path.find(".jpg")]
     print("Extracting Mask: "+path)
-    mask_path = "../out/post_process/{}.png".format(id_)
+    mask_path = "./out/post_process/{}.png".format(id_)
     print("Labeling circles: "+ mask_path)
-    day = pickle.load(open("../timestep.p", "rb"))
-    return label_circles_BFS(mask_path, True, side, day=day, sim_circle_path=sim_circle_path, prior_path=prior_path)
+    print(os.getcwd())
+    day = pickle.load(open("./timestep.p", "rb"))
+    return label_circles_BFS(mask_path, True, side, day=day, sim_circle_path=real_circles_paths[-1], prior_path=priors_paths[-1])
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 #     print("=" * 20)
 #     print("Running Segmentation + Center Tracking")
 #     print("Garden year: {} Garden month: {} Garden day: {}".format(GARDEN_DATE_YEAR, GARDEN_DATE_MONTH, GARDEN_DATE_DAY))
 #     print("Using Segmentation Model: {}".format(TEST_MODEL))
 #     print("Combining images via: {}".format(SHIFT))
 #     print("=" * 20)
-    real_circles_paths = ["../out/circles/right/" + f for f in daily_files("../out/circles/right", False)[15:16]]
-    priors_paths =  ["../out/priors/right/" + f for f in daily_files("../out/priors/right", False)[15:16]]
-    for day, f in enumerate(daily_files("../out/post_process")[15:16]):
-        print(f,real_circles_paths[day], priors_paths[day])
-        label_circles_BFS("../out/post_process/" + f, side="r", show_res=True, day=day+33,sim_circle_path=real_circles_paths[day], prior_path=priors_paths[day])
+# Ensure that we're running things in the cor   rect working directory
+    # print(daily_files("./out/circles/right", False))
+    # real_circles_paths = ["./out/circles/right/" + f for f in daily_files("./out/circles/right", False)[15:16]]
+    # priors_paths =  ["./out/priors/right/" + f for f in daily_files("./out/priors/right", False)[15:16]]
+    # for day, f in enumerate(daily_files("../out/post_process")[15:16]):
+    #     print(f,real_circles_paths[day], priors_paths[day])
+    #     label_circles_BFS("./out/post_process/" + f, side="r", show_res=True, day=day+33,sim_circle_path=real_circles_paths[day], prior_path=priors_paths[day])

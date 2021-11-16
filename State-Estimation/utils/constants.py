@@ -96,7 +96,7 @@ IOU_TEST_RATIO = 1.0
 
 ratio = 0.
 
-TEST_PATH = 'out/cropped'
+TEST_PATH = './out/cropped'
 IOU_EVAL_FILE = 'iou_eval_file.csv'
 
 TEST_MODEL = './models/curr_model.h5'
