@@ -3,7 +3,7 @@ import torch
 from simulator.SimAlphaGardenWrapper import SimAlphaGardenWrapper
 from simulator.visualizer import Matplotlib_Visualizer, OpenCV_Visualizer, Pillow_Visualizer
 from simulator.plant_type import PlantType
-from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP
+from simulator.sim_globals import NUM_IRR_ACTIONS, NUM_PLANTS, PERCENT_NON_PLANT_CENTERS, PRUNE_DELAY, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS, PRUNE_WINDOW_ROWS, PRUNE_WINDOW_COLS, STEP, AG_REAL
 import simalphagarden
 import simulator.baselines.analytic_policy as analytic_policy
 import simulator.baselines.wrapper_analytic_policy as wrapper_policy
@@ -236,10 +236,12 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
                     sector_obs_per_day, vectorized=False)[0]
         all_actions.append(action)
         obs, rewards, _, _ = env.step(action)
-        if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
-            cov, div, water, act, mme1, mme2 = env.get_metrics()
-            div_cov_day = cov[-1] * div[-1]
-            div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
+
+        # if i % sector_obs_per_day == 0 and i >= sector_obs_per_day and wrapper == False:
+        #     cov, div, water, act, mme1, mme2 = env.get_metrics()
+        #     div_cov_day = cov[-1] * div[-1]
+        #     div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
+        
     # dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
     # if not os.path.exists(dirname):    
     #     os.makedirs(dirname)
@@ -386,7 +388,11 @@ if __name__ == '__main__':
     save_dir = args.output_directory
     vis_identifier = time.strftime("%Y%m%d-%H%M%S")
 
-    seed_config_path = '/Users/williamwong/Downloads/scaled_orig_placement'
+    if not AG_REAL:
+        seed_config_path = './placement_20.p'
+    else:
+        seed_config_path = None
+
     randomize_seeds_cords_flag = False
 
     for i in range(args.tests):
@@ -395,7 +401,6 @@ if __name__ == '__main__':
         env = init_env(rows, cols, depth, sector_rows, sector_cols, prune_window_rows, prune_window_cols, action_low,
                        action_high, obs_low, obs_high, collection_time_steps, garden_step, num_plant_types, seed,
                        randomize_seed_coords=randomize_seeds_cords_flag, plant_seed_config_file_path=seed_config_path)
-
         # vis = Matplotlib_Visualizer(env.wrapper_env)
         # vis = OpenCV_Visualizer(env.wrapper_env)
         vis = Pillow_Visualizer(env.wrapper_env)

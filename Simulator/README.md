@@ -14,4 +14,6 @@ The most important (class) files are mentioned in this table.
 | [plant_stage.py](AlphaGarden/Simulator/simulator/plant_stage.py)                      |Modeling plant stages in bio standard life cycle trajectory.|
 | [plant_type.py](AlphaGarden/Simulator/simulator/plant_type.py)                        |High-level structure for plant types available in garden.|
 | [plant.py](AlphaGarden/Simulator/simulator/plant.py)                                  |Model for plants. |
+| [sim_globals.py](AlphaGarden/Simulator/simulator/sim_globals.py)                 |Global variables. |
+| [plant_presets.py](AlphaGarden/Simulator/simulator/plant_presets.py)                       |Plant specific growth parameters.|
 | [baseline_policy.py](AlphaGarden/Simulator/simulator/baselines/baseline_policy.py)    |Implementation of baseline policy.|

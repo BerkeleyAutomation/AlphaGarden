@@ -1,5 +1,5 @@
 import numpy as np
-from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED, ROWS, COLS
+from simulator.sim_globals import MAX_WATER_LEVEL, PRUNE_DELAY, PRUNE_THRESHOLD, PRUNE_RATE, IRR_THRESHOLD, NUM_PLANT_TYPES_USED, ROWS, COLS, AG_REAL
 
 
 def plant_in_area(plants, r, c, w, h, plant_idx):
@@ -154,6 +154,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         plants_and_water = state
     else:
         plants_and_water = state[1]
+    
     if vectorized:
         plants_and_water = plants_and_water[0]
     plants = plants_and_water[:,:,:-2]
@@ -163,7 +164,7 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
     action = 0
     
     # Prune
-    if timestep > PRUNE_DELAY * sector_obs_per_day:
+    if AG_REAL or timestep > PRUNE_DELAY * sector_obs_per_day:
         prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
         violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}

@@ -33,9 +33,18 @@ tensorboard==1.15.0
 tensorflow==1.15.0
 tensorflow-estimator==1.15.1
 termcolor==1.1.0
-torch==1.4.0
+torch==1.9.0
+torchsummary==1.5.1
+torchvision==0.10.0
 Werkzeug==1.0.0
 wrapt==1.12.0
+segmentation-models==1.0.1
+scikit-learn==0.20
+tqdm==4.32.0
+docopt==0.6.2
+ipywidgets==7.5.1
+Keras==2.3.1
 -e ./Learning/gym_simalphagarden/agenv/
 -e ./Learning/gym_simalphagarden/wrapper/
 -e ./Simulator
+-e ./State-Estimation
