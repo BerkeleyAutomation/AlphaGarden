@@ -8,9 +8,11 @@ from PIL import Image
 import os
 # Our packages
 sys.path.insert(1, '..')
-from full_auto_utils import *
-from constants import *
-from center_constants import *
+from utils.full_auto_utils import *
+from utils.constants import *
+from utils.center_constants import PRIOR_PATH
+from utils.constants import *
+import pickle as pkl
 
 TYPES_TO_COLORS = {
     "other":[0,0,0],
@@ -39,7 +41,8 @@ def get_recent_priors(path=PRIOR_PATH):
         path = str(path) + str(daily_files(path, False)[-1])
     return pkl.load(open(path, "rb"))
 
-def get_masks_and_overhead(date, mask_path="../post_process", overhead_path="../input"):
+# TODO overhead path
+def get_masks_and_overhead(date, mask_path=PROCESSED_IMAGES, overhead_path="../input"):
     '''Retrieves mask and overhead image of the given date.
     Date format: yymmddhh
     Params
@@ -79,7 +82,7 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         :double: The scale change between the original and scaled down
         :tuple: The offset of the image due to a mask that was cut off
     '''
-    from key_point_id import shrink_im
+    from keypoint.key_point_id import shrink_im
     # if key != None:
     #     key_isolated_mask = isolate_color(mask, *calculate_color_range(TYPES_TO_COLORS[key], COLOR_TOLERANCE))[0]
     #     key_isolated_mask = (cv2.cvtColor(key_isolated_mask, cv2.COLOR_RGB2GRAY)).astype(np.uint8)

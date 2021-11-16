@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import sys
-import key_point_pipeline_utils as keypoint
-import full_auto_utils as fau
+# sys.path.insert(1, '..')
+import keypoint.key_point_pipeline_utils as keypoint
+import utils.full_auto_utils as fau
 import time
 
 ## Heatmap Imports
-import keypoint_model as mdl
+import keypoint.keypoint_model as mdl
 import torch
 from torchvision import transforms
 import numpy.linalg as la
@@ -25,8 +26,9 @@ import numpy as np
 import pathlib
 
 ## Repo Imports
-from key_point_decision import *
-from crop_img_ind import *
+from keypoint.key_point_decision import *
+from utils.crop_img_ind import *
+from utils.constants import *
 
 # path = pathlib.Path(__file__).parent.resolve()
 # mask_path = os.path.join(path,'210805/snc-21080508141400.png')
@@ -35,6 +37,7 @@ from crop_img_ind import *
 # date = '21080508141400'
 shrink = 2
 
+MODEL_PATH = './models/leaf_keypoints.pth'
 
 def naive_centroid(arr):
         """ Find the centroid for a set of points
@@ -72,7 +75,7 @@ def find_point_clusters(points, thresh, name = 1):
 
 
 transf = transforms.Compose([transforms.Resize((256,256)),transforms.ToTensor()])
-def init_model(model_path= 'weights/borage_clean_CVPPP_Overhead-split.pth', cuda_device = 'cuda'):
+def init_model(model_path=MODEL_PATH,  cuda_device = 'cuda'):
     '''Initialize the Model
     Params
         :string model_path: .pth location for the model
@@ -261,7 +264,7 @@ def remove_keypoints(points, mask, inner_thres = 10):
                 ret_pts.add(pt) 
     return list(ret_pts)
 
-def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False):
+def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False, **kwargs):
     '''Generates a keypoint dictionary with all the data for the overhead
     Params
         :string mask_path: location of segmentation mask
@@ -288,8 +291,8 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
     >>> get_keypoints("snc-1240234232.png", "snc-1240234232.jpg", "snc-1240234232.p", "model.pth", "20210624")
     dict with the above data
     '''
-    print(mask_path, overhead_path, priors_path, model_path, date)
-    model = init_model(model_path=model_path)
+    print(mask_path, overhead_path, priors_path, model_path, date, kwargs)
+    model = init_model(model_path=model_path, **kwargs)
     mask = fau.get_img(mask_path)[1]
     overhead = fau.get_img(overhead_path)[1]
     priors = keypoint.get_recent_priors(priors_path)
@@ -378,8 +381,8 @@ def potted_plant_auto(overhead, mask):
     dist = ((center[0] - outer[0])**2 + (center[1] - outer[1])**2)**0.5
     prior = {'external': [{'circle': (center, dist, outer), 'days_post_germ': 40}]}
     print("DUMPING")
-    pkl.dump(prior, open('./Experiments/prior' + file + '.p', 'wb'))
-    leaf_centers = get_keypoints(mask, overhead, './Experiments/prior' + file + '.p', "../Center-Tracking/models/leaf_keypoints.pth")
+    pkl.dump(prior, open(PRIORS + file + '.p', 'wb'))
+    leaf_centers = get_keypoints(mask, overhead, os.path.join(PRIORS, file + '.p'), MODEL_PATH)
     generate_image(leaf_centers, overhead)
     ## Cut all points
     return leaf_centers
@@ -391,7 +394,7 @@ if __name__ == "__main__":
 
     ## Generation
     file = "snc-21090119150000"
-    leaf_centers = get_keypoints("./post_process/" + file + ".png", "./cropped/" + file + ".jpg", "./priors/left/priors210901.p", "models/leaf_keypoints.pth")
+    leaf_centers = get_keypoints(PROCESSED_IMAGES + file + ".png", os.path.join(CROPPED_LOC, file + ".jpg"), os.path.join(PRIORS + "left/priors210901.p"), MODEL_PATH)
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     print("./target_leaf_data/data/" + file + "_unfiltered.p")
     with open("./target_leaf_data/data/" + file + "_unfiltered.p", "rb") as f:
