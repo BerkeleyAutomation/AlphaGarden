@@ -35,13 +35,13 @@ transform = [
 
 
 trains = None
-with open('/app/ContextPrior_Paddle/train.pkl','rb') as f:
+with open('/app/Center-Tracking/ContextPriors/train.pkl','rb') as f:
     trains = pickle.load(f)
 train_dataset = AG_DS(
     transforms=transform,
-    dataset_root='/app/AlphaGarden/State-Estimation/out/cropped',
+    dataset_root='/app/State-Estimation/out/cropped',
     mode = 'train',
-    label_root='/app/AlphaGarden/State-Estimation/out/post_process',
+    label_root='/app/State-Estimation/out/post_process',
     relevant_dates=trains
 )
 print(len(train_dataset))
@@ -59,13 +59,13 @@ transform_val = [
 #)
 
 vals = None
-with open('/app/ContextPrior_Paddle/val.pkl','rb') as f:
+with open('/app/Center-Tracking/ContextPriors/val.pkl','rb') as f:
     vals = pickle.load(f)
 val_dataset = AG_DS(
     transforms=transform,
-    dataset_root='/app/AlphaGarden/State-Estimation/out/cropped',
+    dataset_root='/app/State-Estimation/out/cropped',
     mode = 'val',
-    label_root='/app/AlphaGarden/State-Estimation/out/post_process',
+    label_root='/app/State-Estimation/out/post_process',
     relevant_dates=vals
 )
 
