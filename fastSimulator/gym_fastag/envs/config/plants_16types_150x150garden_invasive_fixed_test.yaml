@@ -1,0 +1,94 @@
+amount_plants: {default_value: 16}
+amount_plant_types: {default_value: 8}
+garden_length: {default_value: 150}
+garden_width: {default_value: 150}
+sector_rows: {default_value: 15}
+sector_cols: {default_value: 30}
+garden_days: {default_value: 100}
+max_water_content: {default_value: 0.3}
+max_nutrient_content: {default_value: 1.0}
+permanent_wilting_point: {default_value: 0.0}
+init_water_mean: {default_value: 0.2}
+init_water_scale: {default_value: 0.04}
+evaporation_percent_mean: {default_value: 0.04}
+evaporation_percent_scale: {default_value: 0.0054}
+irrigation_amount: {default_value: 0.0002}
+water_threshold: {default_value: 1.0}
+irr_health_window_width: {default_value: 9}
+prune_window_rows: {default_value: 5}
+prune_window_cols: {default_value: 5}
+prune_rate: {default_value: 0.15}
+prune_delay: {default_value: 20}
+reference_outer_radii:
+  default_value: [34, 34, 20, 20, 22, 22, 42, 42, 25, 25, 20, 20, 33, 33, 55, 55]
+  dtype: np.float32
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    range_min: [30, 30, 16, 16, 18, 18, 38, 38, 21, 21, 16, 16, 29, 29, 51, 51]
+    range_max: [38, 38, 24, 24, 26, 26, 46, 46, 29, 29, 24, 24, 37, 37, 59, 59]
+common_names:
+  default_value: [borage, borage, cilantro, cilantro, radicchio, radicchio, kale,
+    kale, green_lettuce, green_lettuce, red_lettuce, red_lettuce, swiss_chard, swiss_chard,
+    invasive, invasive]
+x_coordinates:
+  default_value: [65, 121, 137, 14, 90, 24, 56, 94, 24, 116, 90, 134, 27, 121, 84,
+    34]
+  dtype: np.float32
+y_coordinates:
+  default_value: [120, 73, 36, 31, 24, 84, 35, 97, 16, 18, 135, 22, 55, 121, 58, 116]
+  dtype: np.float32
+current_outer_radii:
+  default_value: []
+  dtype: np.float32
+germination_times:
+  default_value: [4, 4, 8, 8, 7, 7, 6, 6, 8, 8, 10, 10, 4, 4, 2, 2]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    range_min: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    range_max: [9, 9, 13, 13, 12, 12, 11, 11, 13, 13, 15, 15, 9, 9, 7, 7]
+maturation_times:
+  default_value: [60, 60, 70, 70, 55, 55, 70, 70, 60, 60, 70, 70, 60, 60, 55, 55]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    range_min: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    range_max: [63, 63, 73, 73, 58, 58, 73, 73, 63, 63, 73, 73, 63, 63, 58, 58]
+waiting_times:
+  default_value: [5, 5, 3, 3, 10, 10, 3, 3, 5, 5, 3, 3, 8, 8, 3, 3]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    range_min: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+      1.0, 1.0]
+    range_max: [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+      100.0, 100.0, 100.0, 100.0, 100.0, 100.0]
+wilting_times:
+  default_value: [18, 18, 16, 16, 18, 18, 3, 3, 18, 18, 16, 16, 18, 18, 10, 10]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    range_min: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+      1.0, 1.0]
+    range_max: [20, 20, 18, 18, 20, 20, 5, 5, 20, 20, 18, 18, 20, 20, 12, 12]
+light_use_efficiencies:
+  default_value: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0]
+  dtype: np.float32
+water_use_efficiencies:
+  default_value: [0.165, 0.165, 0.13, 0.13, 0.145, 0.145, 0.165, 0.165, 0.14, 0.14,
+    0.145, 0.145, 0.1699, 0.1699, 0.22, 0.22]
+  dtype: np.float32
+nutrients_use_efficiencies:
+  default_value: []
+  dtype: np.float32
+tau: {default_value: 0}
+overwatered_time_threshold: {default_value: 5}
+underwatered_time_threshold: {default_value: 5}
+overwatered_threshold: {default_value: 100}
+underwaterd_threshold: {default_value: 0.01}

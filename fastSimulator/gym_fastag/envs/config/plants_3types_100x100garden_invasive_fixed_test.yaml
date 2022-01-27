@@ -1,0 +1,86 @@
+amount_plants: {default_value: 3}
+amount_plant_types: {default_value: 3}
+garden_length: {default_value: 100}
+garden_width: {default_value: 100}
+sector_rows: {default_value: 15}
+sector_cols: {default_value: 30}
+garden_days: {default_value: 100}
+max_water_content: {default_value: 0.3}
+max_nutrient_content: {default_value: 1.0}
+permanent_wilting_point: {default_value: 0.0}
+init_water_mean: {default_value: 0.2}
+init_water_scale: {default_value: 0.04}
+evaporation_percent_mean: {default_value: 0.04}
+evaporation_percent_scale: {default_value: 0.0054}
+irrigation_amount: {default_value: 0.0002}
+water_threshold: {default_value: 1.0}
+irr_health_window_width: {default_value: 9}
+prune_window_rows: {default_value: 5}
+prune_window_cols: {default_value: 5}
+prune_rate: {default_value: 0.15}
+prune_delay: {default_value: 20}
+reference_outer_radii:
+  default_value: [25, 20, 55]
+  dtype: np.float32
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2]
+    range_min: [21, 16, 51]
+    range_max: [29, 24, 59]
+common_names:
+  default_value: [green_lettuce, red_lettuce, invasive]
+x_coordinates:
+  default_value: [28, 72, 50]
+  dtype: np.float32
+y_coordinates:
+  default_value: [28, 28, 66]
+  dtype: np.float32
+current_outer_radii:
+  default_value: []
+  dtype: np.float32
+germination_times:
+  default_value: [8, 10, 2]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [1, 1, 1]
+    range_min: [1, 1, 1]
+    range_max: [13, 15, 7]
+maturation_times:
+  default_value: [60, 70, 55]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2]
+    range_min: [1, 1, 1]
+    range_max: [63, 73, 58]
+waiting_times:
+  default_value: [5, 3, 3]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2]
+    range_min: [1.0, 1.0, 1.0]
+    range_max: [100.0, 100.0, 100.0]
+wilting_times:
+  default_value: [18, 16, 10]
+  dtype: np.int
+  randomize:
+    distribution_type: truncated_normal
+    scale: [2, 2, 2]
+    range_min: [1.0, 1.0, 1.0]
+    range_max: [20, 18, 12]
+light_use_efficiencies:
+  default_value: [1.0, 1.0, 1.0]
+  dtype: np.float32
+water_use_efficiencies:
+  default_value: [0.14, 0.145, 0.195]
+  dtype: np.float32
+nutrients_use_efficiencies:
+  default_value: []
+  dtype: np.float32
+tau: {default_value: 0}
+overwatered_time_threshold: {default_value: 5}
+underwatered_time_threshold: {default_value: 5}
+overwatered_threshold: {default_value: 100}
+underwaterd_threshold: {default_value: 0.01}
