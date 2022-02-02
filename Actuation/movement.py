@@ -359,5 +359,118 @@ def curr_pos_from_local(fb, overhead_image, target):
     pt = find_local_in_overhead(local_name, overhead_image, target)
     return pt
 
+def test_new_onboard(local_image, overhead_image, target):
+    local_name = local_image
+    # overhead_image = overhead_image_preprocess(overhead_image)
+    template = overhead_image
+    w, h = template.shape[:2][::-1]
+    # print(w,h)
+    meth = 'cv2.TM_CCOEFF_NORMED'
+    #150 x 100 y
+    method = eval(meth)
+
+    # Apply template Matching
+    targetpx_x = round((274.66 - target[0])*11.9) + 102
+    targetpx_y = round(target[1] * 11.9) + 72
+
+    error = [40, 20]#[100, 50] #determine_error()
+
+    best_sf = 1
+    best_max_val = 0
+    best_max_loc = None
+    sf = 18 #scale factor for overhead image ex. 11.9 px = 1 cm
+
+    for scale in np.linspace(0.6, 1.0, 20)[::-1]:
+        # print(scale)
+        img, rpi_path_d = local_image_preprocess(local_image, scale)
+        img2 = img.copy()
+        img = img2.copy()
+        r = img.shape[1] / float(img.shape[1])
+        # print(img.shape, template.shape)
+        res = cv2.matchTemplate(img, template.astype(np.uint8), method)
+
+        masked_res = np.zeros(res.shape)
+        res_x_lower = int(targetpx_x - img.shape[0]/2 - int(error[0]*sf/2))
+        res_x_lower = res_x_lower if res_x_lower >=0 else 0
+        res_x_upper = int(targetpx_x - img.shape[0]/2 + int(error[0]*sf/2))
+        res_x_upper = res_x_upper if res_x_upper <=masked_res.shape[1] else masked_res.shape[1]
+
+        res_y_lower = int(targetpx_y - img.shape[1]/2 - int(error[1]*sf/2))
+        res_y_lower = res_y_lower if res_y_lower >=0 else 0
+        res_y_upper = int(targetpx_y - img.shape[1]/2 + int(error[1]*sf/2))
+        res_y_upper = res_y_upper if res_y_upper <=masked_res.shape[0] else masked_res.shape[0]
+
+        masked_res[res_y_lower:res_y_upper, res_x_lower:res_x_upper] = res[res_y_lower:res_y_upper, res_x_lower:res_x_upper]
+            
+        _, max_val, _, max_loc = cv2.minMaxLoc(masked_res)
+
+        print(max_val, max_loc, scale)
+
+        if max_val > best_max_val:
+            best_max_val = max_val
+            best_max_loc = max_loc
+            best_sf = scale
+
+        os.remove(rpi_path_d)
+
+    print("BEST: ", best_max_val, best_max_loc, best_sf)
+    top_left = best_max_loc
+    bottom_right = (top_left[0] + w, top_left[1] + h)
+    img, _ = local_image_preprocess(local_image, best_sf)
+    img2 = img.copy()
+    img = img2.copy()
+
+    cv2.rectangle(img,top_left, bottom_right, 255, 2)
+
+    #add max ccoeff val to .txt file
+    t = open("ccoeff_visualseroving.txt","a")
+    t.write(str(best_max_val) + "\n")
+    t.close()
+
+    #checking the cross correlation, white = more correlated
+    # plt.subplot(121),plt.imshow(res,cmap = 'gray')
+    # plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+    # plt.subplot(122),plt.imshow(img,cmap = 'gray')
+    # plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+    # plt.suptitle(meth)
+    #plt.show()
+    
+    (tH, tW) = img.shape[:2]
+
+    (startX, startY) = (int(best_max_loc[0]), int(best_max_loc[1]))
+    (endX, endY) = (int(best_max_loc[0] + tW), int(best_max_loc[1] + tH))
+    # draw a bounding box around the detected result and display the image
+    cv2.rectangle(template, (startX, startY), (endX, endY), (0, 0, 255), 2)
+
+    x_px = (startX + endX) / 2 - 102
+    y_px = (startY + endY) / 2 - 72
+    pred_pt = (round(274.66 - x_px/sf), round(y_px/sf))
+
+    cv2.imwrite(local_name[:-5] + "_" + str(pred_pt) + ".png", template)
+    # cv2.waitKey(0)
+
+    #(274.66, 0) cm in overhead is (102, 72) px
+    #Overhead image has 1 cm = 11.9 px
+
+    return pred_pt
+
+def get_points(im1):
+    plt.imshow(im1)
+    coords = plt.ginput(1, timeout=0)
+    plt.close()
+    return coords
+
 if __name__ == "__main__":  
-    print(determine_error())
+    # print(determine_error())
+    local_image = "/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Actuation/x300_y400_cropped.jpeg"
+    # local_image = cv2.cvtColor(cv2.imread(local_image), cv2.COLOR_BGR2RGB)
+    overhead_image = "/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Actuation/scatter_garden.jpeg"
+    overhead_image = cv2.imread(overhead_image)
+    print('hello')
+    target = (40, 80)
+    # x = get_points(overhead_image)
+    ret = test_new_onboard(local_image, overhead_image, target)
+    # print(pred_pt)
+
+
+

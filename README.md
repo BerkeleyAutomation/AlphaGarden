@@ -3,7 +3,7 @@ In this repository, you will find code for AlphaGardenSim and for AlphaGarden. A
 
 The [Learning](https://github.com/BerkeleyAutomation/AlphaGarden/Learning) and [Simulator](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator) folders contain functionality for AlphaGardenSim. Please see the rest of this README for information on how to use AlphaGardenSim.
 
-The [State-Estimation](https://github.com/BerkeleyAutomation/AlphaGarden/State-Estimation) folder contains functionally for the Plant Phenotyping NN that identifies a plant's type, Bounding Disk Tracking algorithm that is used to identify a plant's radius, and a Prune Point Identification NN that identifies the centers of leaves. The [Actuation](https://github.com/BerkeleyAutomation/AlphaGarden/Actuation) folder includes functionality for how we interface with the [FarmBot](https://farm.bot/), a commercial gantry system for gardens. README's for these methods can be found in their respective folders. 
+The [State-Estimation](https://github.com/BerkeleyAutomation/AlphaGarden/State-Estimation) folder contains functionally for the Plant Phenotyping NN that identifies plant type, the Bounding Disk Tracking algorithm that is used to identify a plant's radius, and a Prune Point Identification NN that identifies the centers of leaves. The [Actuation](https://github.com/BerkeleyAutomation/AlphaGarden/Actuation) folder includes functionality for how we interface with the [FarmBot](https://farm.bot/), a commercial gantry system for gardens. README's for these methods can be found in their respective folders. 
 
 # AlphaGardenSim
 
