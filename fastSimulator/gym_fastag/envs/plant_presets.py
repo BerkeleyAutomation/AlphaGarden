@@ -12,48 +12,12 @@ BORDER = 0
 AMOUNT_PLANTS = 3
 AMOUNT_PLANTS_TYPES = 3
 
-"""coordinate_transfer = {
-    'borage': [(65, 120), (121, 73)],
-    'cilantro': [(137, 36), (14, 31)],
-    'radicchio': [(90, 24), (24, 84)],
-    'kale': [(56, 35), (94, 97)],
-    'green_lettuce': [(24, 16), (116, 18)],
-    'red_lettuce': [(90, 135), (134, 22)],
-    'swiss_chard': [(27, 55), (121, 121)],
-    #'turnip': [(84, 58), (34, 116)],
-    'invasive': [(84, 58), (34, 116)]
-}"""
-
-"""coordinate_transfer = {'green_lettuce': [(30, 30)],
-                       'red_lettuce': [(86, 30)],
-                       'cilantro': [(30, 85)],
-                       #'radicchio': [(83, 81)],
-                       'invasive': [(83, 81)],
-                       }"""
-
-"""coordinate_transfer = {
-    'kale': [(56, 35)],
-    'green_lettuce': [(24, 16)],
-    'red_lettuce': [(90, 135)],
-    'swiss_chard': [(27, 55)],
-    'turnip': [(84, 58)],
-    #'invasive': [(56, 35)]
-}"""
-"""coordinate_transfer = {'A': [(14, 14)],
-                       'B': [(42, 14)],
-                       'C': [(14, 42)],
-                       'D': [(42, 42)],
-                       'E': [(28, 28)]}"""
-
 coordinate_transfer = {'green_lettuce': [(28, 28)],
                        'red_lettuce': [(72, 28)],
                        #'invasive': [(50, 66)],
                         'turnip': [(50, 66)]
                        }
 
-"""coordinate_transfer = {'A': [(10, 7)],
-                       'B': [(18, 7)],
-                       }"""
 
 OUTER_RADIUS = {
     'borage': (34, 2),
@@ -404,7 +368,7 @@ def create_config_yaml():
     garden_type = ['real', 'invasive'][is_invasive]
     coords = ['fixed', 'random'][randomize_coordinates]
 
-    path = '/Users/sebastianoehme/fast_ag/gym_fastag/envs/config'
+    path = '/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/fastSimulator/gym_fastag/envs/config/'
     file = str() + 'plants_' + str(amount_plants) + 'types_' + str(rows) + 'x' + str(
         cols) + 'garden_' + garden_type + '_' + str(coords) + '_test.yaml'
 
