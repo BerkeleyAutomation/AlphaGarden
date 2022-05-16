@@ -3,7 +3,7 @@
 # Garden Parameters
 amount_plants:
   default_value: &id003
-    9
+    16
 amount_plant_types:
   default_value: 8
 garden_length:
@@ -20,7 +20,7 @@ garden_days:
     default_value: 100
 
 max_water_content:
-  default_value: 0.3
+  default_value: 0.4
   #randomize:
   #  distribution_type: uniform
   #  multiplier_min: 0.98
@@ -37,7 +37,7 @@ init_water:
     range_min: 0.0
     range_max: 0.3
 init_water_mean:
-  default_value: 0.2
+  default_value: 0.1
 init_water_scale:
   default_value: 0.04
 evaporation_percent_mean:
@@ -63,7 +63,7 @@ prune_delay:
 
 # Plant Parameters
 reference_outer_radii: #['Green Lettuce', 'Red_Lettuce', 'Borage', 'Swiss Chard', 'Kale', 'Cilantro', 'Radicchio', 'Turnip']
-  default_value: [25, 20, 34, 33, 42, 20, 22, 35, 33]
+  default_value: [25, 25, 20, 20, 34, 34, 33, 33, 42, 42, 20, 20, 22, 22, 35, 35]
   dtype: np.int
   #randomize:
   #  distribution_type: truncated_normal
@@ -71,9 +71,9 @@ reference_outer_radii: #['Green Lettuce', 'Red_Lettuce', 'Borage', 'Swiss Chard'
   #  range_min: [24., 24., 34., 31., 41., 23., 21., 34.]
   #  range_max: [32., 32., 42., 39., 49., 31., 29., 42.]
 common_names:
-  default_value: ['Green Lettuce', 'Red_Lettuce', 'Borage', 'Swiss Chard', 'Kale', 'Cilantro', 'Radicchio', 'Turnip', 'Swiss Chard']
+  default_value: ['Green Lettuce', 'Green Lettuce', 'Red_Lettuce', 'Red_Lettuce', 'Borage', 'Borage', 'Swiss Chard', 'Swiss Chard', 'Kale', 'Kale', 'Cilantro', 'Cilantro', 'Radicchio', 'Radicchio', 'Turnip', 'Turnip']
 x_coordinates:
-  default_value: [37, 37, 37, 75, 75, 75, 113, 113, 113]
+  default_value: [21, 129, 53, 136, 78, 91, 56, 121, 69, 115, 12, 38, 24, 30, 34, 89]
   dtype: np.int
   #randomize:
   #  distribution_type: random_coordinate
@@ -81,7 +81,7 @@ x_coordinates:
   #  range_max: *id001
   #  shape: *id003
 y_coordinates:
-  default_value: [75, 112, 37, 75, 112, 37, 75, 112, 37]
+  default_value: [54, 72, 14, 94, 30, 120, 123, 123, 90, 35, 71, 63, 126, 25, 94, 60]
   dtype: np.int
   #randomize:
   #  distribution_type: random_coordinate
@@ -89,10 +89,10 @@ y_coordinates:
   #  range_max: *id002
   #  shape: *id003
 current_outer_radii:
-  default_value: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+  default_value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
   dtype: np.int
 germination_times:
-  default_value: [8, 10, 4, 4, 6, 8, 7, 5, 4]
+  default_value: [8, 8, 10, 10, 4, 4, 4, 4, 6, 6, 8, 8, 7, 7, 5, 5]
   dtype: np.int
   #randomize:
   #  distribution_type: truncated_normal
@@ -100,7 +100,7 @@ germination_times:
   #  range_min: [1.0,1.0,1.0,1.0,1.0]
   #  range_max: [13., 15.,  9.,  9., 11., 13., 12., 10.]
 maturation_times:
-  default_value: [60, 70, 60, 60, 70, 70, 55, 70, 60]
+  default_value: [60, 60, 70, 70, 60, 60, 60, 60, 70, 70, 70, 70, 55, 55, 70, 70]
   dtype: np.int
   #randomize:
   #  distribution_type: truncated_normal
@@ -109,7 +109,7 @@ maturation_times:
   #  range_max: [63., 73., 63., 63., 73., 73., 58., 73.]
 # Waiting = m=30 s=2 if "invasive" else m=10, s=2
 waiting_times:
-  default_value: [5, 3, 5, 8, 3, 3, 10, 3, 8]
+  default_value: [5, 5, 3, 3, 5, 5, 8, 8, 3, 3, 3, 3, 10, 10, 3, 3]
   dtype: np.int
   #randomize:
   #  distribution_type: truncated_normal
@@ -118,7 +118,7 @@ waiting_times:
   #  range_max: [100.0,100.0,100.0,100.0,100.0]
 # Waiting = m=10 s=2 if "invasive" else m=20, s=2
 wilting_times:
-  default_value: [18, 10, 14, 18, 18, 16, 16, 16, 18] #[18, 16, 18, 18, 16, 16, 18, 16, 18]
+  default_value: [18, 18, 10, 10, 14, 14, 18, 18, 18, 18, 16, 16, 16, 16, 16, 16] #[18, 16, 18, 18, 16, 16, 18, 16, 18]
   dtype: np.int
   #randomize:
   #  distribution_type: truncated_normal
@@ -126,13 +126,13 @@ wilting_times:
   #  range_min: [1., 1., 1., 1., 1., 1., 1., 1.]
   #  range_max: [20., 18., 20., 20., 18., 18., 20., 18.]
 light_use_efficiencies:
-  default_value: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+  default_value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
   dtype: np.float32
 water_use_efficiencies:
-  default_value: [0.14, 0.145, 0.165, 0.1699, 0.165, 0.13, 0.145, 0.195, 0.1699]
+  default_value: [0.14, 0.14, 0.145, 0.145, 0.165, 0.165, 0.1699, 0.1699, 0.165, 0.165, 0.13, 0.13, 0.145, 0.145, 0.195, 0.195]
   dtype: np.float32
 nutrients_use_efficiencies:
-  default_value: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+  default_value: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
   dtype: np.float32
 tau:
   default_value: 0

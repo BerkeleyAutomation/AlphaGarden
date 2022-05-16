@@ -997,6 +997,162 @@ class FastAg(gym.Env):
         result = np.select([np.logical_and(x_range, y_range)], [image], fill_value)
         return result
 
+    def baseline_policy_variable_irrigation(self, observation, time_step=0):
+        cc_image = observation['plant_cc_grid']
+
+        water_grid = observation['water_grid']
+
+        water_grid_sectors = self.get_masked_image(self.xv, self.yv, water_grid, self.plants.x_coordinates,
+                                                   self.plants.y_coordinates,
+                                                   self.sector_rows,
+                                                   self.sector_cols)
+
+        health_status_grid = observation['plants_health']
+
+        prune_sector_flag = np.zeros(self.amount_plants, dtype=bool)
+
+        if time_step > self.prune_delay:
+            global_cc_vec = self.get_global_cc_soil_vec(cc_image)  # by type + soil
+
+            soil_type_id = max(self.plants.plant_type_ids) + 1
+            soil_id = max(self.plants.ids) + 1
+            plant_type_and_soil_ids = np.append(self.plants.plant_type_ids, soil_type_id)
+
+            plant_ids_in_prune_windows = self.get_masked_image(self.xv, self.yv, cc_image,
+                                                               self.plants.x_coordinates,
+                                                               self.plants.y_coordinates,
+                                                               self.prune_window_rows,
+                                                               self.prune_window_cols,
+                                                               fill_value=-1)
+
+            old_ids_per_plant = np.unique(cc_image.ravel())
+            cc_values_by_type = plant_type_and_soil_ids[old_ids_per_plant]
+
+            cc_image = self.replace_ids(cc_image, old_ids_per_plant, cc_values_by_type)  # group by plant type
+
+            cc_sum = np.sum(global_cc_vec[0:-1], dtype=np.float32)  # Start from 1 to not include earth in diversity
+            if cc_sum != 0:
+                prob = global_cc_vec[0:-1] / np.sum(global_cc_vec[0:-1], dtype=np.float32)
+            else:
+                prob = 0.0
+
+            ratio = 1.36/self.amount_plant_types
+
+            violations = np.where(prob > ratio)[0]
+
+            cc_distributions_in_prune_windows = self.get_masked_image(self.xv, self.yv, cc_image,
+                                                                      self.plants.x_coordinates,
+                                                                      self.plants.y_coordinates,
+                                                                      self.prune_window_rows,
+                                                                      self.prune_window_cols,
+                                                                      fill_value=-1)
+
+            prune_action_vec = np.zeros(self.amount_plants, dtype=np.int)
+
+            for plant_type_id in violations:
+                # determine if sector qualifies to get pruned
+                plant_type_area_in_window = np.count_nonzero(cc_distributions_in_prune_windows == plant_type_id,
+                                                             axis=(1, 2))
+                prune_sector_flag = plant_type_area_in_window > 20
+
+                # prune n largest plants in each prune sector
+                plant_ids_windows_to_check = plant_ids_in_prune_windows[prune_sector_flag]
+                for i in range(np.count_nonzero(prune_sector_flag)):
+                    plant_ids_prune = np.unique(plant_ids_windows_to_check[i])
+                    plant_ids_prune = plant_ids_prune[(plant_ids_prune != soil_id) & (plant_ids_prune != -1)]
+                    prune_action_vec[plant_ids_prune] = 1  # or += 1 ?
+
+        water_irr_square = self.get_masked_image(self.xv, self.yv, water_grid,
+                                                 self.plants.x_coordinates,
+                                                 self.plants.y_coordinates,
+                                                 self.irr_health_window_width * 2,
+                                                 self.irr_health_window_width * 2)
+        # print("GRD: ", water_grid_sectors[0][29][29])
+        # print("IRR: ", water_irr_square[:][self.plants.x_coordinates, self.plants.y_coordinates])
+        # Want the goal to be some arbitrary saturation; let's say 0.2
+        # water_ideal = np.ones(water_irr_square)
+        # print(self.plants.x_coordinates.shape)
+        # Take goal grid - minus current grid = amount to water (current grid is dependent on uptake!)
+        # if pos, find scalar value
+        # if neg, no watering
+        health_irr_square = self.get_masked_image(self.xv, self.yv, health_status_grid,
+                                                  self.plants.x_coordinates,
+                                                  self.plants.y_coordinates,
+                                                  self.irr_health_window_width * 2,
+                                                  self.irr_health_window_width * 2)
+
+        ### START CHANGES
+        variable_irriation = True
+        if variable_irriation:
+            x_ind = [i[0][0] for i in self.plants.x_coordinates]
+            y_ind = [i[0][0] for i in self.plants.y_coordinates]
+
+            germ_avg = np.mean(self.germination_times)
+            matur_avg = np.mean(self.maturation_times) #+ germ_avg
+            wait_avg = np.mean(self.waiting_times) + matur_avg
+            wilt_avg = np.mean(self.wilting_times) + wait_avg
+            # print(germ_avg, matur_avg, wait_avg, wilt_avg)
+            const_vwc = 0.2
+            if time_step >= germ_avg:
+                const_vwc = 0.25
+            if time_step >= matur_avg:
+                const_vwc = 0.2
+            if time_step >= wait_avg:
+                const_vwc = 0.1
+            if time_step >= wilt_avg:
+                const_vwc = 0.0
+
+            curr_water = water_grid[y_ind, x_ind]
+            ideal_water = np.ones((self.amount_plants)) * const_vwc 
+            diff = ideal_water - curr_water    
+
+            # From calculate_treatment_grid [FROM EXPERIMENTS WITH NOZZLE] 
+            """
+            - solve for irrigation amount [not used for implementation, but used for real world]
+            - solve for [0,?] range of peak gain 
+            """
+            window_grid_size = np.pi * (self.irr_health_window_width ** 2) / 10000  # in square meters
+            k = 1.175  # scaling factor to account for water loss from drainage and etc., determined experimentally
+            # Irrigation amount should be the MAX amount we can possibly apply
+            peak_gain = (self.irrigation_amount / (window_grid_size * 0.2)) * k  # 1.0
+            variable_ratio = diff / peak_gain #how much of max amount (1 == max, 0.5 == max/2)
+
+            # FLAG - Round to discrete amounts
+            cont = False
+            round_to = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 2.5]) #[0.0, .448, .685, 1.0]
+            if not cont:
+                variable_ratio = [round_to[(np.abs(round_to - i)).argmin()] for i in variable_ratio]
+
+            irr_flag = (diff > np.zeros((self.amount_plants))).astype(np.int) 
+            irrigation_flag = irr_flag * variable_ratio
+            # print(irr_flag)
+            # print("IRR_FLAG: ", irrigation_flag)
+            irr_amount = (peak_gain * irrigation_flag) * (window_grid_size * 0.2) / k
+            irr_amount *= 1000 #0.2 == 200 mL
+            ### END CHANGES
+        else:
+
+            post = self.maturation_times + self.waiting_times + self.wilting_times
+            post_bool = time_step < post
+
+            total_water_sectors = np.sum(water_grid_sectors, axis=(1, 2))  # water amount per sector
+            maximum_water_potential = self.sector_cols * self.sector_rows * self.max_water_content * self.water_threshold
+            total_water_sectors += np.sum(water_irr_square, where=health_irr_square == 3, axis=(1, 2))  # overwater contrib
+            irrigate_flag = total_water_sectors < maximum_water_potential
+            irrigate_flag += np.any(health_irr_square == 1, axis=(1, 2))  # has_underwater(health)
+            #Inserted so no watering at death
+            irrigate_flag = np.logical_and(irrigate_flag, post_bool)
+
+            irr_amount = irrigate_flag * 0.2
+
+        no_action_vec = np.zeros(self.amount_plants, dtype=np.int)
+
+        return {"irrigation": irrigation_flag, #irrigate_flag.astype(np.int), 
+                "prune": prune_sector_flag.astype(np.int),
+                "nutrients": no_action_vec,
+                "irrigation_volumetric": irr_amount
+                }
+
     def baseline_policy(self, observation, time_step=0):
         cc_image = observation['plant_cc_grid']
 
@@ -1083,9 +1239,14 @@ class FastAg(gym.Env):
 
         no_action_vec = np.zeros(self.amount_plants, dtype=np.int)
 
+        irr_amount = irrigate_flag * 0.2
+        # print(irrigate_flag)
+        # print(irr_amount)
+
         return {"irrigation": irrigate_flag.astype(np.int),
                 "prune": prune_sector_flag.astype(np.int),
-                "nutrients": no_action_vec
+                "nutrients": no_action_vec,
+                "irrigation_volumetric": irr_amount
                 }
 
     """def get_observation(self):
@@ -1183,6 +1344,7 @@ class FastAg(gym.Env):
         irrigation_actions = action.get("irrigation", no_action_vec)
         nutrient_actions = action.get("nutrients", no_action_vec)
         prune_actions = action.get("prune", no_action_vec)
+        irrigation_volumetric = action.get("irrigation_volumetric", no_action_vec)
 
         # convert irrigation action to a matching action in simulator grid form
         water_action_grid = self.soil.calculate_treatment_grid(x=self.xv, y=self.yv,
@@ -1210,7 +1372,10 @@ class FastAg(gym.Env):
 
         # calculate normalized irrigation total,  1 liter is estimated to be the maximum per plant/action
         self.irrigation = np.sum(irrigation_actions * self.irrigation_amount) / (self.plants.amount_plants * 0.001)
-        self.total_irrigation = np.sum(irrigation_actions * self.irrigation_amount)
+        #RECALCULATE for variable irrigation
+        # self.total_irrigation = np.sum(irrigation_actions * self.irrigation_amount) 
+        self.total_irrigation = np.sum(irrigation_volumetric) 
+
 
         coverage, diversity = self.get_metrics(cc_image)
         self.coverages.append(coverage)
@@ -1233,6 +1398,8 @@ class FastAg(gym.Env):
                 'diversity': diversity,
                 'num_irr': np.sum(irrigation_actions),
                 'num_prune': np.sum(prune_actions),
+                'total_irr': self.total_irrigation,
+                'irr_amounts':irrigation_volumetric,
                 # TODO nuts_actions
                 }
 
