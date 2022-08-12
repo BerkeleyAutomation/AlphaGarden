@@ -65,6 +65,11 @@ def generate_full_scores_arr(test_image, model):
                 for x in np.arange(softmaxes.shape[0]):
                     for y in np.arange(softmaxes.shape[1]):
                         scores[i+x][j+y] = softmaxes[x][y]
+
+    scores[:, :, 6] = np.maximum(scores[:, :, 6], scores[:, :, 1])
+    filter_indices = [0, 2, 3, 4, 5, 6, 7, 9, 10]
+    scores = scores[:, :, filter_indices]
+    print(scores.shape)
     return scores
 
 def bias_by_rad(center, x, y, rad):

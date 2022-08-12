@@ -44,23 +44,27 @@ if __name__ == "__main__":
     '''
 
     print("------------------------------CENTER TRACKING-----------------------------------")
+    # print(pkl.load())
+    with open("out/priors/right/priorsinit.p", 'rb') as f:
+        print(pickle.load(f))
+
     f = sys.argv[1]
     side = sys.argv[2]
     cwd = os.getcwd()
 
     img = cv2.cvtColor(cv2.imread(f), cv2.COLOR_BGR2RGB)
-    new_im = correct_image(img, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
-    #PRIOR TO 8/12: (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
+    new_im = correct_image(img, (200, 586.1321074432035), (3812, 661), (3852, 2314), (185, 2394))
+    # PRIOR to 8/1/22new_im = correct_image(img, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
+    #PRIOR TO 8/12/21: (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
     imsave('./out/cropped/' + f, new_im)
 
-    # d_0 = date(2021, 7, 5)
-    # d_1 = date(2021, int(f[6:8]), int(f[8:10]))
-    # delta = d_1 - d_0
-    # pkl.dump(delta.days, open("timestep" + ".p", "wb"))
+    d_0 = date(2022, 7, 1)
+    d_1 = date(2022, int(f[6:8]), int(f[8:10]))
+    delta = d_1 - d_0
+    pkl.dump(delta.days, open("timestep" + ".p", "wb"))
 
     print("------------------------------Segmentation-----------------------------------------")
-    # get_img_seg_mask(f[:-4])
-
+    get_img_seg_mask(f[:-4])
     circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
     pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
     pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
@@ -70,33 +74,33 @@ if __name__ == "__main__":
 
 
 
-    print("------------------------------LINEARITY-----------------------------------------")
-    # os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
-
-    if side == 'r':
-        folder = 'right/'
-    elif side == 'l':
-        folder = 'left/'
-    prior = get_recent_priors(cwd + "/out/priors/" + folder + "priors" + f[4:10] + ".p")
-    mask_path = str(cwd + "/out/post_process/" + f[:-4] + ".png")
-    mask, _ = get_img(mask_path)
-
-    # # This gets the actual overhead image
-    # # real_path = "input/new_garden/snc-21052608141500.jpg"
-
-    leaf_centers = get_max_leaf_centers(prior, mask_path, True)
-
-    print("LEAF CENTERS: (center, target)")
-    print(leaf_centers)
-
-    # print("FILTERED LEAF CENTERS: (center, target)")
-    # type_dic = pkl.load(open("current_type_dic.p", "rb"))
-    # plants_to_prune = pkl.load(open("plants_to_prune.p", "rb"))
-    # filtered = process_targets(leaf_centers, type_dic, plants_to_prune)
-    # print(filtered)
-
-    # save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_filtered.png", filtered)
-    save_keyPoint(new_im, cwd + "/out/prune_points/" + f[4:10] + "_all.png", leaf_centers)
-
-    # pkl.dump(filtered, open("current_pts" + ".p", "wb"))
-    # pkl.dump(filtered, open(cwd + "/prune_points/" + f[4:10] + "_target.p", "wb"))
+    # print("------------------------------LINEARITY-----------------------------------------")
+    # os.system('python ../Learning/eval_policy.py -p ba -d 2')
+    #
+    # if side == 'r':
+    #     folder = 'right/'
+    # elif side == 'l':
+    #     folder = 'left/'
+    # prior = get_recent_priors(cwd + "/out/priors/" + folder + "priors" + f[4:10] + ".p")
+    # mask_path = str(cwd + "/out/post_process/" + f[:-4] + ".png")
+    # mask, _ = get_img(mask_path)
+    #
+    # # # This gets the actual overhead image
+    # # # real_path = "input/new_garden/snc-21052608141500.jpg"
+    #
+    # leaf_centers = get_max_leaf_centers(prior, mask_path, True)
+    #
+    # print("LEAF CENTERS: (center, target)")
+    # print(leaf_centers)
+    #
+    # # print("FILTERED LEAF CENTERS: (center, target)")
+    # # type_dic = pkl.load(open("current_type_dic.p", "rb"))
+    # # plants_to_prune = pkl.load(open("plants_to_prune.p", "rb"))
+    # # filtered = process_targets(leaf_centers, type_dic, plants_to_prune)
+    # # print(filtered)
+    #
+    # # save_keyPoint(new_im, cwd + "/prune_points/" + f[4:10] + "_filtered.png", filtered)
+    # save_keyPoint(new_im, cwd + "/out/prune_points/" + f[4:10] + "_all.png", leaf_centers)
+    #
+    # # pkl.dump(filtered, open("current_pts" + ".p", "wb"))
+    # # pkl.dump(filtered, open(cwd + "/prune_points/" + f[4:10] + "_target.p", "wb"))

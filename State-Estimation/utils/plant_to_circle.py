@@ -277,6 +277,9 @@ def bfs_circle(path, old_center, max_radius=100, min_radius = 40, plant_type=Non
     min_radius: min radius for searching
 
     '''
+    if plant_type=="kale":
+        max_radius = 450
+
     def termination_cond(arr, recent_color_pts, point):
         plant_ended = recent_color_pts / len(arr) < .1
         too_long = distance(point, old_center) > max_radius

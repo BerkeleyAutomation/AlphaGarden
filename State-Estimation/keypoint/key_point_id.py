@@ -56,7 +56,7 @@ def find_point_clusters(points, thresh, name = 1):
     Args:
         points: (numpy array with each element(col,row))): Set of points to cluster
         thresh (float): Max distance for clustering
-    
+
     Returns:
         numpy array of centers for the clusters
     """
@@ -79,7 +79,7 @@ def init_model(model_path=MODEL_PATH,  cuda_device = 'cuda'):
     '''Initialize the Model
     Params
         :string model_path: .pth location for the model
-        
+
     Return
         :CountEstimate: initialized model
 
@@ -100,7 +100,7 @@ def eval_image(img_arr, model, transf = transf, device = 0):
         :CountEstimate model: model to apply
         :TorchVision Transform transf: transform to use for image,
                                 leave this as default for most uses
-        
+
     Return
         :numpy arr: heatmap output
         :list y_hat: gpu attached output from the model
@@ -126,7 +126,7 @@ def create_circular_mask(h, w, center=None, radius=None, area_scale =4):
         :tuple center: center of mask circle
         :double radius: radius of the mask
         :double area_scale: scale for the area in the mask
-        
+
     Return
         :numpy arr: output mask to use
 
@@ -152,7 +152,7 @@ def shrink_im(im, inner_size = (128,128), outer_size = (256,256), which="RGB"):
         :numpy arr im: image to mask
         :tuple inner_size: the shrink size for image inside frame
         :tuple outer_size: size of the outside frame
-        
+
     Return
         :numpy arr: output shrunk image
 
@@ -168,8 +168,8 @@ def mask_im(im, mask):
     '''Mask Image
     Params
         :numpy arr im: image to mask
-        :numpy arr mask: mask to use 
-        
+        :numpy arr mask: mask to use
+
     Return
         :numpy arr: output masked image
 
@@ -180,7 +180,7 @@ def mask_im(im, mask):
     t2 = im.copy()
     t2[~mask] = 0
     return t2
-    
+
 def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), thres = 0.3, flip_coords = False):
     '''Recursively Cluster the heatmap
     Params
@@ -190,7 +190,7 @@ def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), 
         :numpy arr pts: all the discovered points so far
         :double thres: threshold for clustering
         :bool flip_coords: whether to swap x/y for the black point checking
-        
+
     Return
         :numpy arr: array of keypoints from the heatmap, cv2 style
 
@@ -206,7 +206,7 @@ def recursive_cluster(heatmap, leaves_remaining, masked, pts = np.empty((0,2)), 
     clusterpts = (clusterdata[0]).copy()
     for pt in clusterdata[0]:
         test_mask  = create_circular_mask(*heatmap.shape[:2], center = pt, radius = 7, area_scale=1)
-        norm_map[np.argwhere(test_mask == 1)] = 0 
+        norm_map[np.argwhere(test_mask == 1)] = 0
         pt2 = pt.astype(int)
         # print(tuple(masked[pt2[0],pt2[1]]),tuple(masked[pt2[1],pt2[0]]) )
         check = tuple(masked[pt2[0],pt2[1]]) if not flip_coords else tuple(masked[pt2[1],pt2[0]])
@@ -255,13 +255,13 @@ def remove_keypoints(points, mask, inner_thres = 10):
             inner_pts.append(tuple(point) )
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     contours = sorted(contours, key=lambda x: cv2.contourArea(x))
-    respectivepts = [[(point,cv2.pointPolygonTest(contour,point[::-1],True)) for point in inner_pts if 
+    respectivepts = [[(point,cv2.pointPolygonTest(contour,point[::-1],True)) for point in inner_pts if
                         cv2.pointPolygonTest(contour,point[::-1],True) >= 0] for contour in contours]
     ret_pts = set()
     for ct in respectivepts:
         for pt, dist in ct:
             if dist >= inner_thres:
-                ret_pts.add(pt) 
+                ret_pts.add(pt)
     return list(ret_pts)
 
 def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "00000000", save_raw = False, **kwargs):
@@ -272,7 +272,7 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
         :string priors_path: location for prioirs (.p) files
         :string model_path: location for the model path for leaf counting (.pth)
         :string date: date for the images, optional but useful
-        
+
     Return
         :dict: Dictionary with data in the following format:
             [
@@ -303,18 +303,18 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             vals[plant[3]] = {}
         size = np.array(plant[0].shape[:2])
         plant[4][np.where(plant[4] != 0)] = 1
-        vals[plant[3]][f'{date}_{cut_idx}'] = [shrink_im(plant[0], tuple(size//shrink), tuple(size)), 1.5* plant[2] //shrink, plant[1], 
+        vals[plant[3]][f'{date}_{cut_idx}'] = [shrink_im(plant[0], tuple(size//shrink), tuple(size)), 1.5* plant[2] //shrink, plant[1],
                                     shrink_im(plant[4], tuple(size//shrink), tuple(size),which="L"), plant[5], plant[6]]
     leaf_centers  = []
-    for pt in list(vals.keys()):    
+    for pt in list(vals.keys()):
         for rc in list(vals[pt].keys()):
             plant = vals[pt][rc]
             t = eval_image(plant[0],model)
             center = np.array(plant[0].shape)
-            plant_mask  = create_circular_mask(*plant[0].shape[:2], center = center//2, radius = plant[1])
+            plant_mask  = np.ones_like(create_circular_mask(*plant[0].shape[:2], center = center//2, radius = plant[1]))
             t_arr = mask_im(np.asarray(t[0]), plant_mask)
-            pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant[0])
-            pts = remove_keypoints(pts,plant[3],inner_thres=plant[1]*0.01)
+            pts = recursive_cluster(t_arr, round(t[1].sum().item()), plant[0], thres = 0.1)
+            # pts = remove_keypoints(pts,plant[3],inner_thres=plant[1]*0.01 / 10)
             if save_raw:
                 mask = np.copy(plant[0])
                 for x,y in pts:
@@ -324,11 +324,11 @@ def get_keypoints(mask_path, overhead_path, priors_path, model_path, date = "000
             converted_pts = np.array([point_to_overhead(pt, plant[2], plant[0].shape[:2],
                                     scale=min(im_size/(im_size//shrink))*plant[4], orig_offset = plant[5]) for pt in pts]).astype(int)
             leaf_centers.append({
-                                    'plant_type':pt, 
-                                    'mask_center': tuple(np.array(plant[2]).astype(int)), 
-                                    'leaves': converted_pts, 
-                                    'original':pts, 
-                                    'id_name':rc, 
+                                    'plant_type':pt,
+                                    'mask_center': tuple(np.array(plant[2]).astype(int)),
+                                    'leaves': converted_pts,
+                                    'original':pts,
+                                    'id_name':rc,
                                     'radius':plant[1]*shrink,
                                     'localized_im': mask if save_raw else None
                                 })
@@ -339,7 +339,7 @@ def generate_image(leaf_centers, overhead_path, raw_img = False):
     Params
         :dict leaf_centers: data generated from get_keypoints
         :string overhead_path: location of cropped overhead image to overlay points on
-        
+
     Return
         :AxesImage: axes with the overlayed image
 
@@ -348,9 +348,10 @@ def generate_image(leaf_centers, overhead_path, raw_img = False):
     matplotlib AxesImage with the data
     '''
     # file = overhead_path[-22:-4]
+    # print(overhead_path)
     load = cv2.imread(overhead_path)
     _ = plt.imshow(load, alpha = 0.5)
-    # mask = np.zeros(load.shape, dtype = np.uint8)
+    mask = np.zeros(load.shape, dtype = np.uint8)
     colors = {}
     for plant in leaf_centers:
         if not plant['plant_type'] in colors:
@@ -363,7 +364,7 @@ def generate_image(leaf_centers, overhead_path, raw_img = False):
             x,y = int(x), int(y)
             load = cv2.rectangle(load,(x-5,y-5),(x+5,y+5), colors[plant['plant_type']],-1)
     _ = plt.imshow(load)
-    # _ = plt.imshow(mask, alpha = 0.5)
+    _ = plt.imshow(mask, alpha = 0.5)
     # plt.imsave("./target_leaf_data/images/" + file + ".png", load) # For pruning
     # plt.imsave("./Experiments/" + file + ".png", load) # For experiments
     # print(colors)
@@ -388,29 +389,41 @@ def potted_plant_auto(overhead, mask):
     return leaf_centers
 
 if __name__ == "__main__":
-    ## Experiments
+    # Experiments
     # leaf_centers = potted_plant_auto("Experiments/snc-21081309141400.jpg", "Experiments/snc-21081309141400_mask.png")
     # print(leaf_centers)
 
-    ## Generation
-    file = "snc-21090119150000"
-    leaf_centers = get_keypoints(PROCESSED_IMAGES + file + ".png", os.path.join(CROPPED_LOC, file + ".jpg"), os.path.join(PRIORS + "left/priors210901.p"), MODEL_PATH)
+    # Generation
+    file = "snc-22080607591500"
+    leaf_centers = get_keypoints(PROCESSED_IMAGES + file + ".png", os.path.join(CROPPED_LOC, file + ".jpg"), os.path.join(PRIORS + "right/priors220806.p"), MODEL_PATH)
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     print("./target_leaf_data/data/" + file + "_unfiltered.p")
     with open("./target_leaf_data/data/" + file + "_unfiltered.p", "rb") as f:
-        leaf_centers = pkl.load(f)
-        fg = generate_image(leaf_centers, "./cropped/" + file + ".jpg", raw_img=True)
+        # leaf_centers = pkl.load(f)
+        # print(leaf_centers)
+        fg = generate_image(leaf_centers, "./out/cropped/" + file + ".jpg", raw_img=True)
         fg[0].imsave(f'./target_leaf_data/images/{file}.png', fg[1])
 
-    ##Simulator
+    # #Simulator
     pkl.dump([], open("plants_to_prune.p", "wb"))
-    os.system('python3 ../Learning/create_state.py ' + 'l') #choose side
-    os.system('python3 ../Learning/eval_policy.py -p ba -d 2')
+    os.system('python ../Learning/create_state.py ' + 'r') #choose side
+    os.system('python ../Learning/eval_policy.py -p ba -d 4')
     time.sleep(10)
 
-    ## Selection
-    select = SelectPoint(leaf_centers, 'l') #choose side
+    # Selection
+    select = SelectPoint(leaf_centers, 'r') #choose side
     target_list = select.center_target()
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + ".p", "wb"))
     print(target_list)
 
+    # model = init_model(model_path=MODEL_PATH) #import from the key_point_id file as *
+    # load = cv2.imread("./out/cropped/snc-22060118224000.jpg")
+    # img = load[-256:, -256:]
+    # size = np.array(img.shape[:2])
+    # shrink = shrink_im(img, tuple(size//shrink), tuple(size))
+    # x, t = eval_image(shrink,model)
+    # print(recursive_cluster(x, round(t.sum().item()), shrink, thres=0.5))
+    # plt.imshow(img, alpha=0.5)
+    # plt.imshow(x, alpha=0.5)
+    # print(x)
+    # plt.show()

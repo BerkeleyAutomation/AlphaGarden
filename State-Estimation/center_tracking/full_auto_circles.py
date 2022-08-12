@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day=None, prior_path=None):
     print("BFS Fit for: "+path)
-    priors = get_recent_priors(prior_path)[1] if prior_path else get_recent_priors(path=PRIOR_PATH, side=side)
+    priors = get_recent_priors(path=PRIOR_PATH, side=side)
     new_circles = {plant_type: [] for plant_type in priors.keys()}
     print(sim_circle_path)
     use_sim = sim_circle_path != None and day != None
@@ -40,7 +40,13 @@ def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day
             center = (round(center[0]), round(center[1]))
             prev_rad = circle["circle"][1]
             day = circle["days_post_germ"]+1
+            print(plant_type.replace("-","_"))
+            print(plant_type)
+            print(max_radius_dict)
+            use_sim = True
             min_rad, max_rad = 50, max(55, max_radius_dict[plant_type.replace("-","_")][idx][0]*.9) if use_sim else get_radius_range(day, prev_rad, rad_models)
+            if (plant_type == "kale"):
+                print(max_rad)
             try:
                 c, max_p = bfs_circle(path, center, max_rad, min_rad, plant_type, side=side, taken_circles=new_circles[plant_type])
                 r = abs(distance(c, max_p))
@@ -52,12 +58,12 @@ def label_circles_BFS(path, show_res=False, side=None, sim_circle_path=None, day
                     "pass"
                 r, c, max_p = abs(prev_rad), center, (center[0]+prev_rad, center[1])
                 # print("Zero div at: " + str(c))
-            if day > r and day < 20:
-                r = 0
-            if r <= prev_rad*.9 and prev_rad > 55:
-                r = prev_rad*.9
-            if r*.7 > prev_rad  and prev_rad > 55:
-                r = prev_rad*1.1
+            # if day > r and day < 20:
+            #     r = 0
+            # if r <= prev_rad*.9 and prev_rad > 55:
+            #     r = prev_rad*.9
+            # if r*.7 > prev_rad  and prev_rad > 55:
+            #     r = prev_rad*1.1
             if distance(center, c) > 50:
                 direction_vec = [c[i] - center[i] for i in range(2)]
                 direction_vec = direction_vec / np.linalg.norm(direction_vec)
@@ -122,13 +128,16 @@ def process_image(path: str, save_circles: bool = False, crop: bool = False, sid
     which are the most recent prior stored in center_constants.py/PRIOR_PATH'''
     # print(daily_files("./out/circles/right", False))
     real_circles_paths = ["./out/circles/right/" + f for f in daily_files("./out/circles/right", False)[15:16]]
-    priors_paths =  ["./out/priors/right/" + f for f in daily_files("./out/priors/right", False)[15:16]]
+    priors_paths =  ["./out/priors/right/" + f for f in daily_files("./out/priors/right", False)]
+    print("=" * 20, priors_paths)
     id_ = path[path.find(IMAGE_NAME_PREFIX):path.find(".jpg")]
     print("Extracting Mask: "+path)
     mask_path = "./out/post_process/{}.png".format(id_)
     print("Labeling circles: "+ mask_path)
     print(os.getcwd())
     day = pickle.load(open("./timestep.p", "rb"))
+    print(day)
+    # print(priors_paths)
     return label_circles_BFS(mask_path, True, side, day=day, sim_circle_path=real_circles_paths[-1], prior_path=priors_paths[-1])
 
 # if __name__ == "__main__":

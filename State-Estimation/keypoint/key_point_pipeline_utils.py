@@ -47,7 +47,7 @@ def get_masks_and_overhead(date, mask_path=PROCESSED_IMAGES, overhead_path="../i
     Date format: yymmddhh
     Params
         :string date: Date format: yymmddhh
-        
+
     Return
         :array mask: numpy array of mask image
         :array overhead: numpy array of cropped overhead image
@@ -95,7 +95,7 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
     #         if plant.shape[0] > 0 and plant.shape[1] > 0:
     #             plant = cv2.resize(plant, (256, 256))
     #             yield plant, (x, y), r, key
-    # else:  
+    # else:
     for key in priors:
         key_isolated_mask = isolate_color(mask, *calculate_color_range(TYPES_TO_COLORS[key], COLOR_TOLERANCE))[0]
         key_isolated_mask = (cv2.cvtColor(key_isolated_mask, cv2.COLOR_RGB2GRAY)).astype(np.uint8)
@@ -103,9 +103,9 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
         for circle in priors[key]:
             (x, y), r,_ = circle["circle"]
             (yshape,xshape) = masked_overhead.shape[:2]
-            plant = masked_overhead[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]         
+            plant = masked_overhead[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]
             cutmask = key_isolated_mask[max(0,int(y-RADIUS_SCALE_FACTOR*r)):int(y+RADIUS_SCALE_FACTOR*r), max(0,int(x-RADIUS_SCALE_FACTOR*r)):int(x+RADIUS_SCALE_FACTOR*r)]
-            
+
             ## PADDING CODE:
             ylims = np.array([max(0,int(y-RADIUS_SCALE_FACTOR*r)),min(yshape-1,y+RADIUS_SCALE_FACTOR*r)])
             xlims = np.array([max(0,int(x-RADIUS_SCALE_FACTOR*r)),min(xshape-1,x+RADIUS_SCALE_FACTOR*r)])
@@ -117,7 +117,7 @@ def get_individual_plants(priors, mask, overhead, key = None,  RADIUS_SCALE_FACT
                 new_res = (shp* scale).astype(int)
                 plant = shrink_im(plant,tuple(new_res) ,(256,256))
                 cutmask = shrink_im(cutmask,tuple(new_res) ,(256,256))
-                yield plant, (x, y), r, key, cutmask, min(shp/new_res), (ypads/2, xpads/2)
+                yield plant, (x, y), r * 1.5, key, cutmask, min(shp/new_res), (ypads/2, xpads/2)
         # return images
 
 def project_key_points(key_points, center, radius):

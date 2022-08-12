@@ -130,12 +130,15 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 # sides : b, l, r -> both, left, right
 def get_recent_priors(path=PRIOR_PATH, side='b'):
     print(path)
+    side='r'
     if path == PRIOR_PATH:
         if side == 'r':
             folder = 'right/'
         elif side == 'l':
             folder = 'left/'
         path += folder
+
+        print(path, daily_files(path, False))
         path = str(path) + str(daily_files(path, False)[-2])
 
     print("PATH: ", path)
@@ -390,19 +393,21 @@ def daily_files(path, filtered = True, prefix=None):
     ''' returns a list of the first image taken each day in the given folder'''
     file_list = os.listdir(path)
     list.sort(file_list)
+    print(file_list)
     #Only keep files from the same days
-    copy_file_list = file_list[:]
-    i = 0
-    label_prefix = max(file_list[0].find("-") + 1, file_list[-1].find("-") + 1)
-    DATE_LENGTH = 6
-    while i < len(copy_file_list) and filtered:
-        curPrefix = copy_file_list[i][:label_prefix + DATE_LENGTH]
-        i = i + 1
-        while i < len(copy_file_list) and copy_file_list[i].startswith(curPrefix):
-            # os.system("rm "+path+"/"+copy_file_list[i])
-            # print("removing: " + path+"/"+copy_file_list[i])
-            file_list.remove(copy_file_list[i])
-            i = i + 1
+    # copy_file_list = file_list[:]
+    # i = 0
+    # label_prefix = max(file_list[0].find("-") + 1, file_list[-1].find("-") + 1)
+    # DATE_LENGTH = 6
+    # while i < len(copy_file_list) and filtered:
+    #     curPrefix = copy_file_list[i][:label_prefix + DATE_LENGTH]
+    #     print(curPrefix)
+    #     i = i + 1
+    #     while i < len(copy_file_list) and copy_file_list[i].startswith(curPrefix):
+    #         # os.system("rm "+path+"/"+copy_file_list[i])
+    #         # print("removing: " + path+"/"+copy_file_list[i])
+    #         file_list.remove(copy_file_list[i])
+    #         i = i + 1
     return file_list
 
 def get_img(path):

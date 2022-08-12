@@ -7,7 +7,7 @@ MODEL_PATH = './models'
 IM_WIDTH = 512
 IM_HEIGHT = 512
 
-N_CLASSES = 9
+N_CLASSES = 11
 BATCH_SIZE = 32
 N_EPOCHS = 125
 
@@ -82,12 +82,14 @@ COLORS = [
 
 TYPES = [
     "other",
+    # arugula
     "borage",
     "cilantro",
     "green-lettuce",
     "kale",
     "radicchio",
     "red-lettuce",
+    # sorrel
     "swiss-chard",
     "turnip"
 ]
@@ -99,7 +101,7 @@ ratio = 0.
 TEST_PATH = './out/cropped'
 IOU_EVAL_FILE = 'iou_eval_file.csv'
 
-TEST_MODEL = './models/curr_model.h5'
+TEST_MODEL = './models/model_3_16.h5'
 
 PROCESSED_IMAGES = './out/post_process/'
 CIRCLES_LOC = './out/circles/'
