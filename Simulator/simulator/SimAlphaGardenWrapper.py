@@ -162,7 +162,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 self.non_plant_centers = self.non_plant_centers[1:]
 
         # Uncomment to make method for 2 plants deterministic
-        # center_to_sample = (7, 15) 
+        # center_to_sample = (7, 15)
         # center_to_sample = (57, 57)
 
         cc_per_plant = self.garden.get_cc_per_plant()
@@ -311,8 +311,8 @@ class SimAlphaGardenWrapper(WrapperEnv):
         # health_grid = self.garden.get_health_grid(center)
         plant_grid = self.garden.get_plant_prob_full()
         water_grid = self.garden.get_water_grid_full()
-        health_grid = self.garden.get_health_grid_full() 
-        # action_vec = np.zeros(len(self.irr_actions) + 2) 
+        health_grid = self.garden.get_health_grid_full()
+        # action_vec = np.zeros(len(self.irr_actions) + 2)
 
         # Save canopy image before performing a time step.
         # if True:
@@ -380,8 +380,12 @@ class SimAlphaGardenWrapper(WrapperEnv):
                 plant_type=self.PlantType,
                 animate=False)
         ''' Uncomment line below to load from a garden file. '''
-        if AG_REAL:
-            self.garden, self.PlantType = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "rb")) #load
+        if True:
+            self.garden, self.PlantType = pickle.load(open("/Users/rithe/Documents/research/AlphaGarden/State-Estimation/garden_copy.pkl", "rb")) #load
+            print(self.garden)
+            for i in self.garden.plants:
+                for k, v in i.items():
+                    print(v)
         self.plant_centers_original = np.copy(self.PlantType.plant_centers)
         self.plant_centers = np.copy(self.PlantType.plant_centers)
         self.non_plant_centers_original = np.copy(self.PlantType.non_plant_centers)
@@ -393,7 +397,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def set_prune_rate(self, prune_rate):
         """Sets the prune rate in the garden.
-        
+
         Args:
             prune_rate (float)
         """
@@ -401,7 +405,7 @@ class SimAlphaGardenWrapper(WrapperEnv):
 
     def set_irrigation_amount(self, irrigation_amount):
         """Sets the irrigation_amount in the garden.
-        
+
         Args:
             irrigation_amount (float)
         """
@@ -426,10 +430,10 @@ class SimAlphaGardenWrapper(WrapperEnv):
             Float, radius of plant.
         """
         return self.garden.get_prune_window_greatest_width(center)
-    
+
     def get_simulator_state_copy(self):
         """Get the current stat of all simulator values to be able to restart at the current state.
-        
+
         Return:
             GardenState object.
         """

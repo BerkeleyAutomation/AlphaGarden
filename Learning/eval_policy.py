@@ -62,7 +62,7 @@ def get_action_net(env, i, center, policy, actions):
         sector_img = np.ones((3, 235, 499)) * 255
     else:
         sector_img = np.transpose(curr_img, (2, 0, 1))
-        
+
     raw = np.transpose(obs, (2, 0, 1))
     global_cc_vec = env.get_global_cc_vec()
 
@@ -70,10 +70,10 @@ def get_action_net(env, i, center, policy, actions):
     raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
     global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
     x = (sector_img, raw, global_cc_vec)
-            
+
     action = torch.argmax(policy(x)).item()
     actions.put((i, action))
-    
+
 ''' WILL NOT WORK WITH NEW FULL STATE OBS '''
 def evaluate_learned_policy_multi(env, policy, steps, sector_obs_per_day, trial, save_dir='learned_policy_data/'):
     obs = env.reset()
@@ -106,7 +106,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
                 sector_img = np.ones((3, 235, 499)) * 255
             else:
                 sector_img = np.transpose(curr_img, (2, 0, 1))
-                
+
             raw = np.transpose(obs[1], (2, 0, 1))
             global_cc_vec = env.get_global_cc_vec()
 
@@ -114,7 +114,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
             raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
             global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
             x = (sector_img, raw, global_cc_vec)
-                    
+
             action = torch.argmax(policy(x)).item()
             obs, rewards, _, _ = env.step(action)
         else:
@@ -122,7 +122,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
                 print("Day {}/{}".format(int(i/sector_obs_per_day) + 1, 72))
                 vis.get_canopy_image_full(False, vis_identifier)
                 wrapper_day_set = True
-            
+
             global_cc_vec = env.get_global_cc_vec()
             if wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
                 curr_img = env.get_curr_img()
@@ -130,9 +130,9 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
                     full_img = np.ones((3, 235, 499)) * 255
                 else:
                     full_img = np.transpose(curr_img, (2, 0, 1))
-                    
+
                 raw = np.transpose(obs[2], (2, 0, 1))
-                
+
                 full_img = torch.from_numpy(np.expand_dims(full_img, axis=0)).float()
                 raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
                 global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
@@ -143,7 +143,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
                 prune_rates_order.append(pr)
                 env.set_prune_rate(max(0, pr))
                 wrapper_day_set = False
-                
+
             cc_vec = env.get_global_cc_vec()
             action = analytic_policy(i, obs, cc_vec, sector_rows, sector_cols,
                                      prune_window_rows, prune_window_cols, garden_step, water_threshold,
@@ -154,7 +154,7 @@ def evaluate_learned_policy_serial(env, policy, steps, trial, save_dir='learned_
         os.makedirs(dirname)
     f = open("./policy_metrics/prs.txt", "a")
     f.write("Prune Rates: "+ str(prune_rates_order))
-    f.close()        
+    f.close()
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
@@ -165,7 +165,7 @@ def get_action(env, i, center, policy, actions):
                     sector_obs_per_day, vectorized=False, eval=True)[0]
     actions.put((i, action))
 
-def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_rows, sector_cols,
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
                              sector_obs_per_day, trial, save_dir='adaptive_policy_data/'):
     obs = env.reset()
@@ -183,8 +183,8 @@ def evaluate_analytic_policy_multi(env, policy, collection_time_steps, sector_ro
         env.take_multiple_actions(centers, results)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
-    
-def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_steps, sector_rows, sector_cols, 
+
+def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_steps, sector_rows, sector_cols,
                             prune_window_rows, prune_window_cols, garden_step, water_threshold,
                             sector_obs_per_day, trial, save_dir, vis_identifier):
     wrapper = wrapper_sel # If wrapper_sel is True then the wrapper_adapative policy will be used, if false then the normal fixed adaptive policy will be used
@@ -200,6 +200,10 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
             vis.get_canopy_image_full(False, vis_identifier, current_day)
             wrapper_day_set = True
             garden_state = env.get_simulator_state_copy()
+            for i in garden_state.plants:
+                for k, v in i.items():
+                    v.radius *= 2
+
         cc_vec = env.get_global_cc_vec()
         # The wrapper policy starts after the PRUNE_DELAY
         if wrapper and wrapper_day_set and ((i // sector_obs_per_day) >= PRUNE_DELAY):
@@ -241,9 +245,9 @@ def evaluate_analytic_policy_serial(env, policy, wrapper_sel, collection_time_st
         #     cov, div, water, act, mme1, mme2 = env.get_metrics()
         #     div_cov_day = cov[-1] * div[-1]
         #     div_cov.append(["Day " + str(i//sector_obs_per_day + 1), div_cov_day])
-        
+
     # dirname = './policy_metrics/'    # save prune rates and policy metrics in folders
-    # if not os.path.exists(dirname):    
+    # if not os.path.exists(dirname):
     #     os.makedirs(dirname)
     # f = open("./policy_metrics/prs.txt", "a")
     # f.write("Prune Rates: "+ str(prune_rates_order))
@@ -298,7 +302,7 @@ def evaluate_irrigation_no_pruning_policy(env, garden_days, sector_obs_per_day, 
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)
 
-def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_time_steps, sector_rows, sector_cols, 
+def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_time_steps, sector_rows, sector_cols,
                              prune_window_rows, prune_window_cols, garden_step, water_threshold,
                              sector_obs_per_day, trial, save_dir='baseline_compare_net_data/'):
     obs = env.reset()
@@ -308,14 +312,14 @@ def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_t
         action = analytic_policy(i, obs, cc_vec, sector_rows, sector_cols, prune_window_rows,
                         prune_window_cols, garden_step, water_threshold, NUM_IRR_ACTIONS,
                         sector_obs_per_day, vectorized=False, eval=False)[0]
-        
+
         # net
         curr_img = env.get_curr_img()
         if curr_img is None:
             sector_img = np.ones((3, 235, 499)) * 255
         else:
             sector_img = np.transpose(curr_img, (2, 0, 1))
-            
+
         raw = np.transpose(obs[1], (2, 0, 1))
         global_cc_vec = env.get_global_cc_vec()
 
@@ -323,12 +327,12 @@ def evaluate_baseline_compare_net(env, analytic_policy, net_policy, collection_t
         raw = torch.from_numpy(np.expand_dims(raw, axis=0)).float()
         global_cc_vec = torch.from_numpy(np.transpose(global_cc_vec, (1, 0))).float()
         x = (sector_img, raw, global_cc_vec)
-                
+
         net_action = torch.argmax(policy(x)).item()
-        
+
         if net_action != action:
             np.savez(save_dir + str(i) + '_' + str(net_action) + '_' + str(action) + '.npz', raw=obs[1], global_cc=cc_vec, img=curr_img)
-        
+
         obs, rewards, _, _ = env.step(action)
     metrics = env.get_metrics()
     save_data(metrics, trial, save_dir)

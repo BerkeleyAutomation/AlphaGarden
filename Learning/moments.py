@@ -11,10 +11,10 @@ class Moments:
         self.input_cc_fnames.sort()
         self.input_raw_fnames = ([data_dir + '/' + fname for fname in os.listdir(self.data_dir) if '.npz' in fname])
         self.input_raw_fnames.sort()
-        
+
         self.input_cc_mean, self.input_cc_std = self._get_moments(self.input_cc_fnames, 'cc')
         self.input_raw_vec_mean, self.input_raw_mean, self.input_raw_vec_std, self.input_raw_std = self._get_moments(self.input_raw_fnames, 'raw')
-        
+
         moments_path = os.path.join(data_dir, 'moments')
         np.savez(moments_path, input_cc_mean=self.input_cc_mean, input_cc_std=self.input_cc_std, \
             input_raw_mean=self.input_raw_mean, input_raw_std=self.input_raw_std, \
@@ -35,7 +35,7 @@ class Moments:
                 water = data['water']
                 health = data['health']
                 global_cc = data['global_cc']
-                
+
                 plants_water_health = np.array(np.transpose(np.dstack((plants, water, health)), (2, 0, 1)), dtype=np.float32)
                 global_cc = np.array(global_cc, dtype=np.float32)
                 pwh_mean = np.divide(plants_water_health, count)
@@ -79,4 +79,4 @@ class Moments:
             return input_mean, input_std
 
 if __name__ == "__main__":
-    Moments('/Users/williamwong/Desktop/small')
+    Moments('/Users/rithe/Documents/research/AlphaGarden/small')

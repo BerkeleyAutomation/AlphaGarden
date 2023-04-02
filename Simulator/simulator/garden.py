@@ -214,7 +214,7 @@ class Garden:
 
     def set_prune_rate(self, prune_rate):
         """ Modifies the garden's prune rate.
-        
+
         Args:
             prune_rate (float)
         """
@@ -222,7 +222,7 @@ class Garden:
 
     def set_irrigation_amount(self, irrigation_amount):
         """ Modifies the garden's irrigation amount.
-        
+
         Args:
             irrigation_amount (float)
         """
@@ -338,7 +338,7 @@ class Garden:
         # Save out pruning and irrigation coordinates.
         if AG_REAL:
             coords_dirname = "Coords/"
-            if not os.path.exists(coords_dirname):    
+            if not os.path.exists(coords_dirname):
                 os.makedirs(coords_dirname)
             pickle.dump([self.prune_coords, self.irr_coords], open(coords_dirname + "coords" + str(self.timestep) + ".pkl", "wb"))
 
@@ -379,7 +379,7 @@ class Garden:
 
         # Start from outer radius
         for radius in range(4,9)[::-1]:
-            # For each bounding box, check if the cubes are within the radius 
+            # For each bounding box, check if the cubes are within the radius
             #       + add water from outer to center
             lower_x = max(0, location[0] - radius)
             upper_x = min(self.grid.shape[0], location[0] + radius + 1)
@@ -390,7 +390,7 @@ class Garden:
                     pt = [x, y]
                     if np.sqrt((location[0] - pt[0])**2 + (location[1] - pt[1])**2) <= radius:
                         self.grid[x, y]['water'] += gain * s
-                        self.grid[x, y]['last_watered'] = 0 
+                        self.grid[x, y]['last_watered'] = 0
             gain *= 2
 
         # TODO: add distribution kernel for capillary action and spread of water jet
@@ -401,7 +401,7 @@ class Garden:
         upper_x = min(self.grid.shape[0], location[0] + self.irr_threshold + 1)
         lower_y = max(0, location[1] - self.irr_threshold)
         upper_y = min(self.grid.shape[1], location[1] + self.irr_threshold + 1)
-        
+
         np.minimum(
             self.grid[lower_x:upper_x, lower_y:upper_y]['water'],
             MAX_WATER_LEVEL,
@@ -475,7 +475,7 @@ class Garden:
                 for plant_type_and_id in plant_types_and_ids:
                     plant = self.plants[plant_type_and_id[0]][plant_type_and_id[1]]
                     plant.water_available += point['water']
-                
+
                 while point['water'] > PERMANENT_WILTING_POINT and plant_types_and_ids:
                     # Pick a random plant to give water to
                     i = np.random.choice(range(len(plant_types_and_ids)))
@@ -485,10 +485,10 @@ class Garden:
 
                     # Calculate how much water the plant needs for max growth,
                     # and give as close to that as possible
-                    
+
                     if plant.amount_sunlight > 0:
                         k = 1/15 #k is a scaling factor for the plant uptake
-                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points) 
+                        water_to_absorb = min(point['water'], plant.desired_water_amt() / plant.num_grid_points)
                         plant.water_amt += water_to_absorb
                         plant.watered_day = self.timestep
                         point['water'] -= water_to_absorb * k
@@ -506,7 +506,7 @@ class Garden:
                 else:
                     evap_rate_dict = determine_evap_rate(self.timestep+1)
             else:
-                evap_rate_dict = {0:0.042, 1:0.01} 
+                evap_rate_dict = {0:0.042, 1:0.01}
 
             idx = point['last_watered'] if point['last_watered'] < len(evap_rate_dict) else len(evap_rate_dict) - 1
             evap_rate = evap_rate_dict[idx] #evap rate for point according to last watered
@@ -768,15 +768,15 @@ class Garden:
         for plant in non_occluded_plants:
             # For auto pruning
             if AG_REAL:
-                time = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb"))
+                time = pkl.load(open("/Users/rithe/Documents/research/AlphaGarden/State-Estimation/timestep.p", "rb"))
                 print("TIME: ", time, self.timestep == time)
                 print(plant.type, (plant.row, plant.col), plant.row + plant.col)
                 if self.timestep == time or self.timestep == time + 1: #REMOVE DAYS
-                    curr_l = pkl.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "rb"))
+                    curr_l = pkl.load(open("/Users/rithe/Documents/research/AlphaGarden/State-Estimation/plants_to_prune.p", "rb"))
                     if (plant.row + (2 * plant.col)) not in curr_l:
                         print(plant.row + 2 * plant.col)
                         curr_l.append(plant.row + 2*plant.col)
-                        pkl.dump(curr_l, open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/plants_to_prune.p", "wb"))
+                        pkl.dump(curr_l, open("/Users/rithe/Documents/research/AlphaGarden/State-Estimation/plants_to_prune.p", "wb"))
             # end auto pruning
             plant.pruned = True
             amount_to_prune = self.prune_rate * plant.radius
@@ -786,7 +786,7 @@ class Garden:
             if plant.type in self.prune_coords:
                 self.prune_coords[plant.type].update(coords_dirs)
             else:
-               self.prune_coords[plant.type] = set(coords_dirs) 
+               self.prune_coords[plant.type] = set(coords_dirs)
 
     def save_coverage_and_diversity(self):
         """ Calculate and update normalized entropy for diversity and total plant coverage"""
@@ -976,7 +976,7 @@ class Garden:
 
         temp = np.pad(np.copy(self.plant_prob), ((row_pad, row_pad), (col_pad, col_pad), (0, 0)), 'constant')
         return temp[x_low:x_high + 1, y_low:y_high, :]
-    
+
     def get_plant_prob_full(self):
         """ Get grid with plant probabilities for entire garden
         Return
@@ -993,7 +993,7 @@ class Garden:
 
     def get_simulator_state_copy(self):
        """ Returns a copy of all simulator arrays needed to restart the simulation for the current moment.
-       
+
        Return
            Stacked array of deep copies of plants, water, health, plant probabilities, leaf and plant types.
        """
@@ -1053,13 +1053,13 @@ class Garden:
 
                 file_name = str(p.type) + str(num) + '.txt'
                 # file_name = str(p.type) + str(p_type_ind[p.type]) + '.txt'
-                    
+
                 if p_type_ind[p.type] == 1:
                     p_type_ind[p.type] = 0
                 elif p_type_ind[p.type] < 1:
                     p_type_ind[p.type] += 1
 
-                # print(os.getcwd())                
+                # print(os.getcwd())
                 file_list = os.listdir(folder)
                 if file_name not in file_list:
                     fil = open(folder + file_name, "w+")

@@ -394,8 +394,8 @@ if __name__ == "__main__":
     # print(leaf_centers)
 
     # Generation
-    file = "snc-22080607591500"
-    leaf_centers = get_keypoints(PROCESSED_IMAGES + file + ".png", os.path.join(CROPPED_LOC, file + ".jpg"), os.path.join(PRIORS + "right/priors220806.p"), MODEL_PATH)
+    file = "snc-22081219591500"
+    leaf_centers = get_keypoints(PROCESSED_IMAGES + file + ".png", os.path.join(CROPPED_LOC, file + ".jpg"), os.path.join(PRIORS + "right/priors220812.p"), MODEL_PATH)
     pkl.dump(leaf_centers, open("./target_leaf_data/data/" + file + "_unfiltered.p", "wb"))
     print("./target_leaf_data/data/" + file + "_unfiltered.p")
     with open("./target_leaf_data/data/" + file + "_unfiltered.p", "rb") as f:
@@ -407,7 +407,7 @@ if __name__ == "__main__":
     # #Simulator
     pkl.dump([], open("plants_to_prune.p", "wb"))
     os.system('python ../Learning/create_state.py ' + 'r') #choose side
-    os.system('python ../Learning/eval_policy.py -p ba -d 4')
+    os.system('python ../Learning/eval_policy.py -p ba -d 2')
     time.sleep(10)
 
     # Selection

@@ -41,7 +41,7 @@ def enumerate_grid(grid):
     for i in range(0, len(grid)):
         for j in range(len(grid[i])):
             yield (grid[i, j], (i, j))
-                    
+
 def compute_plant_health(grid, grid_shape, plants):
     """ Compute health of the plants at each grid point.
     Args:
@@ -107,10 +107,10 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 # }
 
 # real_data = {'cilantro': {((137, 36), 30), ((14, 31), 30)}, 'green_lettuce': {((24, 16), 30), ((116, 18), 30)}, 'radicchio': {((90, 24), 30), ((24, 84), 40)}, 'swiss_chard': {((27, 55), 40), ((121, 121), 40)}, 'turnip': {((84, 58), 40), ((34, 116), 40)}, 'kale': {((56, 35), 40), ((94, 97), 40)}, 'borage': {((65, 120), 40), ((121, 73), 40)}, 'red_lettuce': {((90, 135), 40), ((134, 22), 40)}}
-real_data = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/current_dic_"+side+".p", "rb")) #update path
+real_data = pickle.load(open("/Users/rithe/Documents/Research/AlphaGarden/State-Estimation/current_dic_"+side+".p", "rb")) #update path
 print("LOADED: ", side)
 print(real_data)
-timestep = pickle.load(open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/timestep.p", "rb")) #9
+timestep = pickle.load(open("/Users/rithe/Documents/Research/AlphaGarden/State-Estimation/timestep.p", "rb")) #9
 
 plant_type = PlantType()
 plant_types = plant_type.plant_names
@@ -120,9 +120,10 @@ plant_objs = plant_type.get_plant_seeds(0, ROWS, COLS, SECTOR_ROWS, SECTOR_COLS,
 
 plants = [{} for _ in range(len(plant_types))]
 
+
 grid = np.empty((ROWS, COLS), dtype=[('water', 'f'), ('health', 'i'), ('nearby', 'O'), ('last_watered', 'i')])
-grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/water_grid_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
-grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int) if timestep == 0 else pickle.load(open("policy_metrics/water_grid_" + SIDE + "/last_watered_"  + str(timestep-1) + "_2after_evap.pkl", "rb"))
+grid['water'] = np.random.normal(0.2, 0.04, grid['water'].shape)
+grid['last_watered'] = grid['last_watered'] = np.zeros(grid['last_watered'].shape).astype(int)
 
 for i in range(ROWS):
     for j in range(COLS):
@@ -140,7 +141,7 @@ id_ctr = 0
 for plant in plant_objs:
     add_plant(plant, id_ctr, plants, plant_types, plant_locations, grid, plant_grid, leaf_grid)
     id_ctr += 1
-    
+
 grid['health'] = compute_plant_health(grid, grid['health'].shape, plants)
 
 growth_map = compute_growth_map()
@@ -150,12 +151,12 @@ for p_type in real_data:
     for plant in real_data[p_type]:
         r, c = plant[0]
         radius = plant[1]
-        radius_grid[r, c, 0] = radius 
+        radius_grid[r, c, 0] = radius
 
 garden_state = GardenState(plants, grid, plant_grid, plant_prob, leaf_grid, plant_type,
                            plant_locations, growth_map, radius_grid, timestep, existing_data=True)
 garden_copy = copy_garden(garden_state=garden_state, rows=ROWS, cols=COLS, sector_row=SECTOR_ROWS,
                           sector_col=SECTOR_COLS, prune_win_rows=PRUNE_WINDOW_ROWS,
                           prune_win_cols=PRUNE_WINDOW_COLS, step=STEP, prune_rate=PRUNE_RATE)
-pickle.dump([garden_copy, plant_type], open("/Users/mpresten/Desktop/AlphaGarden_git/AlphaGarden/Center-Tracking/garden_copy.pkl", "wb")) 
+pickle.dump([garden_copy, plant_type], open("/Users/rithe/Documents/Research/AlphaGarden/State-Estimation/garden_copy.pkl", "wb"))
 print("SAVED!")

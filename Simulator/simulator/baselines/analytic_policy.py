@@ -44,8 +44,8 @@ def calc_potential_entropy(global_cc_vec, plants, sector_rows, sector_cols, prun
 
     for plant_id in prune_window_cc.keys():
         prune_window_cc[plant_id] = prune_window_cc[plant_id] * prune_rate
-        global_cc_vec[plant_id] -= prune_window_cc[plant_id] 
-    
+        global_cc_vec[plant_id] -= prune_window_cc[plant_id]
+
     proj_plant_cc = np.sum((global_cc_vec / np.sum(global_cc_vec, dtype="float"))[1:])
 
     global_cc_vec[0] += ROWS * COLS / NUM_PLANT_TYPES_USED
@@ -70,7 +70,7 @@ def get_irr_square(grid, center):
     lower_y = max(0, center[1] - IRR_THRESHOLD)
     upper_y = min(grid.shape[1], center[1] + IRR_THRESHOLD)
     return grid[lower_x:upper_x, lower_y:upper_y]
-    
+
 def only_dead_plants(health):
     """ Check if all plants are dead within grid.
 
@@ -92,7 +92,7 @@ def has_underwatered(health):
         True if any plant is underwatered, False otherwise.
     """
     return np.any(np.isin(health, [1]))
-        
+
 def has_overwatered(health):
     """ Check if any plants are overwatered within grid.
 
@@ -102,7 +102,7 @@ def has_overwatered(health):
     Return
         True if any plant is overwatered, False otherwise.
     """
-    return np.any(np.isin(health, [3]))    
+    return np.any(np.isin(health, [3]))
 
 def overwatered_contribution(health, water):
     """ Count how many cells have a plant state of overwatered.
@@ -154,21 +154,21 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         plants_and_water = state
     else:
         plants_and_water = state[1]
-    
+
     if vectorized:
         plants_and_water = plants_and_water[0]
     plants = plants_and_water[:,:,:-2]
     water_grid = plants_and_water[:,:,-2]
     health = plants_and_water[:,:,-1]
-    
+
     action = 0
-    
+
     # Prune
-    if AG_REAL or timestep > PRUNE_DELAY * sector_obs_per_day:
+    if True:
         prob = global_cc_vec[1:] / np.sum(global_cc_vec[1:], dtype="float") # We start from 1 because we don't include earth in diversity
         violations = np.where(prob > 0.17)[0]
         prune_window_cc = {}
-        for plant_idx in violations:   
+        for plant_idx in violations:
             inside, area = plant_in_area(plants, (sector_rows - prune_window_rows) // 2, (sector_cols - prune_window_cols) // 2, prune_window_rows, prune_window_cols, plant_idx + 1)
             if inside:
                 prune_window_cc[plant_idx] = prune_window_cc.get(plant_idx, 0) + area
@@ -192,5 +192,5 @@ def policy(timestep, state, global_cc_vec, sector_rows, sector_cols, prune_windo
         sector_water += overwatered_contribution(health_irr_square, water_irr_square)
     if sector_water < maximum_water_potential:
         action += 1
-    
+
     return [action]

@@ -55,8 +55,8 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     day_p = day - PRUNE_DELAY
     w1 = day_p/50 # weight for coverage
     w2 = 1 - (day_p/50) # weight for diversity
-  
-    # each day process 
+
+    # each day process
 
     np.random.seed(0)
     garden_copy = copy_garden(garden_state=garden_state, rows=row, cols=col, sector_row= sector_rows, sector_col= sector_cols, prune_win_rows=prune_window_rows, prune_win_cols=prune_window_cols, step=step, prune_rate=prune_rate)
@@ -92,7 +92,7 @@ def wrapperPolicy(div_cov_arr, env, row, col, timestep, state, global_cc_vec, se
     #     os.makedirs(dirname)
     # with open(dirname + 'day_' + str(day) + '_pr_' + str(prune_rate) + '.pkl', 'wb') as f:
     #     pickle.dump([cov, div, global_div, actions, w1, w2], f)
-    # return mme1, mme2 
+    # return mme1, mme2
     return cov, div
 
 
@@ -110,7 +110,7 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
                 prune_rate = prune_rate,
                 animate=False)
     """ Copies the garden from the garden_state
-    
+
     Args:
             garden_state (GardenState): If passed in, the simulator will initialize its state from the passed in state
             rows (int): Amount rows for the grid modeling the garden (N in paper).
@@ -129,7 +129,7 @@ def copy_garden(garden_state, rows, cols, sector_row, sector_col, prune_win_rows
 
 def garden_to_sector(garden, plant_centers, non_plant_centers, rows, cols, step):
     """ Selects a random sector from the garden
-    
+
     Args:
             garden (Garden): The current garden
             plant_centers (int): Locations where there exist plants.

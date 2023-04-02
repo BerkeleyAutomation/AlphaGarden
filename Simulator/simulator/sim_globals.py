@@ -17,13 +17,13 @@ ROWS = 150
 COLS = 150
 
 NUM_PLANT_TYPES_USED = 8
-# Defines locations to sample on top of plant centers, used in eval_policy.py: 
+# Defines locations to sample on top of plant centers, used in eval_policy.py:
 # set to zero to replicate uniform
 PERCENT_NON_PLANT_CENTERS = 0.1
 
 OVERWATERED_THRESHOLD = 100
 UNDERWATERD_THRESHOLD = .01
-SECTOR_ROWS = 15 
+SECTOR_ROWS = 15
 SECTOR_COLS = 30
 PRUNE_WINDOW_ROWS = 5
 PRUNE_WINDOW_COLS = 5
@@ -31,10 +31,9 @@ PRUNE_WINDOW_COLS = 5
 STEP = 1
 
 # Not used for simulator standalone - for physical garden transfer
-AG_REAL = False 
+AG_REAL = True 
 SOIL_MOISTURE_SENSOR_POSITIONS = [(96, 72), (35, 111), (0, 0), (0, 0), (21, 138), (0, 0)]
 SOIL_MOISTURE_SENSOR_ACTIVE = [False, False, False, False, False, False] # 1 2 3 4 5 6 sensor order
 IRRIGATE_BUFFER = 8
 GARDEN_START_DATE = 1625508000 #Third cycle (7/5/21 11AM PST), when to query soil moisture
 SIDE = "left"
-

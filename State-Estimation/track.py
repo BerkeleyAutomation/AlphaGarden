@@ -52,11 +52,11 @@ if __name__ == "__main__":
     side = sys.argv[2]
     cwd = os.getcwd()
 
-    img = cv2.cvtColor(cv2.imread(f), cv2.COLOR_BGR2RGB)
-    new_im = correct_image(img, (200, 586.1321074432035), (3812, 661), (3852, 2314), (185, 2394))
+    # img = cv2.cvtColor(cv2.imread(f), cv2.COLOR_BGR2RGB)
+    # new_im = correct_image(img, (200, 586.1321074432035), (3812, 661), (3852, 2314), (185, 2394))
     # PRIOR to 8/1/22new_im = correct_image(img, (350.74890171959316, 596.1321074432035), (3998.9477218526417, 609.436990084097), (4006.9306514371774, 2371.0034517384215), (318.81718338144833, 2325.7668507593826))
     #PRIOR TO 8/12/21: (93.53225806451621, 535.8709677419356), (3765.064516129032, 433.2903225806449), (3769.3387096774195, 2241.274193548387), (144.82258064516134, 2241.274193548387))
-    imsave('./out/cropped/' + f, new_im)
+    # imsave('./out/cropped/' + f, new_im)
 
     d_0 = date(2022, 7, 1)
     d_1 = date(2022, int(f[6:8]), int(f[8:10]))
@@ -64,8 +64,9 @@ if __name__ == "__main__":
     pkl.dump(delta.days, open("timestep" + ".p", "wb"))
 
     print("------------------------------Segmentation-----------------------------------------")
-    get_img_seg_mask(f[:-4])
+    # get_img_seg_mask(f[:-4])
     circles_dic, type_dic = process_image("cropped/" + f, True, True, side)
+    print(type_dic)
     pkl.dump(type_dic, open("current_type_dic_"+side+".p", "wb"))
     pkl.dump(circles_dic, open("current_dic_"+side+".p", "wb"))
 
