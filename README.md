@@ -1,5 +1,5 @@
 # Overview 
-In this repository, you will find code for AlphaGardenSim and for AlphaGarden. AlphaGarden is an autonomous polyculture garden located in Berkeley, CA that uses AlphaGardenSim to decide watering and pruning actions. The paper explaining the functionality of AlphaGarden can be found *here*. 
+In this repository, you will find code for AlphaGardenSim and for AlphaGarden. AlphaGarden is an autonomous polyculture garden located in Berkeley, CA that uses AlphaGardenSim to decide watering and pruning actions. Papers explaining the functionality of AlphaGarden can be found [here](https://ieeexplore.ieee.org/document/9216984) and [here](https://ieeexplore.ieee.org/document/9684020). 
 
 The fast_ag branch contains improved functionality in [fastSimulator](https://github.com/BerkeleyAutomation/AlphaGarden/tree/fast_ag/fastSimulator) that drastically speed up the Simulator. Notable files in the branch are [fastag_env.py](https://github.com/BerkeleyAutomation/AlphaGarden/blob/fast_ag/fastSimulator/gym_fastag/envs/fastag_env.py), [evaluate.py](https://github.com/BerkeleyAutomation/AlphaGarden/blob/fast_ag/fastSimulator/evaluate.py), and [plant_presets.py](https://github.com/BerkeleyAutomation/AlphaGarden/blob/fast_ag/fastSimulator/gym_fastag/envs/plant_presets.py) which is useful for generating yaml config files. 
 
