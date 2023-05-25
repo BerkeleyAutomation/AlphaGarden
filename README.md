@@ -1,6 +1,8 @@
 # Overview 
 In this repository, you will find code for AlphaGardenSim and for AlphaGarden. AlphaGarden is an autonomous polyculture garden located in Berkeley, CA that uses AlphaGardenSim to decide watering and pruning actions. The paper explaining the functionality of AlphaGarden can be found *here*. 
 
+The fast_ag branch contains improved functionality in [fastSimulator](https://github.com/BerkeleyAutomation/AlphaGarden/tree/fast_ag/fastSimulator) that drastically speed up the Simulator. Notable files in the branch are [fastag_env.py](https://github.com/BerkeleyAutomation/AlphaGarden/blob/fast_ag/fastSimulator/gym_fastag/envs/fastag_env.py), [evaluate.py](https://github.com/BerkeleyAutomation/AlphaGarden/blob/fast_ag/fastSimulator/evaluate.py), and [plant_presets.py](https://github.com/BerkeleyAutomation/AlphaGarden/blob/fast_ag/fastSimulator/gym_fastag/envs/plant_presets.py) which is useful for generating yaml config files. 
+
 The [Learning](https://github.com/BerkeleyAutomation/AlphaGarden/Learning) and [Simulator](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator) folders contain functionality for AlphaGardenSim. Please see the rest of this README for information on how to use AlphaGardenSim.
 
 The [State-Estimation](https://github.com/BerkeleyAutomation/AlphaGarden/State-Estimation) folder contains functionally for the Plant Phenotyping NN that identifies a plant's type, Bounding Disk Tracking algorithm that is used to identify a plant's radius, and a Prune Point Identification NN that identifies the centers of leaves. The [Actuation](https://github.com/BerkeleyAutomation/AlphaGarden/Actuation) folder includes functionality for how we interface with the [FarmBot](https://farm.bot/), a commercial gantry system for gardens. README's for these methods can be found in their respective folders. 
@@ -31,6 +33,15 @@ Install the required pip packages and the mentioned packages from above:
 1. `git clone` the repository
 2. Open the `AlphaGarden` [repository](https://github.com/BerkeleyAutomation/AlphaGarden/)
 3. Run ```pip install -r requirements.txt ```. Make sure you are using pip 20.0.2. Version 20.1 currently is not supported.
+
+
+If using the fast_ag branch:
+
+1. `git clone` the repository
+2. Open the `AlphaGarden` [repository](https://github.com/BerkeleyAutomation/AlphaGarden/) and checkout the fast_ag branch. 
+3. Run ```pip install -r requirements.txt ```. Make sure you are using pip 20.0.2 and python 3.7. Version 20.1 currently is not supported. Note that in addition, fast_ag  requires _ray_, _gymnasium_ and _dm-tree_. 
+
+After 1-3 above: 
 
 To run the simulator and collect data:
 
