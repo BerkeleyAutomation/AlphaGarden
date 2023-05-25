@@ -1,5 +1,5 @@
 # Overview 
-In this repository, you will find code for AlphaGardenSim and for AlphaGarden. AlphaGarden is an autonomous polyculture garden located in Berkeley, CA that uses AlphaGardenSim to decide watering and pruning actions. The paper explaining the functionality of AlphaGarden can be found *here*. 
+In this repository, you will find code for AlphaGardenSim and for AlphaGarden. AlphaGarden is an autonomous polyculture garden located in Berkeley, CA that uses AlphaGardenSim to decide watering and pruning actions. Papers explaining the functionality of AlphaGarden can be found [here](https://ieeexplore.ieee.org/document/9216984) and [here](https://ieeexplore.ieee.org/document/9684020). 
 
 The [Learning](https://github.com/BerkeleyAutomation/AlphaGarden/Learning) and [Simulator](https://github.com/BerkeleyAutomation/AlphaGarden/Simulator) folders contain functionality for AlphaGardenSim. Please see the rest of this README for information on how to use AlphaGardenSim.
 
